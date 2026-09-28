@@ -11,10 +11,10 @@
 | 包 | [DM.DmProvider 8.3.1.47463](https://www.nuget.org/packages/DM.DmProvider/8.3.1.47463)（NuGet 上最新版，共 13 个 8.3.1.x 版本） |
 | 许可证 | Apache-2.0 |
 | 目标框架 | net40 / net45 / netcoreapp2.1 / netcoreapp3.1 / net5.0-net9.0 / netstandard2.0（共 10 个 TFM，各有 en/zh-CN/zh-HK/zh-TW 卫星资源） |
-| 分析对象 | `lib/net8.0/DM.DmProvider.dll`（884,736 字节） |
+| 分析对象 | `lib/net8.0/DM.DmProvider.dll`（884,736 字节）为主，`lib/net9.0/`（885,760 字节）已并行逆向复核 |
 | 托管身份 | 纯托管 PE32 Mono/.NET assembly（ILSpy `file` 确认） |
 | 混淆 | **无**。类型/方法名完整可读，无 ConfuserEx/SmartAssembly 等特征，无需 de4dot |
-| 反编译 | `ilspycmd -p` → `decompiled/net8.0/`，238 个 .cs 文件，约 7.5 万行 |
+| 反编译 | `ilspycmd -p` → `decompiled/net8.0/`（238 个 .cs）、`decompiled/net9.0/`（239 个 .cs），约 7.5 万行；两版差异仅编译器代码生成，见 `net9-verification.md` |
 | 原生依赖 | 非纯托管：`dmcyt`（加密/DH）、`dmfldr`（快速导出）、`dmcalc.dll`（XDEC，移植残留死代码） |
 
 目录布局：
@@ -22,14 +22,16 @@
 ```
 W.DmProvider/
 ├── packages/extracted/          # NuGet 包解包（全部 TFM）
-├── decompiled/net8.0/           # ilspycmd 反编译工程（含 DM.DmProvider.csproj，可直接打开阅读）
+├── decompiled/net8.0/           # ilspycmd 反编译工程（主分析对象）
+├── decompiled/net9.0/           # net9.0 构建的反编译工程（与 net8.0 并行存放）
 └── docs/reverse/
     ├── README.md                # 本文件
     ├── 01-ado-api-layer.md      # DmConnection/Command/Reader/Parameter/事务/连接池/连接串
     ├── 02-network-protocol.md   # 握手登录/加密协商/报文格式/opcode 全表/超时心跳
     ├── 03-type-system.md        # DmDbType↔协议类型码映射/Get/SetValue/LOB/复杂类型/几何
     ├── 04-bulkcopy-fldr.md      # BulkCopy 三路径/FLDR 协议/列式打包格式/原生 dmfldr
-    └── 05-filter-log-ha.md      # 过滤器链/读写分离/自动重连/日志框架
+    ├── 05-filter-log-ha.md      # 过滤器链/读写分离/自动重连/日志框架
+    └── net9-verification.md     # net9.0 逆向 + 全量 diff + 结论再验证（全部成立）
 ```
 
 ## 1. 总体架构
@@ -133,6 +135,7 @@ P2 —— 能力缺口（增强方向）：
 curl -LO https://nuget.azure.cn/v3-flatcontainer/dm.dmprovider/8.3.1.47463/dm.dmprovider.8.3.1.47463.nupkg
 unzip -d packages/extracted dm.dmprovider.8.3.1.47463.nupkg
 ilspycmd -p -o decompiled/net8.0 packages/extracted/lib/net8.0/DM.DmProvider.dll
+ilspycmd -p -o decompiled/net9.0 packages/extracted/lib/net9.0/DM.DmProvider.dll
 ```
 
 下一步候选（按 dotnet-reverse skill 的出口菜单）：
