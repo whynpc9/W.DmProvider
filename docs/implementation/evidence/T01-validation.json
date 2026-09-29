@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "task_id": "T01",
+  "verified_date": "2026-09-29",
+  "status": "integration_verified",
+  "scope": "Official O minimal host and immutable source inventory only",
+  "verification_role": "Sol Low independent verification; reviewed by primary agent",
+  "baseline_commit": "860988296cb95deeb600328cb7bcd2160237a94f",
+  "implementation_commit": null,
+  "implementation_commit_reason": "Uncommitted codex/t01-baseline working tree; files below identify tested implementation.",
+  "implementation_files": [
+    {
+      "path": "global.json",
+      "sha256": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d"
+    },
+    {
+      "path": "tools/DmProbe/DmProbe.csproj",
+      "sha256": "77b75eb95043390d19a074b5a7aeeb2f859e9f5916661d3253b83d944d403319"
+    },
+    {
+      "path": "tools/UpstreamSnapshot/UpstreamSnapshot.csproj",
+      "sha256": "60a2d299f17be25da2f16f3d734963f26238c756a1a17ad4b48678ade0ea2321"
+    },
+    {
+      "path": "tools/DmProbe/Program.cs",
+      "sha256": "f28ec1633d71042f33fa8be670ce911339e9aae5e98bc784a4dfe38471436aa3"
+    },
+    {
+      "path": "tools/UpstreamSnapshot/Program.cs",
+      "sha256": "3922ab3cf43641136207bae4361a6fe6da99bc4bc5695bfd47395d9d1494c999"
+    },
+    {
+      "path": "eng/t01.sh",
+      "sha256": "2fbdff2b1a4294063e39b0850fd00eebbabfb0a3c5d3b2c072c5387ae441b303"
+    },
+    {
+      "path": "eng/probe-scenarios.json",
+      "sha256": "376d808585c55ea78271ed0d416f0822975509779621a94b1a0da17019fd7e9e"
+    },
+    {
+      "path": "eng/T01.md",
+      "sha256": "d1c974363a9cc5a443542c5bc1c74063cae99a6695dfadf3b7bc51ac2a837d00"
+    },
+    {
+      "path": "tests/fixtures/baseline/parameter-cases.json",
+      "sha256": "7a4d3c3b07e37ebdd9ae1d8213622ff923514add5dcf4a2bbdcccf50c867418e"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/manifest.json",
+      "sha256": "c730de1ed8f1ed7a579f67a294eb04fc1e5e098f03f596c23f0e4daae659f83a"
+    }
+  ],
+  "source_file_count": 541,
+  "fixture_case_count": 7,
+  "snapshot_verification": {
+    "status": "verified",
+    "errors": [],
+    "current_runtime": "10.0.7",
+    "current_sdk_version": "10.0.203"
+  },
+  "snapshot_negative_cases": {
+    "changed": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kinds": [
+        "file_changed"
+      ]
+    },
+    "missing": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kinds": [
+        "file_missing"
+      ]
+    },
+    "added": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kinds": [
+        "file_added"
+      ]
+    },
+    "metadata": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kinds": [
+        "assembly_metadata_mismatch"
+      ]
+    }
+  },
+  "cli_checks": {
+    "default_root": {
+      "exit": 0,
+      "status": "offline_verified",
+      "error_kind": null,
+      "integration": "integration_pending"
+    },
+    "missing_connection": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kind": "test_connection_missing",
+      "integration": "not_verified"
+    },
+    "duplicate_alias": {
+      "exit": 1,
+      "status": "rejected",
+      "error_kind": "test_connection_identity_invalid",
+      "integration": "not_verified"
+    }
+  },
+  "independent_pe_metadata": {
+    "file": "DM.DmProvider.dll",
+    "sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+    "mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+    "assembly_version": "8.3.1.47463",
+    "assembly_name": "DM.DmProvider"
+  },
+  "official_run": {
+    "status": "observed",
+    "common": {
+      "schema_version": 1,
+      "implementation": "O",
+      "host": "local-minimal-net10",
+      "run_id": "7c5f10f8a7fb4f8d98124eefb6b897f4",
+      "configuration_fingerprint": "7c5f10f8a7fb4f8d98124eefb6b897f4",
+      "source_commit": null,
+      "source_commit_missing_reason": "Official binary package has no verified source commit.",
+      "repository_baseline_commit": "860988296cb95deeb600328cb7bcd2160237a94f",
+      "driver_asset_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+      "driver_mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+      "driver_assembly_version": "8.3.1.47463",
+      "asset_compile": "lib/net9.0/DM.DmProvider.dll",
+      "asset_runtime": "lib/net9.0/DM.DmProvider.dll",
+      "selected_asset": "lib/net9.0/DM.DmProvider.dll",
+      "loaded_asset": "tools/DmProbe/bin/Debug/net10.0/DM.DmProvider.dll",
+      "loaded_asset_location": "host-output",
+      "runtime": ".NET 10.0.7",
+      "os": "macOS 26.6.2",
+      "architecture": "Arm64",
+      "scenario_catalog_count": 9
+    },
+    "profile": {
+      "server_version": "8.1.5.60",
+      "test_account_verified": true,
+      "instance_id": "7c5f10f8a7fb4f8d98124eefb6b897f4"
+    },
+    "results": [
+      {
+        "scenario_id": "open_close",
+        "observed_result": "open_close_completed",
+        "final_database_state": "not_checked",
+        "sql_scope": "read_only",
+        "passed": true
+      },
+      {
+        "scenario_id": "parameter_select",
+        "observed_result": [
+          {
+            "id": "ascii",
+            "equal": true,
+            "observed_utf8_sha256": "e1a8fd96b84c1bed4b9f1d97965272bcccdf53c723491aa0a171c30a7752b7ae",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "chinese",
+            "equal": true,
+            "observed_utf8_sha256": "1871c7126c724b7d8d9e3b328b036488b4a60762a6ee28b0731af737c3f9a825",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "supplementary_emoji",
+            "equal": true,
+            "observed_utf8_sha256": "ac28c332876a1942099ec02151d56e08aaa83738a195f19a824b99087185abfd",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "quotes_semicolon",
+            "equal": true,
+            "observed_utf8_sha256": "1ce946a6449740b1df365397a02eb9dc5e5dce35d5cde1f9f7a748f20c60bc26",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "newline",
+            "equal": true,
+            "observed_utf8_sha256": "73621482ff083eca9ea88880393298f7d3f53402200780b0c16354a9beb0535a",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "combining_character",
+            "equal": true,
+            "observed_utf8_sha256": "81ef060bcd98adc7824eb5c1ada83c32491b16018e11e79f00ab9d09e04b015a",
+            "exception_kind": null,
+            "error_code": null
+          },
+          {
+            "id": "surrounding_spaces",
+            "equal": true,
+            "observed_utf8_sha256": "3cec677fa257d879ded8d1db893b7df5063e50bb2a76ad46f0e266bd17e809d7",
+            "exception_kind": null,
+            "error_code": null
+          }
+        ],
+        "final_database_state": "not_checked",
+        "sql_scope": "read_only",
+        "passed": true
+      }
+    ],
+    "evidence_level": "real_official_local_host"
+  },
+  "limitations": [
+    "R/W and seven remaining O scenarios pending",
+    "Downstream EF not executed",
+    "Final database state not independently queried; probe performs read-only SQL",
+    "Mismatch exit path statically reviewed; no intentional real-server mismatch induced",
+    "Historical ilspycmd version not recorded"
+  ]
+}

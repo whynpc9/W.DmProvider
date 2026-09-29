@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    { "id": "open_close", "description": "Open, read-only server identity/profile, close", "O": "implemented", "R": "pending", "W": "pending" },
+    { "id": "parameter_select", "description": "Bound SELECT from synthetic fixture", "O": "implemented", "R": "pending", "W": "pending" },
+    { "id": "unicode_crud", "description": "Unicode create/read/update/delete", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "transaction_commit_rollback", "description": "BEGIN, commit, rollback", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "dml_affected_rows", "description": "DML affected row count", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "dml_generated_key", "description": "DML generated key", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "failure_then_select", "description": "SELECT after a failed command", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "lob", "description": "LOB round trip", "O": "pending", "R": "pending", "W": "pending" },
+    { "id": "known_official_defects", "description": "Known official defect regression scenarios", "O": "pending", "R": "pending", "W": "pending" }
+  ]
+}
