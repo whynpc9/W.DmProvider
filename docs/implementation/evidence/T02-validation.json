@@ -1,0 +1,1074 @@
+{
+  "schema_version": 1,
+  "task_id": "T02",
+  "verified_date": "2026-09-29",
+  "status": "integration_verified",
+  "scope": "Restored R internal comparison baseline; no W product package or downstream EF acceptance",
+  "baseline_commit": "860988296cb95deeb600328cb7bcd2160237a94f",
+  "implementation_commit": null,
+  "implementation_commit_reason": "Uncommitted working tree; hashes below identify the verified implementation.",
+  "roles": {
+    "design_review": "primary agent",
+    "coding": [
+      "Sol High restoration",
+      "Sol High harness"
+    ],
+    "verification": "Sol Low",
+    "test_data": "Luna Max"
+  },
+  "implementation_files": [
+    {
+      "path": "eng/T02.md",
+      "sha256": "53c48e442401d5a0f57c9d4c0e9f41f5c2e68178235f47a6f3a3e4e5862ab5d9"
+    },
+    {
+      "path": "eng/t02.sh",
+      "sha256": "17061a9a0c9849556bff152bfd84ba87576e3d4a5143c68ae9dcf1c2d25312ec"
+    },
+    {
+      "path": "global.json",
+      "sha256": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d"
+    },
+    {
+      "path": "tests/fixtures/restoration/README.md",
+      "sha256": "c28af04156df8c050a10eb063c9aba3b1424359abd083b9dcb877eb5dd1f90ac"
+    },
+    {
+      "path": "tests/fixtures/restoration/bcd-cases.json",
+      "sha256": "915abbfd7bd3742499ae5117dcc7eead63ae8dffc0b6ac22b5aef1ea1b7f1a80"
+    },
+    {
+      "path": "tests/fixtures/restoration/scenarios.json",
+      "sha256": "588fb59089dc3fb1258de508d5d91b760e5ee125319ce86126b85cdd2fc38aaa"
+    },
+    {
+      "path": "tools/BaselineComparison/Official/Official.csproj",
+      "sha256": "0cb4b426960adf5eb3357c4286a2b0f327d53df639818e662d47a920ef7e9287"
+    },
+    {
+      "path": "tools/BaselineComparison/Restored/Restored.csproj",
+      "sha256": "ee5e4fc09d37a3c4cb2604940001a6c765fd2c7ad39f04a2bf951d3047b0bdb7"
+    },
+    {
+      "path": "tools/BaselineComparison/Shared/Program.cs",
+      "sha256": "a4ee75616965f6fa0b99f07064d98b57dee893a0cc80d1d8dd7857bdf2936e31"
+    },
+    {
+      "path": "tools/BaselineComparison/compare.py",
+      "sha256": "420afdc290cac0372b1a8275da1344a60aa18366bc2d6c9e761b6cfb7b4f9b91"
+    },
+    {
+      "path": "tools/RestoreBaseline/.config/dotnet-tools.json",
+      "sha256": "e1bd51b345bc9d3b3a8222b6eb41b0570973e6a719c4f691ff2f6ff8393f4f18"
+    },
+    {
+      "path": "tools/RestoreBaseline/Program.cs",
+      "sha256": "83f2c52c7f3a0bf14d0883196b452386bf390ef7185029a890acf30be8dfee7a"
+    },
+    {
+      "path": "tools/RestoreBaseline/README.md",
+      "sha256": "1dc1af38b273ad3ec42085484962d896bc12f888ee08fd9cdd3a8ac52b0dce8d"
+    },
+    {
+      "path": "tools/RestoreBaseline/RestoreBaseline.csproj",
+      "sha256": "c018c3aa5ce3b7772f5d24814a027b49b4908b6e133cc6bb0b4588a595de2362"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/public-api-official.txt",
+      "sha256": "56c9bb6383df29c76738a9c243bef00f0a5199a97a7af03d1f4cb4b38c3e9e6e"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/public-api-restored.txt",
+      "sha256": "56c9bb6383df29c76738a9c243bef00f0a5199a97a7af03d1f4cb4b38c3e9e6e"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/restoration-diff.md",
+      "sha256": "782a01c481e7edfaaca69df4ac50293a34362a8f8ffec8bb673d072024091dd1"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/source-map.json",
+      "sha256": "712cb93bec415ace6938364e4670cb6f72f4e121ee4bec81b1254137d074d842"
+    }
+  ],
+  "source_files_verified": 541,
+  "normalization_body_audit": {
+    "status": "passed",
+    "methods_with_body": 4782,
+    "aggregate_sha256": "0C4D2C71FD43B4C858C0226733FD7414373C7C2281F94AB9E6B07E0BC442F042",
+    "scope": "all top-level and nested TypeDef method bodies; original, in-memory normalized, and written normalized DLL readback",
+    "canonicalization": "opcodes, typed literals, operand metadata tokens, branch targets, exception handlers, InitLocals, MaxStack and local types"
+  },
+  "virtual_slot_audit": {
+    "status": "passed",
+    "captured_original_edges": 411,
+    "affected_edges": [
+      {
+        "base_token": "0x06000A4D",
+        "derived_token": "0x06000A5E",
+        "Kind": "implicit reuse-slot",
+        "base_original_signature": "A.b A.a::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+        "derived_original_signature": "A.b A.D::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+        "restored_name": "__t02_method_06000A4D"
+      }
+    ],
+    "verification": "in-memory normalized and written normalized DLL readback preserve original reuse-slot or explicit MethodImpl edge"
+  },
+  "restoration_counts": {
+    "renames": 75,
+    "regenerated_types": 25,
+    "csharp_repairs": 1
+  },
+  "failed_attempt_not_counted": {
+    "status": "rejected",
+    "outer_error_kind": "DmException",
+    "outer_error_number": 6001,
+    "first_chance_error_numbers": [
+      6001,
+      6080
+    ],
+    "reason": "Unsynchronized rename broke base/derived virtual slot; fixed and rerun separately"
+  },
+  "fresh_builds": {
+    "a": {
+      "exit_code": 0,
+      "warnings": 86,
+      "errors": 0
+    },
+    "b": {
+      "exit_code": 0,
+      "warnings": 86,
+      "errors": 0
+    }
+  },
+  "generated_input_comparison": {
+    "matching_files": 250,
+    "counts": {
+      "cs": 242,
+      "csproj": 1,
+      "dll": 5,
+      "resx": 1,
+      "txt": 1
+    },
+    "excluded": [
+      "bin",
+      "obj",
+      "source-map.json"
+    ],
+    "source_inputs_match": true,
+    "cross_directory_dll_bytes_identical": false
+  },
+  "offline_comparison": {
+    "schema_version": 1,
+    "mode": "offline",
+    "o_status": "offline_verified",
+    "r_status": "offline_verified",
+    "o_exit": 0,
+    "r_exit": 0,
+    "o_asset_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+    "r_asset_sha256": "3c0ddac138f284ac5ed28f8aca0850155781e135225f975e8b58609d03f50ef9",
+    "o_mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+    "r_mvid": "0ee2814c-88ff-48e7-ad28-6d23673b488f",
+    "resources": [
+      {
+        "culture": "neutral",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "en",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-CN",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-HK",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-TW",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      }
+    ],
+    "repair_cases": {
+      "equal_and_expected": true,
+      "count_o": 8,
+      "count_r": 8
+    },
+    "structural_slots": {
+      "equal_and_valid": true,
+      "o_passed": true,
+      "r_passed": true
+    },
+    "known_defect_equal": true,
+    "status": "offline_equivalent"
+  },
+  "public_api_comparison": {
+    "schema_version": 1,
+    "status": "equivalent",
+    "o_count": 3651,
+    "r_count": 3651,
+    "o_only": [],
+    "r_only": []
+  },
+  "integration_comparison": {
+    "schema_version": 1,
+    "mode": "integration",
+    "o_status": "observed",
+    "r_status": "observed",
+    "o_exit": 0,
+    "r_exit": 0,
+    "o_asset_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+    "r_asset_sha256": "3c0ddac138f284ac5ed28f8aca0850155781e135225f975e8b58609d03f50ef9",
+    "o_mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+    "r_mvid": "0ee2814c-88ff-48e7-ad28-6d23673b488f",
+    "resources": [
+      {
+        "culture": "neutral",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "en",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-CN",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-HK",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      },
+      {
+        "culture": "zh-TW",
+        "readable_o": true,
+        "readable_r": true,
+        "value_equal": true,
+        "satellite_hash_equal": true,
+        "satellite_o": true,
+        "satellite_r": true
+      }
+    ],
+    "repair_cases": {
+      "equal_and_expected": true,
+      "count_o": 8,
+      "count_r": 8
+    },
+    "structural_slots": {
+      "equal_and_valid": true,
+      "o_passed": true,
+      "r_passed": true
+    },
+    "scenarios": [
+      {
+        "scenario_id": "dml_affected_rows",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "dml_generated_key",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "failure_then_select",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "known_official_defects",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "lob",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "open_close",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "parameter_select",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "transaction_commit_rollback",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      },
+      {
+        "scenario_id": "unicode_crud",
+        "equal": true,
+        "o_status": "observed",
+        "r_status": "observed",
+        "shared_failure": false,
+        "passed_o": true,
+        "passed_r": true,
+        "cleanup_o": true,
+        "cleanup_r": true
+      }
+    ],
+    "behavior_equivalent": true,
+    "status": "verified"
+  },
+  "negative_checks": [
+    {
+      "case": "empty-api",
+      "exit": 1,
+      "status": "rejected",
+      "error_kind": "public_api_invalid"
+    },
+    {
+      "case": "missing-scenario",
+      "exit": 1,
+      "status": "rejected",
+      "error_kind": "scenario_set_invalid"
+    },
+    {
+      "case": "host-nonzero",
+      "exit": 1,
+      "status": "different_or_failed",
+      "error_kind": null
+    },
+    {
+      "case": "normal-failed",
+      "exit": 1,
+      "status": "different_or_failed",
+      "error_kind": null
+    }
+  ],
+  "official_observations": {
+    "schema_version": 1,
+    "implementation": "O",
+    "run_id": "ca0f83c6db794ce88ad2988e75e6dce6",
+    "status": "observed",
+    "integration": "real_test_schema",
+    "test_account_verified": true,
+    "asset": {
+      "sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+      "mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+      "assembly_name": "DM.DmProvider",
+      "assembly_version": "8.3.1.47463",
+      "loaded_path": "tools/BaselineComparison/Official/bin/Debug/net10.0/DM.DmProvider.dll",
+      "runtime": ".NET 10.0.7",
+      "architecture": "Arm64",
+      "expected_official_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b"
+    },
+    "resources": [
+      {
+        "culture": "neutral",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": null,
+        "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+      },
+      {
+        "culture": "en",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "9c47bc08cc664998322b4dff5db64ed2a4a882b500bf19dda184135ab838d04a",
+        "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+      },
+      {
+        "culture": "zh-CN",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "0f5015933157eedcd14ae05f0be9e7892ce04089e5f8eb59e4f3f0e020b8e488",
+        "value_sha256": "4193e7b500bf4b687e648b722a909603a5a222b5e607e2d04750c749f0a85204"
+      },
+      {
+        "culture": "zh-HK",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "cc1646ad7445b814ed0f93d330bb202b9cd8f40e2a67c8c5c5fcdbdc39270f5d",
+        "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+      },
+      {
+        "culture": "zh-TW",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "509032abe64fbcb2ddc752d517fd14303fad78bb1764276d4b15cdf71cd81d7f",
+        "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+      }
+    ],
+    "repair_cases": [
+      {
+        "id": "1",
+        "actual_hex": "",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "2",
+        "actual_hex": "f0",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "3",
+        "actual_hex": "21",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "4",
+        "actual_hex": "1032547698",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "5",
+        "actual_hex": "ba",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "6",
+        "actual_hex": "cb",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "7",
+        "actual_hex": "1f",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "8",
+        "actual_hex": "f7",
+        "passed": true,
+        "error_kind": null
+      }
+    ],
+    "structural_slots": {
+      "signature_unique": true,
+      "base_virtual": true,
+      "derived_virtual": true,
+      "same_base_definition": true,
+      "expected_name": true,
+      "passed": true
+    },
+    "scenarios": [
+      {
+        "scenario_id": "open_close",
+        "status": "observed",
+        "observation": {
+          "opened": true,
+          "closed": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "parameter_select",
+        "status": "observed",
+        "observation": [
+          {
+            "id": "ascii",
+            "equal": true,
+            "observed_sha256": "e1a8fd96b84c1bed4b9f1d97965272bcccdf53c723491aa0a171c30a7752b7ae"
+          },
+          {
+            "id": "chinese",
+            "equal": true,
+            "observed_sha256": "1871c7126c724b7d8d9e3b328b036488b4a60762a6ee28b0731af737c3f9a825"
+          },
+          {
+            "id": "supplementary_emoji",
+            "equal": true,
+            "observed_sha256": "ac28c332876a1942099ec02151d56e08aaa83738a195f19a824b99087185abfd"
+          },
+          {
+            "id": "quotes_semicolon",
+            "equal": true,
+            "observed_sha256": "1ce946a6449740b1df365397a02eb9dc5e5dce35d5cde1f9f7a748f20c60bc26"
+          },
+          {
+            "id": "newline",
+            "equal": true,
+            "observed_sha256": "73621482ff083eca9ea88880393298f7d3f53402200780b0c16354a9beb0535a"
+          },
+          {
+            "id": "combining_character",
+            "equal": true,
+            "observed_sha256": "81ef060bcd98adc7824eb5c1ada83c32491b16018e11e79f00ab9d09e04b015a"
+          },
+          {
+            "id": "surrounding_spaces",
+            "equal": true,
+            "observed_sha256": "3cec677fa257d879ded8d1db893b7df5063e50bb2a76ad46f0e266bd17e809d7"
+          }
+        ],
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "unicode_crud",
+        "status": "observed",
+        "observation": [
+          {
+            "id": "1",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "e2f22fc6faba6736f2e1c19c508198258efa768cef4cac60c0279f3fdadba650",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "2",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "d3913f2426ff4529534e54b04aa597a6821bb3a7713ad8c3db2a94a90ddad915",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "3",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "1437655183ed586714676595cacd922044e541bf1d2ecfe81d44d49ff674416e",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "4",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "9724b8d28d6045aa93667eb159a160f33bc8d8e11cab5fb027f006217eda1752",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "5",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "17acbf859056973cb1b071856945f43c888a4832244ca9b1da2475dbc7677aeb",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          }
+        ],
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 0,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "transaction_commit_rollback",
+        "status": "observed",
+        "observation": {
+          "after_commit_independent": 1,
+          "after_rollback_independent": 1
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "dml_affected_rows",
+        "status": "observed",
+        "observation": {
+          "update_one": 1,
+          "update_zero": 0,
+          "delete_one": 1,
+          "delete_zero": 0,
+          "combined_rowcount": 0
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 0,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "dml_generated_key",
+        "status": "observed",
+        "observation": {
+          "generated_key": 1,
+          "persisted_rows": 1
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "failure_then_select",
+        "status": "observed",
+        "observation": {
+          "first_failed": true,
+          "first_error_kind": "DmException",
+          "first_error_number": -2111,
+          "next_select_one": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "lob",
+        "status": "observed",
+        "observation": {
+          "length": 65536,
+          "sha256": "ef4636928161808e87035fa51983821677527ccd9661991c5d0126a778b2268a",
+          "equal": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "known_official_defects",
+        "status": "observed",
+        "observation": {
+          "observed": true,
+          "user_polluted": true,
+          "password_polluted": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      }
+    ]
+  },
+  "restored_observations": {
+    "schema_version": 1,
+    "implementation": "R",
+    "run_id": "62a33d9e2fd048a4acfa74c7a6515efa",
+    "status": "observed",
+    "integration": "real_test_schema",
+    "test_account_verified": true,
+    "asset": {
+      "sha256": "3c0ddac138f284ac5ed28f8aca0850155781e135225f975e8b58609d03f50ef9",
+      "mvid": "0ee2814c-88ff-48e7-ad28-6d23673b488f",
+      "assembly_name": "DM.DmProvider",
+      "assembly_version": "8.3.1.47463",
+      "loaded_path": "tools/BaselineComparison/Restored/bin/Debug/net10.0/DM.DmProvider.dll",
+      "runtime": ".NET 10.0.7",
+      "architecture": "Arm64",
+      "expected_official_sha256": null
+    },
+    "resources": [
+      {
+        "culture": "neutral",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": null,
+        "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+      },
+      {
+        "culture": "en",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "9c47bc08cc664998322b4dff5db64ed2a4a882b500bf19dda184135ab838d04a",
+        "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+      },
+      {
+        "culture": "zh-CN",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "0f5015933157eedcd14ae05f0be9e7892ce04089e5f8eb59e4f3f0e020b8e488",
+        "value_sha256": "4193e7b500bf4b687e648b722a909603a5a222b5e607e2d04750c749f0a85204"
+      },
+      {
+        "culture": "zh-HK",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "cc1646ad7445b814ed0f93d330bb202b9cd8f40e2a67c8c5c5fcdbdc39270f5d",
+        "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+      },
+      {
+        "culture": "zh-TW",
+        "readable": true,
+        "satellite_exists": true,
+        "satellite_sha256": "509032abe64fbcb2ddc752d517fd14303fad78bb1764276d4b15cdf71cd81d7f",
+        "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+      }
+    ],
+    "repair_cases": [
+      {
+        "id": "1",
+        "actual_hex": "",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "2",
+        "actual_hex": "f0",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "3",
+        "actual_hex": "21",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "4",
+        "actual_hex": "1032547698",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "5",
+        "actual_hex": "ba",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "6",
+        "actual_hex": "cb",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "7",
+        "actual_hex": "1f",
+        "passed": true,
+        "error_kind": null
+      },
+      {
+        "id": "8",
+        "actual_hex": "f7",
+        "passed": true,
+        "error_kind": null
+      }
+    ],
+    "structural_slots": {
+      "signature_unique": true,
+      "base_virtual": true,
+      "derived_virtual": true,
+      "same_base_definition": true,
+      "expected_name": true,
+      "passed": true
+    },
+    "scenarios": [
+      {
+        "scenario_id": "open_close",
+        "status": "observed",
+        "observation": {
+          "opened": true,
+          "closed": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "parameter_select",
+        "status": "observed",
+        "observation": [
+          {
+            "id": "ascii",
+            "equal": true,
+            "observed_sha256": "e1a8fd96b84c1bed4b9f1d97965272bcccdf53c723491aa0a171c30a7752b7ae"
+          },
+          {
+            "id": "chinese",
+            "equal": true,
+            "observed_sha256": "1871c7126c724b7d8d9e3b328b036488b4a60762a6ee28b0731af737c3f9a825"
+          },
+          {
+            "id": "supplementary_emoji",
+            "equal": true,
+            "observed_sha256": "ac28c332876a1942099ec02151d56e08aaa83738a195f19a824b99087185abfd"
+          },
+          {
+            "id": "quotes_semicolon",
+            "equal": true,
+            "observed_sha256": "1ce946a6449740b1df365397a02eb9dc5e5dce35d5cde1f9f7a748f20c60bc26"
+          },
+          {
+            "id": "newline",
+            "equal": true,
+            "observed_sha256": "73621482ff083eca9ea88880393298f7d3f53402200780b0c16354a9beb0535a"
+          },
+          {
+            "id": "combining_character",
+            "equal": true,
+            "observed_sha256": "81ef060bcd98adc7824eb5c1ada83c32491b16018e11e79f00ab9d09e04b015a"
+          },
+          {
+            "id": "surrounding_spaces",
+            "equal": true,
+            "observed_sha256": "3cec677fa257d879ded8d1db893b7df5063e50bb2a76ad46f0e266bd17e809d7"
+          }
+        ],
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "unicode_crud",
+        "status": "observed",
+        "observation": [
+          {
+            "id": "1",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "e2f22fc6faba6736f2e1c19c508198258efa768cef4cac60c0279f3fdadba650",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "2",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "d3913f2426ff4529534e54b04aa597a6821bb3a7713ad8c3db2a94a90ddad915",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "3",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "1437655183ed586714676595cacd922044e541bf1d2ecfe81d44d49ff674416e",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "4",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "9724b8d28d6045aa93667eb159a160f33bc8d8e11cab5fb027f006217eda1752",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          },
+          {
+            "id": "5",
+            "inserted": 1,
+            "read_equal": true,
+            "read_sha256": "17acbf859056973cb1b071856945f43c888a4832244ca9b1da2475dbc7677aeb",
+            "updated": 1,
+            "update_equal": true,
+            "deleted": 1
+          }
+        ],
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 0,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "transaction_commit_rollback",
+        "status": "observed",
+        "observation": {
+          "after_commit_independent": 1,
+          "after_rollback_independent": 1
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "dml_affected_rows",
+        "status": "observed",
+        "observation": {
+          "update_one": 1,
+          "update_zero": 0,
+          "delete_one": 1,
+          "delete_zero": 0,
+          "combined_rowcount": 0
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 0,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "dml_generated_key",
+        "status": "observed",
+        "observation": {
+          "generated_key": 1,
+          "persisted_rows": 1
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "failure_then_select",
+        "status": "observed",
+        "observation": {
+          "first_failed": true,
+          "first_error_kind": "DmException",
+          "first_error_number": -2111,
+          "next_select_one": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "lob",
+        "status": "observed",
+        "observation": {
+          "length": 65536,
+          "sha256": "ef4636928161808e87035fa51983821677527ccd9661991c5d0126a778b2268a",
+          "equal": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": 1,
+        "cleanup_verified": true,
+        "passed": true
+      },
+      {
+        "scenario_id": "known_official_defects",
+        "status": "observed",
+        "observation": {
+          "observed": true,
+          "user_polluted": true,
+          "password_polluted": true
+        },
+        "error_kind": null,
+        "error_number": null,
+        "final_row_count": null,
+        "cleanup_verified": true,
+        "passed": true
+      }
+    ]
+  },
+  "limitations": [
+    "Nine selected S01 scenario classes only; not all driver features",
+    "Original known defect preserved as characterization, not W correctness",
+    "Generated DLL bytes differ across output directories; no bit reproducibility claim",
+    "Body fingerprint audit is produced by restoration tool and code-reviewed, not independently reimplemented",
+    "W packaging, TLS, full downstream EF regression and release gates pending"
+  ]
+}

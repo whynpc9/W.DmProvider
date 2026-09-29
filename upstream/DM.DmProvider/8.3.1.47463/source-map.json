@@ -1,0 +1,1283 @@
+{
+  "schema_version": 1,
+  "source_assembly_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+  "normalization_body_audit": {
+    "status": "passed",
+    "methods_with_body": 4782,
+    "aggregate_sha256": "0C4D2C71FD43B4C858C0226733FD7414373C7C2281F94AB9E6B07E0BC442F042",
+    "scope": "all top-level and nested TypeDef method bodies; original, in-memory normalized, and written normalized DLL readback",
+    "canonicalization": "opcodes, typed literals, operand metadata tokens, branch targets, exception handlers, InitLocals, MaxStack and local types"
+  },
+  "virtual_slot_audit": {
+    "status": "passed",
+    "captured_original_edges": 411,
+    "affected_edges": [
+      {
+        "base_token": "0x06000A4D",
+        "derived_token": "0x06000A5E",
+        "Kind": "implicit reuse-slot",
+        "base_original_signature": "A.b A.a::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+        "derived_original_signature": "A.b A.D::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+        "restored_name": "__t02_method_06000A4D"
+      }
+    ],
+    "verification": "in-memory normalized and written normalized DLL readback preserve original reuse-slot or explicit MethodImpl edge"
+  },
+  "sdk_version": "10.0.203",
+  "decompiler": {
+    "id": "ilspycmd",
+    "version": "10.1.1.8388"
+  },
+  "metadata_editor": {
+    "id": "Mono.Cecil",
+    "version": "0.11.6"
+  },
+  "generated_project": ".local/t02/restored/DM.DmProvider.Restored.csproj",
+  "regenerated_types": [
+    {
+      "original_type": "Dm.DmCommand",
+      "original_token": "0x02000026",
+      "original_path": "decompiled/net9.0/Dm/DmCommand.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000026.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000929",
+        "0x04000931",
+        "0x06000890",
+        "0x060008AE",
+        "0x060008B0",
+        "0x060008B1"
+      ]
+    },
+    {
+      "original_type": "Dm.DmConnInstance",
+      "original_token": "0x0200002E",
+      "original_path": "decompiled/net9.0/Dm/DmConnInstance.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200002E.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000925",
+        "0x04000926",
+        "0x04000AAC",
+        "0x0600088A",
+        "0x0600089A",
+        "0x060008BE",
+        "0x06000A82"
+      ]
+    },
+    {
+      "original_type": "Dm.DmDataReader",
+      "original_token": "0x02000038",
+      "original_path": "decompiled/net9.0/Dm/DmDataReader.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000038.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x060008B1"
+      ]
+    },
+    {
+      "original_type": "A.A",
+      "original_token": "0x02000064",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000064.cs",
+      "reason": "member metadata name collision",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "Dm.Bdta",
+      "original_token": "0x02000079",
+      "original_path": "decompiled/net9.0/Dm/Bdta.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000079.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x06000ABD"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_BLOB",
+      "original_token": "0x0200007B",
+      "original_path": "decompiled/net9.0/Dm/FLDR_BLOB.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200007B.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x04000ABA"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_CLR",
+      "original_token": "0x0200007D",
+      "original_path": "decompiled/net9.0/Dm/FLDR_CLR.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200007D.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x06000ABD"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_FIND_INTERVAL",
+      "original_token": "0x0200007E",
+      "original_path": "decompiled/net9.0/Dm/FLDR_FIND_INTERVAL.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200007E.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_GET_INDEX_INFO",
+      "original_token": "0x0200007F",
+      "original_path": "decompiled/net9.0/Dm/FLDR_GET_INDEX_INFO.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200007F.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x06000ABD"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_GET_MPP_INFO",
+      "original_token": "0x02000080",
+      "original_path": "decompiled/net9.0/Dm/FLDR_GET_MPP_INFO.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000080.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_GET_TABLE_INFO",
+      "original_token": "0x02000081",
+      "original_path": "decompiled/net9.0/Dm/FLDR_GET_TABLE_INFO.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000081.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x06000ABD"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_INSERT",
+      "original_token": "0x02000082",
+      "original_path": "decompiled/net9.0/Dm/FLDR_INSERT.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000082.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x04000ABA"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_RESET_INDEX_INFO",
+      "original_token": "0x02000088",
+      "original_path": "decompiled/net9.0/Dm/FLDR_RESET_INDEX_INFO.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000088.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.FLDR_SET2",
+      "original_token": "0x02000089",
+      "original_path": "decompiled/net9.0/Dm/FLDR_SET2.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_02000089.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.GET_LOB_DATA",
+      "original_token": "0x0200008A",
+      "original_path": "decompiled/net9.0/Dm/GET_LOB_DATA.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200008A.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x06000ABD"
+      ]
+    },
+    {
+      "original_type": "Dm.GET_LOB_LEN",
+      "original_token": "0x0200008B",
+      "original_path": "decompiled/net9.0/Dm/GET_LOB_LEN.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200008B.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.LOB_TRUNCATE",
+      "original_token": "0x0200008C",
+      "original_path": "decompiled/net9.0/Dm/LOB_TRUNCATE.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200008C.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "Dm.MSG\u00601",
+      "original_token": "0x0200008D",
+      "original_path": "decompiled/net9.0/Dm/MSG.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200008D.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9",
+        "0x04000ABA",
+        "0x06000AB4"
+      ]
+    },
+    {
+      "original_type": "Dm.SET_LOB_DATA",
+      "original_token": "0x0200008E",
+      "original_path": "decompiled/net9.0/Dm/SET_LOB_DATA.cs",
+      "restored_path": ".local/t02/restored/Dm/T02_0200008E.cs",
+      "reason": "references renamed member",
+      "referenced_renames": [
+        "0x04000AB9"
+      ]
+    },
+    {
+      "original_type": "A.a",
+      "original_token": "0x0200008F",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "restored_path": ".local/t02/restored/A/T02_0200008F.cs",
+      "reason": "member metadata name collision",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "A.D",
+      "original_token": "0x02000090",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000090.cs",
+      "reason": "member metadata name collision",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "A.B",
+      "original_token": "0x02000091",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000091.cs",
+      "reason": "member metadata name collision",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "A.b",
+      "original_token": "0x02000092",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000092.cs",
+      "reason": "member metadata name collision",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "A.C",
+      "original_token": "0x02000093",
+      "original_path": "decompiled/net9.0/A/C.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000093.cs",
+      "reason": "shares original source file",
+      "referenced_renames": []
+    },
+    {
+      "original_type": "A.c",
+      "original_token": "0x02000094",
+      "original_path": "decompiled/net9.0/A/C.cs",
+      "restored_path": ".local/t02/restored/A/T02_02000094.cs",
+      "reason": "shares original source file",
+      "referenced_renames": []
+    }
+  ],
+  "renames": [
+    {
+      "Kind": "field",
+      "token": "0x04000922",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Int32 A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000922",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000923",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmConnInstance A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000923",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000924",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "A.B A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000924",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000925",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "A.b A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000925",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000926",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "A.b A.A::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000926",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000927",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmInfo A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000927",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000928",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmResultSetCache A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000928",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000929",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmDataReader A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000929",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092A",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.String A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_0400092A",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092B",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.String A.A::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_0400092B",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092C",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_0400092C",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092D",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.String A.A::B",
+      "original_name": "B",
+      "restored_name": "__t02_field_0400092D",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092E",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_0400092E",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x0400092F",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Byte A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_0400092F",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000930",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::B",
+      "original_name": "B",
+      "restored_name": "__t02_field_04000930",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000931",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::b",
+      "original_name": "b",
+      "restored_name": "__t02_field_04000931",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000932",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::C",
+      "original_name": "C",
+      "restored_name": "__t02_field_04000932",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000933",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmCommand A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000933",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000934",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Int64 A.A::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000934",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000935",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::c",
+      "original_name": "c",
+      "restored_name": "__t02_field_04000935",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000936",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::D",
+      "original_name": "D",
+      "restored_name": "__t02_field_04000936",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000937",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::d",
+      "original_name": "d",
+      "restored_name": "__t02_field_04000937",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000938",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Boolean A.A::E",
+      "original_name": "E",
+      "restored_name": "__t02_field_04000938",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000939",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Int32 A.A::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000939",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000883",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Int32 A.A::A()",
+      "original_name": "A",
+      "restored_name": "__t02_method_06000883",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000884",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.Int32)",
+      "original_name": "A",
+      "restored_name": "__t02_method_06000884",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000886",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.String)",
+      "original_name": "A",
+      "restored_name": "__t02_method_06000886",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x0600088A",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.Boolean)",
+      "original_name": "A",
+      "restored_name": "__t02_method_0600088A",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000890",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.Byte)",
+      "original_name": "A",
+      "restored_name": "__t02_method_06000890",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000898",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(Dm.DmInfo)",
+      "original_name": "A",
+      "restored_name": "__t02_method_06000898",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x0600089A",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(Dm.DmCommand)",
+      "original_name": "A",
+      "restored_name": "__t02_method_0600089A",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x060008AE",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.Data.CommandBehavior)",
+      "original_name": "A",
+      "restored_name": "__t02_method_060008AE",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x060008B0",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(Dm.DmResultSetCache)",
+      "original_name": "A",
+      "restored_name": "__t02_method_060008B0",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x060008B1",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "Dm.DmDataReader A.A::A(System.String,System.Data.CommandBehavior)",
+      "original_name": "A",
+      "restored_name": "__t02_method_060008B1",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x060008BE",
+      "original_type": "A.A",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "System.Void A.A::A(System.Boolean,System.Boolean)",
+      "original_name": "A",
+      "restored_name": "__t02_method_060008BE",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A4D",
+      "original_type": "A.a",
+      "original_path": "decompiled/net9.0/A/A.cs",
+      "original_signature": "A.b A.a::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+      "original_name": "a",
+      "restored_name": "__t02_method_06000A4D",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AAC",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Net.Sockets.Socket A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AAC",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AAD",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Boolean modreq(System.Runtime.CompilerServices.IsVolatile) A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AAD",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AAE",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Net.Sockets.TcpClient A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AAE",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AAF",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Net.Security.SslStream A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AAF",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB0",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.String A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB0",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB1",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.String A.D::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000AB1",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB2",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "Dm.DHKey A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB2",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB3",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "Dm.Cipher A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB3",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB4",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "Dm.Cipher A.D::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000AB4",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB5",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Threading.ManualResetEvent A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB5",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB6",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Int64[][] A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB6",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB7",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Int32 A.D::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB7",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A63",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "System.Boolean A.D::D()",
+      "original_name": "D",
+      "restored_name": "__t02_method_06000A63",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB8",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "Dm.filter.log.ILogger A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB8",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AB9",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "A.b A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AB9",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABA",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "Dm.DmConnInstance A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000ABA",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABB",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Boolean modreq(System.Runtime.CompilerServices.IsVolatile) A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000ABB",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABC",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Int32 A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000ABC",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABD",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Boolean modreq(System.Runtime.CompilerServices.IsVolatile) A.B::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000ABD",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABE",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Object A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000ABE",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000ABF",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Boolean A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000ABF",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC0",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "Dm.DmConnProperty A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AC0",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC1",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "A.D A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AC1",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC2",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Collections.Generic.List\u00601\u003CDm.LobData\u003E A.B::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AC2",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A6B",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Boolean A.B::B()",
+      "original_name": "B",
+      "restored_name": "__t02_method_06000A6B",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A73",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.B::B(Dm.MSG\u00601\u003CA\u003E)",
+      "original_name": "B",
+      "restored_name": "__t02_method_06000A73",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A82",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.B::B(A.b,A.b)",
+      "original_name": "B",
+      "restored_name": "__t02_method_06000A82",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A9A",
+      "original_type": "A.B",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.B::B(A.A,System.Int32,Dm.DmParameterInternal,System.Int32)",
+      "original_name": "B",
+      "restored_name": "__t02_method_06000A9A",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC3",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Byte[] A.b::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AC3",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC4",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Int32 A.b::A",
+      "original_name": "A",
+      "restored_name": "__t02_field_04000AC4",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "field",
+      "token": "0x04000AC5",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Int32 A.b::a",
+      "original_name": "a",
+      "restored_name": "__t02_field_04000AC5",
+      "override_base_token": null,
+      "Reason": "C# field/member name collision",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000AB4",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Byte A.b::b(System.Int32)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000AB4",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000ABD",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Byte A.b::b()",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000ABD",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000ACD",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.String A.b::b(System.String)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000ACD",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000AF8",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.b::b(System.Int32,System.Int32)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000AF8",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000B0B",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.b::b(System.Byte)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000B0B",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000B3B",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.b::b(System.Int16)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000B3B",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000B47",
+      "original_type": "A.b",
+      "original_path": "decompiled/net9.0/A/B.cs",
+      "original_signature": "System.Void A.b::b(System.Int64)",
+      "original_name": "b",
+      "restored_name": "__t02_method_06000B47",
+      "override_base_token": null,
+      "Reason": "C# member name equals enclosing type",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    },
+    {
+      "Kind": "method",
+      "token": "0x06000A5E",
+      "original_type": "A.D",
+      "original_path": "decompiled/net9.0/A/D.cs",
+      "original_signature": "A.b A.D::a(A.b,System.Int32,System.Boolean,System.Boolean)",
+      "original_name": "a",
+      "restored_name": "__t02_method_06000A4D",
+      "override_base_token": "0x06000A4D",
+      "Reason": "Preserve virtual override slot of base token 0x06000A4D",
+      "il_body_audit": "passed",
+      "requires_or_differential_test": true
+    }
+  ],
+  "source_repairs": [
+    {
+      "token": "0x06000881",
+      "original_type": "Dm.DmSetValue",
+      "original_signature": "System.Byte[] Dm.DmSetValue::decStringToBcd(System.String)",
+      "original_path": "decompiled/net9.0/Dm/DmSetValue.cs",
+      "restored_path": ".local/t02/restored/Dm/DmSetValue.cs",
+      "reason": "Decompiler conditional expression inferred int while IL stores each branch into a byte local; explicit byte conversion preserves IL value range",
+      "il_evidence": "decStringToBcd IL_003e conv.u1 / IL_003f stloc.0 and IL_0065\u2013IL_0076 small constants stloc.0"
+    }
+  ],
+  "caveat": "Names are changed only in the decompiler input. The restored DLL is compiled from generated C#; no behavior equivalence is claimed until differential validation."
+}
