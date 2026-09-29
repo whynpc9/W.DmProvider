@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "rows": [
+    {
+      "id": 1,
+      "value": "达梦",
+      "utf8_sha256": "b54636dfd98507f69e51253c70b0f3a5fe3aafac0103976db47622fa345a0a44"
+    },
+    {
+      "id": 2,
+      "value": "医疗🧪",
+      "utf8_sha256": "02ad43358d262b2f5314d51b42f8ae7fcd8ebe18ed3fe98dfeb0e226d4768776"
+    },
+    {
+      "id": 3,
+      "value": "引号\";分号",
+      "utf8_sha256": "e72b59831516e78d9611b2fb7644a4687dd5af8eaa93000404c3a0312651da10"
+    }
+  ]
+}

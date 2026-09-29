@@ -1,0 +1,1736 @@
+{
+  "schema_version": 1,
+  "source_baseline": "DM.DmProvider 8.3.1.47463 R generated source",
+  "official_assembly_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+  "files": [
+    {
+      "source_path": ".local/t02/t03-seed/--y__InlineArray5.cs",
+      "source_sha256": "a79034e943fe5370d85124f9c674c690b139170d0171203318986cf25a2e5146",
+      "product_path": "src/W.DmProvider/Internal/Legacy/--y__InlineArray5.cs",
+      "product_sha256": "a79034e943fe5370d85124f9c674c690b139170d0171203318986cf25a2e5146",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000064.cs",
+      "source_sha256": "3591b27ca65500d8b0dda3c6de9eaccce37a78a8df176dcf28386e75fb191381",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000064.cs",
+      "product_sha256": "7a9edc6f99e61b7865f6d265e8a90b3f62156ef4bd04dc5968483ac4b14d71cb",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_0200008F.cs",
+      "source_sha256": "8ce3ab6e1fae8c2ab74926029a10effa3ce51580ef622c621374fb1246ec4a59",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_0200008F.cs",
+      "product_sha256": "10cf7bd23fdef020fe6e282ea419fe428a9494c9deed66f983e3ea587233d5cf",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000090.cs",
+      "source_sha256": "f0ad087348a90b8f29f300c566329e485409192b20822f6deab4be5f86d0612c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000090.cs",
+      "product_sha256": "5736579dd89f6cc4c4c0412b55effae4d1167ec0064b1196b7308bbd85d0d66d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000091.cs",
+      "source_sha256": "acbf17b245b3468215a9d56379a09d4f6bdb4ee1bda769903d4613b4a0989aa3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs",
+      "product_sha256": "d6da1862a41c67072de3e67dac25d35015d9cc125bbab7027b060c9cca5501cd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000092.cs",
+      "source_sha256": "d3d8e14f13981a481c058dcf440a62e73af6d5899378e40fbc14342cd06b280e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000092.cs",
+      "product_sha256": "988c6021cc3e5a443dcda2728c70dd1ca83e9a3c3b2ec237219624d18941c46d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000093.cs",
+      "source_sha256": "c4a834e906389280ffd7a6dc755a19d8fd522d435bc82584943263ed68a707ab",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000093.cs",
+      "product_sha256": "4a3216131445378515e62b07a84437244a989208296ccccbe255050aeb4fda0f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/A/T02_02000094.cs",
+      "source_sha256": "449d04d7327723e80b05b2e54a12abcdd7d59d44cbffd6f78483defb42b2cb22",
+      "product_path": "src/W.DmProvider/Internal/Legacy/A/T02_02000094.cs",
+      "product_sha256": "07e9eb141fee7170731c27eda89995a7a5460ecae3768fcb92509b855d66f0a1",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/CLUSTER.cs",
+      "source_sha256": "23198d6617af5030a29d408aea2f476ecf69067dc02c5c8e340bb0386d0597a1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/CLUSTER.cs",
+      "product_sha256": "e1d4164adc17bc93b366ee324754a6114657b3f4e0c32e697759dcaff5b988e0",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/ColumnNameCase.cs",
+      "source_sha256": "77f62af66058c458732f0b0c01399284ebbd82364b0b641b4ea55b7319448e4b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/ColumnNameCase.cs",
+      "product_sha256": "c0c211951c6842f6f1994f3b645c1ca4b0b416f5f7d7455deaade4a7280719dd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/CompatibleMode.cs",
+      "source_sha256": "ac45b3d4069f4a177deccf24c0b6d5cd1162379b72d91c328419917f3df6766d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/CompatibleMode.cs",
+      "product_sha256": "72f21cf366a4912102afb712b49a9c8480146fd01af5ea17ab4cdf56d9f50aa0",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/DmOption.cs",
+      "source_sha256": "0ef253cc758de684e6c71030b5f0aa8e6cc245d59a5c0946d2874ed9c7e2db8c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmOption.cs",
+      "product_sha256": "7c4c7d1c4815517759279c22c47552cdd86c2b48c6992f15cbed8595469b9144",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/DmOptionHelper.cs",
+      "source_sha256": "669fcc1fb775cf6e95165ba844b1c9d27cfe2eb39decc555d140d242cf3aa86b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmOptionHelper.cs",
+      "product_sha256": "d265f693fb77c3e8ce68a33a41a57858f8cad78760f5005e2d4439a1a027d24a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/DmSvcConfig.cs",
+      "source_sha256": "2b71e2b681fb691be9319dffbabcc836be1f45370abff8f6fba03304cea9ae58",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmSvcConfig.cs",
+      "product_sha256": "3610643485c4ea6f7e80a8cca669067248ea8048187fa11b196531231dfa0ef8",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/DoSwitch.cs",
+      "source_sha256": "9ea71c454507580fe810a03937cae150e65c6e7f75f5e9e0cc2ff24f7f0e0bce",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DoSwitch.cs",
+      "product_sha256": "f228a526f73256f9162c300c3d367bf39d1c0d37baa272b2f070d4cc39c82db9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/EpSelector.cs",
+      "source_sha256": "6cb7442bde2f2aa48c2020b40cbe695aed24c2669d03c4bf902b5a459f73aa0a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/EpSelector.cs",
+      "product_sha256": "39b5baaeffc252af7b4a9e4f6b36b8311494feb2c9d995ff31b69bf748bc4832",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/IntervalMode.cs",
+      "source_sha256": "c1a4a48bf0a8d6bfa8b5a8233b80654a540580ae43667813f7d25dfdac5deb6c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/IntervalMode.cs",
+      "product_sha256": "933426edc2da6906a75631c3778b575816e0d38a8301be72a32da67e38483be6",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/LogLevel.cs",
+      "source_sha256": "a3bc5d83d24698fa156883db54429865bb3ac5d73fc3a1ce7fba1d08cedc792e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LogLevel.cs",
+      "product_sha256": "2297f306736a287944870eb1de8d4f5a0ecb9534d595b826646e3e3fa88ed334",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/LoginModeFlag.cs",
+      "source_sha256": "119ffdc739641f3863c3ed47a08a3e555aef044652123721f59bb3cd69ce91b8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LoginModeFlag.cs",
+      "product_sha256": "2085c8a100a449c34ecc6d2dc65d629b8edbf0171a5ac390d33f3f89efe78b8e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/LoginStatus.cs",
+      "source_sha256": "8f29fd2f3fd1756a45e01c0a8bca83d1768bcfe45f3ab2f5f78ba5aa867575c3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LoginStatus.cs",
+      "product_sha256": "e07268b007d49556ed0d4cba09268a0fee2a31e9997bbb8780357ed6cf88d0fb",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/SupportedLanguage.cs",
+      "source_sha256": "b5c2a2b3b7918ccee3316ab0055f29a6a98d2eb2ce90e54052fd727f972a2d7d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/SupportedLanguage.cs",
+      "product_sha256": "27e61c9bfc9f3fe1c7834887385eed8406313f44d06534d2e80014b62809e29f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.Config/TraceFlag.cs",
+      "source_sha256": "a2d10f6cad63fd63ecbac355eb57099f5af02a2a104909a645f48b6f59a70218",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.Config/TraceFlag.cs",
+      "product_sha256": "84095d2b90f8612c49988cc7ebbf3febb10719716aa9a78ed102abd76c1e4e2a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.fldr/FldrTask.cs",
+      "source_sha256": "32cec6f90de198d3aa05b15e2420f393842832a873628493062b1415330f2474",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.fldr/FldrTask.cs",
+      "product_sha256": "ab8b982899c810a434ca037606a0b480a419dbc991b3b9b03beb75ee4b57bc1e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/ILogger.cs",
+      "source_sha256": "d5827f247edf3792310636fb56fa357716823b76f4ac4fc558daf9c5d11ecda8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/ILogger.cs",
+      "product_sha256": "91394f808ed4ae644ee3a41c547333b171763d15d2009b7849985d2fc6e9a9e6",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/LogFactory.cs",
+      "source_sha256": "94fd6fcd04484601574fc4e0eb015e409db6206f4b084d6677f6cb34be0102a5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogFactory.cs",
+      "product_sha256": "fe0834f015b7a7e12a9d75be537fb458826acb4f27c0a641b211f92edb0abbe1",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/LogFilter.cs",
+      "source_sha256": "738cc25488af275af64746cf1656fd79cce3e41ae54ce3072d7423a948b2b9b0",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogFilter.cs",
+      "product_sha256": "def404cdb4432105eba24709f70820f7a0cd897a814aa1617e0df6675e7c609f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/LogRecord.cs",
+      "source_sha256": "8881ec72d8ac5d475be0a159c097fb5f341b418eb3c560bab0ca035d58cc4d8c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogRecord.cs",
+      "product_sha256": "0c0a88a6aab85a08aa0c418cbcc979bf7a62d0e446a43d01dbc09f1b1141c782",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/LogWriter.cs",
+      "source_sha256": "7a30244e6d976fc02226571c5f509b115cd981fd73080660a840baf11cade495",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogWriter.cs",
+      "product_sha256": "9c5d978815f9448990c3b4545cf8337ff80d52397a7122b3cdea772da40c9e3b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.log/Logger.cs",
+      "source_sha256": "d7dac3deebecbc0737d214b24d812b1b8f9140695e0c3fadee7fea6aae0aad80",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/Logger.cs",
+      "product_sha256": "f44610dd040400bb627e0391b68cd5ba042efcbe9425daa8e75ad23d89626a37",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.reconnect/ReconnectFilter.cs",
+      "source_sha256": "5668c5b7f49e07c1c1dc718048596e11648a587503dab2eefbabde45a08061dc",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.reconnect/ReconnectFilter.cs",
+      "product_sha256": "61aa7981fd11c0ad2525654e625f575524c1a6d172f0313c2b9cf68711246f89",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/RWCounter.cs",
+      "source_sha256": "cf4071215bde3b6e87d3463070d201c61f19e9bb1cc2ed007eac219ddead7755",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWCounter.cs",
+      "product_sha256": "89d67377b7c89c4f23b4ba804e83a68e8bb41df7b8367eee2b1e8e9f2061a424",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/RWFilter2.cs",
+      "source_sha256": "ba7f96baf30322c250c6969d160cc360e91099eaa767eaeed4071e7712af962f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWFilter2.cs",
+      "product_sha256": "9e3b8b3e3bb1a14599facd6eeb9d067b84c2869b46de16d48733fe440853a90b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/RWSite.cs",
+      "source_sha256": "25e8c437477f9059af1e31f5243e1d4b8e7d4066141e77e4fc47e4a3db4da8e8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWSite.cs",
+      "product_sha256": "f81f0d93462b508ae5b5cd94f1c248d1ec94bae4720c03a59655e4864e4d00ea",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/RWUtil2.cs",
+      "source_sha256": "43cd80bd66c6cb019acbc8367b9b30f10365cff9ddbeb1ba76ca78f3aa64b659",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWUtil2.cs",
+      "product_sha256": "52493e81af9a42f5c61e153af8187cd730859f5db4f3249d034fec6919edfb7a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/closeDmDataReader.cs",
+      "source_sha256": "1ed54dd9ad500b6e8e02570fd08c16ab59397015fc568daa80715e226483edc2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/closeDmDataReader.cs",
+      "product_sha256": "6f032a1f452c8120524faa48d00cf4aa3203b31e0a30114a79f30b5c88f58498",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/execute.cs",
+      "source_sha256": "83e085ff2c48c5ba2226134855581285ce711b29e4a2653217b14ef13c5e360d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/execute.cs",
+      "product_sha256": "99a13c35b0fc6915530513e0eb1bf7d729a1561356bff0297d63b460fadb81ca",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter.rw/executeByOther.cs",
+      "source_sha256": "b9fc399002d8a614ab9b2abef450883541ead067eea79c81a21fb5f20247967e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/executeByOther.cs",
+      "product_sha256": "bb4d99dccfbdf90feaab79eb543bf33432d89bef2b9bcc247d42add17930f662",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/BaseFilter.cs",
+      "source_sha256": "cb23d4a8dd7601aa38ed328755fc22ce1053f1614e2869eaf23c1857dbb1854b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/BaseFilter.cs",
+      "product_sha256": "fb0e201f4fa61f0716e9ea35c6bc7262478a5b067a825ac38e977c86df8b026d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/ConnPoolFilter.cs",
+      "source_sha256": "3fbeb21d37dd4dcbf7be2db3a7f38f08eeecb6f36ff2754d0ea2be83d5007654",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/ConnPoolFilter.cs",
+      "product_sha256": "bc779af81353baf334de87137d19df4d06da4e1c0c87a34e5d1b7ac94be75136",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/IFilter.cs",
+      "source_sha256": "e3dd9c5f41c6ee4f2021b5d90c1a04c29640ee00b80ab54c2e3f208825ec81fa",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/IFilter.cs",
+      "product_sha256": "63a791558e5ce198db7623d5f855920024d041ea52800f3eb76da26254e16363",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/IFilterInfo.cs",
+      "source_sha256": "33d85b2fb0dfff2a9da6c833991c580bb20a94cc9d0d4fc708a82ed838dae106",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/IFilterInfo.cs",
+      "product_sha256": "8a14e7ae07af4395cb6a01f3ff9d7a9cae21ab1cbed7e745e749540e21c22ba3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/LogInfo.cs",
+      "source_sha256": "3cd21e08be1a516237c209777d1b6d0f9a656eb3c76ae172109939a21346b719",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/LogInfo.cs",
+      "product_sha256": "ce907a410774d1cb7f559a8431b106b02ef4c4454a9091801bf35c689404a73b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/RWInfo.cs",
+      "source_sha256": "df8e1ea3a085e80169a72b3fada9dd5705c373e0c61c2ef6a4b62bcc6400e2f8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/RWInfo.cs",
+      "product_sha256": "9836d44d00f31a2e512bf0d234ac593d9169a0094d9feacdc6fff9590203d205",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.filter/RecoverInfo.cs",
+      "source_sha256": "a67b552583a278d9b95b9685f6a2ffbb1732602fe1886d392dc12eb6939245de",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.filter/RecoverInfo.cs",
+      "product_sha256": "e9564e65f44d4abf47630ea20287d25d9d2a9fcae79aecbb8c119a329fefd3b4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.net.buffer/Arrays.cs",
+      "source_sha256": "540fe83811abe93174f5f442416eb8f3ff561772b80810d005d9497427a57b63",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/Arrays.cs",
+      "product_sha256": "94e0ef91dacb7131efa000dab4a81f0697abc1e6aabd34c42e109b13f5e49625",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.net.buffer/Buffer.cs",
+      "source_sha256": "7948ecdb6c061070f81afc7e444cd5a3fb824b1af17c4235b3d290e6e8b59b12",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/Buffer.cs",
+      "product_sha256": "2b93d8a610af16f60189f5c21beded2e0eb6a9aac6291e6c310a869c05e07dbe",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.net.buffer/ByteArrayBuffer.cs",
+      "source_sha256": "f320b5bb0c6a53f1e609573c5f5f784e15b245f43f0fcd42f0d4c9af7704574c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/ByteArrayBuffer.cs",
+      "product_sha256": "e1d2f637f27b8e8972c239399a6a045e1cc9c114607e65ff8a9828d3df2ae48c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.parser/LVal.cs",
+      "source_sha256": "4155d66ca661bf0d16c20a8167a46b4c64e4b8521aaaea9014afca0a0e49893a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.parser/LVal.cs",
+      "product_sha256": "4f9a47edd1cea4ce8dcb76f8ba9f5aed5ba00131487c26da82b238775d8ec91f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.parser/Lexer.cs",
+      "source_sha256": "ec3266d71cc370626a7f10f483ee74a9aab68f0d1c796b33f075457894e02e56",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.parser/Lexer.cs",
+      "product_sha256": "bd48ba03a2c1dff5abe890ac49c5a959e860164f0daa94ae778dbe2cb42c7316",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.parser/SQLProcessor.cs",
+      "source_sha256": "8fd62968fd8d6ee92e970071aa712039e69d7ee2888a308b390dc50cd111c6b3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.parser/SQLProcessor.cs",
+      "product_sha256": "d578f9ec4656ef29f753dd765f006ed9a9a62d0d8cf35bb600ba883c58a2a5e4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.Atomic/AtomicBoolean.cs",
+      "source_sha256": "8c7bddab011be4993325a9985a28f64da5dc0cace2a68767cfa9e049dc7b766f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.Atomic/AtomicBoolean.cs",
+      "product_sha256": "e0bc9a01aa335345ad9b34bf42e212d5b12b6417ca5efd9f2faa3231a5cf262a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.Atomic/AtomicInteger.cs",
+      "source_sha256": "6b400318a4a647ccc4e2a849518ae47136f13ac867004b073c9e6f0c0bfc6318",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.Atomic/AtomicInteger.cs",
+      "product_sha256": "106ab90a321b30ec3ffaf913b3cc30366c931b00c02fdd4091a04dec500c8662",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.buffer/BufferNode.cs",
+      "source_sha256": "92964912dc6a46361c8f3fbe8ccd2d6304db4160c3446786b06cb7872d623096",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.buffer/BufferNode.cs",
+      "product_sha256": "35f1a74aec74d1bbae8baee6d8c9cf3b1e2f9c3f7d7d430413bbd59043cfd54f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.geoUtil/ByteReader.cs",
+      "source_sha256": "86d30bde742f5b10761d868702e804b46b48764500d2801be9ea395925fe9db5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/ByteReader.cs",
+      "product_sha256": "2a9b84235d8104d493019b45d07d28cd7d49ca54dc28686bfcaf1efe76c9425b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.geoUtil/ByteWriter.cs",
+      "source_sha256": "bd148418303be1eb35dde8f5af66e846d4d8e4d5e63f4902047c5e018ac445d9",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/ByteWriter.cs",
+      "product_sha256": "a228a18afac32ed8e033840417f1f5cc86a6b3504803590cd64396160d6f546b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.geoUtil/DmGeo2Util.cs",
+      "source_sha256": "8281fc985aedb41499e0109efeaaf03d115f68ebba6a6e47063c68992b908502",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/DmGeo2Util.cs",
+      "product_sha256": "69a640bc376153e741839359efb614204f770ec0e4be5f95b74f0bedcd0ecca4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.geoUtil/NtsBinaryParser.cs",
+      "source_sha256": "8e725b2e1d48146a6e0169deffa4e46aebb03a8d5682aba4b59b944d2d3ac043",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/NtsBinaryParser.cs",
+      "product_sha256": "68ac31cfc5946c0c5d1fd73944dd306b4270f485fb4c610137bf116a0adcdf04",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util.geoUtil/Point4d.cs",
+      "source_sha256": "5147deb97cf34d339733b5844b7167e1810c15b213a622c6cc244efd576845e8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/Point4d.cs",
+      "product_sha256": "f80eb9a1e0c11fc145ffeb102a0313139ddaab0b7fec388787f942b60cdb565a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ArrayUtil.cs",
+      "source_sha256": "b8066fc756977d371e882d351e363b0bc8a7a795a138eb00311465e9d28ca92e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ArrayUtil.cs",
+      "product_sha256": "36c26137d357a41da24b99dcb12fa671e83c5f07287c31870e5c3df9fd10f454",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/BEByteUtil.cs",
+      "source_sha256": "1a9d3f27e128d530cac35b79c69b7f6c2fd649a913cd78769aff4c0920bbfff0",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/BEByteUtil.cs",
+      "product_sha256": "0fbd49435a3bcf8614db06c897cb3f7075ec8335deeddbfaf18e4c623f78c468",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/BlockingQueue.cs",
+      "source_sha256": "03c41ad7bc73f173c0af2ccb99a5c1a563590d449b6126281d199076a8507c82",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueue.cs",
+      "product_sha256": "f3ccbfac71cf95895d452c1e46c903e7f2df9d9ea4ab0229244e56746ef37562",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/BlockingQueue2.cs",
+      "source_sha256": "13565b2932ae0734373f0ae548aa54924e68b633d766d328bd707db6e4ac9f0b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueue2.cs",
+      "product_sha256": "a2c43d69752c92084bfaed0c39069d113f4bd2fd8b52ad61b93214844f6b79a0",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/BlockingQueueIterator.cs",
+      "source_sha256": "50f157499211719e44543ea440a60fe47b46e7c6eff465e6f0e3988215743d7a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueueIterator.cs",
+      "product_sha256": "fddd9fb5f4e7f5c9ec726d2d2827cfbe5c583cf580cab059047276b8a2b80f0b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ByteArray.cs",
+      "source_sha256": "c9946628c8fd12ef89f0e8fb693cb34ac3abfeee58fa6c2d8279e9b3db235be5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteArray.cs",
+      "product_sha256": "29ffe1c0f1b5b0948f9b5219e819d17bad4583dd329f3e36c4b9e55fc8637c28",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ByteArrayQueue.cs",
+      "source_sha256": "bff630077dc0f49f71865f1c88e7af34dc4cdad87b7c77d432d915431fad564e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteArrayQueue.cs",
+      "product_sha256": "02a011b3270d9293402790699208c83771edca4f9b7ac58bf33cb32a8aeef7a7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ByteUtil.cs",
+      "source_sha256": "cf056d320a37c294d36180eb95de57b8b660552aa062557477fc3eff75a7a31a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteUtil.cs",
+      "product_sha256": "213252d7ef41827dc2bb3665bbf9ec57a385ff1164740f5d38dcdcd8bf4c0431",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/CacheQueue.cs",
+      "source_sha256": "b6a5453b8c8b05f3283830f79b55ac9bca832879263122c6989e6cdbf6b4b983",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/CacheQueue.cs",
+      "product_sha256": "0887854ee31c3b6e76fbe761e675e48ee168666a08bf6979e1e13a261a2c2317",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/CharUtil.cs",
+      "source_sha256": "2b1e1c12cc45ad762aa6650d94f4ce9bd0cbee9c4f48925e1dd8b987f1ee02cd",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/CharUtil.cs",
+      "product_sha256": "b2d6977287d3dd20e94c6961d5556c6bed98b4e833e2a31edfa9f5b672b77f90",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ConnPoolCache.cs",
+      "source_sha256": "8791144e9b932acd6642db22dea1929add9b91c54c91340a1f80f748c2fa4db5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ConnPoolCache.cs",
+      "product_sha256": "70d4666d74b308955f0aac6e3c779a2ec2b1f03ff5ef0d4ee3fda27ba5c5660d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ConvertUtil.cs",
+      "source_sha256": "53661a130adf4f43d2b646062718c0cfea90d0816641136094247c3430d3c0d2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ConvertUtil.cs",
+      "product_sha256": "5e42f8a1381caa632c99c18d61db313b1dae21d24a895467f0c4c22579ee5dab",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/CopyOnWriteArrayList.cs",
+      "source_sha256": "4ff7ce462ea736aa52d3499ce6b5678bff47a19604963a1f1fccc7b5e9077eb7",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/CopyOnWriteArrayList.cs",
+      "product_sha256": "67a4c25e2767dc8162e92ce0b20f9412f4dc3ec787eb0bde80f5806b5d9fb15c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/DB2N.cs",
+      "source_sha256": "085363a637b8bb32621dc2b5df11a74acae2de2a1b9ebb55eb787bd69e710275",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/DB2N.cs",
+      "product_sha256": "8db2a2048891379de8a11c448d55ba622c3daa29cb45b0be409586299d0baeef",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/DateUtil.cs",
+      "source_sha256": "499051b5c913de1d4bfe53224f7ce89ec05dff61cb352038ba1fb50b534711f3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/DateUtil.cs",
+      "product_sha256": "182284c6216c7cc71645ab8d0062d6307beb0753001348aa54973ef197f9295c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/Dictionary2.cs",
+      "source_sha256": "7094a8adb1229065d32b839ab98cfef3d984388fcf161e6763ff89f061d06c93",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/Dictionary2.cs",
+      "product_sha256": "18646a6801489d6f9322b1c90ca65dbf1a785a0fd999c5811f482aeaff8e757e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/DmDecimal.cs",
+      "source_sha256": "a7a07ff4344451720cf01f8534fa15774a4a7690aa9b6ea88ff19d22cc68a8c3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/DmDecimal.cs",
+      "product_sha256": "d80e0b1001354e78c306161b6656637df2fa35f8347bbf147d8b7b7d7d6584d9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/DriverUtil.cs",
+      "source_sha256": "8d7627e16ceb9c415db0e35b2fd37aded726922de9cad35d175218849176bb1c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/DriverUtil.cs",
+      "product_sha256": "d146ecfc9b1bb0b648f3ebbc39d377bfa6577d36f9cf33360ecf81a9a975f30c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ExtensionUtil.cs",
+      "source_sha256": "ee4cecb3fa06b4a3a0108297ac3df2d3bed3300618d84496558d7db1bf97459a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ExtensionUtil.cs",
+      "product_sha256": "b8c10fa147a741602064ac4dfe4701ce8e1d8ba8efd95d55dc3836e0d6cf40d3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/LRUCache.cs",
+      "source_sha256": "00f1c108bc05e528dbfb193efde79405374fb74c83c722607e69bfcd669d9ccf",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/LRUCache.cs",
+      "product_sha256": "6ac4d89345ad2d08b24f04d334f913be6e5f6a02a152ccbd91415e229ad0f5a9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/ListUtil.cs",
+      "source_sha256": "380c8d8428867c925cf2ba507f3259b4a83637cce784b6ff3937f450ad2e18c4",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/ListUtil.cs",
+      "product_sha256": "da342a7164750d3c21f9f8e4aaa0f50bc47d4f5b96d000d8a992a001195078fe",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/MathUtil.cs",
+      "source_sha256": "58f32f830b6fe25d0eff1ff22286c6cdaf0e3e35140ae8e962f6225405729663",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/MathUtil.cs",
+      "product_sha256": "49583b5cb85bfd14eab27082548c54920b94b933e956333241020b325ffa39a1",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/N2DB.cs",
+      "source_sha256": "dc362876207f5a2fdfcdca0cb2a2be60e149a2facdb370c07590f6e37967a8e4",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/N2DB.cs",
+      "product_sha256": "3bfe6a446d14f7536893032ed3cce2533f6a37c6bbf79ce2b0b60e4457be41f8",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/OracleDateFormat.cs",
+      "source_sha256": "8cd75c08096a456fc1f3e71ec146cf1e97f65ddeaf478745a808bf14a32ce979",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/OracleDateFormat.cs",
+      "product_sha256": "468b4b479cb5322fc079bf47a0744e6e6a1254884ee5d65a4a6e22f437b5406b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/StreamUtil.cs",
+      "source_sha256": "9de3fbc6b9eea01624312e9b491480b2f71be9b1ba8611bb339cfbcf91810343",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/StreamUtil.cs",
+      "product_sha256": "ee1b98e58c2cb8fa507b0701403ea12ce036f5f7fa54c24d6e45379e91d0cb57",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.util/StringUtil.cs",
+      "source_sha256": "ba5b4ea3641ef7378a2b0bbfc088d4724f553b11be928f62ddeac77c7437e1ef",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm.util/StringUtil.cs",
+      "product_sha256": "ff58c4c3d9317f3d0721d0f8d94feab40c7f97d083a5e8b6a115cc0f5b2d1f52",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/AbstractLob.cs",
+      "source_sha256": "b41fa258133f941dcf4da703464b7e5d7d2ee28d0416c59de034382218b29a8a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/AbstractLob.cs",
+      "product_sha256": "b701824df197ceb8ee8f69fd53e54f502722501d5cd697a097685ff353284f26",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/BaseFlusher.cs",
+      "source_sha256": "5ac065b13270812d4e075d80d0cddb60393f9019f6a6345be58f8b3a0e0dd48d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/BaseFlusher.cs",
+      "product_sha256": "08039a0470edd3453ff1349e139206222bae7966079ea916a067343369a6cabe",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/BaseThread.cs",
+      "source_sha256": "d6b76e4858d7104e532ac67802a2c008d989be0cc829d82ae3bb8b57be183038",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/BaseThread.cs",
+      "product_sha256": "16421a3d39308be24eb6dd111cad70cea202455fdbda9b3a5066f7e96775a15f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/BatchedCommand.cs",
+      "source_sha256": "6ee97fa5fe4477c3bdec143a68e52d6b81ba7ccdc39047058d6461b57a9290fa",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/BatchedCommand.cs",
+      "product_sha256": "7be0443a33289310d7851ed6a00f608aabff66e28d07a96297a62f2ed477eaf7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/COMMIT.cs",
+      "source_sha256": "00cf649830927462ebab06137a6b9e6c17ef5495acccbf55bf83a9baa3c722db",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/COMMIT.cs",
+      "product_sha256": "e311f4492e5dd446bec7dee79255a67f3c6dbd2fecdad7342467007069a0613f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/Cipher.cs",
+      "source_sha256": "bdec5dca23beef948c92b8a8d2c35af958bb59489263a02c42566a95dd637b41",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/Cipher.cs",
+      "product_sha256": "da03009b6475936596a9784996aed22cf3dac34a9873eb2bf6db6089bf6f9a23",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ColumnData.cs",
+      "source_sha256": "f07f1ecc12c5434c7deea694ff88d4a0b3dd61189a203bffe158723f3f38c375",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ColumnData.cs",
+      "product_sha256": "3f53cf4e344cceaae75fc21b4083159c152234a5151aabb8d950ba97a7e91e47",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ColumnInfo.cs",
+      "source_sha256": "4bf1cd5650d43521be6621a7943dbb4eb3aa4dd421430bbaa8fd959f953f67f2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ColumnInfo.cs",
+      "product_sha256": "8b31ed5024b88695ec271d22aebae0186c6e4f4c9dc3d9adb11321c28cbcbc77",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ComplexTypeData.cs",
+      "source_sha256": "2b20ba0ee1303d33ef6b829466579eaa23a1662fbbef18aa21dde9fb9d205b0e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ComplexTypeData.cs",
+      "product_sha256": "8cdf80b95375588467e02fa1d54f65ad34d26a327ed8b73524999d1e5efa01ac",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ComplexTypeDesc.cs",
+      "source_sha256": "f557959e4c30a99751426c8d24ba6130bff1da6f523486a6456b508cc6e6b5cc",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ComplexTypeDesc.cs",
+      "product_sha256": "c8bffacd2d3be99f50f605089850a09e76cf515dba4e14215dd22e6123f3dffd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DBAliveCheckThread.cs",
+      "source_sha256": "64cb068320d87fe137b669953ab830fe8d194aa3214248ef968532c6a9a19613",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DBAliveCheckThread.cs",
+      "product_sha256": "46edf893150c6b483aac00f37138e7443f4101a9530968dc015c29a32fee1079",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DHGroup.cs",
+      "source_sha256": "36ed24b01ab17a104c6a5f935d8ab249fa6865f1d6a1282dfb0b674f74e0b361",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DHGroup.cs",
+      "product_sha256": "b3bcaba462cd26bf47f5f2cc9e24ebab0aa6b8550e74e3ac8a8e7fea1de6f474",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DHKey.cs",
+      "source_sha256": "ead1317c021ba9cb3de4ab81a2519da3fffb819d5e53ac27724874bc3a5b9109",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DHKey.cs",
+      "product_sha256": "c58857e001eac8f115e8b9a8c5825f0fa59a1c73228f4f8ec25da8879745d75b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DM_CHARSET.cs",
+      "source_sha256": "97ce31242ce9581604f9c935378a583c64d2b81a169d499d8e31de1262c4c63c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DM_CHARSET.cs",
+      "product_sha256": "7323b70a9d024a74a315b590d022deef04f5867884a8e0368f03051c9a051543",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/Data.cs",
+      "source_sha256": "898824c70105a1df9190a04806fd01384bfd797cdab1b45dd7bbe6ee875166c2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/Data.cs",
+      "product_sha256": "e6efd0fcde52e592f922e9bd92c422e736ba3bdc93edb1b0c86eba2c8271e6cf",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmArray.cs",
+      "source_sha256": "b76848e0fc6ad10133f2b8a51ccca3b467a2a85c484bcfc6987fc1ebb20a2b40",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmArray.cs",
+      "product_sha256": "c88242f5ef45aa58bec22ac8bf17511154dabfa415ff88c4dab05227e0960706",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBLobStream.cs",
+      "source_sha256": "f78c779cbb39c86b61962362d46e2ca20b1ceac526b196ccc9172ab22dbbfc0b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBLobStream.cs",
+      "product_sha256": "9d27f876bc1d302b2d2fb1efe12d1f1bb783b9236bf7edea7d0405ff0b6eba74",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBcpLoaderParameter.cs",
+      "source_sha256": "225e4b35304f1a99404e3da1ac66decb357a20dc61354f357a9461c22d8e1d04",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBcpLoaderParameter.cs",
+      "product_sha256": "da60597ac11c4d63e1a925595685784d8f33c2af26a13763715906fd69af8a15",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBcpLoaderParameterCollection.cs",
+      "source_sha256": "703ee49532b80eff6234a60654549a3695842beb55aa3b690a991ecd6e39501a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBcpLoaderParameterCollection.cs",
+      "product_sha256": "a90983a57e2c7ed01031b623ffdb932adeaab0564d315f9b7fb7c1eb65e46c1d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBlob.cs",
+      "source_sha256": "1d598e7958088d05e99bb25497fe7f4039a3a2f43612eb3305ee949d846d63a1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs",
+      "product_sha256": "59e496a84d47d0fa04abd4feea61dd526d733fe93079b5b76910181547acfe44",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopy.cs",
+      "source_sha256": "3096a96a0a1b150575ad7a8b4557ef47eeae928a77818f3c1097ff249876a192",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopy.cs",
+      "product_sha256": "8bb06905316ba96a8c0506c04fd5ae2010fd3d6cd0dc669200429bc8e01c2eca",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopy2.cs",
+      "source_sha256": "475e04f4cbf6cd380698577bd947d8cb02dbf76d33a7b83fcf8074355017595a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopy2.cs",
+      "product_sha256": "d9092ab4b0636f8ac1eedaf8cdcc691548ce0ab1b88d5f22d3b451c43c5ee8b5",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopyColumnMapping.cs",
+      "source_sha256": "33ae6e35b14857b8d2c182b1088525900cc04d4a598a1b37d0d95ab489b0aa46",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyColumnMapping.cs",
+      "product_sha256": "12b8efa13e13d812372920fdabb944bcd41645eb820cd9677608ae2fd5070fbc",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopyColumnMappingCollection.cs",
+      "source_sha256": "5d55b279705e1befcdbba9f64d7953e621cd9123f8b956d5d20f2ed0d941087f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyColumnMappingCollection.cs",
+      "product_sha256": "a72b1e0ba0c19a85bb8d63c0febcea081de399e6426d6a6e070aa2aec653a06e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopyOptions.cs",
+      "source_sha256": "8a15d85a680d6476aa2e5612dfce677dbc61ef9006c4ef54cc4dda786c910b9f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyOptions.cs",
+      "product_sha256": "ed9b84e6ae89a083c77f766aaf03015cc42f31c2e1bd332072a04b99c9f421f9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmBulkCopyTypeLen.cs",
+      "source_sha256": "20988a3429408f879564c2360e77f6e511e9cc85de4cbf64b66f3f6bc281c658",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyTypeLen.cs",
+      "product_sha256": "a625a1bb078edcdcbd381291c6cf9bdf4cdc2d0de8a962b2e5bf485e8fc69f82",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmClientFactory.cs",
+      "source_sha256": "1949b3f43f95e36b0c932a275f8d04cecbc2c57b48a3cabbbe0213f470fe6096",
+      "product_path": "src/W.DmProvider/PublicApi/DmClientFactory.cs",
+      "product_sha256": "eaa6b1f84884a4c9f5e295415c087c4787fbea8e95190d1b6f37f51a2ad6dc00",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmClientPermission.cs",
+      "source_sha256": "243681abd1948a942ba5f26f4e62950ce087a64008effb33e07f1f18a0a1d24b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmClientPermission.cs",
+      "product_sha256": "71e84220818e4037bf2a4bb3f91cb6edb71594e7082f5d94cca7c435e7328de3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmClob.cs",
+      "source_sha256": "dd975e62684eea1fbf5fa3a8eca5b79cac4b7c2044ba2a10f2be643528de6fb1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmClob.cs",
+      "product_sha256": "700ba9c5119166b41c49255da2c126d7b96458f417715133cc2203ad2cafd0d6",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmColumn.cs",
+      "source_sha256": "6cfaa7ca9219b40d16590fbc96f1253950756b3b87ece6080bf72c2921b78083",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmColumn.cs",
+      "product_sha256": "a802ec10556c587a6d27cce6ba5b120857685d25dbc7b1d1ae79dfa6ec317e2e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmCommandBuilder.cs",
+      "source_sha256": "0d1111b80e01f6b12c8b101dd54e71590605b713f4865fbe56704a68d6d85364",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmCommandBuilder.cs",
+      "product_sha256": "2b66a5f303a2c50d10c51d34d1334952028dbb29163af6064a418be037fb888b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmCommandSet.cs",
+      "source_sha256": "7e7b83757fd273ec262285332bdae35737c3926b4c558fb5c75b58a4707959ef",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmCommandSet.cs",
+      "product_sha256": "d0171739befc94c8e1ed20bda0e433fc946836540caada812ea359027310a454",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConnInstancePool.cs",
+      "source_sha256": "2c754a368c7ed8c942cfa2a0fc1dc0a7756aec5e47b760122fc4ba7339e48021",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmConnInstancePool.cs",
+      "product_sha256": "aa1462335fcbb14cc1e60ede42d84e5b3838c83841091d9834741b901258d795",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConnProperty.cs",
+      "source_sha256": "ddba9bd1d2e27213108d3d1fc1c32216c8398b49ab39daf0356f14e9fbb0b90d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmConnProperty.cs",
+      "product_sha256": "14aa17bbdd7e8cb07efe1b1419094129e293de164db5de79f3751581fb6ab866",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConnection.cs",
+      "source_sha256": "6a9f256c0211bc2395b5d203f371ef52bb64748a933a566179a22892959a148b",
+      "product_path": "src/W.DmProvider/PublicApi/DmConnection.cs",
+      "product_sha256": "257b00785a740d98ebb8096ae1ec05105794498b8f94c2feeccc24d6d3e7bf63",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConnectionStringBuilder.cs",
+      "source_sha256": "6ae1de641a55b4591c430995f5f99a9babc8dc0091b787dfdf7403c0a4a0b0aa",
+      "product_path": "src/W.DmProvider/PublicApi/DmConnectionStringBuilder.cs",
+      "product_sha256": "1ebc5be933f57444d5c20b3673262e58d3bca53f3b11714c7ba63e8fad61312a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConst.cs",
+      "source_sha256": "83c81ac3945820e6afc97ab38ce0de647b950e3e1c32eff815ba84a1116d42f1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmConst.cs",
+      "product_sha256": "de94391b4772a024c5c8703c1a70e06b96aaf4b63e51658ad2de0d4dbedc8ac3",
+      "transform": "Roslyn namespace migration; explicit Dm.DmErrorDefinition ResourceManager base name"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmConvertion.cs",
+      "source_sha256": "5303ed2181eea7f15748f750bcee0da417faebdef603b2a17ae8a89c34be1c99",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmConvertion.cs",
+      "product_sha256": "da942e4722adfa06485ba71dc4fd9f0b5db86fcf69a988e9b18400221cdf1bfa",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmDataAdapter.cs",
+      "source_sha256": "a74438776bed4a792067aa176ad077bf7b3048716568bd7a019745c7627c0a7f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmDataAdapter.cs",
+      "product_sha256": "7f20e5c6c5f75ce25785d8faa357cf13a38ba75338d463598c44ede125f7d3dd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmDataTypeMetaData.cs",
+      "source_sha256": "cd5eee6163472dc852e08da677a94f739b79b0481bc19f99684cbf4499fffbe7",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmDataTypeMetaData.cs",
+      "product_sha256": "de10dcfb9af88ccfb12af585e69915bce88020a535f3bb32f0f9c7d13b7b0cf9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmDateTime.cs",
+      "source_sha256": "1f7b265ad1de72ed262b3add46b27356e2cad7082ca555ee32b7da75ee8b5dde",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmDateTime.cs",
+      "product_sha256": "0533fa1b0ed554be1da024fefab0342eab238b3b242085683493d1457bf7443f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmDbType.cs",
+      "source_sha256": "8a09e119e51357f737fb7511c9935bc5ab5f53e2506c81bf745d3fb3a9ba1048",
+      "product_path": "src/W.DmProvider/PublicApi/DmDbType.cs",
+      "product_sha256": "c6643e37f715fc5d4fdbdf53de4440f3c2cda9d0f6d0303e38c57f99e8dca38e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmDocBase.cs",
+      "source_sha256": "3655b1a5d0f7c664cc25846d2dcee2f4d55fa21c1688faa014a92f91f9d26e4c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmDocBase.cs",
+      "product_sha256": "e9cce8e108f84d3d364b39271fe86bf092f9564dcbe7db2c3925bb95effba321",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmError.cs",
+      "source_sha256": "93c3210a5c87f59e30a5ea1ea3affb1cea6d5d22c9b1a1c8304bec7d4666ff5b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmError.cs",
+      "product_sha256": "9c4b8e15d3eccd089913d48562f6a7c60149d337f798c77410cee2919b2828c8",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmErrorCollection.cs",
+      "source_sha256": "5e87ce5058455b3c3715a52a5257f265ebc336a0de2fece50d28c760d906f4e9",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmErrorCollection.cs",
+      "product_sha256": "62efbb0651f8d5403e93540b7470469b62a3ff28b6a4a20e7663b4950fe83199",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmErrorDefinition.cs",
+      "source_sha256": "ef4065e6828c129c6ddb71187532c536089c7878dc18c8cb79fc8ddf4f6d8e52",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmErrorDefinition.cs",
+      "product_sha256": "b0820f1c9a75d7eeb7ca26de0b43ecc87c593583f0d830ec89f63bc1cc9b1bce",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmException.cs",
+      "source_sha256": "93f6d7cc5ef3b9edc6bc01b98f7e7a959c591440dd79b538924fb1b755d365fc",
+      "product_path": "src/W.DmProvider/PublicApi/DmException.cs",
+      "product_sha256": "7e96c2488d63b0cd48cd4446561230d9e8f06ab3258fbec5a2ba4ce968f73402",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmField.cs",
+      "source_sha256": "5882b3d8b450651886bb47603c9b3d9072c57a1452c8974ac5c8c3027578cb2e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmField.cs",
+      "product_sha256": "bf15fb6e0d542ed0a8178598cfc2759f0251251df8249d21ee394acf88903d31",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmFldrDllCall.cs",
+      "source_sha256": "0bf549f540dff75dbf6f652e62958927fef9f27e926bb15329120c706e4d81c7",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmFldrDllCall.cs",
+      "product_sha256": "e4d5cd12f38e0174f14ac96c296af2c1957cfc7d509a1135ce7f738e147cbea9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmFldrExport.cs",
+      "source_sha256": "bce23144004d308a8e3a6da2d0dd443b1146291a3647068b6eb3798de09b0832",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmFldrExport.cs",
+      "product_sha256": "e03c2156f4d183780155a6a6086fc22be9c70d549f58173aa4c47c097d8a89e3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmGetValue.cs",
+      "source_sha256": "a2bd12a6c80dc745861e63ff75bec7dda252da378652e8c7c188ec64e1fdffc7",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmGetValue.cs",
+      "product_sha256": "e48e40fe5bcafc8ef34cedcf6b6378773bb5ff2b84765db392da2f4904d6aae8",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmInfo.cs",
+      "source_sha256": "96568d237bf111475062f1c051833474db3eaa853f1348c89134786e0c3cda5c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmInfo.cs",
+      "product_sha256": "967f7c1ffd3ef9c93212f5be14bc1ac9eb97beddec7ffaf41da955a2a720083d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmIntervalDT.cs",
+      "source_sha256": "b36bbd6bd0a2c40c9bf190c29c3c77182a491e32ca6fb4b6dc5f1ff32ffdc9a3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmIntervalDT.cs",
+      "product_sha256": "4f79d3a6ef3284e656dcd777d79d7850257e9dd83633686dabaa25ced9f221ad",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmIntervalYM.cs",
+      "source_sha256": "e9e495a8230f48a8ada57d9cf39505e7e3c99b8f1d51cc58bc6d9c25ef819b3f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmIntervalYM.cs",
+      "product_sha256": "c9bc095a8e0a09da0fb96c746845dc20c688d4864a0f96a82238ce10e98147d9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmMppType.cs",
+      "source_sha256": "55e60bc49d046c5a9791492764717f9ef94d8a718813bb4472b15a22ad07c436",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmMppType.cs",
+      "product_sha256": "6e97bc3c0c4bdd6bde7297cb4eca1046e8d53c2ac16ba48d7daf9459782c24af",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmNotificationTransaction.cs",
+      "source_sha256": "9392311da44607b0980fe94c28c83524868a4a944762be9fc8719239e1d91ea0",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmNotificationTransaction.cs",
+      "product_sha256": "503386eb540397407bbabfd88d5afa650c68fba51aee7bbe5b17527b163c877d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmOutLine.cs",
+      "source_sha256": "a6b9b262fdd7fb09645d5c1db6a656a53d62735a25b2b04d51ea09191eeec751",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmOutLine.cs",
+      "product_sha256": "f4808a23cab788a68ce7b11ad4fd97661b34f4b5c6ee719bc9c81113960cf465",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmParamValue.cs",
+      "source_sha256": "4b351afb2640c0a9670bb46efc5d1f3e112441931d0a8a590e7e5b82376fea1b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmParamValue.cs",
+      "product_sha256": "beaaf757b4bd6bf9519196126c0fff4589bca9b4a887209809c116e38f6dba4a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmParameter.cs",
+      "source_sha256": "7a018debecd67872721f310fbf1e423f8531ff5ab081caf90e4ee3e1038fd240",
+      "product_path": "src/W.DmProvider/PublicApi/DmParameter.cs",
+      "product_sha256": "7a99e851f8b517d0005fb5016b451f732510e7dbdd038c1dc527ac69f3a4074a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmParameterCollection.cs",
+      "source_sha256": "fdf2c34aac0d20a4643c19ba14badc94ef99b30252fcfe6993091d34fd36cd26",
+      "product_path": "src/W.DmProvider/PublicApi/DmParameterCollection.cs",
+      "product_sha256": "06733628473ef76c175057338b7cace4c04c390eac36684a7e912f044fa7decc",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmParameterInternal.cs",
+      "source_sha256": "3593cf26a422903e47cbd2768b4c55ea1b4f10d4df00a92624b4f5519f4329d5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmParameterInternal.cs",
+      "product_sha256": "e0a68d4bea43d38f563f8ff16aee7d9069f550c66e3ef24bbc25a4e75c7417cd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmPromotableTransaction.cs",
+      "source_sha256": "78cce7e28534545a8469ddf27249139f95f445667045c65b9fd6c0f9d6c5760d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmPromotableTransaction.cs",
+      "product_sha256": "c4889f68fb04c7405c8d04d2e5545b48fa86be3467e13d4356b6ce5b670d89bd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmPromotableTransactionTransactionManager.cs",
+      "source_sha256": "0f08c58a02b1ca2e7e56a41e5e2e5d8246a8629bf5e7a3a1f5e0c3e6ce8ba103",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmPromotableTransactionTransactionManager.cs",
+      "product_sha256": "e36cf8401e635e43814d914d79721012cdee672a4a00e963253c2afae19d20f8",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmResultSetCache.cs",
+      "source_sha256": "f29dc8df59edd09785687cd5729cb363e5290d55940aebaa23624949f37d78b6",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmResultSetCache.cs",
+      "product_sha256": "44dde656c9aa45ec688a1569cd1b3fa9f54de9974a3ef8ecc5913614a0c08c69",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmRowId.cs",
+      "source_sha256": "d6dc6360f1756f84c5b5b398bd86bbffa34cd882ee7518788e0dcbb4d0b879f0",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowId.cs",
+      "product_sha256": "1e520be6f3f55d22b7941c10f773d8a3734a3baf7b3f51edbfa372d689eb213d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmRowUpdatedEventHandler.cs",
+      "source_sha256": "c67be1dc64d084453f5349443d96355a7dfdcea68ce535f9f1be1b736462fcd1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowUpdatedEventHandler.cs",
+      "product_sha256": "ed4dc0acce697ae26a09a93717040feb4b313ed400de98b81b0a17bbde74723f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmRowUpdatingEventHandler.cs",
+      "source_sha256": "4f4b35d62b2216d0c4b4a0350aa939522796ba09bd1a21ff7023ef9500644930",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowUpdatingEventHandler.cs",
+      "product_sha256": "dbda3f58ddfa9bc823a3c3c025b47c88ba0c61aba06f17a7f13ad38e0bf483dd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmRowsCopiedEventArgs.cs",
+      "source_sha256": "7b840ba742ad7ebf6a70fc2327822dcd305f79bcdc6a3fce91ab17e971483f19",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowsCopiedEventArgs.cs",
+      "product_sha256": "601a1f138b210044d28d177fe4349dec72726f912875855a8203bd60765e5dcd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmRowsCopiedEventHandler.cs",
+      "source_sha256": "39276fbf82cd5a298064033fc1ea434b8b1081a31ba1ab69d175daab72501ecf",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowsCopiedEventHandler.cs",
+      "product_sha256": "884785f2b6b99b69010e1f1e81112c147e1d7e6acbf58ebcabec623975aff882",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSavePoint.cs",
+      "source_sha256": "6a5abd239c028e3069a314534e4d63ca89aa181f04302de098a502a1695ade33",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSavePoint.cs",
+      "product_sha256": "4bd587db1a77f23e92d4a32443a7126b43897912867232f13c99a284f0b55318",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSchema.cs",
+      "source_sha256": "27b8d550e7e0e11cf6d114d480538f2653002e96273b995483497436c215ed42",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSchema.cs",
+      "product_sha256": "4611e9f334d3a328ab3aa9c951f935190639887d75d6c46679f45ba62755104c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSetValue.cs",
+      "source_sha256": "90813058bf308db6b90727cd603cbc5842049797667d33085f691f0606cfc72a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSetValue.cs",
+      "product_sha256": "4baf84db7f1c4dc44db57c3fe2848918fcdf0222c97e1b55b89015fa5539a307",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSqlType.cs",
+      "source_sha256": "ca4b59dbc7c0e9bbf1563224e9c2205e832b3130cabccd20814961925130e436",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSqlType.cs",
+      "product_sha256": "0b1aa7a9cde8da5e766149724663e74aacba26fe124580143a096eefac83ae9c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSqlTypeInfo.cs",
+      "source_sha256": "e2caed6ce2b67fad3bdb374120b756e760b18268290ceaa88bfdf85f1dd1d280",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSqlTypeInfo.cs",
+      "product_sha256": "55e25644fa99f0508b9f60f8c7ac13c80a8e87b2e65f807b7b2b5957199a665e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmStringUtil.cs",
+      "source_sha256": "d309e60965c9c7b1fcfce7af988308607c8140a5590e929464eff27908a575e1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmStringUtil.cs",
+      "product_sha256": "ea3903c95a7b7c73aa2afeefd6b0a47986162249de05935212b633fe6a000fdc",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmStruct.cs",
+      "source_sha256": "f8845529c94edd89cb57e1d776a1223000f620524bfffd1f58db626335a78ddd",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmStruct.cs",
+      "product_sha256": "9557c155b4788a46e9cd200cbdbc7dbec3e15bb5536731fcaff4df9d6a609d4d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmSysTypeConvertion.cs",
+      "source_sha256": "fa9bfe9c9a9506001d53f2522567999d4f7c9827931f90f5eec799f968a52a2c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmSysTypeConvertion.cs",
+      "product_sha256": "376d3d4418b75e047e77f4804ed340a0a2ea57c83063172e29884a4dd581291d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmTime.cs",
+      "source_sha256": "ab1a51a610fada1c4926287d24724addd9b05338b3e96d4765c6e70543eb72ff",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmTime.cs",
+      "product_sha256": "2b76b179eff7e593fdd40386f0b34c7464d86a6f457267ce0b50e896e9193235",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmTrace.cs",
+      "source_sha256": "a56b4a0ec809dd86c836197907777b00a0fd90101a170e836c90b285ae5d469f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmTrace.cs",
+      "product_sha256": "234ae1613212c27b9e663d3725b3451b70958b92557c9d94e59a6c407bd9a004",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmTransaction.cs",
+      "source_sha256": "fd65aab6a1251fd2aae94002e7b2c161e97657365c0cb6ccf9bad47b495744c1",
+      "product_path": "src/W.DmProvider/PublicApi/DmTransaction.cs",
+      "product_sha256": "0830846f0ad8b45d85123540f040c678d306981f4012b440a923e251b5106fe3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmTransactionScope.cs",
+      "source_sha256": "dbb4442154f62b15edaae4ee4d929a51da3a95311cc4f73797f95f361171f0a4",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmTransactionScope.cs",
+      "product_sha256": "95eadcb534d62d31068dc184f483d6ab402c8e71c8354a3a6541fcfd68526458",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmdbNumeric.cs",
+      "source_sha256": "93b76760af948a24dc9f60abdcde8ac9c1687a93689c04f0eb7aa620fce9b666",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmdbNumeric.cs",
+      "product_sha256": "d494486a04f2796c7c9143cd1fb9e7928b298c01ba288f1240e8940e689bdc86",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DmdbResultSetMetaData.cs",
+      "source_sha256": "5500b1d89a750250a6b7a22a82d3baa9bdb8ce9711a766fd0432cd25391d2a5f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DmdbResultSetMetaData.cs",
+      "product_sha256": "7c4b69879c38cfa5e0f45fc64431b0cde68ea62d16e366ecd4aaf5cacb911091",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/Dmxdec.cs",
+      "source_sha256": "1cd285c85d5ec967f3314f50e2fcbe8e669221d53d177c295b93e72f02fe2f61",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/Dmxdec.cs",
+      "product_sha256": "269217aad6953c06fb22209986f86fb7c3a16e693b6dd3b3bf6079dd52c5d208",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DocClass.cs",
+      "source_sha256": "b4a232d30d99c586f946b80a3efb1965aac2877a1fe7be525abced9fc4be8feb",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DocClass.cs",
+      "product_sha256": "89263fba94b9b2c5248bb6786fae0ac5231e5c5d008f84ea22ba074edc2821b6",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DocDelegate.cs",
+      "source_sha256": "71c4888b1ffaf457c6f9339b74ff893b54b805a00624e7b060b0b3b5d79416eb",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DocDelegate.cs",
+      "product_sha256": "63ce4c343a4788855cbad566aee6a623fc75998e8ada6255e73cb65b3e61c32d",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DocEntry.cs",
+      "source_sha256": "0299144270c023722447a9ee1c5f939e833b9164c75cdf8181e11b48b21236e3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DocEntry.cs",
+      "product_sha256": "8284ec1fed50ce47cb80b76ee3ae74038f6f47e09d742431a78c26fe638692b4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DocEnum.cs",
+      "source_sha256": "8a32e66a101b2c7821bff7e72f24bb2299fba0aaf3d3e55098961973890debed",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DocEnum.cs",
+      "product_sha256": "11c8edd9e50b574328abda11cba80a2e4c86760626039831ace6e64b3dc15db1",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/DocMethod.cs",
+      "source_sha256": "14eb1f35faa42eabb00fc2159fcd475534761adceb5acfbfc40c069730afe2bf",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/DocMethod.cs",
+      "product_sha256": "bca2dffaea7fa02c8a667a8a74a6a007179f69017221707d33cc30797c81aba5",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/EP.cs",
+      "source_sha256": "d6a969e7eaa24537ef6f3546e0c7f12fc8f2f5b87faba1d2f6d772e1e4e1d8b5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/EP.cs",
+      "product_sha256": "0b316779dab69c17a8ca4792512b02b6d448bc31903d171f48aadad122729437",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/EPGroup.cs",
+      "source_sha256": "eb0314db90e769d4e66fb5b123ae6a501ba55ef4bf4773406f3ac2c40ddc108e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/EPGroup.cs",
+      "product_sha256": "04d2402cb881eb1154cabbf13986acca86103658f78f75e5cd8618c64833cb09",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/EPSelector.cs",
+      "source_sha256": "dbcddd83cb320c5c1ed79262206960389f6781de8eba027275315460675f749b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/EPSelector.cs",
+      "product_sha256": "4dfeba6d867c5203257977813ce3804d239535e4ebdb1a5f335f123cf93a1c38",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/Fldr.cs",
+      "source_sha256": "2cddd9418b777b588535521b5b92f93d851ae1fda60a4fa3f03040114201b733",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/Fldr.cs",
+      "product_sha256": "3eb5ab298ac67b6e2e7907b276d2351d3f0133a114bb27c83b41e2f1cf89acdf",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrBuffer.cs",
+      "source_sha256": "2bb63af2a2eaa5dd34b45635120597bc3eeb013dcfb58efaabbda215289df05f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrBuffer.cs",
+      "product_sha256": "65fc7e3df384b040218c14f3e2a302920e6024ea9ce57744bcb745c85ec59d0f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrClusterInfo.cs",
+      "source_sha256": "b2df050a5562a95986c058f55410c2da703b76493054c0704c59e93167892561",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrClusterInfo.cs",
+      "product_sha256": "627cc3352166dfd195024097b695ba7cbeb987d5cb0d4bcfd19b8332d4f40109",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrConfig.cs",
+      "source_sha256": "cf539b7cddf8f29c6ed380be31eb6bf6c6280750ef61eaa044b07eaa64583de2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrConfig.cs",
+      "product_sha256": "4465a28f695557ac287bf273731d655d1fb9f3162bb2371cc2483ef776d3eca7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrErrorWriter.cs",
+      "source_sha256": "73402aa7bc128a479b891b916a390dade91154935c140e7252ac159aafcb05b9",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrErrorWriter.cs",
+      "product_sha256": "0831ea5c8cf828292200f93ddca4b7c5dbd9ef9dbfd969ab9ecf44b38272b8d0",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrHashCode.cs",
+      "source_sha256": "33dae235803a6a5bb37dd75bcc893f30b5e88bb6df7e50f6df756e43249d1ec9",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrHashCode.cs",
+      "product_sha256": "29ea283c833774be29cea15716b634d87a07c67180028a62a299d50202c07c3f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrIndexInfo.cs",
+      "source_sha256": "4c40b07e340481e3e4f3d5d4996f402c35e63130b847b70f8bb3fbe781e4138a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrIndexInfo.cs",
+      "product_sha256": "a386ea8d8709141563b5548e0d0325017ca0c2e9c847da0f24cd27e2552eefc9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrStatement.cs",
+      "source_sha256": "d92295e673ba5bac6614cf50a77866edcbf0d36880006b21ae33156e06d9891d",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrStatement.cs",
+      "product_sha256": "350cc92eb66fa7c91191bbf14b8463b33bf176ee8baf338849b8a6ac9fb4d58b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/FldrUtil.cs",
+      "source_sha256": "96ded186a5ea9ff320633b0d15e3be8f098a306ce31068d03bd6058fc682c9af",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/FldrUtil.cs",
+      "product_sha256": "3c49f0e82dd599d7af090230ae7792c13186c9fb05f2f2291a6c892d460d7adf",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/HeadFirstSelector.cs",
+      "source_sha256": "7a71902bd974e07d66d17418a51bb53b063808347d15af3d55b72c81f29f0dbe",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/HeadFirstSelector.cs",
+      "product_sha256": "9ecb005d49009725b8b2b35b48aff3427d624a2339ae6a2c91c6b5f406c275d2",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/HorizontalTableInfo.cs",
+      "source_sha256": "7219e603f45b225a1459abf095bf9fc7dc9ef988631341685baf3a6563fe6f48",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/HorizontalTableInfo.cs",
+      "product_sha256": "6671db0df2c2febbf4f2a4583f57b4240c2f7b1aa3d29b6ef68307876f534e59",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/IntervalColumnInfo.cs",
+      "source_sha256": "bd0b1edc2fbec3668868a1174fa4224f4a7301f1c2c5d38e026d8b7559e0480b",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/IntervalColumnInfo.cs",
+      "product_sha256": "481b4f9be79157a8ea977321544b37c85b2ae436c07b9213f54e187559802c4f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/LobData.cs",
+      "source_sha256": "2409ff40963afbf36e79385601ffb89da588892b943694d76f60bdf66130fef3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/LobData.cs",
+      "product_sha256": "9d176c34f37f359f1ae3c7db17db286b8b97e14ba06b4c02ef195124279d0932",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/MsgSecurity.cs",
+      "source_sha256": "1be75351611eb1836a3676f2fdcd517cb2e18bb7bfadf3b35e1be3e1892dd950",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/MsgSecurity.cs",
+      "product_sha256": "83e4cc424ba2e7bdbe85bd80869a3b12e60f22a84078e4da481b59318dc54c2e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/NlsDateLang.cs",
+      "source_sha256": "821f4cbc58b9ce6e9ad526da9aeb9ca96c550a57e32918cb516f9c80aae72e27",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/NlsDateLang.cs",
+      "product_sha256": "55c9789edde0e6ce34101f8ffe2d69b61b8c41fe7062e2c616f6d3f9984ce316",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/RsKey.cs",
+      "source_sha256": "3efe0459dcbf39721b3f4b321dcabd1e9c14d762aee7c609c6c745bd07e92bc2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/RsKey.cs",
+      "product_sha256": "2be346a3e22df5bc88fe4b657357bc9d800c9d321c7c16b58aaef0a492734bb1",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/RsLRUCache.cs",
+      "source_sha256": "95c7c9b8a4f3e46a75530fad135abaaa954f69b57d1a7797c1edab4c0fc2dd35",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/RsLRUCache.cs",
+      "product_sha256": "204580ecad161667cfa03e6071bc263d33f08e59369a6eb48721eb48fbe88a0a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SQLName.cs",
+      "source_sha256": "4969c607f613283a3a7a4675c3c3c04556744acb9a6b61ecac0193bbaebfa250",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SQLName.cs",
+      "product_sha256": "5de7e8f40de25f4df6e693cc8340d203526709b6ed5a7513ee12011532b1b018",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SQLStateMapping.cs",
+      "source_sha256": "457786a3a881333036245c5acbb6f0fad56b89ba3e2a08ef764a707ed3bebc14",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SQLStateMapping.cs",
+      "product_sha256": "0813de632822e8eb86110f2b241fe8cab4cf7f3b0288c78eded4c666d5de1e9a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SQLStateRange.cs",
+      "source_sha256": "c7dba59f7fad677da2ad1ece1b2d74ac91e44b3b47d208cc964de582d1d43aac",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SQLStateRange.cs",
+      "product_sha256": "f64b5db6781b82dfb2fe01cb59c02d4bc764d038a51103191b548d4579edc28e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SequenceNumInfo.cs",
+      "source_sha256": "a7710108d0ced26d68b3cca0878906578f4c797bbbbad9c03020f3a5adb5d2e3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SequenceNumInfo.cs",
+      "product_sha256": "8fd2a505723e44c84a73cb7b99076125a28b467d832cdeb474d5ba70e74423d4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SetEnvInfo.cs",
+      "source_sha256": "aeedd48eb27355845ae4c849a9acdecb26f8e8f4649e116682b0ce55035c112e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SetEnvInfo.cs",
+      "product_sha256": "1906cff0df95b654a659eafd76f00652923470270c2ededff7f911a7bfaab0ee",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ShowClassAttribute.cs",
+      "source_sha256": "6d569144277542aca2fcdf33f376ea71bcd4b0f44320d9833ee6231b175c1b01",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ShowClassAttribute.cs",
+      "product_sha256": "cbac8ce5870a4f4f1ba4145faf773e20e81eb5a1a91ed779c94d82d92bbf2c10",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ShowDelegateAttribute.cs",
+      "source_sha256": "6d3af2ab4c3513c6d3489c6f55c9d5e278ecee4158eab02ffd46f3ff48c0fa88",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ShowDelegateAttribute.cs",
+      "product_sha256": "36ffdeb400cb6e58176a7f36b01d6488946c4f1358c22dea65f07251ddc5e125",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ShowEnumAttribute.cs",
+      "source_sha256": "f5d7c11d77f5fdd8e70d099d1a9ff0817a6b4dcb250abf1ffcd6eda55bcc47b1",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ShowEnumAttribute.cs",
+      "product_sha256": "2d8cb50ab5e0c99fb6d701082995bad8915744716d1595336b872f51e6002c67",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ShowMethodAttribute.cs",
+      "source_sha256": "283b297de0b0f88365d43cce2036f24cbb8659a7fa18c712e14fb472dd7b4587",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ShowMethodAttribute.cs",
+      "product_sha256": "b2127c49abca5742e3ab2ec3989309e643d067fdc1ea0847e0fb58ecd5cbf513",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SymmCipher.cs",
+      "source_sha256": "69cc01198f27f4cef206be12bc27326b403071f369ae3a733ad35f63aa1a7dad",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipher.cs",
+      "product_sha256": "ab1863b16c10923c6f7c96eeac71911b28badc113fb28b281dbe706753d1da37",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SymmCipher2.cs",
+      "source_sha256": "e1de504fc841c336641c244a7a3da8e0dc40d58368c09c3315b115ddcc63bad0",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipher2.cs",
+      "product_sha256": "34b7260a9d72e9011494ae21796070817f11483375212e0a9a0b96d4ac06d961",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/SymmCipherDesc.cs",
+      "source_sha256": "f0dcb541e873704f86286275975bba7a1399c0de14b4d761541e0bc18b42e57f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipherDesc.cs",
+      "product_sha256": "124ccf9e05e8ba127567518aa121f42d2f0e87d258b4b89da18ad8dcfc59fb02",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000026.cs",
+      "source_sha256": "f1e3de4c44d047b82bef0dc6ead70d5dc93888025941289225a6b233f4035e5c",
+      "product_path": "src/W.DmProvider/PublicApi/DmCommand.cs",
+      "product_sha256": "6b106de322b47a4781aad4bacfb315fd4af83e44b3a2471e9bff078b14efc6ac",
+      "transform": "Roslyn namespace migration; rename recovered source file to DmCommand.cs"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200002E.cs",
+      "source_sha256": "cb1021f5624b98d37dfbddbc53f9fb3fdda6347bcfa55f352556557d9e11f085",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200002E.cs",
+      "product_sha256": "44e510e2882f8c3563304e2cf56eec772f26c99166045b6a29100ab98bb030e4",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000038.cs",
+      "source_sha256": "376161a951e3e95309f0f1bbc21b354f3f8bb3ad2a0ea77583ee4089ac79e995",
+      "product_path": "src/W.DmProvider/PublicApi/DmDataReader.cs",
+      "product_sha256": "87b54eb5a4af477a8b5ae282f19e2dc0b36c04a07f478227464d55afdc60cd70",
+      "transform": "Roslyn namespace migration; rename recovered source file to DmDataReader.cs"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000079.cs",
+      "source_sha256": "9ff31bfd03289f3934bd01def19978fabb98e0f15db15dd4d1b20041d2b7a8c2",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000079.cs",
+      "product_sha256": "9de936d4ee852bfd1718b89d639a9afe9fbd63367746bd5f8df28cf17dfc9867",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200007B.cs",
+      "source_sha256": "12891e367e18fd7b6927b6c9a031ab9e1cce47323fea6ee00b9d35bb6770c9c3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007B.cs",
+      "product_sha256": "db101fe95b8c16c26e00a815165845b6f722bf6c653a3f203bb7de176ce4a3c7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200007D.cs",
+      "source_sha256": "af88a08192f3c2fed45f02fce288747648e7df51feaba9cd7fc9001e6d3347bd",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007D.cs",
+      "product_sha256": "9cfed644922bfaa94fc54bf33e9d812b557660fc1a7c4dd88d5086b66d90f428",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200007E.cs",
+      "source_sha256": "b9ea3513ac25f7d96c55fd2db8bba7a164effe69346f42369d2301d9be246545",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007E.cs",
+      "product_sha256": "07323f4916a5ec94a58496886768515c97b847920e461fba128481fadc098180",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200007F.cs",
+      "source_sha256": "804f687495b8ab445daca04ec0db99687c5f660eb2c87a4b2c5c02fd9243be17",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007F.cs",
+      "product_sha256": "fd9b77d1a75663e78d90d2e15d820d0dd837ec186c03f118c448b333c947c827",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000080.cs",
+      "source_sha256": "43cffd186194aa9bd603d571a75781e7830b6d2fcce23c446f51a1d4b573fa92",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000080.cs",
+      "product_sha256": "09b8403013af4a22b8a1755ba30b04497a0ce103e7394e331a513be7a232d007",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000081.cs",
+      "source_sha256": "6bf09933f0f4f5eb20b5c83d78809b5409db9f2d5b610bb811bf531b02cdb87c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000081.cs",
+      "product_sha256": "887374b1eddd648917cf59470dd4876a7a41303b28c97406844a638841106fe6",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000082.cs",
+      "source_sha256": "1c571b69b6428835950dd21446c3362748fbeddd269046a35d648b6f490f5149",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000082.cs",
+      "product_sha256": "03ad59f3a8201b4f276ea32bd2392eae06ffe7a1ede9c08faf060d150b80becf",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000088.cs",
+      "source_sha256": "6ca92932beeb9adf49474ae30bb86ae28db373641df163ca469822f6dfdb09fe",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000088.cs",
+      "product_sha256": "9aad10c16f221312503f889631b436c24ae5737bc9f64064279740e1c7af4d19",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_02000089.cs",
+      "source_sha256": "8a197ff9ae63c292205b9f7478f7bdc3fa3d8a3b0e6f441d53efac67c2f1845f",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000089.cs",
+      "product_sha256": "61df8f26e1947cefc21aa817b2aba12d657d365ebe833a7e618e3326b3065df9",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200008A.cs",
+      "source_sha256": "ad77b52b294f00a625af7a924f366bbce9ebf6c33a0b4020e61d0ecc1b655f44",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008A.cs",
+      "product_sha256": "e9103045618fe9ca69c8959afc644a9ba50b842216aaa1e563c70ebb36151c28",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200008B.cs",
+      "source_sha256": "f82d2128c581d124e522715c3c11cb4b6f35efcdb9676dcf865037996b92c6a3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008B.cs",
+      "product_sha256": "86632e48ff45e23ea7868514c7bb9e85aa5a6ddf9c6740db9537acbda66aba8c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200008C.cs",
+      "source_sha256": "454d8189e593a4905d407652bcece449ba15cca4d5c56b1994b548db643a9250",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008C.cs",
+      "product_sha256": "34140dc754bbba040472e33c70cb398dca201e1d0c745d4d7ca3d45c64762509",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200008D.cs",
+      "source_sha256": "9b69f2cc23e19fcb5490380cf81074f6dad549066ad96db53e00525f9b3cd441",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008D.cs",
+      "product_sha256": "ba03f2f3a7c5d2483e0fb3de11bcdc2dc5b7b04e4611b3a8f2bcd37366504dfd",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/T02_0200008E.cs",
+      "source_sha256": "65206a21bb1faf25c4302730167ec94e42bc55bc04b374945a74fc0f7732db10",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008E.cs",
+      "product_sha256": "2d30c909b4c0fe259e43290d66449b3ebb42ea0a9b3ca0058ab7b3905360331c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/TableInfo.cs",
+      "source_sha256": "0b5b92008d63248296a17ef6e50ecffc70beda71634d44a7638ba05b1b0a81ff",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/TableInfo.cs",
+      "product_sha256": "2dc36cb6fb073692123f112179f01836efaa9e4cd8acdeeb474010d8339e3e72",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ThirdPartCipher.cs",
+      "source_sha256": "35cbf92be11c07b7ea57b869877f147820e518d6299c9abbbd01f950ec2e6a46",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ThirdPartCipher.cs",
+      "product_sha256": "80948f8daf4791ad84ac702c730efdb3a1e3b6504d49b5036e58346e62dfd1cb",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/ThirdPartCipherDLL.cs",
+      "source_sha256": "4bfd0dc36735b3a6e73918fd5b32ccf2d3027622de5cbe79d533d2965efbf61e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/ThirdPartCipherDLL.cs",
+      "product_sha256": "38dd3c8d5f5a609629969bccff41cc37d3d14b1dd6823beefbd57d0bfa5eecd7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/TraceLevel.cs",
+      "source_sha256": "2edebc6e5fea167bc1a22ca716d45d06f23266b8373f5bcb3f01d303533e4434",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/TraceLevel.cs",
+      "product_sha256": "4ce89a1cab4e86c5048c12e97e363586172ceac788d5478990a79b7dced3871e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/TypeDesc.cs",
+      "source_sha256": "ce9835aee4bc9bdf698b14cbcc8f3f8ed31df03513c562e3e4b4505e860d418c",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/TypeDesc.cs",
+      "product_sha256": "c91f9bca1b6f3a844033f1fac8653c2f54124b246e3ff9e13e0f40bb7bf9651e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/Types.cs",
+      "source_sha256": "09429c204d97fd4aa43a7a32bdc7f5fbbbe5ad7ba3f3fd03349ed753184ab864",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/Types.cs",
+      "product_sha256": "1dfe8d88fa199022ea6158650c1be780b03fa877f282c814debc0c42b538b079",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm/WellDistributeSelector.cs",
+      "source_sha256": "9c3fe8aa03506e92c53e7617e0c618db74c9c4da652e8d2335c839eba8a8f153",
+      "product_path": "src/W.DmProvider/Internal/Legacy/Dm/WellDistributeSelector.cs",
+      "product_sha256": "a0de809b6d811ed5ee2dbbd7ca435de804d0ff630e1ead7c62686d2c220b87fe",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/DmSqlRowUpdatedEventArgs.cs",
+      "source_sha256": "33a33d28d53693f7b3e5c9c975f2b986eda9e027eb9bd172ca7b3679a6cc9966",
+      "product_path": "src/W.DmProvider/PublicApi/DmSqlRowUpdatedEventArgs.cs",
+      "product_sha256": "ba01d7ad1bec5333b8e86730a780ff49299347b0bde4a6584feb7a80f28ec8df",
+      "transform": "Roslyn namespace migration; move global event args into W.Dm"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/DmSqlRowUpdatingEventArgs.cs",
+      "source_sha256": "1624f80380dc1db557d296377f4ebb7cac5e338d8cc02762b7e46ab248f13c79",
+      "product_path": "src/W.DmProvider/PublicApi/DmSqlRowUpdatingEventArgs.cs",
+      "product_sha256": "733efebb29d0bb52db484215af0e638ac4e17ee5a3de87f93a6f63a9ebaa14bb",
+      "transform": "Roslyn namespace migration; move global event args into W.Dm"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Buffer.cs",
+      "source_sha256": "c102d978edf5b6fb59ab741b8406469377a419cc67108d53caab9ac237e83ca8",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Buffer.cs",
+      "product_sha256": "2fa9f05caf2022c40580128406b318c1647469ebf9685d9b09381b69f11d448f",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Errors.cs",
+      "source_sha256": "d3311f4df268aa0e4cd5e659ff17168705db8059bd9833639554524a34e4442a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Errors.cs",
+      "product_sha256": "46f5f13125a9665de378f731f2c47b6d0d27eb2c60adb8d945c4557eaa1b39f3",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/FatalError.cs",
+      "source_sha256": "32bb6f7bde7f93302d3e0f7ff09be8aa4e84542eea0082661609aa4bebf47b4a",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/FatalError.cs",
+      "product_sha256": "fcb420896023591ffc7271f53d5c184c6458a046433de4d2f8726c12d3167d3b",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Obj.cs",
+      "source_sha256": "3765a0b1a803a65acf0af0910c245315a8409b41147b2b741ce82c4dc2aae6f5",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Obj.cs",
+      "product_sha256": "fb085df6ac5e2009d1a5cd3b8b475e2edf732a9c5b0d17853a69d492e2078c11",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Parser.cs",
+      "source_sha256": "167e9fdf4451dd7cdbf49b67635344a83b4b7100e49891d2f2176333f80a8a61",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Parser.cs",
+      "product_sha256": "fd5521d43536635813aa135f406de9a1a8128f7421f9ec403295a851616d3d2a",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Scanner.cs",
+      "source_sha256": "32dacb5380c538143c06fef6e3e9a86959e09c52e99f05855ec1a29b2892d0c4",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Scanner.cs",
+      "product_sha256": "acd887bd90a495ebe5a22dcf58dac4134ad8a23be495682e669459283304b59e",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/SymbolTable.cs",
+      "source_sha256": "788d9fbf76466bdc94a8932ff70ceb86a24191322bbf09c0e178f9a47fd42ff3",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/SymbolTable.cs",
+      "product_sha256": "f47f752eebbec51fe671aa8fcf06ba8dd9a6dba90e990a5759a26018a5495e1c",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/Token.cs",
+      "source_sha256": "1d5323a024e4400b0a8447ff3ef694774a2afd0174527a91f0483abddc1f291e",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/Token.cs",
+      "product_sha256": "29d47cc127029d4c1661ae1dd77b9e247b7918cb127c3598fe16170cf85fc3a7",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/NetTaste/UTF8Buffer.cs",
+      "source_sha256": "7dd92e529de54db79761a82d43bc6f9213309731c7659a7ed039d07b8b90f343",
+      "product_path": "src/W.DmProvider/Internal/Legacy/NetTaste/UTF8Buffer.cs",
+      "product_sha256": "f987d2cb8fae6fc446502beef7929b8d73a3b2db253acc788ff3588952a5bc16",
+      "transform": "Roslyn syntax-token namespace migration"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.DmErrorDefinition.resx",
+      "source_sha256": "df6c9b5cd6bc3e45a733eb861ab9de11d5b09ccbab5bf4ed4848969a1aea0d9a",
+      "product_path": "src/W.DmProvider/Resources/Dm.DmErrorDefinition.resx",
+      "product_sha256": "df6c9b5cd6bc3e45a733eb861ab9de11d5b09ccbab5bf4ed4848969a1aea0d9a",
+      "transform": "Preserve neutral resource bytes and explicit LogicalName"
+    },
+    {
+      "source_path": ".local/t02/t03-seed/Dm.ReservedWords.txt",
+      "source_sha256": "585803af5f6a831b391c553b4fc3316d8d9ccb260184d61a594704785fba563c",
+      "product_path": "src/W.DmProvider/Resources/Dm.ReservedWords.txt",
+      "product_sha256": "585803af5f6a831b391c553b4fc3316d8d9ccb260184d61a594704785fba563c",
+      "transform": "Preserve neutral resource bytes and explicit LogicalName"
+    },
+    {
+      "source_path": "packages/extracted/lib/net9.0/en/DM.DmProvider.resources.dll",
+      "source_sha256": "9c47bc08cc664998322b4dff5db64ed2a4a882b500bf19dda184135ab838d04a",
+      "product_path": "src/W.DmProvider/Resources/en/Dm.DmErrorDefinition.resx",
+      "product_sha256": "cbc2a842355ffa32edb0bd0cd1febe8c78609df56ea1ce3990afce52d921be43",
+      "transform": "Extract 238 string entries from fixed satellite; rebuild under W.DmProvider identity"
+    },
+    {
+      "source_path": "packages/extracted/lib/net9.0/zh-CN/DM.DmProvider.resources.dll",
+      "source_sha256": "0f5015933157eedcd14ae05f0be9e7892ce04089e5f8eb59e4f3f0e020b8e488",
+      "product_path": "src/W.DmProvider/Resources/zh-CN/Dm.DmErrorDefinition.resx",
+      "product_sha256": "c0b8ca8cbf4c190ff900d5f25a2eb6e7e7f6578bb6ad76b4209c86a00253e064",
+      "transform": "Extract 240 string entries from fixed satellite; rebuild under W.DmProvider identity"
+    },
+    {
+      "source_path": "packages/extracted/lib/net9.0/zh-HK/DM.DmProvider.resources.dll",
+      "source_sha256": "cc1646ad7445b814ed0f93d330bb202b9cd8f40e2a67c8c5c5fcdbdc39270f5d",
+      "product_path": "src/W.DmProvider/Resources/zh-HK/Dm.DmErrorDefinition.resx",
+      "product_sha256": "18c8a970b6544e3ac5466672b0a421ffbc37fcc31338d2b9ad5165b4ccc91f43",
+      "transform": "Extract 240 string entries from fixed satellite; rebuild under W.DmProvider identity"
+    },
+    {
+      "source_path": "packages/extracted/lib/net9.0/zh-TW/DM.DmProvider.resources.dll",
+      "source_sha256": "509032abe64fbcb2ddc752d517fd14303fad78bb1764276d4b15cdf71cd81d7f",
+      "product_path": "src/W.DmProvider/Resources/zh-TW/Dm.DmErrorDefinition.resx",
+      "product_sha256": "18c8a970b6544e3ac5466672b0a421ffbc37fcc31338d2b9ad5165b4ccc91f43",
+      "transform": "Extract 240 string entries from fixed satellite; rebuild under W.DmProvider identity"
+    }
+  ]
+}

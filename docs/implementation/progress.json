@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "specification": "v1/tasks.json",
+  "source_baseline": "860988296cb95deeb600328cb7bcd2160237a94f",
+  "tasks": [
+    {
+      "id": "T01",
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T01.md"
+    },
+    {
+      "id": "T02",
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T02.md"
+    },
+    {
+      "id": "T03",
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T03.md"
+    },
+    {
+      "id": "T04",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T05",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T06",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T07",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T08",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T09",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T10",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T11",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T12",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T13",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T14",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T15",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T16",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T17",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T18",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T19",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T20",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T21",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T22",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T23",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T24",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    },
+    {
+      "id": "T25",
+      "status": "not_started",
+      "completed": false,
+      "report": null
+    }
+  ]
+}

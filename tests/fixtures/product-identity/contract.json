@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "assembly_name": "W.DmProvider",
+  "namespace": "W.Dm",
+  "core_types": [
+    "W.Dm.DmConnection",
+    "W.Dm.DmCommand",
+    "W.Dm.DmDataReader",
+    "W.Dm.DmParameter",
+    "W.Dm.DmParameterCollection",
+    "W.Dm.DmTransaction",
+    "W.Dm.DmConnectionStringBuilder",
+    "W.Dm.DmClientFactory",
+    "W.Dm.DmException",
+    "W.Dm.DmDbType"
+  ],
+  "compatibility_types": [
+    "W.Dm.DmDataAdapter"
+  ],
+  "factory_cases": [
+    {
+      "method": "CreateConnection",
+      "type": "W.Dm.DmConnection"
+    },
+    {
+      "method": "CreateCommand",
+      "type": "W.Dm.DmCommand"
+    },
+    {
+      "method": "CreateParameter",
+      "type": "W.Dm.DmParameter"
+    },
+    {
+      "method": "CreateConnectionStringBuilder",
+      "type": "W.Dm.DmConnectionStringBuilder"
+    }
+  ],
+  "resource_name": "Dm.DmErrorDefinition",
+  "resource_key": "message.error",
+  "resource_value_sha256": {
+    "neutral": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556",
+    "en": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556",
+    "zh-CN": "4193e7b500bf4b687e648b722a909603a5a222b5e607e2d04750c749f0a85204",
+    "zh-HK": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d",
+    "zh-TW": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+  },
+  "cultures": [
+    "neutral",
+    "en",
+    "zh-CN",
+    "zh-HK",
+    "zh-TW"
+  ],
+  "forbidden_managed_assemblies": [
+    "DM.DmProvider"
+  ]
+}
