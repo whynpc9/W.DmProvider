@@ -1,0 +1,579 @@
+{
+  "schema_version": 1,
+  "document_status": "implementation_spec_not_implemented",
+  "baseline": {
+    "driver_commit": "860988296cb95deeb600328cb7bcd2160237a94f",
+    "ef_contract_commit": "8dab4c0205f21fae4c8ca06fcbc39450eae2fe42",
+    "official_package": "DM.DmProvider/8.3.1.47463",
+    "official_asset": "lib/net9.0/DM.DmProvider.dll",
+    "target_tfm": "net10.0"
+  },
+  "selection_rule": "Earliest task with satisfied dependencies and activation_gate; no task is implemented merely because this manifest exists. Never silently satisfy integration gates with offline tests.",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "固定资产、来源和O/R/W运行清单",
+      "status": "not_started",
+      "depends_on": [],
+      "spec_files": [
+        "specs/01-baseline-and-build.md"
+      ],
+      "target_release": "R0",
+      "deliverable": "生成真实哈希/MVID/工具版本；保护只读快照；明确实际net9资产。",
+      "out_of_scope": "不恢复整个驱动、不修行为。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T02",
+      "title": "恢复可编译R基线",
+      "status": "not_started",
+      "depends_on": [
+        "T01"
+      ],
+      "spec_files": [
+        "specs/01-baseline-and-build.md"
+      ],
+      "target_release": "R0",
+      "deliverable": "锁定SDK、资源、IL对照和必要机械恢复；记录所有恢复差异。",
+      "out_of_scope": "不掺入任何已知缺陷修复。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T03",
+      "title": "创建独立W包与公开API差异清单",
+      "status": "not_started",
+      "depends_on": [
+        "T02"
+      ],
+      "spec_files": [
+        "specs/01-baseline-and-build.md",
+        "specs/02-api-and-configuration.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "独立assembly/namespace/package，候选pack与依赖隔离，迁移工作树。",
+      "out_of_scope": "不发布NuGet，不假冒官方身份。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T04",
+      "title": "实现不可变配置和能力守卫",
+      "status": "not_started",
+      "depends_on": [
+        "T03"
+      ],
+      "spec_files": [
+        "specs/02-api-and-configuration.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "别名单位表、默认值、显式安全策略、哑选项拒绝和脱敏。",
+      "out_of_scope": "不实现全局可变过滤器或空壳高级能力。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T05",
+      "title": "统一会话状态和执行所有权",
+      "status": "not_started",
+      "depends_on": [
+        "T04"
+      ],
+      "spec_files": [
+        "specs/03-session-and-ownership.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "唯一session/generation/execution/invocation身份及全部wire入口清单。",
+      "out_of_scope": "不增加MARS、不把每次write锁当完整协议锁。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T06",
+      "title": "加固传输与帧边界",
+      "status": "not_started",
+      "depends_on": [
+        "T05"
+      ],
+      "spec_files": [
+        "specs/04-transport-protocol-and-security.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "短读短写、长度/CRC/EOF防御、单次TCP建连、统一期限入口。",
+      "out_of_scope": "不猜协议、不重写全部codec。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T07",
+      "title": "修复TLS和原生资源安全边界",
+      "status": "not_started",
+      "depends_on": [
+        "T06"
+      ],
+      "spec_files": [
+        "specs/04-transport-protocol-and-security.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "证书链/主机名校验、拒绝降级、native加载及失败释放。",
+      "out_of_scope": "不默认打包原生库、不发明新cipher。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T08",
+      "title": "接通命令、Reader和EF保存契约",
+      "status": "not_started",
+      "depends_on": [
+        "T06"
+      ],
+      "spec_files": [
+        "specs/05-command-reader-and-ef-contract.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "保留DML+影响行数/键回读；多结果、早关闭、flags与资源。",
+      "out_of_scope": "不Split分号、不改EF SQL绕过失败。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T09",
+      "title": "修复参数与类型精度",
+      "status": "not_started",
+      "depends_on": [
+        "T08"
+      ],
+      "spec_files": [
+        "specs/06-parameters-and-types.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "显式类型来源、enum/unsigned/decimal、Guid文本、时间与LOB绑定。",
+      "out_of_scope": "不顺带实现复杂类型和JSON查询。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T10",
+      "title": "本地事务和保存点",
+      "status": "not_started",
+      "depends_on": [
+        "T08"
+      ],
+      "spec_files": [
+        "specs/07-transactions-and-savepoints.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "Dispose回滚尝试、outcome状态、Save/Rollback/Release标准API及守卫。",
+      "out_of_scope": "不静默降级隔离、不实现伪分布式事务。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T11",
+      "title": "定位隔离级别SaveChanges失败",
+      "status": "not_started",
+      "depends_on": [
+        "T09",
+        "T10"
+      ],
+      "spec_files": [
+        "specs/05-command-reader-and-ef-contract.md",
+        "specs/07-transactions-and-savepoints.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "输出ADO最小复现矩阵和实证根因；能确定则修复并加最终状态测试。",
+      "out_of_scope": "不能预设服务器不支持或GetSchemaTable是根因。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T12",
+      "title": "R1下游交接与正确性门槛",
+      "status": "not_started",
+      "depends_on": [
+        "T07",
+        "T09",
+        "T10",
+        "T11"
+      ],
+      "spec_files": [
+        "specs/12-tests-diagnostics-and-release.md"
+      ],
+      "target_release": "R1",
+      "deliverable": "形成真实candidate nupkg与EF handoff；分离官方行为/正确契约/改进。",
+      "out_of_scope": "缺数据库不得把release门槛标通过。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T13",
+      "title": "端到端异步调用链",
+      "status": "not_started",
+      "depends_on": [
+        "T12"
+      ],
+      "spec_files": [
+        "specs/08-async-cancellation-and-timeouts.md"
+      ],
+      "target_release": "R2",
+      "deliverable": "统一async core，所有声明Async路径贯通，fake transport拒绝同步I/O。",
+      "out_of_scope": "不用Task.Run；不会为已有内存值强行yield。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T14",
+      "title": "取消、期限和未知结果竞态",
+      "status": "not_started",
+      "depends_on": [
+        "T13"
+      ],
+      "spec_files": [
+        "specs/03-session-and-ownership.md",
+        "specs/07-transactions-and-savepoints.md",
+        "specs/08-async-cancellation-and-timeouts.md"
+      ],
+      "target_release": "R2",
+      "deliverable": "代际取消、deadline、异常分类、AbortPhysicalSession、未知提交不重放。",
+      "out_of_scope": "不猜CMD_CANCLE、不取消后透明重连。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T15",
+      "title": "验证会话复位能力",
+      "status": "not_started",
+      "depends_on": [
+        "T14"
+      ],
+      "spec_files": [
+        "specs/09-datasource-and-pooling.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "实际探测reset范围/权限/状态残留；输出verified reset或discard决策。",
+      "out_of_scope": "SELECT1或ROLLBACK不能自动等同完整reset。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T16",
+      "title": "实现DataSource与池容量/复用",
+      "status": "not_started",
+      "depends_on": [
+        "T15"
+      ],
+      "spec_files": [
+        "specs/09-datasource-and-pooling.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "独立池+受控registry、取消队列、代际清理、VerifiedResetOrDiscard。",
+      "out_of_scope": "未验证状态不回池，不能对discard路径吹嘘复用性能。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T17",
+      "title": "流式LOB读写",
+      "status": "not_started",
+      "depends_on": [
+        "T14",
+        "T09"
+      ],
+      "spec_files": [
+        "specs/10-streaming-lob.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "forward-only流、无Length输入、跨字符分片、父reader生命周期与内存上限。",
+      "out_of_scope": "不CopyTo MemoryStream整字段物化。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T18",
+      "title": "标准诊断与长时故障/资源测试",
+      "status": "not_started",
+      "depends_on": [
+        "T16",
+        "T17"
+      ],
+      "spec_files": [
+        "specs/12-tests-diagnostics-and-release.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "低基数可观察性、敏感数据检查、线程/句柄/内存、测试manifest。",
+      "out_of_scope": "不泄漏SQL值，不把skip当pass。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T19",
+      "title": "R3候选包下游与发布材料",
+      "status": "not_started",
+      "depends_on": [
+        "T18",
+        "T25"
+      ],
+      "spec_files": [
+        "specs/12-tests-diagnostics-and-release.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "最终nupkg、精确兼容矩阵、EF集成证据、SBOM/来源和回退说明。",
+      "out_of_scope": "只生成候选材料，未经授权不远程发行。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T20",
+      "title": "数组绑定和批次协议探测",
+      "status": "not_started",
+      "depends_on": [
+        "T14"
+      ],
+      "spec_files": [
+        "specs/11-array-binding-and-batch.md"
+      ],
+      "target_release": "R4",
+      "deliverable": "实际RT、边界、结果归属、事务/错误矩阵；支持/拒绝/未知清楚。",
+      "out_of_scope": "不从DbBatch类型或Write次数推导性能。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T21",
+      "title": "实现受控数组绑定",
+      "status": "not_started",
+      "depends_on": [
+        "T20"
+      ],
+      "spec_files": [
+        "specs/11-array-binding-and-batch.md"
+      ],
+      "target_release": "R4.Arrays",
+      "deliverable": "固定DML模板+分块参数组、显式事务、每行已知状态与失败索引。",
+      "out_of_scope": "不猜单行影响数、不ContinueOnError自动重试。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": "Array-binding protocol and explicit-transaction semantics verified"
+    },
+    {
+      "id": "T22",
+      "title": "实现经验证的原生DbBatch",
+      "status": "not_started",
+      "depends_on": [
+        "T20"
+      ],
+      "spec_files": [
+        "specs/11-array-binding-and-batch.md"
+      ],
+      "target_release": "R4.NativeBatch",
+      "deliverable": "工厂和DbBatch API、结果/参数隔离、事务归属、早关闭及取消。",
+      "out_of_scope": "NativeBatch协议门槛不满足则保持禁用，不用for循环充数。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": "Protocol evidence establishes native multi-command execution semantics and result attribution"
+    },
+    {
+      "id": "T23",
+      "title": "R4性能与EF批次交接",
+      "status": "not_started",
+      "depends_on": [
+        "T19",
+        "T21"
+      ],
+      "spec_files": [
+        "specs/11-array-binding-and-batch.md",
+        "specs/12-tests-diagnostics-and-release.md"
+      ],
+      "target_release": "R4",
+      "deliverable": "同语义RT/吞吐/分配对照；下游单独批次PR交接。",
+      "out_of_scope": "若声明NativeBatch，必须另外满足T22；不自动变更EF默认链路。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T24",
+      "title": "后续高级能力分项研究",
+      "status": "not_started",
+      "depends_on": [
+        "T14"
+      ],
+      "spec_files": [
+        "specs/13-later-capabilities.md"
+      ],
+      "target_release": "Later",
+      "deliverable": "每次只选择一项：原生取消/FLDR/缓存/HA/ambient/复杂类型/AOT，产出probe与门槛。",
+      "out_of_scope": "不把研究任务混入核心发行，不假报全功能兼容。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    },
+    {
+      "id": "T25",
+      "title": "独立逆向验证与边界审阅",
+      "status": "not_started",
+      "depends_on": [
+        "T18"
+      ],
+      "spec_files": [
+        "specs/03-session-and-ownership.md",
+        "specs/07-transactions-and-savepoints.md",
+        "specs/08-async-cancellation-and-timeouts.md",
+        "specs/09-datasource-and-pooling.md",
+        "specs/12-tests-diagnostics-and-release.md"
+      ],
+      "target_release": "R3",
+      "deliverable": "从调用者视角误用/取消/超时/事务失败/复位状态污染测试与审阅记录。",
+      "out_of_scope": "实现agent自己的golden和happy path不能替代独立审核。",
+      "implementation_scope": "W.DmProvider; downstream changes only by explicit handoff",
+      "evidence_required": [
+        "implementation diff or scoped probe",
+        "actual test commands and exit codes",
+        "acceptance IDs and evidence level",
+        "task report using contracts/task-report-template.md"
+      ],
+      "activation_gate": null
+    }
+  ]
+}

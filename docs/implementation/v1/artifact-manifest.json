@@ -1,0 +1,131 @@
+{
+  "created_date": "2026-09-28",
+  "kind": "specification_bundle",
+  "implementation_tests_run": false,
+  "validation": {
+    "task_dag": "passed",
+    "spec_file_references": "passed",
+    "source_reference_ids": "passed",
+    "code_fence_balance": "passed",
+    "duplicate_acceptance_ids": "none",
+    "tasks": 25,
+    "acceptance_cases": 98
+  },
+  "files": [
+    {
+      "path": "AGENT-START.md",
+      "size_bytes": 2873,
+      "sha256": "2572a2ccd87be942dc0b6d037fbda37f49a9dc35a7323e83caad49f755b2f5c4"
+    },
+    {
+      "path": "IMPLEMENTATION-SPEC.md",
+      "size_bytes": 101553,
+      "sha256": "52b7888388d957ef21d93fd93796c8ee85126b044d1c199d30eff12585db0a11"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 7358,
+      "sha256": "87a9ea9a596c3ab03854deb509bafb5e24a8e9ca05b328b1bd0e6a7d18d62885"
+    },
+    {
+      "path": "SOURCES.md",
+      "size_bytes": 4463,
+      "sha256": "baff5f77b162777bd87282242a360b2a7a9506299f21c43a0ddfe990242a10c5"
+    },
+    {
+      "path": "contracts/acceptance-cases.json",
+      "size_bytes": 40725,
+      "sha256": "1ce38eaa65870df08f83dfa81c86aeb6b4bb7afdc206e47c027f29478a295a12"
+    },
+    {
+      "path": "contracts/downstream-handoff.md",
+      "size_bytes": 1959,
+      "sha256": "69f5e582f01bf673cf9fc8c85d6a9732afca2c0c4c8113243d669df9931fd79a"
+    },
+    {
+      "path": "contracts/release-gates.json",
+      "size_bytes": 1878,
+      "sha256": "bb2615cf03eab68efc5113da32a8e97d617f3a0f37444063c30d3b877f83c70e"
+    },
+    {
+      "path": "contracts/task-plan.md",
+      "size_bytes": 4137,
+      "sha256": "31cf7af1a1ca1bee1a9cbc54af5de88176d3bddce9f5fb4c786014d78f0f59c3"
+    },
+    {
+      "path": "contracts/task-report-template.md",
+      "size_bytes": 1144,
+      "sha256": "07e728f3eb79c66a01d0b1b91c8257b005dc4d97822b8d74392fbffbd61f7f8c"
+    },
+    {
+      "path": "specs/01-baseline-and-build.md",
+      "size_bytes": 4300,
+      "sha256": "64a5d4cedb36eb5c071d1fba8ed3d42d75d97b6228b960765057f3dd0cb4db0b"
+    },
+    {
+      "path": "specs/02-api-and-configuration.md",
+      "size_bytes": 6082,
+      "sha256": "60c13821018a93c2c40414f53c131a59c707ef3bc27901ee7836b24e5bd24cf1"
+    },
+    {
+      "path": "specs/03-session-and-ownership.md",
+      "size_bytes": 6205,
+      "sha256": "0026dd17b9096430d289028bd1c62fe7bab009301fa1c93c4165ea2bc49fe55a"
+    },
+    {
+      "path": "specs/04-transport-protocol-and-security.md",
+      "size_bytes": 6246,
+      "sha256": "7f0250b017707aca8190d2f87db13611a3761100fe2b1df8662e1b81e13bc064"
+    },
+    {
+      "path": "specs/05-command-reader-and-ef-contract.md",
+      "size_bytes": 6454,
+      "sha256": "90d88c7c7a0d8adb7fcb3984a3938e5e5e37f08529220383f48da37c91cf3d96"
+    },
+    {
+      "path": "specs/06-parameters-and-types.md",
+      "size_bytes": 6291,
+      "sha256": "de6debc35253cda2f95787f5798318566367f74c6996a35d55d06f80d6152f1e"
+    },
+    {
+      "path": "specs/07-transactions-and-savepoints.md",
+      "size_bytes": 6982,
+      "sha256": "4ba3822abbc6810cf1b0454b3c1d7aa6268c323d2ac303657058a5ade60ada7f"
+    },
+    {
+      "path": "specs/08-async-cancellation-and-timeouts.md",
+      "size_bytes": 7775,
+      "sha256": "d43a5079839dfd02bfa5d52c80e8ad3a870e56ecd6b7c3b211e5c5f790c9f903"
+    },
+    {
+      "path": "specs/09-datasource-and-pooling.md",
+      "size_bytes": 6150,
+      "sha256": "729ce05ee23d1c2b34bced8fbf129de60d54f067cdb5a6caa93b276a7b4c5398"
+    },
+    {
+      "path": "specs/10-streaming-lob.md",
+      "size_bytes": 5227,
+      "sha256": "0ede6c141aea0a6b2e785bf3c5934ff3b045e0eb1667a9052c9914ff7b054541"
+    },
+    {
+      "path": "specs/11-array-binding-and-batch.md",
+      "size_bytes": 6014,
+      "sha256": "83228543b10653433b752e1d5cd56820d2c89028deed70bcd64a0910cb17bf2a"
+    },
+    {
+      "path": "specs/12-tests-diagnostics-and-release.md",
+      "size_bytes": 6527,
+      "sha256": "177d382f0f34b793e9291c04a51894b98e5fabdc7a0d114f011d3ef97a80c70b"
+    },
+    {
+      "path": "specs/13-later-capabilities.md",
+      "size_bytes": 4063,
+      "sha256": "c47748c200731b356c84f41430962b09d1df2a0a349105342439020c202f33f0"
+    },
+    {
+      "path": "tasks.json",
+      "size_bytes": 21624,
+      "sha256": "21efd983a022a22990a3af59430ebc20dfee0c0954c8864d1e48ac1467c3fe82"
+    }
+  ]
+}
