@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>T11Consumer.@LANE@</AssemblyName>
+    <DefineConstants>$(DefineConstants);LANE_@LANE@</DefineConstants>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj" />
+  </ItemGroup>
+</Project>

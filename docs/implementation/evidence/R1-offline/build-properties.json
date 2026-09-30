@@ -1,0 +1,9 @@
+{
+  "configuration": "Release",
+  "candidate_version": "0.1.0-r1.20260930064454",
+  "properties": [
+    "/p:Configuration=Release",
+    "/p:Version=0.1.0-r1.20260930064454"
+  ],
+  "package_version_requires_same_producer_version": true
+}

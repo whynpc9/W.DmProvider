@@ -1,0 +1,3170 @@
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -4,10 +4,10 @@
+     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+   </PropertyGroup>
+   <ItemGroup>
+-    <PackageVersion Include="DM.DmProvider" Version="[8.3.1.47463,8.4.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.12,11.0.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="[10.0.12,11.0.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.12,11.0.0)" />
++    <PackageVersion Include="W.DmProvider" Version="[0.1.0-r1.20260930064454]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.12]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="[10.0.12]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.12]" />
+     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+     <PackageVersion Include="xunit" Version="2.9.3" />
+     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+diff --git a/scripts/local-test/LocalTest.csproj b/scripts/local-test/LocalTest.csproj
+--- a/scripts/local-test/LocalTest.csproj
++++ b/scripts/local-test/LocalTest.csproj
+@@ -4,6 +4,6 @@
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+   <ItemGroup>
+-    <PackageReference Include="DM.DmProvider" />
++    <PackageReference Include="W.DmProvider" />
+   </ItemGroup>
+ </Project>
+diff --git a/scripts/local-test/Program.cs b/scripts/local-test/Program.cs
+--- a/scripts/local-test/Program.cs
++++ b/scripts/local-test/Program.cs
+@@ -2,7 +2,7 @@
+ using System.Security.Cryptography;
+ using System.Text.Json;
+ using System.Text.Json.Nodes;
+-using Dm;
++using W.Dm;
+ 
+ internal static class Program
+ {
+diff --git a/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs b/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs
+@@ -40,13 +40,14 @@
+     /// Configures the context to retry operations that fail with a transient Dameng error.
+     /// </summary>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="Dm.DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     /// <returns>The same builder so additional calls can be chained.</returns>
+     public DamengDbContextOptionsBuilder EnableRetryOnFailure(ICollection<int> errorNumbersToAdd)
+     {
+         ArgumentNullException.ThrowIfNull(errorNumbersToAdd);
+         var errorNumbers = errorNumbersToAdd.ToArray();
++        RejectNonemptyOverrides(errorNumbers);
+ 
+         return ExecutionStrategy(
+             dependencies => new DamengRetryingExecutionStrategy(dependencies, errorNumbers));
+@@ -58,7 +59,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="Dm.DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     /// <returns>The same builder so additional calls can be chained.</returns>
+     public DamengDbContextOptionsBuilder EnableRetryOnFailure(
+@@ -67,6 +68,7 @@
+         IEnumerable<int>? errorNumbersToAdd)
+     {
+         var errorNumbers = errorNumbersToAdd?.ToArray();
++        RejectNonemptyOverrides(errorNumbers);
+ 
+         return ExecutionStrategy(
+             dependencies => new DamengRetryingExecutionStrategy(
+@@ -75,4 +77,11 @@
+                 maxRetryDelay,
+                 errorNumbers));
+     }
++    private static void RejectNonemptyOverrides(int[]? numbers)
++    {
++        if (numbers is { Length: > 0 })
++        {
++            throw new NotSupportedException("W R1 does not support error-number retry overrides without a safe replay classifier.");
++        }
++    }
+ }
+diff --git a/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs b/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs
+@@ -2,7 +2,7 @@
+ using System.Data.Common;
+ using System.Globalization;
+ using System.Text.RegularExpressions;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Metadata;
+ using Microsoft.EntityFrameworkCore.Migrations;
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs
+@@ -1,6 +1,6 @@
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs
+@@ -1,5 +1,5 @@
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs
+@@ -1,5 +1,5 @@
+ using System.Collections.Frozen;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ using W.EntityFrameworkCore.Dameng.Storage.Internal;
+ 
+@@ -60,7 +60,7 @@
+     /// </summary>
+     /// <param name="dependencies">The execution-strategy dependencies.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         ExecutionStrategyDependencies dependencies,
+@@ -76,7 +76,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         DbContext context,
+@@ -84,7 +84,7 @@
+         TimeSpan maxRetryDelay,
+         IEnumerable<int>? errorNumbersToAdd)
+         : base(context, maxRetryCount, maxRetryDelay)
+-        => _additionalErrorNumbers = errorNumbersToAdd?.ToFrozenSet();
++        => _additionalErrorNumbers = ValidateAdditionalNumbers(errorNumbersToAdd);
+ 
+     /// <summary>
+     /// Initializes a strategy using the supplied retry settings.
+@@ -93,7 +93,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         ExecutionStrategyDependencies dependencies,
+@@ -101,7 +101,7 @@
+         TimeSpan maxRetryDelay,
+         IEnumerable<int>? errorNumbersToAdd)
+         : base(dependencies, maxRetryCount, maxRetryDelay)
+-        => _additionalErrorNumbers = errorNumbersToAdd?.ToFrozenSet();
++        => _additionalErrorNumbers = ValidateAdditionalNumbers(errorNumbersToAdd);
+ 
+     /// <summary>
+     /// Gets the configured additional transient error numbers.
+@@ -111,7 +111,15 @@
+ 
+     /// <inheritdoc />
+     protected override bool ShouldRetryOn(Exception exception)
+-        => (exception is DmException dmException
+-                && _additionalErrorNumbers?.Contains(dmException.Number) == true)
+-            || DamengTransientExceptionDetector.ShouldRetryOn(exception);
++        => DamengTransientExceptionDetector.ShouldRetryOn(exception);
++
++    private static FrozenSet<int>? ValidateAdditionalNumbers(IEnumerable<int>? values)
++    {
++        var numbers = values?.ToFrozenSet();
++        if (numbers is { Count: > 0 })
++        {
++            throw new NotSupportedException("W R1 does not support error-number retry overrides without a safe replay classifier.");
++        }
++        return numbers;
++    }
+ }
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs
+@@ -1,6 +1,6 @@
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ using Microsoft.EntityFrameworkCore.Storage.Json;
+ 
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs
+@@ -2,7 +2,7 @@
+ using System.Globalization;
+ using System.Linq.Expressions;
+ using System.Reflection;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+diff --git a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs
+@@ -1,27 +1,11 @@
+-using Dm;
++using W.Dm;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+ 
+ internal static class DamengTransientExceptionDetector
+ {
+-    // DmException.Number exposes both negative server codes and positive ADO.NET
+-    // provider codes. Keep this list deliberately narrow: configuration,
+-    // authentication, syntax, constraint, and data errors must never be retried.
+-    private static readonly HashSet<int> TransientErrorNumbers =
+-    [
+-        -3003, // EC_RN_DEADLOCK
+-        -3404, // EC_RN_STMT_TIMEOUT
+-        -6003, // EC_CONNECT_CAN_NOT_ESTABLISHED
+-        -6004, // EC_SNET_FAIL
+-        -6010, // EC_CONNECT_LOST
+-        6001, // ECNET_COMMUNITION_ERROR
+-        6027, // ECNET_NO_SOCKET_DATA
+-        6060, // ECNET_CONNECTION_CLOSED
+-        6089, // ECNET_COMMAND_TIME_OUT
+-        6123, // ECNET_CONNPOOL_TIMEOUT
+-    ];
+-
++    // R1 has no public NotSent/ReplaySafe classifier. Numbers never prove safe replay.
+     public static bool ShouldRetryOn(Exception exception)
+-        => exception is DmException dmException
+-            && TransientErrorNumbers.Contains(dmException.Number);
++        => exception is DmException { IsTransient: true }
++            && exception is not DmCommitOutcomeUnknownException;
+ }
+diff --git a/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj b/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj
+--- a/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj
++++ b/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj
+@@ -14,7 +14,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="DM.DmProvider" />
++    <PackageReference Include="W.DmProvider" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+   </ItemGroup>
+ 
+diff --git a/src/W.EntityFrameworkCore.Dameng/packages.lock.json b/src/W.EntityFrameworkCore.Dameng/packages.lock.json
+--- a/src/W.EntityFrameworkCore.Dameng/packages.lock.json
++++ b/src/W.EntityFrameworkCore.Dameng/packages.lock.json
+@@ -2,15 +2,9 @@
+   "version": 2,
+   "dependencies": {
+     "net10.0": {
+-      "DM.DmProvider": {
+-        "type": "Direct",
+-        "requested": "[8.3.1.47463, 8.4.0)",
+-        "resolved": "8.3.1.47463",
+-        "contentHash": "51FUZEWXMLp95+vFgoXiZ0Bt69DpZTmk4pDG+971x3igTs57n9EmyONW8vD/bEf43PlOn/BuQk4PGyTfZ/zBKw=="
+-      },
+       "Microsoft.EntityFrameworkCore.Relational": {
+         "type": "Direct",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+         "dependencies": {
+@@ -19,6 +13,12 @@
+           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+           "Microsoft.Extensions.Logging": "10.0.12"
+         }
++      },
++      "W.DmProvider": {
++        "type": "Direct",
++        "requested": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]",
++        "resolved": "0.1.0-r1.20260930064454",
++        "contentHash": "xY8bflUUsNM1wwaHHD4zF0UYt8C2n1oLWiJdZ+CfUWy2DvmvtD8ndYBgHQknCWFvE7fiMZ0OOe3f6G/wXpkz2A=="
+       },
+       "Microsoft.EntityFrameworkCore": {
+         "type": "Transitive",
+diff --git a/test/Shared/T12CandidateGuard.cs b/test/Shared/T12CandidateGuard.cs
+new file mode 100644
+--- /dev/null
++++ b/test/Shared/T12CandidateGuard.cs
+@@ -0,0 +1,33 @@
++using System.Runtime.CompilerServices;
++using System.Security.Cryptography;
++using System.Text.Json;
++using Microsoft.EntityFrameworkCore;
++using W.Dm;
++
++// Test-host proof of the actual package DLL. No database access or secret reading here.
++internal static class T12CandidateGuard
++{
++#pragma warning disable CA2255
++    [ModuleInitializer]
++#pragma warning restore CA2255
++    internal static void VerifyCandidate()
++    {
++        string expected = Environment.GetEnvironmentVariable("DAMENG_T12_DRIVER_DLL_SHA256")
++            ?? throw new InvalidOperationException("T12 candidate identity is required.");
++        string record = Environment.GetEnvironmentVariable("DAMENG_T12_DRIVER_LOAD_RECORD")
++            ?? throw new InvalidOperationException("T12 load evidence path is required.");
++        string path = typeof(DmConnection).Assembly.Location;
++        string actual = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
++        if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("T12 loaded driver does not match the candidate package.");
++        File.WriteAllText(record, JsonSerializer.Serialize(new
++        {
++            driver_dll_sha256 = actual,
++            loaded_path = path,
++            driver_assembly = typeof(DmConnection).Assembly.GetName().Name,
++            ef_assembly_version = typeof(DbContext).Assembly.GetName().Version?.ToString(),
++            runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
++            process_id = Environment.ProcessId
++        }) + "\n");
++    }
++}
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata.Builders;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
+new file mode 100644
+--- /dev/null
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
+@@ -0,0 +1,197 @@
++using System.Globalization;
++using System.Text.RegularExpressions;
++using W.Dm;
++using Xunit;
++
++namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
++
++// This fixture uses an existing ordinary TEST account. It never creates users,
++// schemas, tablespaces or grants, and never calls EnsureDeleted.
++public sealed class DamengCurrentSchemaScriptDatabase : IAsyncLifetime
++{
++    internal const string TestSchema = "WDM_PROVIDER_TEST";
++    private readonly HashSet<CurrentSchemaScriptObjectNames> _owned = [];
++    private string _connectionString = "";
++
++    public string ConnectionString => _connectionString;
++
++    public async Task InitializeAsync()
++    {
++        _connectionString = DamengTestEnvironment.GetRequiredConnectionString();
++        await using var connection = await OpenAsync();
++    }
++
++    public async Task DisposeAsync()
++    {
++        // A failed test's finally may have left cleanup pending. Retry only its
++        // previously claimed, exact names; no wildcard or fixed history table.
++        var failures = new List<string>();
++        foreach (var names in _owned.ToArray())
++        {
++            try { await CleanupAsync(names); }
++            catch (Exception exception) { failures.Add(Kind(exception)); }
++        }
++        if (failures.Count != 0)
++            throw new InvalidOperationException("Current-schema pending cleanup failed after all groups were attempted: "
++                + string.Join(",", failures));
++    }
++
++    public async Task<DmConnection> OpenAsync()
++    {
++        var connection = new DmConnection(_connectionString);
++        try
++        {
++            await connection.OpenAsync();
++            var user = Convert.ToString(await ScalarAsync(connection, "SELECT USER FROM DUAL"), CultureInfo.InvariantCulture);
++            var schema = Convert.ToString(await ScalarAsync(connection,
++                "SELECT SF_GET_SCHEMA_NAME_BY_ID(CURRENT_SCHID()) FROM DUAL"), CultureInfo.InvariantCulture);
++            if (!string.Equals(user, TestSchema, StringComparison.OrdinalIgnoreCase)
++                || !string.Equals(schema, TestSchema, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidOperationException("Current-schema scripts require the dedicated TEST account and schema.");
++            return connection;
++        }
++        catch (Exception exception)
++        {
++            try { await connection.DisposeAsync(); } catch { }
++            throw SafeFailure("open_or_identity", exception);
++        }
++    }
++
++    internal async Task ClaimAsync(CurrentSchemaScriptObjectNames names)
++    {
++        if (_owned.Contains(names)) throw new InvalidOperationException("Script names were already claimed.");
++        foreach (var name in AllNames(names))
++        {
++            if (!Regex.IsMatch(name, "^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant))
++                throw new InvalidOperationException("Script fixture generated an invalid owned identifier.");
++        }
++
++        await using var connection = await OpenAsync();
++        await AssertAbsentAsync(connection, names);
++        // Registration happens only after every exact name was proven absent.
++        // A collision can never give this fixture authority to delete that object.
++        _owned.Add(names);
++    }
++
++    internal async Task CleanupAsync(CurrentSchemaScriptObjectNames names)
++    {
++        if (!_owned.Contains(names)) return;
++        var failures = new List<string>();
++        try
++        {
++            await using var connection = await OpenAsync();
++            foreach (var table in Tables(names))
++            {
++                try
++                {
++                    if (await CountAsync(connection, "USER_TABLES", "TABLE_NAME", table) != 0)
++                        await ExecuteAsync(connection, "DROP TABLE \"" + table + "\"");
++                }
++                catch (Exception exception) { failures.Add(Kind(exception)); }
++            }
++            try
++            {
++                if (await CountAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", names.Sequence) != 0)
++                    await ExecuteAsync(connection, "DROP SEQUENCE \"" + names.Sequence + "\"");
++            }
++            catch (Exception exception) { failures.Add(Kind(exception)); }
++        }
++        catch (Exception exception) { failures.Add(Kind(exception)); }
++
++        // Confirm server state on a fresh connection, even after a failed DROP.
++        try
++        {
++            await using var check = await OpenAsync();
++            await AssertAbsentAsync(check, names);
++            _owned.Remove(names);
++        }
++        catch (Exception exception) { failures.Add(Kind(exception)); }
++        if (failures.Count != 0)
++            throw new InvalidOperationException("Current-schema cleanup failed: " + string.Join(",", failures));
++    }
++
++    internal static IEnumerable<string> Tables(CurrentSchemaScriptObjectNames names)
++        => new[] { names.ChildTable, names.RenamedLookupTable, names.LookupTable, names.ParentTable, names.HistoryTable }
++            .Distinct(StringComparer.Ordinal);
++
++    private static IEnumerable<string> Indexes(CurrentSchemaScriptObjectNames names)
++        => new[] { names.Index, names.RenamedIndex }.Distinct(StringComparer.Ordinal);
++
++    private static IEnumerable<string> Constraints(CurrentSchemaScriptObjectNames names)
++		=> new[] { names.PrimaryKey, names.UniqueConstraint, names.CheckConstraint, names.ForeignKey,
++			"CPK_" + names.Prefix, "LPK_" + names.Prefix, "PK_" + names.HistoryTable }.Distinct(StringComparer.Ordinal);
++
++    internal static IEnumerable<string> AllNames(CurrentSchemaScriptObjectNames names)
++        => Tables(names).Concat([names.Sequence]).Concat(Indexes(names)).Concat(Constraints(names));
++
++    private static async Task AssertAbsentAsync(DmConnection connection, CurrentSchemaScriptObjectNames names)
++    {
++        foreach (var table in Tables(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_TABLES", "TABLE_NAME", table));
++        Assert.Equal(0L, await CountAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", names.Sequence));
++        foreach (var index in Indexes(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_INDEXES", "INDEX_NAME", index));
++        foreach (var constraint in Constraints(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_CONSTRAINTS", "CONSTRAINT_NAME", constraint));
++    }
++
++    private static async Task<long> CountAsync(DmConnection connection, string catalog, string column, string name)
++        => Convert.ToInt64(await ScalarAsync(connection,
++            "SELECT COUNT(*) FROM " + catalog + " WHERE " + column + " = :owned_name", name), CultureInfo.InvariantCulture);
++
++    private static async Task<object?> ScalarAsync(DmConnection connection, string sql, string? name = null)
++    {
++        try
++        {
++            await using var command = connection.CreateCommand();
++            command.CommandText = sql;
++            if (name is not null)
++            {
++                var parameter = command.CreateParameter();
++                parameter.ParameterName = "owned_name";
++                parameter.Value = name;
++                command.Parameters.Add(parameter);
++            }
++            return await command.ExecuteScalarAsync();
++        }
++        catch (Exception exception) { throw SafeFailure("scalar", exception); }
++    }
++
++    private static async Task ExecuteAsync(DmConnection connection, string sql)
++    {
++        try
++        {
++            await using var command = connection.CreateCommand();
++            command.CommandText = sql;
++            await command.ExecuteNonQueryAsync();
++        }
++        catch (Exception exception) { throw SafeFailure("ddl_cleanup", exception); }
++    }
++
++    // The existing executor supplies SQL and Exception.ToString to its redactor.
++    // This replacement deliberately returns only a fixed, credential-free summary.
++    public static string Redact(string _) => "Current-schema script batch failed; raw SQL and exception text omitted.";
++
++    private static int? SafeNumber(Exception exception)
++        => exception is DmException dm ? dm.Number : exception.Data["DamengSafeNumber"] as int?;
++
++    private static string Kind(Exception exception)
++        => exception.GetType().FullName + (SafeNumber(exception) is { } number ? "/code=" + number : "");
++
++    internal static InvalidOperationException SafeFailure(string stage, Exception exception)
++    {
++        var frame = new System.Diagnostics.StackTrace(exception, true).GetFrame(0);
++        var method = frame?.GetMethod();
++        var failure = new InvalidOperationException("Current-schema script fixture failed at " + stage
++            + " (" + Kind(exception) + "); source=" + method?.DeclaringType?.Name + "." + method?.Name
++            + ":" + (frame?.GetFileLineNumber() ?? 0) + ".");
++        if (SafeNumber(exception) is { } number) failure.Data["DamengSafeNumber"] = number;
++        return failure;
++    }
++}
++
++[CollectionDefinition(DamengCurrentSchemaScriptSet.Name, DisableParallelization = true)]
++public sealed class DamengCurrentSchemaScriptSet : ICollectionFixture<DamengCurrentSchemaScriptDatabase>
++{
++    public const string Name = "DamengCurrentSchemaScripts";
++}
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
+new file mode 100644
+--- /dev/null
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
+@@ -0,0 +1,936 @@
++using System.Data.Common;
++using System.Globalization;
++using W.Dm;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Metadata;
++using Microsoft.EntityFrameworkCore.Migrations;
++using Microsoft.EntityFrameworkCore.Migrations.Operations;
++using Xunit;
++using Xunit.Abstractions;
++
++namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
++
++// Same object/seed contracts as the original script tests, with current-schema
++// objects and reversible migrations. The original admin fixture remains untouched.
++[Collection(DamengCurrentSchemaScriptSet.Name)]
++[Trait("Category", "CurrentSchemaScripts")]
++public sealed class DamengCurrentSchemaScriptFunctionalTests(
++    DamengCurrentSchemaScriptDatabase database, ITestOutputHelper output)
++{
++    private const string CreateMigration = "20260930000100_CurrentSchemaCreate";
++    private const string AlterMigration = "20260930000200_CurrentSchemaAlter";
++    private readonly DamengCurrentSchemaScriptDatabase _database = database;
++
++    [Fact]
++    public async Task GeneratedCreateScriptAppliesSupportedCurrentSchemaModel()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            var options = new DbContextOptionsBuilder<CurrentSchemaScriptBootstrapContext>()
++                .UseDameng(_database.ConnectionString)
++                .ReplaceService<IModelCacheKeyFactory, CurrentSchemaScriptBootstrapCacheKeyFactory>().Options;
++            await using var context = new CurrentSchemaScriptBootstrapContext(options, names);
++            var script = context.Database.GenerateCreateScript();
++            AssertScriptBoundaries(script, idempotent: false);
++            Assert.Contains("IDENTITY(10,2)", script, StringComparison.Ordinal);
++            Assert.Contains("NEXTVAL", script, StringComparison.Ordinal);
++            Assert.Contains("UPPER(\"NAME\")", script, StringComparison.Ordinal);
++            Assert.Contains("ON DELETE CASCADE", script, StringComparison.Ordinal);
++            Assert.Contains("DESC", script, StringComparison.Ordinal);
++            Assert.Contains("SET IDENTITY_INSERT", script, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, script, idempotent: false);
++
++            await using var check = await _database.OpenAsync();
++            var seeded = await ReadParentAsync(check, names.ParentTable, "NOTE", 20);
++            Assert.Equal("种子", seeded.Name);
++            Assert.Equal("O'Brien", seeded.Extra);
++            Assert.Equal(22L, await InsertParentAsync(check, names.ParentTable, "新行"));
++            Assert.Equal(41L, await InsertChildAsync(check, names.ChildTable, 20));
++            Assert.Equal("DAMENG", await ScalarStringAsync(check,
++                "SELECT \"NORMALIZED_NAME\" FROM \"" + names.ChildTable + "\" WHERE \"ID\" = 41"));
++            Assert.Equal(new byte[] { 0, 0xA5, 0xFF }, await ScalarBytesAsync(check,
++                "SELECT \"PAYLOAD\" FROM \"" + names.ChildTable + "\" WHERE \"ID\" = 41"));
++            await AssertIndexAsync(check, names.Index, "ID");
++            foreach (var constraint in new[] { names.PrimaryKey, names.UniqueConstraint, names.CheckConstraint, names.ForeignKey })
++                await AssertConstraintAsync(check, constraint);
++            Assert.Equal(44L, await ScalarInt64Async(check, "SELECT \"" + names.Sequence + "\".NEXTVAL FROM DUAL"));
++            Assert.Equal(0L, await ScalarInt64Async(check,
++                "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = :name", ("name", names.HistoryTable)));
++            await ExecuteAsync(check, "DELETE FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 20");
++            Assert.Equal(0L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ChildTable + "\""));
++            Assert.Equal(1L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 22"));
++        });
++    }
++
++    [Fact]
++    public async Task NonIdempotentGeneratedUpAndDownScriptsPreserveHistoryAndSeed()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            var up = Generate(names, Migration.InitialDatabase, null, idempotent: false);
++            AssertMigrationScript(up, names);
++            Assert.Contains("ALTER TABLE", up, StringComparison.Ordinal);
++            Assert.Contains("RENAME", up, StringComparison.Ordinal);
++            Assert.Contains("INCREMENT BY 5", up, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, up, idempotent: false);
++            await using (var check = await _database.OpenAsync())
++            {
++                await AssertUpgradedModelAsync(check, names);
++                await AssertHistoryRowsAsync(check, names, CreateMigration, AlterMigration);
++                Assert.Equal(43L, await InsertChildAsync(check, names.ChildTable, 22));
++                Assert.Equal(48L, await ScalarInt64Async(check, "SELECT \"" + names.Sequence + "\".NEXTVAL FROM DUAL"));
++            }
++            var down = Generate(names, AlterMigration, Migration.InitialDatabase, idempotent: false);
++            await ExecuteScriptAsync(connection, down, idempotent: false);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    [Fact]
++    public async Task IdempotentGeneratedUpAndDownScriptsApplyExactlyOnce()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            var up = Generate(names, Migration.InitialDatabase, null, idempotent: true);
++            Assert.Contains("EXECUTE IMMEDIATE", up, StringComparison.Ordinal);
++            Assert.Contains("IF NOT EXISTS", up, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, up, idempotent: true);
++            await ExecuteScriptAsync(connection, up, idempotent: true);
++            await using (var check = await _database.OpenAsync())
++            {
++                Assert.Equal(1L, await ScalarInt64Async(check,
++                    "SELECT COUNT(*) FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 20"));
++                Assert.Equal(1L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ParentTable + "\""));
++                Assert.Equal(1L, await CountHistoryAsync(check, names.HistoryTable, CreateMigration));
++                Assert.Equal(1L, await CountHistoryAsync(check, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(check, names, CreateMigration, AlterMigration);
++            }
++            var down = Generate(names, AlterMigration, Migration.InitialDatabase, idempotent: true);
++            Assert.Contains("BEGIN", down, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, down, idempotent: true);
++            await ExecuteScriptAsync(connection, down, idempotent: true);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    [Fact]
++    public async Task GeneratedMigrationRangesUpgradeAndDowngradeCurrentSchema()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            await ExecuteScriptAsync(connection, Generate(names, Migration.InitialDatabase, CreateMigration, false), false);
++            await using (var first = await _database.OpenAsync())
++            {
++                var seeded = await ReadParentAsync(first, names.ParentTable, "NOTE", 20);
++                Assert.Equal("种子", seeded.Name);
++                Assert.Equal("O'Brien", seeded.Extra);
++                Assert.Equal(1L, await CountHistoryAsync(first, names.HistoryTable, CreateMigration));
++                Assert.Equal(0L, await CountHistoryAsync(first, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(first, names, CreateMigration);
++            }
++            await ExecuteScriptAsync(connection, Generate(names, CreateMigration, AlterMigration, false), false);
++            await using (var upgraded = await _database.OpenAsync())
++            {
++                await AssertUpgradedModelAsync(upgraded, names);
++                await AssertHistoryRowsAsync(upgraded, names, CreateMigration, AlterMigration);
++            }
++            await ExecuteScriptAsync(connection, Generate(names, AlterMigration, CreateMigration, false), false);
++            await using (var prior = await _database.OpenAsync())
++            {
++                var seeded = await ReadParentAsync(prior, names.ParentTable, "NOTE", 20);
++                Assert.Equal("O'Brien", seeded.Extra);
++                Assert.Equal(0L, await CountColumnAsync(prior, names.ParentTable, "STATUS"));
++                Assert.Equal(0L, await CountColumnAsync(prior, names.ParentTable, "DISPLAY_NOTE"));
++                Assert.Equal(1L, await CountColumnAsync(prior, names.LookupTable, "LABEL"));
++                Assert.Equal(1L, await CountHistoryAsync(prior, names.HistoryTable, CreateMigration));
++                Assert.Equal(0L, await CountHistoryAsync(prior, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(prior, names, CreateMigration);
++                await AssertIndexAsync(prior, names.Index, "ID");
++            }
++            await ExecuteScriptAsync(connection, Generate(names, CreateMigration, Migration.InitialDatabase, false), false);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    private string Generate(CurrentSchemaScriptObjectNames names, string from, string? to, bool idempotent)
++    {
++        using var context = new DamengCurrentSchemaScriptMigrationContext(
++            new DbContextOptionsBuilder<DamengCurrentSchemaScriptMigrationContext>()
++                .UseDameng(_database.ConnectionString, dm => dm.MigrationsHistoryTable(names.HistoryTable)).Options);
++        return context.GetService<IMigrator>().GenerateScript(fromMigration: from, toMigration: to,
++            options: idempotent ? MigrationsSqlGenerationOptions.Idempotent : MigrationsSqlGenerationOptions.Default);
++    }
++
++    private static async Task ExecuteScriptAsync(DmConnection connection, string script, bool idempotent)
++    {
++        AssertScriptBoundaries(script, idempotent);
++        await DamengScriptExecutor.ExecuteAsync(connection, script, idempotent, DamengCurrentSchemaScriptDatabase.Redact);
++    }
++
++    private static void AssertScriptBoundaries(string script, bool idempotent)
++    {
++        Assert.DoesNotContain("CREATE SCHEMA", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("DROP SCHEMA", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("CREATE USER", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("TABLESPACE", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("BEGIN TRANSACTION", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("@", script, StringComparison.Ordinal);
++        var batches = idempotent ? DamengScriptExecutor.SplitIdempotent(script) : DamengScriptExecutor.SplitStatements(script);
++        Assert.NotEmpty(batches);
++        Assert.All(batches, batch => Assert.DoesNotContain(batch.Split('\n'), line => line.Trim() == "/"));
++        foreach (var block in batches.Where(batch => batch.StartsWith("BEGIN", StringComparison.Ordinal)))
++            Assert.EndsWith("END;", block, StringComparison.Ordinal);
++        if (idempotent) Assert.Contains(batches, batch => batch.StartsWith("BEGIN", StringComparison.Ordinal));
++    }
++
++    private static async Task AssertHistoryRowsAsync(DmConnection connection,
++        CurrentSchemaScriptObjectNames names, params string[] migrationIds)
++    {
++        Assert.Equal((long)migrationIds.Length, await ScalarInt64Async(connection,
++            "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\""));
++        Assert.Equal((long)migrationIds.Length, await ScalarInt64Async(connection,
++            "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\" WHERE \"ProductVersion\" = :version",
++            ("version", "10.0.12")));
++        foreach (var migrationId in migrationIds)
++            Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, migrationId));
++    }
++
++    private async Task AssertRevertedAsync(CurrentSchemaScriptObjectNames names)
++    {
++        await using var check = await _database.OpenAsync();
++        foreach (var table in DamengCurrentSchemaScriptDatabase.Tables(names).Where(table => table != names.HistoryTable))
++            Assert.Equal(0L, await ScalarInt64Async(check,
++                "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = :name", ("name", table)));
++        Assert.Equal(0L, await ScalarInt64Async(check,
++            "SELECT COUNT(*) FROM USER_SEQUENCES WHERE SEQUENCE_NAME = :name", ("name", names.Sequence)));
++        Assert.Equal(0L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\""));
++    }
++
++    private async Task WithOwnedAsync(CurrentSchemaScriptObjectNames names, Func<DmConnection, Task> contract)
++    {
++        await _database.ClaimAsync(names);
++        output.WriteLine("owned_objects=" + string.Join(",", DamengCurrentSchemaScriptDatabase.AllNames(names)));
++        try
++        {
++            await using var connection = await _database.OpenAsync();
++            await contract(connection);
++        }
++        catch (Exception exception) { throw DamengCurrentSchemaScriptDatabase.SafeFailure("contract", exception); }
++        finally
++        {
++            await _database.CleanupAsync(names);
++            output.WriteLine("final_database_state=owned_objects_absent; verified_on_fresh_connection=true");
++        }
++    }
++
++    private static void AssertMigrationScript(string script, CurrentSchemaScriptObjectNames names)
++    {
++        Assert.Contains("IDENTITY(10,2)", script, StringComparison.Ordinal);
++        Assert.Contains(names.Sequence + "\".NEXTVAL", script, StringComparison.Ordinal);
++        Assert.Contains("UPPER(\"NAME\")", script, StringComparison.Ordinal);
++        Assert.Contains("ON DELETE CASCADE", script, StringComparison.Ordinal);
++        Assert.Contains("DESC", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("CREATE SCHEMA", script, StringComparison.Ordinal);
++        Assert.Contains("SET IDENTITY_INSERT", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("@", script, StringComparison.Ordinal);
++    }
++
++    private static async Task AssertUpgradedModelAsync(DmConnection connection, CurrentSchemaScriptObjectNames names)
++    {
++        var seeded = await ReadParentAsync(connection, names.ParentTable, "DISPLAY_NOTE", 20);
++        Assert.Equal("种子", seeded.Name);
++        Assert.Equal("O'Brien", seeded.Extra);
++        Assert.Equal(1, await ScalarInt32Async(
++            connection,
++            "SELECT \"STATUS\" FROM \"" + names.ParentTable + "\" WHERE \"ID\" = :id",
++            ("id", 20L)));
++
++        Assert.Equal(22L, await InsertParentAsync(connection, names.ParentTable, "新行", includeStatus: true));
++        Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, "20260930000100_CurrentSchemaCreate"));
++        Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, "20260930000200_CurrentSchemaAlter"));
++        Assert.Equal(0L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME = :name",
++            ("name", names.Index)));
++        await AssertIndexAsync(connection, names.RenamedIndex, descendingColumn: null);
++        Assert.Equal(0L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM \"" + names.Schema + "\".\"" + names.RenamedLookupTable + "\""));
++        Assert.Equal(0L, await CountColumnAsync(connection, names.RenamedLookupTable, "LABEL"));
++    }
++
++    private static async Task AssertIndexAsync(
++        DmConnection connection,
++        string indexName,
++        string? descendingColumn)
++    {
++        Assert.Equal(1L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME = :name",
++            ("name", indexName)));
++
++        if (descendingColumn is null
++            || await ScalarInt64Async(
++                connection,
++                "SELECT COUNT(*) FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = 'USER_IND_COLUMNS' AND COLUMN_NAME = 'DESCEND'")
++            == 0)
++        {
++            return;
++        }
++
++        Assert.Equal(1L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_IND_COLUMNS WHERE INDEX_NAME = :name AND COLUMN_NAME = :column "
++            + "AND UPPER(DESCEND) IN ('DESC', 'Y', 'YES')",
++            ("name", indexName),
++            ("column", descendingColumn)));
++    }
++
++    private static async Task AssertConstraintAsync(DmConnection connection, string constraintName)
++        => Assert.Equal(
++            1L,
++            await ScalarInt64Async(
++                connection,
++                "SELECT COUNT(*) FROM USER_CONSTRAINTS WHERE CONSTRAINT_NAME = :name",
++                ("name", constraintName)));
++
++    private static async Task<long> CountColumnAsync(
++        DmConnection connection,
++        string tableName,
++        string columnName)
++        => await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_TAB_COLUMNS WHERE TABLE_NAME = :table_name AND COLUMN_NAME = :column_name",
++            ("table_name", tableName),
++            ("column_name", columnName));
++
++    private static async Task<long> CountHistoryAsync(
++        DmConnection connection,
++        string historyTable,
++        string migrationId)
++        => await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM \"" + historyTable + "\" WHERE \"MigrationId\" = :id",
++            ("id", migrationId));
++
++    private static async Task<(string Name, string? Extra)> ReadParentAsync(
++        DmConnection connection,
++        string tableName,
++        string extraColumn,
++        long id)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = "SELECT \"NAME\", \"" + extraColumn + "\" FROM \"" + tableName + "\" WHERE \"ID\" = :id";
++        AddParameter(command, "id", id);
++        await using var reader = await command.ExecuteReaderAsync();
++        Assert.True(await reader.ReadAsync());
++        return (reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1));
++    }
++
++    private static async Task<long> InsertParentAsync(
++        DmConnection connection,
++        string tableName,
++        string name,
++        bool includeStatus = false)
++    {
++        if (includeStatus)
++        {
++            await ExecuteAsync(
++                connection,
++                "INSERT INTO \"" + tableName + "\" (\"NAME\", \"STATUS\") VALUES (:name, :status)",
++                ("name", name),
++                ("status", 1));
++        }
++        else
++        {
++            await ExecuteAsync(
++                connection,
++                "INSERT INTO \"" + tableName + "\" (\"NAME\") VALUES (:name)",
++                ("name", name));
++        }
++
++        return await ScalarInt64Async(
++            connection,
++            "SELECT \"ID\" FROM \"" + tableName + "\" WHERE \"NAME\" = :name",
++            ("name", name));
++    }
++
++    private static async Task<long> InsertChildAsync(
++        DmConnection connection,
++        string tableName,
++        long parentId)
++    {
++        await ExecuteAsync(
++            connection,
++            "INSERT INTO \"" + tableName + "\" (\"PARENT_ID\", \"NAME\", \"PAYLOAD\") VALUES (:parent_id, :name, :payload)",
++            ("parent_id", parentId),
++            ("name", "dameng"),
++            ("payload", new byte[] { 0, 0xA5, 0xFF }));
++
++        return await ScalarInt64Async(
++            connection,
++            "SELECT \"ID\" FROM \"" + tableName + "\" WHERE \"NAME\" = :name",
++            ("name", "dameng"));
++    }
++
++    private static async Task ExecuteAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        await command.ExecuteNonQueryAsync();
++    }
++
++    private static async Task<long> ScalarInt64Async(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
++    }
++
++    private static async Task<int> ScalarInt32Async(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
++    }
++
++    private static async Task<string> ScalarStringAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToString(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture)
++            ?? throw new InvalidOperationException("Dameng returned no scalar value.");
++    }
++
++    private static async Task<byte[]> ScalarBytesAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        var scalar = await command.ExecuteScalarAsync();
++        return scalar as byte[] ?? throw new InvalidOperationException("Dameng did not return a byte array.");
++    }
++
++    private static void AddParameter(DbCommand command, string name, object value)
++    {
++        var parameter = command.CreateParameter();
++        parameter.ParameterName = name;
++        parameter.Value = value;
++        command.Parameters.Add(parameter);
++    }
++
++    private static string NewPrefix()
++        => "T12S_" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..16].ToUpperInvariant();
++}
++
++internal static class CurrentSchemaScriptNames
++{
++    public static string Prefix { get; set; } = "";
++}
++
++internal sealed record CurrentSchemaScriptObjectNames(
++    string Prefix,
++    string ParentTable,
++    string ChildTable,
++    string Sequence,
++    string Schema,
++    string LookupTable,
++    string RenamedLookupTable,
++    string Index,
++    string RenamedIndex,
++    string PrimaryKey,
++    string UniqueConstraint,
++    string CheckConstraint,
++    string ForeignKey,
++    string HistoryTable)
++{
++    public static CurrentSchemaScriptObjectNames ForPrefix(string prefix)
++        => new(
++            prefix,
++            "P_" + prefix,
++            "C_" + prefix,
++            "S_" + prefix,
++            DamengCurrentSchemaScriptDatabase.TestSchema,
++            "L_" + prefix,
++            "L_" + prefix,
++            "IX_" + prefix,
++            "IX_" + prefix,
++            "PK_" + prefix,
++            "AK_" + prefix,
++            "CK_" + prefix,
++            "FK_" + prefix,
++            "H_" + prefix);
++
++    public static CurrentSchemaScriptObjectNames ForMigrationPrefix(string prefix)
++        => new(
++            prefix,
++            "MP_" + prefix,
++            "MC_" + prefix,
++            "MS_" + prefix,
++            DamengCurrentSchemaScriptDatabase.TestSchema,
++            "ML_" + prefix,
++            "MR_" + prefix,
++            "IX_" + prefix,
++            "IY_" + prefix,
++            "PK_" + prefix,
++            "AK_" + prefix,
++            "CK_" + prefix,
++            "FK_" + prefix,
++            "H_" + prefix);
++}
++
++internal sealed class CurrentSchemaScriptBootstrapContext(
++    DbContextOptions<CurrentSchemaScriptBootstrapContext> options,
++    CurrentSchemaScriptObjectNames names)
++    : DbContext(options)
++{
++    public CurrentSchemaScriptObjectNames Names { get; } = names;
++
++    protected override void OnModelCreating(ModelBuilder modelBuilder)
++    {
++        modelBuilder.HasSequence<long>(Names.Sequence)
++            .StartsAt(41)
++            .IncrementsBy(3)
++            .HasMin(41)
++            .HasMax(1000);
++
++        modelBuilder.Entity<CurrentSchemaScriptParent>(entity =>
++        {
++            entity.ToTable(Names.ParentTable);
++            entity.HasKey(item => item.Id).HasName(Names.PrimaryKey);
++            entity.HasAlternateKey(item => item.Name).HasName(Names.UniqueConstraint);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("BIGINT")
++                .UseDamengIdentityColumn(seed: 10, increment: 2);
++            entity.Property(item => item.Name)
++                .HasColumnName("NAME")
++                .HasMaxLength(64)
++                .IsRequired();
++            entity.Property(item => item.Note)
++                .HasColumnName("NOTE")
++                .HasMaxLength(100);
++            entity.HasData(new CurrentSchemaScriptParent
++            {
++                Id = 20,
++                Name = "种子",
++                Note = "O'Brien"
++            });
++        });
++
++        modelBuilder.Entity<CurrentSchemaScriptChild>(entity =>
++        {
++            entity.ToTable(
++                Names.ChildTable,
++                table => table.HasCheckConstraint(Names.CheckConstraint, "LENGTH(\"NAME\") > 0"));
++            entity.HasKey(item => item.Id).HasName("CPK_" + Names.Prefix);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("BIGINT")
++                .UseDamengSequence(Names.Sequence);
++            entity.Property(item => item.ParentId)
++                .HasColumnName("PARENT_ID")
++                .HasColumnType("BIGINT");
++            entity.Property(item => item.Name)
++                .HasColumnName("NAME")
++                .HasMaxLength(100)
++                .IsRequired();
++            entity.Property(item => item.NormalizedName)
++                .HasColumnName("NORMALIZED_NAME")
++                .HasComputedColumnSql("UPPER(\"NAME\")", stored: false);
++            entity.Property(item => item.Payload)
++                .HasColumnName("PAYLOAD")
++                .HasMaxLength(8)
++                .IsRequired();
++            entity.HasIndex(item => new { item.Name, item.Id })
++                .IsUnique()
++                .IsDescending(false, true)
++                .HasDatabaseName(Names.Index);
++            entity.HasOne<CurrentSchemaScriptParent>()
++                .WithMany()
++                .HasForeignKey(item => item.ParentId)
++                .HasPrincipalKey(item => item.Id)
++                .HasConstraintName(Names.ForeignKey)
++                .OnDelete(DeleteBehavior.Cascade);
++        });
++
++        modelBuilder.Entity<CurrentSchemaScriptLookup>(entity =>
++        {
++            entity.ToTable(Names.LookupTable);
++            entity.HasKey(item => item.Id).HasName("LPK_" + Names.Prefix);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("INT")
++                .ValueGeneratedNever();
++            entity.Property(item => item.Label)
++                .HasColumnName("LABEL")
++                .HasMaxLength(20)
++                .IsRequired();
++        });
++    }
++}
++
++internal sealed class CurrentSchemaScriptBootstrapCacheKeyFactory : IModelCacheKeyFactory
++{
++    public object Create(DbContext context, bool designTime)
++        => context is CurrentSchemaScriptBootstrapContext bootstrap
++            ? (context.GetType(), bootstrap.Names.Prefix, designTime)
++            : (context.GetType(), designTime);
++}
++
++internal sealed class CurrentSchemaScriptParent
++{
++    public long Id { get; set; }
++
++    public string Name { get; set; } = "";
++
++    public string? Note { get; set; }
++}
++
++internal sealed class CurrentSchemaScriptChild
++{
++    public long Id { get; set; }
++
++    public long ParentId { get; set; }
++
++    public string Name { get; set; } = "";
++
++    public string? NormalizedName { get; set; }
++
++    public byte[] Payload { get; set; } = [];
++}
++
++internal sealed class CurrentSchemaScriptLookup
++{
++    public int Id { get; set; }
++
++    public string Label { get; set; } = "";
++}
++
++public sealed class DamengCurrentSchemaScriptMigrationContext(DbContextOptions<DamengCurrentSchemaScriptMigrationContext> options)
++    : DbContext(options);
++
++[DbContext(typeof(DamengCurrentSchemaScriptMigrationContext))]
++[Migration("20260930000100_CurrentSchemaCreate")]
++public sealed class CurrentSchemaCreateScriptObjectsMigration : Migration
++{
++    protected override void Up(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.CreateSequence<long>(
++            name: names.Sequence,
++            startValue: 41,
++            incrementBy: 3,
++            minValue: 41,
++            maxValue: 1000,
++            cyclic: false);
++
++        migrationBuilder.Operations.Add(CreateParentTable(names));
++        migrationBuilder.InsertData(
++            table: names.ParentTable,
++            columns: ["ID", "NAME", "NOTE"],
++            columnTypes: ["BIGINT", "NVARCHAR2(64)", "NVARCHAR2(100)"],
++            values: new object[] { 20L, "种子", "O'Brien" });
++        migrationBuilder.Operations.Add(CreateChildTable(names));
++        migrationBuilder.Operations.Add(new CreateIndexOperation
++        {
++            Name = names.Index,
++            Table = names.ChildTable,
++            Columns = ["NAME", "ID"],
++            IsUnique = true,
++            IsDescending = [false, true]
++        });
++        migrationBuilder.Operations.Add(CreateLookupTable(names));
++    }
++
++    protected override void Down(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.DropTable(names.LookupTable);
++        migrationBuilder.DropTable(names.ChildTable);
++        migrationBuilder.DropTable(names.ParentTable);
++        migrationBuilder.DropSequence(names.Sequence);
++    }
++
++    protected override void BuildTargetModel(ModelBuilder modelBuilder)
++        => CurrentSchemaScriptMigrationModel.Build(modelBuilder, altered: false);
++
++    private static CreateTableOperation CreateParentTable(CurrentSchemaScriptObjectNames names)
++    {
++        var id = Column("ID", "BIGINT", nullable: false);
++        id["Dameng:ValueGenerationStrategy"] = DamengValueGenerationStrategy.IdentityColumn;
++        id["Dameng:IdentitySeed"] = 10L;
++        id["Dameng:IdentityIncrement"] = 2;
++
++        var table = new CreateTableOperation
++        {
++            Name = names.ParentTable,
++            PrimaryKey = Key(names.PrimaryKey, names.ParentTable, "ID")
++        };
++        table.Columns.Add(id);
++        table.Columns.Add(Column("NAME", "NVARCHAR2(64)", nullable: false));
++        table.Columns.Add(Column("NOTE", "NVARCHAR2(100)", nullable: true));
++        table.UniqueConstraints.Add(new AddUniqueConstraintOperation
++        {
++            Name = names.UniqueConstraint,
++            Table = names.ParentTable,
++            Columns = ["NAME"]
++        });
++        return table;
++    }
++
++    private static CreateTableOperation CreateChildTable(CurrentSchemaScriptObjectNames names)
++    {
++        var id = Column("ID", "BIGINT", nullable: false);
++        id["Dameng:ValueGenerationStrategy"] = DamengValueGenerationStrategy.Sequence;
++        id["Dameng:SequenceName"] = names.Sequence;
++
++        var table = new CreateTableOperation
++        {
++            Name = names.ChildTable,
++            PrimaryKey = Key("CPK_" + names.Prefix, names.ChildTable, "ID")
++        };
++        table.Columns.Add(id);
++        table.Columns.Add(Column("PARENT_ID", "BIGINT", nullable: false));
++        table.Columns.Add(Column("NAME", "NVARCHAR2(100)", nullable: false));
++        table.Columns.Add(new AddColumnOperation
++        {
++            Name = "NORMALIZED_NAME",
++            Table = names.ChildTable,
++            ClrType = typeof(string),
++            ColumnType = "NVARCHAR2(100)",
++            IsNullable = true,
++            ComputedColumnSql = "UPPER(\"NAME\")",
++            IsStored = false
++        });
++        table.Columns.Add(new AddColumnOperation
++        {
++            Name = "PAYLOAD",
++            Table = names.ChildTable,
++            ClrType = typeof(byte[]),
++            ColumnType = "VARBINARY(8)",
++            IsNullable = false
++        });
++        table.CheckConstraints.Add(new AddCheckConstraintOperation
++        {
++            Name = names.CheckConstraint,
++            Table = names.ChildTable,
++            Sql = "LENGTH(\"NAME\") > 0"
++        });
++        table.ForeignKeys.Add(new AddForeignKeyOperation
++        {
++            Name = names.ForeignKey,
++            Table = names.ChildTable,
++            Columns = ["PARENT_ID"],
++            PrincipalTable = names.ParentTable,
++            PrincipalColumns = ["ID"],
++            OnDelete = ReferentialAction.Cascade
++        });
++        return table;
++    }
++
++    private static CreateTableOperation CreateLookupTable(CurrentSchemaScriptObjectNames names)
++    {
++        var table = new CreateTableOperation
++        {
++            Name = names.LookupTable,
++            PrimaryKey = Key("LPK_" + names.Prefix, names.LookupTable, "ID")
++        };
++        table.Columns.Add(Column("ID", "INT", nullable: false));
++        table.Columns.Add(Column("LABEL", "NVARCHAR2(20)", nullable: false));
++        return table;
++    }
++
++    private static AddColumnOperation Column(string name, string columnType, bool nullable)
++        => new()
++        {
++            Name = name,
++            ClrType = columnType == "BIGINT" ? typeof(long) : columnType == "INT" ? typeof(int) : typeof(string),
++            ColumnType = columnType,
++            IsNullable = nullable
++        };
++
++    private static AddPrimaryKeyOperation Key(
++        string name,
++        string table,
++        string column,
++        string? schema = null)
++        => new()
++        {
++            Name = name,
++            Table = table,
++            Schema = schema,
++            Columns = [column]
++        };
++}
++
++[DbContext(typeof(DamengCurrentSchemaScriptMigrationContext))]
++[Migration("20260930000200_CurrentSchemaAlter")]
++public sealed class CurrentSchemaAlterScriptObjectsMigration : Migration
++{
++    protected override void Up(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.RenameColumn(
++            name: "NOTE",
++            table: names.ParentTable,
++            newName: "DISPLAY_NOTE");
++        migrationBuilder.AddColumn<int>(
++            name: "STATUS",
++            table: names.ParentTable,
++            type: "INT",
++            nullable: false,
++            defaultValue: 1);
++        migrationBuilder.RenameIndex(
++            name: names.Index,
++            newName: names.RenamedIndex,
++            table: names.ChildTable);
++        migrationBuilder.AlterSequence(
++            name: names.Sequence,
++            incrementBy: 5,
++            minValue: 41,
++            maxValue: 1000,
++            cyclic: false,
++            oldIncrementBy: 3,
++            oldMinValue: 41,
++            oldMaxValue: 1000,
++            oldCyclic: false);
++        migrationBuilder.DropColumn(
++            name: "LABEL",
++            table: names.LookupTable);
++        migrationBuilder.RenameTable(
++            name: names.LookupTable,
++            newName: names.RenamedLookupTable);
++    }
++
++    protected override void Down(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.RenameTable(name: names.RenamedLookupTable, newName: names.LookupTable);
++        migrationBuilder.AddColumn<string>(name: "LABEL", table: names.LookupTable,
++            type: "NVARCHAR2(20)", nullable: false, defaultValue: "");
++        migrationBuilder.AlterSequence(name: names.Sequence, incrementBy: 3, minValue: 41,
++            maxValue: 1000, cyclic: false, oldIncrementBy: 5, oldMinValue: 41,
++            oldMaxValue: 1000, oldCyclic: false);
++        migrationBuilder.RenameIndex(name: names.RenamedIndex, newName: names.Index, table: names.ChildTable);
++        migrationBuilder.DropColumn(name: "STATUS", table: names.ParentTable);
++        migrationBuilder.RenameColumn(name: "DISPLAY_NOTE", table: names.ParentTable, newName: "NOTE");
++    }
++
++    protected override void BuildTargetModel(ModelBuilder modelBuilder)
++        => CurrentSchemaScriptMigrationModel.Build(modelBuilder, altered: true);
++}
++
++internal static class CurrentSchemaScriptMigrationModel
++{
++    public static void Build(ModelBuilder modelBuilder, bool altered)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
++        modelBuilder.HasSequence<long>(names.Sequence)
++            .StartsAt(41)
++            .IncrementsBy(altered ? 5 : 3)
++            .HasMin(41)
++            .HasMax(1000);
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptParent",
++            entity =>
++            {
++                entity.ToTable(names.ParentTable);
++                entity.Property<long>("ID").HasColumnType("BIGINT").UseDamengIdentityColumn(10, 2);
++                entity.Property<string>("NAME").HasMaxLength(64).IsRequired();
++                entity.Property<string>(altered ? "DISPLAY_NOTE" : "NOTE").HasMaxLength(100);
++                if (altered)
++                {
++                    entity.Property<int>("STATUS").HasColumnType("INT").HasDefaultValue(1);
++                }
++
++                entity.HasKey("ID").HasName(names.PrimaryKey);
++                entity.HasAlternateKey("NAME").HasName(names.UniqueConstraint);
++            });
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptChild",
++            entity =>
++            {
++                entity.ToTable(names.ChildTable);
++                entity.Property<long>("ID")
++                    .HasColumnType("BIGINT")
++                    .UseDamengSequence(names.Sequence);
++                entity.Property<long>("PARENT_ID").HasColumnType("BIGINT");
++                entity.Property<string>("NAME").HasMaxLength(100).IsRequired();
++                entity.Property<string>("NORMALIZED_NAME")
++                    .HasComputedColumnSql("UPPER(\"NAME\")", stored: false);
++                entity.Property<byte[]>("PAYLOAD").HasMaxLength(8).IsRequired();
++                entity.HasKey("ID");
++                entity.HasIndex("NAME", "ID").IsUnique().HasDatabaseName(altered ? names.RenamedIndex : names.Index);
++                entity.HasOne("CurrentSchemaScriptParent")
++                    .WithMany()
++                    .HasForeignKey("PARENT_ID")
++                    .HasConstraintName(names.ForeignKey)
++                    .OnDelete(DeleteBehavior.Cascade);
++            });
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptLookup",
++            entity =>
++            {
++                entity.ToTable(altered ? names.RenamedLookupTable : names.LookupTable);
++                entity.Property<int>("ID").HasColumnType("INT").ValueGeneratedNever();
++                if (!altered)
++                {
++                    entity.Property<string>("LABEL").HasMaxLength(20).IsRequired();
++                }
++
++                entity.HasKey("ID");
++            });
++    }
++}
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs
+@@ -2,7 +2,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ using Xunit.Abstractions;
+ 
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
+@@ -1,9 +1,12 @@
+-using System.Data.Common;
++using System.Security.Cryptography;
++using System.Text;
++using System.Security;
+ using System.Diagnostics;
+ using System.Globalization;
+-using System.Text;
+ using System.Text.RegularExpressions;
+-using Dm;
++using System.Text.Json;
++using System.Data.Common;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit;
+ using Xunit.Abstractions;
+@@ -17,16 +20,11 @@
+ public sealed class DamengDotNetEfCliFunctionalTests(ITestOutputHelper output)
+ {
+     private const int CommandTimeoutSeconds = 300;
+-
+-    private static readonly string[] DebugEnvironmentVariableNames =
+-    [
+-        "DOTNET_ROOT",
+-        "MSBuildSDKsPath",
+-        "MSBuildExtensionsPath",
+-        "DOTNET_CLI_HOME",
+-        "NUGET_PACKAGES",
+-        "DOTNET_MULTILEVEL_LOOKUP"
+-    ];
++    private string currentPhase = "identity_preflight";
++
++    private const string EfCoreVersion = "10.0.12";
++    private const string SdkVersion = "10.0.401";
++    private const string NamedConnection = "T12Cli";
+ 
+     [DamengFact]
+     public async Task MigrationsAndScaffoldRunThroughDotNetEfCli()
+@@ -35,9 +33,18 @@
+         var suffix = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..12].ToUpperInvariant();
+         var tableName = $"EF10_CLI_{suffix}";
+         var sequenceName = $"EF10_CLISQ_{suffix}";
++        var historyName = $"EF10_CLIH_{suffix}";
+ 
+         var repoRoot = FindRepositoryRoot();
+-        var (efCoreVersion, dmProviderVersion) = ResolveLockedPackageVersions(repoRoot);
++        var efCoreVersion = EfCoreVersion;
++        var dmProviderVersion = RequiredEnvironment("DAMENG_T12_CANDIDATE_VERSION");
++        if (!Regex.IsMatch(dmProviderVersion, @"^\d+\.\d+\.\d+-[0-9A-Za-z.-]+$", RegexOptions.CultureInvariant))
++            throw new InvalidOperationException("CLI requires a unique prerelease candidate version.");
++        var dotnetHost = RequiredAbsolutePath("DAMENG_T12_DOTNET_HOST", directory: false);
++        _ = RequiredAbsolutePath("DAMENG_T12_NUGET_CONFIG", directory: false);
++        var cliRoot = RequiredAbsolutePath("DAMENG_T12_CLI_ROOT", directory: true);
++        foreach (var name in new[] { "DOTNET_CLI_HOME", "NUGET_PACKAGES", "NUGET_HTTP_CACHE_PATH" })
++            _ = RequiredAbsolutePath(name, directory: true);
+         var providerAssembly = Path.Combine(
+             repoRoot,
+             "src",
+@@ -49,15 +56,25 @@
+         Assert.True(
+             File.Exists(providerAssembly),
+             "Build the provider before running the CLI test: " + providerAssembly);
+-        var projectDirectory = Path.Combine(
+-            Path.GetTempPath(),
+-            $"dameng-ef-cli-{suffix.ToLowerInvariant()}");
+-
+-        var dotnetEf = await EnsureDotNetEfToolAsync(repoRoot, efCoreVersion);
++        var projectDirectory = Path.Combine(cliRoot, $"cli-{suffix.ToLowerInvariant()}");
++        bool ownsObjects = false;
++        string? contractFailureKind = null;
++        CliFailureSummary? contractFailure = null;
++        string? cleanupFailureKind = null;
+ 
+         Directory.CreateDirectory(projectDirectory);
+         try
+         {
++            await using (var connection = new DmConnection(connectionString))
++            {
++                await connection.OpenAsync();
++                await VerifyIdentityAsync(connection);
++                await AssertAbsentAsync(connection, "USER_TABLES", "TABLE_NAME", tableName);
++                await AssertAbsentAsync(connection, "USER_TABLES", "TABLE_NAME", historyName);
++                await AssertAbsentAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", sequenceName);
++                ownsObjects = true;
++            }
++            // No secret is needed for tool installation or SDK verification.
+             WriteCliProject(
+                 projectDirectory,
+                 providerAssembly,
+@@ -65,27 +82,26 @@
+                 dmProviderVersion,
+                 tableName,
+                 sequenceName,
++                historyName,
+                 suffix);
+-
+-            var dotnetHost = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+-            if (string.IsNullOrEmpty(dotnetHost))
+-            {
+-                dotnetHost = "dotnet";
+-            }
++            var dotnetEf = await EnsureDotNetEfToolAsync(cliRoot, efCoreVersion);
++            var sdk = await RunDotNetAsync(dotnetHost, projectDirectory, null, ["--version"]);
++            Assert.True(sdk.StandardOutput.Trim() == SdkVersion, "CLI SDK must exactly match the frozen host.");
+ 
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["restore", "--disable-parallel"]);
++                null,
++                ["restore", "--disable-parallel", "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "--use-lock-file", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            ValidateCliAssets(projectDirectory, dmProviderVersion);
+             // dotnet-ef evaluates and builds the project in its own process; that path is
+             // unreliable when hosted under dotnet test (ResolvePackageAssets fails with a
+             // NuGet LockFile NRE), so the build is done explicitly and ef runs --no-build.
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["build", "--no-restore"]);
++                null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
+ 
+             await RunDotNetEfAsync(
+                 dotnetEf,
+@@ -99,8 +115,8 @@
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["build", "--no-restore"]);
++                null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
+ 
+             await RunDotNetEfAsync(
+                 dotnetEf,
+@@ -146,7 +162,7 @@
+                     "1",
+                     await ScalarStringAsync(
+                         connection,
+-                        "SELECT COUNT(*) FROM \"__EFMigrationsHistory\"",
++                        $"SELECT COUNT(*) FROM \"{historyName}\"",
+                         null));
+             }
+ 
+@@ -157,9 +173,10 @@
+                 projectDirectory,
+                 connectionString,
+                 [
+-                    "dbcontext", "scaffold", connectionString,
++                    "dbcontext", "scaffold", "Name=ConnectionStrings:" + NamedConnection,
+                     "W.EntityFrameworkCore.Dameng",
+                     "--no-build",
++                    "--no-onconfiguring",
+                     "--table", tableName,
+                     "--context", "ScaffoldedCliContext",
+                     "--output-dir", "Scaffolded",
+@@ -168,8 +185,9 @@
+ 
+             var scaffoldedContext = File.ReadAllText(
+                 Path.Combine(projectDirectory, "Scaffolded", "ScaffoldedCliContext.cs"));
+-            output.WriteLine(Redact(connectionString, scaffoldedContext));
+-            Assert.Contains("UseDameng(", scaffoldedContext, StringComparison.Ordinal);
++            Assert.DoesNotContain("OnConfiguring", scaffoldedContext, StringComparison.Ordinal);
++            Assert.DoesNotContain(connectionString, scaffoldedContext, StringComparison.Ordinal);
++            Assert.Contains("DbContextOptions<ScaffoldedCliContext>", scaffoldedContext, StringComparison.Ordinal);
+             Assert.Contains(
+                 "entity.ToTable(\"EF10_CLI_",
+                 scaffoldedContext,
+@@ -198,19 +216,46 @@
+                     path => !path.EndsWith("ScaffoldedCliContext.cs", StringComparison.Ordinal)));
+             Assert.Contains("public long Id", scaffoldedEntity, StringComparison.Ordinal);
+             Assert.Contains("public string Code", scaffoldedEntity, StringComparison.Ordinal);
++            AssertGeneratedSourcesContainNoSecret(projectDirectory, connectionString);
++            await RunDotNetAsync(
++                dotnetHost, projectDirectory, null,
++                ["restore", "--locked-mode", "--disable-parallel", "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            ValidateCliAssets(projectDirectory, dmProviderVersion);
++            await RunDotNetAsync(
++                dotnetHost, projectDirectory, null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            var verification = await RunDotNetAsync(
++                dotnetHost, projectDirectory, connectionString,
++                ["run", "--no-build", "--no-restore", "--", "--t12-verify"]);
++            var candidateHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(DmConnection).Assembly.Location)));
++            Assert.True(verification.StandardOutput.Trim() == candidateHash,
++                "Nested CLI must load the same frozen candidate DLL and validate the scaffolded model.");
++            output.WriteLine("CLI candidate DLL sha256=" + candidateHash);
++        }
++        catch (Exception error)
++        {
++            contractFailureKind = error.GetType().FullName;
++            contractFailure = error is CliProcessFailure cli ? cli.Summary :
++                new CliFailureSummary(currentPhase, contractFailureKind ?? "unknown", null, null, null);
+         }
+         finally
+         {
+-            await using (var connection = new DmConnection(connectionString))
+-            {
+-                await connection.OpenAsync();
+-                await DropIfExistsAsync(connection, "USER_TABLES", "TABLE_NAME", tableName);
+-                await DropIfExistsAsync(connection, "USER_TABLES", "TABLE_NAME", "__EFMigrationsHistory");
+-                await DropIfExistsAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", sequenceName);
+-            }
+-
+-            TryDeleteDirectory(projectDirectory);
+-        }
++            try
++            {
++                if (ownsObjects)
++                {
++                    await CleanupOwnedObjectsAsync(connectionString, tableName, historyName, sequenceName);
++                    output.WriteLine("CLI owned objects absent on independent connection.");
++                }
++            }
++            catch (Exception error) { cleanupFailureKind = error.GetType().FullName; }
++            finally { TryDeleteDirectory(projectDirectory); }
++        }
++        if (contractFailureKind is not null || cleanupFailureKind is not null)
++            throw new InvalidOperationException(
++                "CLI contract failed; safe_summary=" + JsonSerializer.Serialize(new {
++                    body = contractFailure, body_exception_kind = contractFailureKind ?? "none",
++                    cleanup_exception_kind = cleanupFailureKind ?? "none" }));
+     }
+ 
+     // A project reference would drag the repository's lock-file props into the temp project
+@@ -222,8 +267,11 @@
+         string dmProviderVersion,
+         string tableName,
+         string sequenceName,
++        string historyName,
+         string suffix)
+     {
++        File.WriteAllText(Path.Combine(projectDirectory, "global.json"),
++            "{\"sdk\":{\"version\":\"10.0.401\",\"rollForward\":\"disable\"}}");
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "CliRoundtrip.csproj"),
+             $"""
+@@ -233,20 +281,80 @@
+                 <TargetFramework>net10.0</TargetFramework>
+                 <Nullable>enable</Nullable>
+                 <ImplicitUsings>enable</ImplicitUsings>
++                <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
++                <UseSharedCompilation>false</UseSharedCompilation>
++                <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+               </PropertyGroup>
+               <ItemGroup>
+                 <Reference Include="W.EntityFrameworkCore.Dameng">
+-                  <HintPath>{providerAssembly}</HintPath>
++                  <HintPath>{SecurityElement.Escape(providerAssembly)}</HintPath>
+                 </Reference>
+-                <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="{efCoreVersion}" />
+-                <PackageReference Include="DM.DmProvider" Version="{dmProviderVersion}" />
++                <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="[{efCoreVersion}]" />
++                <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[{efCoreVersion}]" />
++                <PackageReference Include="W.DmProvider" Version="[{dmProviderVersion}]" />
++                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+               </ItemGroup>
+             </Project>
+             """);
+ 
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "Program.cs"),
+-            """Console.WriteLine("cli roundtrip");""");
++            $$"""
++            using System.Security.Cryptography;
++            using W.Dm;
++            using Microsoft.EntityFrameworkCore;
++            using Microsoft.EntityFrameworkCore.Infrastructure;
++            using Microsoft.EntityFrameworkCore.Metadata;
++            using Microsoft.Extensions.Configuration;
++            using Microsoft.Extensions.DependencyInjection;
++            using Microsoft.Extensions.Hosting;
++
++            public static class Program
++            {
++                public static IHostBuilder CreateHostBuilder(string[] args)
++                    => new HostBuilder()
++                        .ConfigureAppConfiguration((host, configuration) => configuration.AddInMemoryCollection(
++                            new Dictionary<string, string?>
++                            {
++                                ["ConnectionStrings:T12Cli"] = Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")
++                            }))
++                        .ConfigureServices((host, services) => services.AddDbContext<CliDbContext>(
++                            options => options.UseDameng(host.Configuration.GetConnectionString("T12Cli")!)));
++
++                public static int Main(string[] args)
++                {
++                    if (!args.Contains("--t12-verify")) return 0;
++                    string verifyStage = "context_lookup";
++                    try
++                    {
++                        var contextType = typeof(Program).Assembly.GetType("ScaffoldedCliContext")
++                            ?? typeof(Program).Assembly.GetTypes().Single(type => type.Name == "ScaffoldedCliContext");
++                        verifyStage = "options_build";
++                        var genericBuilderType = typeof(DbContextOptionsBuilder<>).MakeGenericType(contextType);
++                        var genericBuilder = (DbContextOptionsBuilder)Activator.CreateInstance(genericBuilderType)!;
++                        genericBuilder.UseDameng(Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!);
++                        verifyStage = "context_create";
++                        using var configuredContext = (DbContext)Activator.CreateInstance(contextType, genericBuilder.Options)!;
++                        verifyStage = "design_model";
++                        var entity = configuredContext.GetService<IDesignTimeModel>().Model.GetEntityTypes().Single();
++                        verifyStage = "table_and_comments";
++                        if (entity.GetTableName() != "{{tableName}}"
++                            || entity.GetComment() != "命令行订单表"
++                            || entity.FindProperty("Code")?.GetComment() != "编码") return 3;
++                        verifyStage = "candidate_dll_hash";
++                        Console.WriteLine(Convert.ToHexString(SHA256.HashData(
++                            File.ReadAllBytes(typeof(DmConnection).Assembly.Location))));
++                        return 0;
++                    }
++                    catch (Exception error)
++                    {
++                        Console.Error.WriteLine("T12 model checker stage=" + verifyStage
++                            + " exception_kind=" + error.GetType().FullName);
++                        return 2;
++                    }
++                }
++            }
++            """);
+ 
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "CliDbContext.cs"),
+@@ -266,11 +374,14 @@
+ 
+             public sealed class CliDbContext : DbContext
+             {
++                public CliDbContext(DbContextOptions<CliDbContext> options) : base(options) { }
++
+                 public DbSet<CliOrder> Orders => Set<CliOrder>();
+ 
+                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                     => optionsBuilder.UseDameng(
+-                        Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!);
++                        Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!,
++                        dameng => dameng.MigrationsHistoryTable("{{historyName}}"));
+ 
+                 protected override void OnModelCreating(ModelBuilder modelBuilder)
+                 {
+@@ -302,148 +413,304 @@
+     }
+ 
+     private async Task RunDotNetEfAsync(
+-        string dotnetEf,
+-        string workingDirectory,
+-        string connectionString,
+-        string[] arguments)
+-    {
+-        var efArguments = new List<string>();
+-        efArguments.AddRange(arguments);
+-        await RunDotNetAsync(dotnetEf, workingDirectory, connectionString, efArguments);
+-    }
+-
+-    private async Task RunDotNetAsync(
+-        string dotnet,
+-        string workingDirectory,
+-        string connectionString,
+-        List<string> arguments)
+-    {
++        string dotnetEf, string workingDirectory, string connectionString, string[] arguments)
++        => await RunDotNetAsync(dotnetEf, workingDirectory, connectionString, arguments.ToList());
++
++    private sealed record ProcessResult(string StandardOutput, string StandardError, int ExitCode);
++
++    private void ValidateCliAssets(string projectDirectory, string candidateVersion)
++    {
++        string assetsPath = Path.Combine(projectDirectory, "obj", "project.assets.json");
++        using var assets = JsonDocument.Parse(File.ReadAllText(assetsPath));
++        var libraries = assets.RootElement.GetProperty("libraries").EnumerateObject().Select(item => item.Name).ToArray();
++        Assert.True(libraries.Contains("W.DmProvider/" + candidateVersion, StringComparer.Ordinal),
++            "Nested CLI assets must contain the exact candidate package.");
++        Assert.True(!libraries.Any(name => name.StartsWith("DM.DmProvider/", StringComparison.OrdinalIgnoreCase)),
++            "Nested CLI assets must not fall back to the official driver.");
++        Assert.True(libraries.Contains("Microsoft.EntityFrameworkCore.Relational/" + EfCoreVersion, StringComparer.Ordinal)
++            && libraries.Contains("Microsoft.EntityFrameworkCore.Design/" + EfCoreVersion, StringComparer.Ordinal),
++            "Nested CLI EF packages must match the frozen version.");
++        output.WriteLine("CLI assets_sha256=" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assetsPath)))
++            + " lock_sha256=" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(projectDirectory, "packages.lock.json")))));
++    }
++
++    private static void AssertGeneratedSourcesContainNoSecret(string projectDirectory, string connectionString)
++    {
++        var forbidden = new List<string> { connectionString };
++        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
++        foreach (string key in builder.Keys)
++            if (key.Contains("password", StringComparison.OrdinalIgnoreCase) || key.Equals("pwd", StringComparison.OrdinalIgnoreCase))
++            {
++                string? value = Convert.ToString(builder[key], CultureInfo.InvariantCulture);
++                if (!string.IsNullOrEmpty(value)) forbidden.Add(value);
++            }
++        foreach (string file in Directory.EnumerateFiles(projectDirectory, "*", SearchOption.AllDirectories))
++        {
++            if (Path.GetExtension(file) is not (".cs" or ".json" or ".sql" or ".xml")) continue;
++            string content = File.ReadAllText(file);
++            Assert.True(!forbidden.Any(value => content.Contains(value, StringComparison.Ordinal)),
++                "CLI generated text must not contain a connection or password literal.");
++        }
++    }
++
++    private async Task<ProcessResult> RunDotNetAsync(
++        string executable, string workingDirectory, string? connectionString, List<string> arguments)
++    {
++        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(CommandTimeoutSeconds));
+         var startInfo = new ProcessStartInfo
+         {
+-            FileName = dotnet,
++            FileName = executable,
+             WorkingDirectory = workingDirectory,
+             RedirectStandardOutput = true,
+             RedirectStandardError = true,
+             UseShellExecute = false
+         };
+-        foreach (var argument in arguments)
+-        {
+-            startInfo.ArgumentList.Add(argument);
+-        }
+-
+-        startInfo.Environment["DAMENG_TEST_CONNECTION_STRING"] = connectionString;
+-
+-        using var process = Process.Start(startInfo)
+-            ?? throw new InvalidOperationException("Failed to start dotnet ef.");
+-        var standardOutput = await process.StandardOutput.ReadToEndAsync();
+-        var standardError = await process.StandardError.ReadToEndAsync();
+-
+-        using var timeout = new CancellationTokenSource(
+-            TimeSpan.FromSeconds(CommandTimeoutSeconds));
++        foreach (var argument in arguments) startInfo.ArgumentList.Add(argument);
++        var host = RequiredAbsolutePath("DAMENG_T12_DOTNET_HOST", directory: false);
++        startInfo.Environment["DOTNET_HOST_PATH"] = host;
++        var hostDirectory = Path.GetDirectoryName(host)!;
++        startInfo.Environment["DOTNET_ROOT"] = hostDirectory;
++        // dotnet-ef starts its own bare dotnet/msbuild child. Pin that resolution
++        // to the same verified SDK host, without changing the parent's PATH.
++        startInfo.Environment.TryGetValue("PATH", out var inheritedPath);
++        startInfo.Environment["PATH"] = hostDirectory +
++            (string.IsNullOrEmpty(inheritedPath) ? "" : Path.PathSeparator + inheritedPath);
++        startInfo.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
++        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
++        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
++        startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
++        startInfo.Environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0";
++        startInfo.Environment["NuGetAudit"] = "false";
++        startInfo.Environment.Remove("MSBuildSDKsPath");
++        startInfo.Environment.Remove("MSBuildExtensionsPath");
++        // Do not leak the wrapper connection into tool provisioning or SDK checks.
++        startInfo.Environment.Remove("DAMENG_TEST_CONNECTION_STRING");
++        startInfo.Environment.Remove("ConnectionStrings__" + NamedConnection);
++        if (connectionString is not null)
++        {
++            startInfo.Environment["DAMENG_TEST_CONNECTION_STRING"] = connectionString;
++        }
++        Process? process = null;
++        string stage = arguments[0] switch
++        {
++            "restore" => "restore", "build" => "build", "run" => "verify_model",
++            "tool" => "tool_provision", "--version" => "version",
++            "migrations" when arguments.Count > 1 && arguments[1] == "add" => "migrations_add",
++            "migrations" when arguments.Count > 1 && arguments[1] == "script" => "migrations_script",
++            "database" when arguments.Count > 1 && arguments[1] == "update" => "database_update",
++            "dbcontext" when arguments.Count > 1 && arguments[1] == "scaffold" => "scaffold",
++            _ => "unknown"
++        };
++        currentPhase = stage;
++        CliDiagnostic? diagnostic = null;
++        output.WriteLine("CLI subprocess stage=" + stage + " started.");
+         try
+         {
+-            await process.WaitForExitAsync(timeout.Token);
+-        }
+-        catch (OperationCanceledException)
+-        {
+-            process.Kill(entireProcessTree: true);
+-            throw new TimeoutException(
+-                $"dotnet {string.Join(' ', arguments)} timed out.");
+-        }
+-
+-        output.WriteLine(Redact(connectionString, $"dotnet {string.Join(' ', arguments)}"));
+-        output.WriteLine(Redact(connectionString, standardOutput));
+-        if (!string.IsNullOrWhiteSpace(standardError))
+-        {
+-            output.WriteLine(Redact(connectionString, standardError));
+-        }
+-
+-        if (process.ExitCode != 0)
+-        {
+-            var environmentDump = string.Join(
+-                "; ",
+-                DebugEnvironmentVariableNames
+-                    .Select(name => name + "=" + Environment.GetEnvironmentVariable(name)));
+-            throw new InvalidOperationException(
+-                $"dotnet {string.Join(' ', arguments)} exited with {process.ExitCode.ToString(CultureInfo.InvariantCulture)}. "
+-                + "env: " + environmentDump + " || "
+-                + Redact(connectionString, standardError.Length > 0 ? standardError : standardOutput));
+-        }
+-    }
+-
+-    // dotnet-ef must match the locked EF Core version: the 10.0.3 tool mishandles build
+-    // output paths on Unix and fails its own build. The tool lives under artifacts/ so the
+-    // global tool installation stays untouched.
+-    private async Task<string> EnsureDotNetEfToolAsync(string repoRoot, string efCoreVersion)
+-    {
+-        var toolDirectory = Path.Combine(repoRoot, "artifacts", "dotnet-ef-tool");
++            process = Process.Start(startInfo) ?? throw new InvalidOperationException("process_start_failed");
++            // Both streams and process wait use the same deadline from before launch.
++            var stdout = process.StandardOutput.ReadToEndAsync(timeout.Token);
++            var stderr = process.StandardError.ReadToEndAsync(timeout.Token);
++            await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(timeout.Token)).WaitAsync(timeout.Token);
++            var result = new ProcessResult(await stdout, await stderr, process.ExitCode);
++            output.WriteLine("CLI subprocess stage=" + stage + " exit=" + result.ExitCode.ToString(CultureInfo.InvariantCulture)
++                + " stdout_sha256=" + TextHash(result.StandardOutput)
++                + " stderr_sha256=" + TextHash(result.StandardError));
++            if (result.ExitCode != 0)
++            {
++                diagnostic = StructuredDiagnostic(result.StandardOutput, result.StandardError,
++                    connectionString ?? Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING"));
++                output.WriteLine("CLI safe_diagnostic=" + JsonSerializer.Serialize(diagnostic));
++                throw new CliProcessFailure(new CliFailureSummary(stage, "subprocess_nonzero_exit",
++                    result.ExitCode, diagnostic, null));
++            }
++            return result;
++        }
++        catch (OperationCanceledException error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            output.WriteLine("CLI subprocess stage=" + stage + " timed_out; own_tree_termination_kind=" + (termination ?? "none"));
++            throw new CliProcessFailure(new CliFailureSummary(stage, error.GetType().FullName ?? "timeout",
++                null, diagnostic, termination));
++        }
++        catch (CliProcessFailure error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            throw new CliProcessFailure(error.Summary with { TerminationExceptionKind = termination });
++        }
++        catch (Exception error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            throw new CliProcessFailure(new CliFailureSummary(stage, error.GetType().FullName ?? "unknown",
++                null, diagnostic, termination));
++        }
++        finally { process?.Dispose(); }
++    }
++
++    private static async Task<string?> CaptureOwnTreeTerminationAsync(Process? process)
++    {
++        try { await KillOwnTreeAsync(process); return null; }
++        catch (Exception error) { return error.GetType().FullName ?? "unknown"; }
++    }
++
++    private sealed record CliDiagnostic(string StdoutSha256, string StderrSha256, bool SanitizerComplete,
++        string[] BuildCodes, string[] ExceptionKinds, string[] EfCategories, string? SafeExcerpt);
++    private sealed record CliFailureSummary(string Phase, string ExceptionKind, int? ExitCode,
++        CliDiagnostic? Diagnostic, string? TerminationExceptionKind);
++    private sealed class CliProcessFailure(CliFailureSummary summary) : InvalidOperationException("CLI subprocess failed safely.")
++    {
++        internal CliFailureSummary Summary { get; } = summary;
++    }
++
++    private static CliDiagnostic StructuredDiagnostic(string stdout, string stderr, string? connectionString)
++    {
++        string stdoutHash = TextHash(stdout), stderrHash = TextHash(stderr);
++        CliDiagnostic Unknown() => new(stdoutHash, stderrHash, false, [], [], ["unknown"], null);
++        try
++        {
++            var sensitive = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
++            void AddVariants(string value)
++            {
++                if (value.Length == 0) return;
++                foreach (string original in new[] { value, System.Net.WebUtility.HtmlDecode(value), Uri.UnescapeDataString(value) })
++                {
++                    if (original.Length == 0) continue;
++                    sensitive.Add(original);
++                    sensitive.Add(SecurityElement.Escape(original) ?? original);
++                    sensitive.Add(System.Net.WebUtility.HtmlEncode(original));
++                    sensitive.Add(Uri.EscapeDataString(original));
++                    sensitive.Add(JsonSerializer.Serialize(original)[1..^1]);
++                }
++            }
++            if (!string.IsNullOrWhiteSpace(connectionString))
++            {
++                var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
++                AddVariants(connectionString);
++                foreach (string key in builder.Keys)
++                {
++                    string normalized = Regex.Replace(key, @"[\s_]", "").ToLowerInvariant();
++                    bool credential = normalized is "password" or "pwd" or "user" or "userid" or "uid" or "username"
++                        or "server" or "host" or "hostname" or "datasource" or "address" or "addr" or "networkaddress"
++                        or "port" or "tcpport" or "database" or "initialcatalog"
++                        or "schema" or "servicename" or "sid" || normalized.Contains("password", StringComparison.Ordinal)
++                        || normalized.Contains("secret", StringComparison.Ordinal) || normalized.Contains("token", StringComparison.Ordinal)
++                        || normalized.StartsWith("user", StringComparison.Ordinal) || normalized.StartsWith("server", StringComparison.Ordinal);
++                    if (credential) AddVariants(Convert.ToString(builder[key], CultureInfo.InvariantCulture) ?? "");
++                }
++            }
++            string text = stdout + "\n" + stderr;
++            // Never publish this temporary string. Empty replacement avoids the
++            // redaction marker itself containing a short secret (for example "p").
++            foreach (string value in sensitive.OrderByDescending(value => value.Length))
++                text = text.Replace(value, "", StringComparison.OrdinalIgnoreCase);
++            bool ResidualSafe(string candidate)
++                => !sensitive.Any(value => candidate.Contains(value, StringComparison.OrdinalIgnoreCase))
++                    && !Regex.IsMatch(candidate, @"(?i)\b(?:password|pwd|user(?:\s*id|name)?|uid|server|host|data\s*source|address|addr|port|database|schema|connection\s*string|token|secret|api[\s_-]*key|clientsecret)[""']?\s*(?:=|:)\s*[""']?[^\s;,]+")
++                    && !Regex.IsMatch(candidate, @"(?i)\b[a-z][a-z0-9+.-]*://[^\s]+@")
++                    && !Regex.IsMatch(candidate, @"(?i)-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----");
++            if (!ResidualSafe(text)) return Unknown();
++            string[] codes = Regex.Matches(text, @"\b(?:CS|NU|MSB|NETSDK)[0-9]{3,6}\b")
++                .Select(match => match.Value).Distinct(StringComparer.Ordinal).Take(16).ToArray();
++            string[] knownExceptions = ["System.InvalidOperationException", "System.ArgumentException", "System.NullReferenceException",
++                "System.TypeLoadException", "System.MissingMethodException", "System.BadImageFormatException",
++                "System.IO.FileNotFoundException", "System.IO.FileLoadException", "System.Reflection.TargetInvocationException",
++                "Microsoft.EntityFrameworkCore.DbUpdateException", "W.Dm.DmException", "Dm.DmException"];
++            string[] types = knownExceptions.Where(name => Regex.IsMatch(text,
++                "(?<![A-Za-z0-9_.])" + Regex.Escape(name) + "(?![A-Za-z0-9_.])")).ToArray();
++            var categories = new List<string>();
++            void Classify(string token, string label) { if (text.Contains(token, StringComparison.OrdinalIgnoreCase)) categories.Add(label); }
++            Classify("Unable to create", "design_time_context_creation_failed");
++            Classify("No DbContext was found", "dbcontext_not_found");
++            Classify("More than one DbContext", "multiple_dbcontexts");
++            Classify("Unable to resolve service", "design_time_service_resolution_failed");
++            Classify("No suitable constructor", "context_constructor_missing");
++            Classify("no parameterless constructor", "context_constructor_missing");
++            Classify("No database provider has been configured", "database_provider_not_configured");
++            Classify("requires a primary key", "model_primary_key_missing");
++            Classify("Could not find file", "required_file_missing");
++            Classify("Specify a project", "project_selection_failed");
++            Classify("not compatible with", "dependency_version_incompatible");
++            Classify("Could not load file or assembly", "assembly_load_failed");
++            Classify("Method not found", "method_binding_failed");
++            Classify("design-time services", "design_time_services");
++            Classify("doesn't reference Microsoft.EntityFrameworkCore.Design", "design_package_missing");
++            Classify("startup project", "startup_project_context");
++            string[] classified = categories.Count == 0 ? ["unknown"] : categories.Distinct(StringComparer.Ordinal).ToArray();
++            string emitted = string.Join("|", codes.Concat(types).Concat(classified));
++            if (sensitive.Any(value => emitted.Contains(value, StringComparison.OrdinalIgnoreCase))) return Unknown();
++            // Only a fully redacted and rechecked string is eligible. ANSI CSI/OSC
++            // sequences are removed; all remaining C0/DEL bytes become explicit escapes.
++            string noAnsi = Regex.Replace(text,
++                @"\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1B]*(?:\x07|\x1B\\))", "");
++            var visible = new System.Text.StringBuilder();
++            foreach (char character in noAnsi)
++                if (character < ' ' || character == '\x7F')
++                    visible.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
++                else visible.Append(character);
++            string normalizedOutput = visible.ToString();
++            if (!ResidualSafe(normalizedOutput)) return Unknown();
++            var bounded = new System.Text.StringBuilder();
++            int utf8Bytes = 0;
++            foreach (var rune in normalizedOutput.EnumerateRunes())
++            {
++                if (utf8Bytes + rune.Utf8SequenceLength > 8192) break;
++                bounded.Append(rune.ToString());
++                utf8Bytes += rune.Utf8SequenceLength;
++            }
++            string excerpt = bounded.ToString();
++            if (System.Text.Encoding.UTF8.GetByteCount(excerpt) > 8192 || !ResidualSafe(excerpt)) return Unknown();
++            return new(stdoutHash, stderrHash, true, codes, types, classified, excerpt);
++        }
++        catch { return Unknown(); }
++    }
++
++    private static async Task KillOwnTreeAsync(Process? process)
++    {
++        if (process is null) return;
++        try
++        {
++            if (!process.HasExited) process.Kill(entireProcessTree: true);
++            using var reapDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
++            await process.WaitForExitAsync(reapDeadline.Token);
++        }
++        catch (Exception error) { throw SafeFailure("cli_process_tree_termination", error); }
++    }
++
++    private async Task<string> EnsureDotNetEfToolAsync(string cliRoot, string efCoreVersion)
++    {
++        var toolDirectory = Path.Combine(cliRoot, "dotnet-ef-" + efCoreVersion);
++        Directory.CreateDirectory(toolDirectory);
++        File.WriteAllText(Path.Combine(toolDirectory, "global.json"),
++            "{\"sdk\":{\"version\":\"10.0.401\",\"rollForward\":\"disable\"}}");
+         var toolPath = Path.Combine(toolDirectory, "dotnet-ef");
+-
+-        if (File.Exists(toolPath))
+-        {
+-            var installed = await ReadToolVersionAsync(toolPath);
+-            if (string.Equals(installed, efCoreVersion, StringComparison.Ordinal))
+-            {
+-                return toolPath;
+-            }
+-        }
+-
+-        var dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+-        if (string.IsNullOrEmpty(dotnet))
+-        {
+-            dotnet = "dotnet";
+-        }
+-
+-        Directory.CreateDirectory(toolDirectory);
+-        var action = File.Exists(toolPath) ? "update" : "install";
+-        await RunDotNetAsync(
+-            dotnet,
+-            repoRoot,
+-            DamengTestEnvironment.GetRequiredConnectionString(),
+-            [
+-                "tool", action, "dotnet-ef",
+-                "--version", efCoreVersion,
+-                "--tool-path", toolDirectory
+-            ]);
+-
+-        var version = await ReadToolVersionAsync(toolPath);
+-        Assert.True(
+-            string.Equals(version, efCoreVersion, StringComparison.Ordinal),
+-            $"dotnet-ef {efCoreVersion} could not be provisioned under artifacts/dotnet-ef-tool.");
+-        output.WriteLine("dotnet-ef provisioned: " + version);
++        if (!File.Exists(toolPath))
++            await RunDotNetAsync(
++                RequiredEnvironment("DAMENG_T12_DOTNET_HOST"), toolDirectory, null,
++                ["tool", "install", "dotnet-ef", "--version", efCoreVersion,
++                 "--tool-path", toolDirectory, "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "--disable-parallel"]);
++        var result = await RunDotNetAsync(toolPath, toolDirectory, null, ["--version"]);
++        Assert.True(result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
++            .Any(line => line.Trim() == efCoreVersion || line.Trim().EndsWith(" " + efCoreVersion, StringComparison.Ordinal)),
++            "dotnet-ef must exactly match the frozen EF Core version.");
+         return toolPath;
+     }
+ 
+-    private static async Task<string?> ReadToolVersionAsync(string toolPath)
+-    {
+-        try
+-        {
+-            using var process = Process.Start(
+-                new ProcessStartInfo
+-                {
+-                    FileName = toolPath,
+-                    RedirectStandardOutput = true,
+-                    RedirectStandardError = true,
+-                    UseShellExecute = false,
+-                    ArgumentList = { "--version" }
+-                });
+-            var toolOutput = await process!.StandardOutput.ReadToEndAsync();
+-            await process.WaitForExitAsync();
+-            if (process.ExitCode != 0)
+-            {
+-                return null;
+-            }
+-
+-            var versionLine = toolOutput
+-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+-                .FirstOrDefault(line => line.Trim().Length > 0 && char.IsDigit(line.Trim()[0]));
+-            return versionLine?.Trim();
+-        }
+-        catch (Exception error) when (error is System.ComponentModel.Win32Exception or FileNotFoundException)
+-        {
+-            return null;
+-        }
+-    }
++    private static string RequiredEnvironment(string name)
++        => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value
++            ? value : throw new InvalidOperationException("Missing CLI input: " + name);
++
++    private static string RequiredAbsolutePath(string name, bool directory)
++    {
++        string path = RequiredEnvironment(name);
++        if (!Path.IsPathFullyQualified(path) || !(directory ? Directory.Exists(path) : File.Exists(path)))
++            throw new InvalidOperationException("Invalid CLI path input: " + name);
++        return path;
++    }
++
++    private static string TextHash(string text)
++        => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)));
++
++    private static InvalidOperationException SafeFailure(string stage, Exception error)
++        => new(stage + " failed; exception_kind=" + error.GetType().FullName);
+ 
+     private static string FindRepositoryRoot()
+     {
+@@ -462,46 +729,48 @@
+             "Could not locate the repository root from " + AppContext.BaseDirectory);
+     }
+ 
+-    private static (string EfCoreVersion, string DmProviderVersion) ResolveLockedPackageVersions(
+-        string repoRoot)
+-    {
+-        var props = File.ReadAllText(Path.Combine(repoRoot, "Directory.Packages.props"));
+-        var efCoreMatch = Regex.Match(
+-            props,
+-            "Microsoft\\.EntityFrameworkCore\\.Relational\"\\s+Version=\"\\[(?<version>[^,\\]]+)");
+-        var dmProviderMatch = Regex.Match(
+-            props,
+-            "DM\\.DmProvider\"\\s+Version=\"\\[(?<version>[^,\\]]+)");
+-        Assert.True(efCoreMatch.Success, "Directory.Packages.props must pin the EF Core range.");
+-        Assert.True(dmProviderMatch.Success, "Directory.Packages.props must pin the DM.DmProvider range.");
+-        return (efCoreMatch.Groups["version"].Value, dmProviderMatch.Groups["version"].Value);
+-    }
+-
+-    private static string Redact(string connectionString, string text)
+-    {
+-        var redacted = text.Replace(connectionString, "[redacted]", StringComparison.OrdinalIgnoreCase);
+-        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+-        foreach (string key in builder.Keys)
+-        {
+-            if (!key.Contains("password", StringComparison.OrdinalIgnoreCase)
+-                && !key.Equals("pwd", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("user", StringComparison.OrdinalIgnoreCase)
+-                && !key.Equals("uid", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("server", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("host", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("data source", StringComparison.OrdinalIgnoreCase))
+-            {
+-                continue;
+-            }
+-
+-            var value = Convert.ToString(builder[key], CultureInfo.InvariantCulture);
+-            if (!string.IsNullOrEmpty(value))
+-            {
+-                redacted = redacted.Replace(value, "[redacted]", StringComparison.OrdinalIgnoreCase);
+-            }
+-        }
+-
+-        return redacted;
++    private static async Task CleanupOwnedObjectsAsync(string connectionString, string tableName, string historyName, string sequenceName)
++    {
++        var objects = new[]
++        {
++            (View: "USER_TABLES", Column: "TABLE_NAME", Name: tableName),
++            (View: "USER_TABLES", Column: "TABLE_NAME", Name: historyName),
++            (View: "USER_SEQUENCES", Column: "SEQUENCE_NAME", Name: sequenceName)
++        };
++        var failures = new List<string>();
++        foreach (var owned in objects)
++        {
++            try
++            {
++                await using var connection = new DmConnection(connectionString);
++                await connection.OpenAsync();
++                await VerifyIdentityAsync(connection);
++                await DropIfExistsAsync(connection, owned.View, owned.Column, owned.Name);
++            }
++            catch (Exception error) { failures.Add(error.GetType().FullName ?? "unknown"); }
++        }
++        // A failed command must not prevent attempts to remove the other owned objects.
++        await using var finalConnection = new DmConnection(connectionString);
++        await finalConnection.OpenAsync();
++        await VerifyIdentityAsync(finalConnection);
++        foreach (var owned in objects)
++            await AssertAbsentAsync(finalConnection, owned.View, owned.Column, owned.Name);
++        if (failures.Count > 0)
++            throw new InvalidOperationException("CLI cleanup failed; exception_kinds=" + string.Join(",", failures));
++    }
++
++    private static async Task VerifyIdentityAsync(DmConnection connection)
++    {
++        var identity = await ScalarStringAsync(connection, "SELECT USER FROM DUAL", null);
++        var schema = await ScalarStringAsync(connection, "SELECT SF_GET_SCHEMA_NAME_BY_ID(CURRENT_SCHID()) FROM DUAL", null);
++        if (identity != "WDM_PROVIDER_TEST" || schema != "WDM_PROVIDER_TEST")
++            throw new InvalidOperationException("CLI test account/schema identity mismatch.");
++    }
++
++    private static async Task AssertAbsentAsync(DmConnection connection, string view, string column, string name)
++    {
++        var count = await ScalarStringAsync(connection, $"SELECT COUNT(*) FROM {view} WHERE {column} = :name", name);
++        Assert.True(count == "0", "CLI owned object must be absent.");
+     }
+ 
+     private static async Task<string?> ScalarStringAsync(
+@@ -511,6 +780,7 @@
+     {
+         await using var command = connection.CreateCommand();
+         command.CommandText = sql;
++        command.CommandTimeout = 30;
+         if (parameterValue is not null)
+         {
+             var parameter = command.CreateParameter();
+@@ -534,6 +804,7 @@
+         await using (var count = connection.CreateCommand())
+         {
+             count.CommandText = $"SELECT COUNT(*) FROM {catalogView} WHERE {nameColumn} = :name";
++            count.CommandTimeout = 30;
+             var parameter = count.CreateParameter();
+             parameter.ParameterName = "name";
+             parameter.Value = objectName;
+@@ -547,6 +818,7 @@
+         var objectType = catalogView.Contains("SEQUENCE", StringComparison.Ordinal) ? "SEQUENCE" : "TABLE";
+         await using var drop = connection.CreateCommand();
+         drop.CommandText = $"DROP {objectType} \"{objectName}\"";
++        drop.CommandTimeout = 30;
+         await drop.ExecuteNonQueryAsync();
+     }
+ 
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata.Builders;
+@@ -44,6 +44,7 @@
+             static (expected, actual) => Assert.Equal(expected, actual));
+ 
+     [DamengFact]
++    [Trait("Category", "OfficialCharacterization")]
+     public Task DateTimeOffsetRawAdoReadbackPreservesServerEvidence()
+         => ExtendedTypeStore.WithTableAsync(
+             "DATETIME(7) WITH TIME ZONE",
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs
+@@ -77,9 +77,10 @@
+             });
+ 
+     [DamengTheory]
++    [Trait("Category", "Improvement")]
+     [InlineData(IsolationLevel.ReadUncommitted)]
+     [InlineData(IsolationLevel.Serializable)]
+-    public Task SaveChangesFailsAfterBeginningReadUncommittedOrSerializable(IsolationLevel isolationLevel)
++    public Task SaveChangesSucceedsAfterBeginningReadUncommittedOrSerializable(IsolationLevel isolationLevel)
+         => DamengTestStore.WithEntityTableAsync(
+             async store =>
+             {
+@@ -104,10 +105,8 @@
+ 
+                     loaded.Name = $"隔离级别更新-{isolationLevel}";
+                     loaded.Version = 2;
+-                    var updateException = await Assert.ThrowsAsync<DbUpdateException>(
+-                        () => context.SaveChangesAsync());
+-                    AssertCommandTextHasNoValue(updateException);
+-                    context.ChangeTracker.Clear();
++                    Assert.Equal(1, await context.SaveChangesAsync());
++                    await transaction.RollbackAsync();
+                 }
+ 
+                 await using (var context = CreateContext(store))
+@@ -119,9 +118,16 @@
+                             Name = $"隔离级别插入-{isolationLevel}",
+                             Version = 1
+                         });
+-                    var insertException = await Assert.ThrowsAsync<DbUpdateException>(
+-                        () => context.SaveChangesAsync());
+-                    AssertCommandTextHasNoValue(insertException);
++                    Assert.Equal(1, await context.SaveChangesAsync());
++                    Assert.True(context.Entities.Local.Single().Id > 0);
++                    await transaction.RollbackAsync();
++                }
++                await using (var verify = CreateContext(store))
++                {
++                    var remaining = Assert.Single(await verify.Entities.AsNoTracking().ToListAsync());
++                    Assert.Equal(id, remaining.Id);
++                    Assert.Equal("隔离级别-种子", remaining.Name);
++                    Assert.Equal(1, remaining.Version);
+                 }
+             });
+ 
+@@ -198,12 +204,6 @@
+                             .SingleAsync());
+                 }
+             });
+-
+-    private static void AssertCommandTextHasNoValue(DbUpdateException exception)
+-    {
+-        var inner = Assert.IsType<InvalidOperationException>(exception.InnerException);
+-        Assert.Contains("CommandText has no value", inner.Message, StringComparison.Ordinal);
+-    }
+ 
+     private static IsolationContext CreateContext(DamengTestStore store)
+     {
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs
+@@ -4,7 +4,7 @@
+ using System.Globalization;
+ using System.Text.Encodings.Web;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ using Xunit.Abstractions;
+ 
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit.Abstractions;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Text;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata;
+@@ -334,10 +334,7 @@
+             catch (Exception exception)
+             {
+                 throw new InvalidOperationException(
+-                    $"EnsureSchema execution step {step} failed. Text: "
+-                    + text.Replace("\r", "\\r", StringComparison.Ordinal)
+-                        .Replace("\n", "\\n", StringComparison.Ordinal),
+-                    exception);
++                    $"EnsureSchema execution step {step} failed ({exception.GetType().Name}).");
+             }
+         }
+     }
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Data;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs
+@@ -3,7 +3,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Xunit;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Metadata;
+ using Microsoft.EntityFrameworkCore.Migrations;
+ using Microsoft.EntityFrameworkCore.Scaffolding;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs
+@@ -1,5 +1,5 @@
+ using System.Text;
+-using Dm;
++using W.Dm;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+ 
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Security.Cryptography;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs
+@@ -3,7 +3,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using W.EntityFrameworkCore.Dameng.TestData;
+ using Xunit;
+ using Xunit.Abstractions;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs
+@@ -1,7 +1,7 @@
+ using System.Data;
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+@@ -9,7 +9,23 @@
+     public const string ConnectionStringVariable = "DAMENG_TEST_CONNECTION_STRING";
+ 
+     public static string? ConnectionString
+-        => Environment.GetEnvironmentVariable(ConnectionStringVariable);
++        => ConfigureTestConnection(Environment.GetEnvironmentVariable(ConnectionStringVariable));
++
++    private static string? ConfigureTestConnection(string? raw)
++    {
++        if (string.IsNullOrWhiteSpace(raw)) return null;
++        var builder = new global::W.Dm.DmConnectionStringBuilder(raw)
++        {
++            TransportSecurity = global::W.Dm.DmTransportSecurity.PlaintextAllowed,
++            PersistSecurityInfo = false,
++            Schema = "WDM_PROVIDER_TEST",
++            ConnectTimeout = TimeSpan.FromSeconds(20),
++            CommandTimeout = 20
++        };
++        if (!string.Equals(builder.User, "WDM_PROVIDER_TEST", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("The dedicated TEST user is required before authentication.");
++        return builder.ConnectionString;
++    }
+ 
+     public static string GetRequiredConnectionString()
+         => string.IsNullOrWhiteSpace(ConnectionString)
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj
+@@ -19,4 +19,5 @@
+   <ItemGroup>
+     <Compile Include="../Shared/QueryTranslationCases.cs" Link="QueryTranslationCases.cs" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json
+@@ -184,19 +184,13 @@
+       "w.entityframeworkcore.dameng": {
+         "type": "Project",
+         "dependencies": {
+-          "DM.DmProvider": "[8.3.1.47463, 8.4.0)",
+-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 11.0.0)"
+-        }
+-      },
+-      "DM.DmProvider": {
+-        "type": "CentralTransitive",
+-        "requested": "[8.3.1.47463, 8.4.0)",
+-        "resolved": "8.3.1.47463",
+-        "contentHash": "51FUZEWXMLp95+vFgoXiZ0Bt69DpZTmk4pDG+971x3igTs57n9EmyONW8vD/bEf43PlOn/BuQk4PGyTfZ/zBKw=="
++          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 10.0.12]",
++          "W.DmProvider": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]"
++        }
+       },
+       "Microsoft.EntityFrameworkCore.Relational": {
+         "type": "CentralTransitive",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+         "dependencies": {
+@@ -205,6 +199,12 @@
+           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+           "Microsoft.Extensions.Logging": "10.0.12"
+         }
++      },
++      "W.DmProvider": {
++        "type": "CentralTransitive",
++        "requested": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]",
++        "resolved": "0.1.0-r1.20260930064454",
++        "contentHash": "xY8bflUUsNM1wwaHHD4zF0UYt8C2n1oLWiJdZ+CfUWy2DvmvtD8ndYBgHQknCWFvE7fiMZ0OOe3f6G/wXpkz2A=="
+       }
+     }
+   }
+diff --git a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs
+@@ -10,7 +10,23 @@
+         = "[environment] Set DAMENG_TEST_CONNECTION_STRING to run tests against an existing Dameng schema.";
+ 
+     public static string? ConnectionString
+-        => Environment.GetEnvironmentVariable(ConnectionStringVariable);
++        => ConfigureTestConnection(Environment.GetEnvironmentVariable(ConnectionStringVariable));
++
++    private static string? ConfigureTestConnection(string? raw)
++    {
++        if (string.IsNullOrWhiteSpace(raw)) return null;
++        var builder = new global::W.Dm.DmConnectionStringBuilder(raw)
++        {
++            TransportSecurity = global::W.Dm.DmTransportSecurity.PlaintextAllowed,
++            PersistSecurityInfo = false,
++            Schema = "WDM_PROVIDER_TEST",
++            ConnectTimeout = TimeSpan.FromSeconds(20),
++            CommandTimeout = 20
++        };
++        if (!string.Equals(builder.User, "WDM_PROVIDER_TEST", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("The dedicated TEST user is required before authentication.");
++        return builder.ConnectionString;
++    }
+ 
+     public static string GetRequiredConnectionString()
+         => string.IsNullOrWhiteSpace(ConnectionString)
+diff --git a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs
+@@ -1,7 +1,7 @@
+ using System.Collections.Concurrent;
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.TestUtilities;
+ 
+diff --git a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj
+@@ -17,4 +17,5 @@
+   <ItemGroup>
+     <ProjectReference Include="../../src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+diff --git a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/packages.lock.json b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/packages.lock.json
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/packages.lock.json
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/packages.lock.json
+@@ -4,7 +4,7 @@
+     "net10.0": {
+       "Microsoft.EntityFrameworkCore.Relational.Specification.Tests": {
+         "type": "Direct",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "iomLnBL33xLNX5S3IXRDQEbdm8eccOdACUT73LzxGNJY2FGBIbfPLjxDpsuNfGdXltObyMiRq6KbJG5ADlSrDw==",
+         "dependencies": {
+@@ -456,19 +456,13 @@
+       "w.entityframeworkcore.dameng": {
+         "type": "Project",
+         "dependencies": {
+-          "DM.DmProvider": "[8.3.1.47463, 8.4.0)",
+-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 11.0.0)"
+-        }
+-      },
+-      "DM.DmProvider": {
+-        "type": "CentralTransitive",
+-        "requested": "[8.3.1.47463, 8.4.0)",
+-        "resolved": "8.3.1.47463",
+-        "contentHash": "51FUZEWXMLp95+vFgoXiZ0Bt69DpZTmk4pDG+971x3igTs57n9EmyONW8vD/bEf43PlOn/BuQk4PGyTfZ/zBKw=="
++          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 10.0.12]",
++          "W.DmProvider": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]"
++        }
+       },
+       "Microsoft.EntityFrameworkCore.Relational": {
+         "type": "CentralTransitive",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+         "dependencies": {
+@@ -477,6 +471,12 @@
+           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+           "Microsoft.Extensions.Logging": "10.0.12"
+         }
++      },
++      "W.DmProvider": {
++        "type": "CentralTransitive",
++        "requested": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]",
++        "resolved": "0.1.0-r1.20260930064454",
++        "contentHash": "xY8bflUUsNM1wwaHHD4zF0UYt8C2n1oLWiJdZ+CfUWy2DvmvtD8ndYBgHQknCWFvE7fiMZ0OOe3f6G/wXpkz2A=="
+       }
+     }
+   }
+diff --git a/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs b/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs
+@@ -1,5 +1,5 @@
+ using System.Reflection;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit;
+ 
+@@ -8,172 +8,90 @@
+ public sealed class DamengExecutionStrategyTests
+ {
+     [Fact]
+-    public void EnableRetryOnFailureUsesDefaultDamengStrategy()
++    public void EnableRetryOnFailurePreservesDefaultSettingsWithoutClassifyingErrorsAsReplaySafe()
+     {
+         using var context = CreateContext(options => options.EnableRetryOnFailure());
+-
+-        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(
+-            context.Database.CreateExecutionStrategy());
+-
++        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(context.Database.CreateExecutionStrategy());
+         Assert.Equal(6, strategy.MaxRetryCount);
+         Assert.Equal(TimeSpan.FromSeconds(30), strategy.MaxRetryDelay);
+         Assert.True(strategy.RetriesOnFailure);
+     }
+ 
+     [Fact]
+-    public void EnableRetryOnFailureAppliesCustomSettingsAndCopiesErrorNumbers()
++    public void EmptyAdditionalNumbersPreserveCustomSettingsAndAreCopied()
+     {
+-        var additionalErrors = new List<int> { -12345 };
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-        optionsBuilder.UseDameng(
+-            "Server=localhost;Port=5236;User Id=test;PWD=test",
+-            options => options.EnableRetryOnFailure(
+-                maxRetryCount: 3,
+-                maxRetryDelay: TimeSpan.FromSeconds(4),
+-                additionalErrors));
+-
+-        additionalErrors.Add(-54321);
+-        using var context = new TestContext(optionsBuilder.Options);
+-        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(
+-            context.Database.CreateExecutionStrategy());
+-
++        var numbers = new List<int>();
++        using var context = CreateContext(options => options.EnableRetryOnFailure(3, TimeSpan.FromSeconds(4), numbers));
++        numbers.Add(-77777);
++        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(context.Database.CreateExecutionStrategy());
+         Assert.Equal(3, strategy.MaxRetryCount);
+         Assert.Equal(TimeSpan.FromSeconds(4), strategy.MaxRetryDelay);
+-        Assert.Equal([-12345], strategy.AdditionalErrorNumbers);
+-        Assert.False(
+-            strategy.AdditionalErrorNumbers
+-                is ICollection<int> { IsReadOnly: false });
++        Assert.Empty(strategy.AdditionalErrorNumbers!);
+     }
+ 
+     [Theory]
+-    [InlineData(-3003)]
+-    [InlineData(-3404)]
+-    [InlineData(-6003)]
+-    [InlineData(-6004)]
+-    [InlineData(-6010)]
+-    [InlineData(6001)]
+-    [InlineData(6027)]
+-    [InlineData(6060)]
+-    [InlineData(6089)]
+-    [InlineData(6123)]
+-    public void StrategyRecognizesOnlyExplicitDefaultTransientDamengCodes(int errorNumber)
++    [InlineData(-3003)] [InlineData(-3404)] [InlineData(-6003)] [InlineData(-6004)] [InlineData(-6010)]
++    [InlineData(6001)] [InlineData(6027)] [InlineData(6060)] [InlineData(6089)] [InlineData(6123)]
++    [InlineData(-2007)] [InlineData(-1040)] [InlineData(-1210)] [InlineData(-3002)] [InlineData(-6011)] [InlineData(0)]
++    public void UnclassifiedDriverErrorsAreNeverReplayed(int number)
+     {
+         using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
++        var strategy = new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, null);
++        var error = CreateError(number);
++        int attempts = 0;
++        Assert.Throws<DmException>(() => strategy.Execute(state: 42, (_, state) =>
++        {
++            attempts++;
++            if (attempts == 1) throw error;
++            return state;
++        }, verifySucceeded: null));
++        Assert.Equal(1, attempts);
++    }
+ 
+-        Assert.True(strategy.TestShouldRetryOn(CreateDmException(errorNumber)));
++    [Fact]
++    public void CommitOutcomeUnknownIsNeverReplayed()
++    {
++        using var context = CreateContext();
++        var strategy = new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, []);
++        var ctor = typeof(DmCommitOutcomeUnknownException).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
++            null, [typeof(Exception)], null)!;
++        var error = (DmCommitOutcomeUnknownException)ctor.Invoke([new TimeoutException("synthetic timeout")]);
++        int attempts = 0;
++        Assert.Throws<DmCommitOutcomeUnknownException>(() => strategy.Execute(state: 42, (_, state) =>
++        {
++            attempts++;
++            if (attempts == 1) throw error;
++            return state;
++        }, verifySucceeded: null));
++        Assert.False(error.IsTransient);
++        Assert.Equal(1, attempts);
+     }
+ 
+     [Theory]
+-    [InlineData(-2007)] // SQL syntax error
+-    [InlineData(-1040)] // Invalid connection string
+-    [InlineData(-1210)] // User locked
+-    [InlineData(-3002)] // Lock failure is intentionally not classified without stronger semantics
+-    [InlineData(-6011)] // Unknown host generally indicates configuration/DNS failure
+-    public void StrategyDoesNotRetryNonTransientOrAmbiguousDamengCodes(int errorNumber)
++    [InlineData(0)] [InlineData(-77777)] [InlineData(6001)] [InlineData(6089)]
++    public void NonemptyNumberOverridesAreExplicitlyRejected(int number)
+     {
+         using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
+-
+-        Assert.False(strategy.TestShouldRetryOn(CreateDmException(errorNumber)));
+-    }
+-
+-    [Fact]
+-    public void StrategyDoesNotRetryNonDamengTimeoutException()
+-    {
+-        using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
+-
+-        Assert.False(strategy.TestShouldRetryOn(new TimeoutException()));
+-    }
+-
+-    [Fact]
+-    public void StrategyRetriesAnAdditionalErrorNumber()
+-    {
+-        using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(
+-            context,
+-            maxRetryCount: 2,
+-            maxRetryDelay: TimeSpan.Zero,
+-            [-77777]);
+-        var attempts = 0;
+-
+-        var result = strategy.Execute(
+-            state: 42,
+-            (_, state) =>
+-            {
+-                if (++attempts < 3)
+-                {
+-                    throw CreateDmException(-77777);
+-                }
+-
+-                return state;
+-            },
+-            verifySucceeded: null);
+-
+-        Assert.Equal(42, result);
+-        Assert.Equal(3, attempts);
++        Assert.Throws<NotSupportedException>(() => new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, [number]));
++        Assert.Throws<NotSupportedException>(() => CreateContext(options => options.EnableRetryOnFailure([number])));
++        Assert.Throws<NotSupportedException>(() => CreateContext(options => options.EnableRetryOnFailure(2, TimeSpan.Zero, [number])));
+     }
+ 
+     [Fact]
+     public void CollectionOverloadRejectsNull()
+     {
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-
+-        Assert.Throws<ArgumentNullException>(
+-            () => optionsBuilder.UseDameng(
+-                "Server=localhost;Port=5236;User Id=test;PWD=test",
+-                options => options.EnableRetryOnFailure((ICollection<int>)null!)));
++        var builder = new DbContextOptionsBuilder<TestContext>();
++        Assert.Throws<ArgumentNullException>(() => builder.UseDameng("Server=localhost;Port=5236;User Id=test;PWD=test",
++            options => options.EnableRetryOnFailure((ICollection<int>)null!)));
+     }
+ 
+-    private static TestContext CreateContext(
+-        Action<Microsoft.EntityFrameworkCore.Infrastructure.DamengDbContextOptionsBuilder>? configure = null)
++    private static TestContext CreateContext(Action<Microsoft.EntityFrameworkCore.Infrastructure.DamengDbContextOptionsBuilder>? configure = null)
++        => new(new DbContextOptionsBuilder<TestContext>().UseDameng("Server=localhost;Port=5236;User Id=test;PWD=test", configure).Options);
++    private static DmException CreateError(int number)
+     {
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-        optionsBuilder.UseDameng(
+-            "Server=localhost;Port=5236;User Id=test;PWD=test",
+-            configure);
+-
+-        return new TestContext(optionsBuilder.Options);
++        var error = typeof(DmError).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, [typeof(int), typeof(string)], null)!
++            .Invoke([number, "synthetic error"]);
++        return (DmException)typeof(DmException).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, [typeof(DmError)], null)!.Invoke([error]);
+     }
+-
+-    private static DmException CreateDmException(int errorNumber)
+-    {
+-        var errorConstructor = typeof(DmError).GetConstructor(
+-            BindingFlags.Instance | BindingFlags.NonPublic,
+-            binder: null,
+-            [typeof(int), typeof(string)],
+-            modifiers: null)!;
+-        var exceptionConstructor = typeof(DmException).GetConstructor(
+-            BindingFlags.Instance | BindingFlags.NonPublic,
+-            binder: null,
+-            [typeof(DmError)],
+-            modifiers: null)!;
+-        var error = (DmError)errorConstructor.Invoke([errorNumber, $"DM error {errorNumber}"]);
+-
+-        return (DmException)exceptionConstructor.Invoke([error]);
+-    }
+-
+-    private sealed class TestContext(DbContextOptions<TestContext> options)
+-        : DbContext(options);
+-
+-    private sealed class TestDamengRetryingExecutionStrategy : DamengRetryingExecutionStrategy
+-    {
+-        public TestDamengRetryingExecutionStrategy(DbContext context)
+-            : base(context)
+-        {
+-        }
+-
+-        public TestDamengRetryingExecutionStrategy(
+-            DbContext context,
+-            int maxRetryCount,
+-            TimeSpan maxRetryDelay,
+-            IEnumerable<int> errorNumbersToAdd)
+-            : base(context, maxRetryCount, maxRetryDelay, errorNumbersToAdd)
+-        {
+-        }
+-
+-        public bool TestShouldRetryOn(Exception exception)
+-            => ShouldRetryOn(exception);
+-    }
++    private sealed class TestContext(DbContextOptions<TestContext> options) : DbContext(options);
+ }
+diff --git a/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs b/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs
+@@ -2,7 +2,7 @@
+ 
+ using System.Data;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Storage;
+diff --git a/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs b/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs
+@@ -1,4 +1,4 @@
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata;
+diff --git a/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj b/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj
+@@ -16,4 +16,5 @@
+   <ItemGroup>
+     <ProjectReference Include="../../src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+diff --git a/test/W.EntityFrameworkCore.Dameng.Tests/packages.lock.json b/test/W.EntityFrameworkCore.Dameng.Tests/packages.lock.json
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/packages.lock.json
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/packages.lock.json
+@@ -4,7 +4,7 @@
+     "net10.0": {
+       "Microsoft.EntityFrameworkCore.SqlServer": {
+         "type": "Direct",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "Wt/JUrctpOPfv3DNcZ6oKeg+FouanIXnrLfB8WN8DdMoqS/bxi9yPrwTKIEFB32qcKTUb5i9AVTCdbQBUid6ZQ==",
+         "dependencies": {
+@@ -375,19 +375,13 @@
+       "w.entityframeworkcore.dameng": {
+         "type": "Project",
+         "dependencies": {
+-          "DM.DmProvider": "[8.3.1.47463, 8.4.0)",
+-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 11.0.0)"
+-        }
+-      },
+-      "DM.DmProvider": {
+-        "type": "CentralTransitive",
+-        "requested": "[8.3.1.47463, 8.4.0)",
+-        "resolved": "8.3.1.47463",
+-        "contentHash": "51FUZEWXMLp95+vFgoXiZ0Bt69DpZTmk4pDG+971x3igTs57n9EmyONW8vD/bEf43PlOn/BuQk4PGyTfZ/zBKw=="
++          "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, 10.0.12]",
++          "W.DmProvider": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]"
++        }
+       },
+       "Microsoft.EntityFrameworkCore.Relational": {
+         "type": "CentralTransitive",
+-        "requested": "[10.0.12, 11.0.0)",
++        "requested": "[10.0.12, 10.0.12]",
+         "resolved": "10.0.12",
+         "contentHash": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+         "dependencies": {
+@@ -396,6 +390,12 @@
+           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+           "Microsoft.Extensions.Logging": "10.0.12"
+         }
++      },
++      "W.DmProvider": {
++        "type": "CentralTransitive",
++        "requested": "[0.1.0-r1.20260930064454, 0.1.0-r1.20260930064454]",
++        "resolved": "0.1.0-r1.20260930064454",
++        "contentHash": "xY8bflUUsNM1wwaHHD4zF0UYt8C2n1oLWiJdZ+CfUWy2DvmvtD8ndYBgHQknCWFvE7fiMZ0OOe3f6G/wXpkz2A=="
+       }
+     }
+   }

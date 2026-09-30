@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:TestRun xmlns:ns0="http://microsoft.com/schemas/VisualStudio/TeamTest/2010" id="262377f2-91ad-4dd3-874e-11ce6ccee5f6" name="@wanghongyideMacBook-Pro 2026-09-30 14:45:48">
+  <ns0:Times creation="2026-09-30T14:45:48.6231920+08:00" queuing="2026-09-30T14:45:48.6231920+08:00" start="2026-09-30T14:45:48.3358810+08:00" finish="2026-09-30T14:45:48.6253130+08:00" />
+  <ns0:TestSettings name="default" id="0f251072-adac-44b1-b078-61391b2d56b5">
+    <ns0:Deployment runDeploymentRoot="_wanghongyideMacBook-Pro_2026-09-30_14_45_48" />
+  </ns0:TestSettings>
+  <ns0:Results>
+    <ns0:UnitTestResult executionId="efce5b52-8f4b-4806-8fae-7ce790a64343" testId="12c910e9-a78e-ee29-2a33-8d3c665ceae1" testName="W.DmProvider.CommandTests.CommandPlanTests.PublicChangeNameRejectsForgedOldNameWithoutCorruptingIndex" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0003095" startTime="2026-09-30T14:45:48.5835160+08:00" endTime="2026-09-30T14:45:48.5835160+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="efce5b52-8f4b-4806-8fae-7ce790a64343" />
+    <ns0:UnitTestResult executionId="bb592d1f-0f03-4a08-b223-2668d32c59d6" testId="e118e6fe-71f6-d7ab-084b-9b640ee7ae87" testName="W.DmProvider.CommandTests.ResultCursorTests.AffectedRowCountOverflowIsExplicit" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0001351" startTime="2026-09-30T14:45:48.5865100+08:00" endTime="2026-09-30T14:45:48.5865100+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bb592d1f-0f03-4a08-b223-2668d32c59d6" />
+    <ns0:UnitTestResult executionId="6f094375-5925-489a-b357-2ca880ee13eb" testId="cc1eaa0b-20e0-feec-84c6-956a3ce796d6" testName="W.DmProvider.CommandTests.CleanupDeadlineTests.InfiniteCommandTimeoutStillUsesFiniteCleanupBudget" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0009300" startTime="2026-09-30T14:45:48.5874850+08:00" endTime="2026-09-30T14:45:48.5874850+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f094375-5925-489a-b357-2ca880ee13eb" />
+    <ns0:UnitTestResult executionId="99f2956d-6c95-43e3-b331-db0ffafbc6b2" testId="f51db314-d415-8e3c-d826-cfb7a9829965" testName="W.DmProvider.CommandTests.ResultCursorTests.ProvenDmlCountBecomesUnknownWhenCompoundRowsetCanHideAnotherDml" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0000646" startTime="2026-09-30T14:45:48.5863650+08:00" endTime="2026-09-30T14:45:48.5863650+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99f2956d-6c95-43e3-b331-db0ffafbc6b2" />
+    <ns0:UnitTestResult executionId="8d037e11-b8fc-4299-a067-e2f289f112aa" testId="d4ad3864-08ce-8fd0-01fd-84c989650abb" testName="W.DmProvider.CommandTests.CommandPlanTests.UnsupportedSchemaOnlyKeyInfoCombinationRejectsBeforeConnectionUse" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0004493" startTime="2026-09-30T14:45:48.5831930+08:00" endTime="2026-09-30T14:45:48.5831930+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d037e11-b8fc-4299-a067-e2f289f112aa" />
+    <ns0:UnitTestResult executionId="cb576ed8-1704-45b2-b185-b249a5a4739c" testId="bb3644d1-1d00-2863-0407-41859ee10d7b" testName="W.DmProvider.CommandTests.CleanupDeadlineTests.ExpiredBusinessDeadlineGetsIndependentFiniteCleanupBudget" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0001878" startTime="2026-09-30T14:45:48.5876910+08:00" endTime="2026-09-30T14:45:48.5876910+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb576ed8-1704-45b2-b185-b249a5a4739c" />
+    <ns0:UnitTestResult executionId="0704ee47-1c82-4c44-84a1-5ffb1e5b3af9" testId="1fdf0f0b-680f-3f1f-2a98-ace26ee3344e" testName="W.DmProvider.CommandTests.ResultCursorTests.PureSelectRowCountNeverBecomesAffectedRowCount" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0014655" startTime="2026-09-30T14:45:48.5862890+08:00" endTime="2026-09-30T14:45:48.5862890+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0704ee47-1c82-4c44-84a1-5ffb1e5b3af9" />
+    <ns0:UnitTestResult executionId="ec1f3f4d-c492-4319-9661-1ca11accbc7d" testId="5a03cfd4-6793-5e81-c7e0-3aae91cf1fed" testName="W.DmProvider.CommandTests.CommandPlanTests.DisposeWhilePlanIsCapturedRejectsExecutionAndReleasesGateWithoutWire" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0086564" startTime="2026-09-30T14:45:48.5791010+08:00" endTime="2026-09-30T14:45:48.5791090+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ec1f3f4d-c492-4319-9661-1ca11accbc7d" />
+    <ns0:UnitTestResult executionId="70d6afa1-6da0-42b5-a7e9-e3e943fbe1c9" testId="14d868aa-0b59-f2a8-b08a-4ed314955a88" testName="W.DmProvider.CommandTests.CommandPlanTests.CapturedPlanRejectsConcurrentMutationAndCopiesBinaryParameter" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0032561" startTime="2026-09-30T14:45:48.5826330+08:00" endTime="2026-09-30T14:45:48.5826330+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70d6afa1-6da0-42b5-a7e9-e3e943fbe1c9" />
+  </ns0:Results>
+  <ns0:TestDefinitions>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CleanupDeadlineTests.ExpiredBusinessDeadlineGetsIndependentFiniteCleanupBudget" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="bb3644d1-1d00-2863-0407-41859ee10d7b">
+      <ns0:Execution id="cb576ed8-1704-45b2-b185-b249a5a4739c" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CleanupDeadlineTests" name="ExpiredBusinessDeadlineGetsIndependentFiniteCleanupBudget" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CommandPlanTests.DisposeWhilePlanIsCapturedRejectsExecutionAndReleasesGateWithoutWire" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="5a03cfd4-6793-5e81-c7e0-3aae91cf1fed">
+      <ns0:Execution id="ec1f3f4d-c492-4319-9661-1ca11accbc7d" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CommandPlanTests" name="DisposeWhilePlanIsCapturedRejectsExecutionAndReleasesGateWithoutWire" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CleanupDeadlineTests.InfiniteCommandTimeoutStillUsesFiniteCleanupBudget" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="cc1eaa0b-20e0-feec-84c6-956a3ce796d6">
+      <ns0:Execution id="6f094375-5925-489a-b357-2ca880ee13eb" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CleanupDeadlineTests" name="InfiniteCommandTimeoutStillUsesFiniteCleanupBudget" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CommandPlanTests.PublicChangeNameRejectsForgedOldNameWithoutCorruptingIndex" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="12c910e9-a78e-ee29-2a33-8d3c665ceae1">
+      <ns0:Execution id="efce5b52-8f4b-4806-8fae-7ce790a64343" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CommandPlanTests" name="PublicChangeNameRejectsForgedOldNameWithoutCorruptingIndex" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CommandPlanTests.UnsupportedSchemaOnlyKeyInfoCombinationRejectsBeforeConnectionUse" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="d4ad3864-08ce-8fd0-01fd-84c989650abb">
+      <ns0:Execution id="8d037e11-b8fc-4299-a067-e2f289f112aa" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CommandPlanTests" name="UnsupportedSchemaOnlyKeyInfoCombinationRejectsBeforeConnectionUse" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.ResultCursorTests.PureSelectRowCountNeverBecomesAffectedRowCount" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="1fdf0f0b-680f-3f1f-2a98-ace26ee3344e">
+      <ns0:Execution id="0704ee47-1c82-4c44-84a1-5ffb1e5b3af9" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.ResultCursorTests" name="PureSelectRowCountNeverBecomesAffectedRowCount" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.CommandPlanTests.CapturedPlanRejectsConcurrentMutationAndCopiesBinaryParameter" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="14d868aa-0b59-f2a8-b08a-4ed314955a88">
+      <ns0:Execution id="70d6afa1-6da0-42b5-a7e9-e3e943fbe1c9" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.CommandPlanTests" name="CapturedPlanRejectsConcurrentMutationAndCopiesBinaryParameter" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.ResultCursorTests.AffectedRowCountOverflowIsExplicit" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="e118e6fe-71f6-d7ab-084b-9b640ee7ae87">
+      <ns0:Execution id="bb592d1f-0f03-4a08-b223-2668d32c59d6" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.ResultCursorTests" name="AffectedRowCountOverflowIsExplicit" />
+    </ns0:UnitTest>
+    <ns0:UnitTest name="W.DmProvider.CommandTests.ResultCursorTests.ProvenDmlCountBecomesUnknownWhenCompoundRowsetCanHideAnotherDml" storage="/users/wanghongyi/projects/w.dmprovider/tests/w.dmprovider.commandtests/bin/release/net10.0/w.dmprovider.commandtests.dll" id="f51db314-d415-8e3c-d826-cfb7a9829965">
+      <ns0:Execution id="99f2956d-6c95-43e3-b331-db0ffafbc6b2" />
+      <ns0:TestMethod codeBase="/Users/wanghongyi/Projects/W.DmProvider/tests/W.DmProvider.CommandTests/bin/Release/net10.0/W.DmProvider.CommandTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="W.DmProvider.CommandTests.ResultCursorTests" name="ProvenDmlCountBecomesUnknownWhenCompoundRowsetCanHideAnotherDml" />
+    </ns0:UnitTest>
+  </ns0:TestDefinitions>
+  <ns0:TestEntries>
+    <ns0:TestEntry testId="12c910e9-a78e-ee29-2a33-8d3c665ceae1" executionId="efce5b52-8f4b-4806-8fae-7ce790a64343" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="e118e6fe-71f6-d7ab-084b-9b640ee7ae87" executionId="bb592d1f-0f03-4a08-b223-2668d32c59d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="cc1eaa0b-20e0-feec-84c6-956a3ce796d6" executionId="6f094375-5925-489a-b357-2ca880ee13eb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="f51db314-d415-8e3c-d826-cfb7a9829965" executionId="99f2956d-6c95-43e3-b331-db0ffafbc6b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="d4ad3864-08ce-8fd0-01fd-84c989650abb" executionId="8d037e11-b8fc-4299-a067-e2f289f112aa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="bb3644d1-1d00-2863-0407-41859ee10d7b" executionId="cb576ed8-1704-45b2-b185-b249a5a4739c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="1fdf0f0b-680f-3f1f-2a98-ace26ee3344e" executionId="0704ee47-1c82-4c44-84a1-5ffb1e5b3af9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="5a03cfd4-6793-5e81-c7e0-3aae91cf1fed" executionId="ec1f3f4d-c492-4319-9661-1ca11accbc7d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestEntry testId="14d868aa-0b59-f2a8-b08a-4ed314955a88" executionId="70d6afa1-6da0-42b5-a7e9-e3e943fbe1c9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </ns0:TestEntries>
+  <ns0:TestLists>
+    <ns0:TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <ns0:TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </ns0:TestLists>
+  <ns0:ResultSummary outcome="Completed">
+    <ns0:Counters total="9" executed="9" passed="9" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    </ns0:ResultSummary>
+</ns0:TestRun>

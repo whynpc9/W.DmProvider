@@ -1,0 +1,962 @@
+--- a/scripts/local-test/LocalTest.csproj
++++ b/scripts/local-test/LocalTest.csproj
+@@ -4,6 +4,6 @@
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+   <ItemGroup>
+-    <PackageReference Include="DM.DmProvider" />
++    <PackageReference Include="W.DmProvider" />
+   </ItemGroup>
+ </Project>
+--- a/scripts/local-test/Program.cs
++++ b/scripts/local-test/Program.cs
+@@ -2,7 +2,7 @@
+ using System.Security.Cryptography;
+ using System.Text.Json;
+ using System.Text.Json.Nodes;
+-using Dm;
++using W.Dm;
+ 
+ internal static class Program
+ {
+--- a/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs
+@@ -40,13 +40,14 @@
+     /// Configures the context to retry operations that fail with a transient Dameng error.
+     /// </summary>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="Dm.DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     /// <returns>The same builder so additional calls can be chained.</returns>
+     public DamengDbContextOptionsBuilder EnableRetryOnFailure(ICollection<int> errorNumbersToAdd)
+     {
+         ArgumentNullException.ThrowIfNull(errorNumbersToAdd);
+         var errorNumbers = errorNumbersToAdd.ToArray();
++        RejectNonemptyOverrides(errorNumbers);
+ 
+         return ExecutionStrategy(
+             dependencies => new DamengRetryingExecutionStrategy(dependencies, errorNumbers));
+@@ -58,7 +59,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="Dm.DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     /// <returns>The same builder so additional calls can be chained.</returns>
+     public DamengDbContextOptionsBuilder EnableRetryOnFailure(
+@@ -67,6 +68,7 @@
+         IEnumerable<int>? errorNumbersToAdd)
+     {
+         var errorNumbers = errorNumbersToAdd?.ToArray();
++        RejectNonemptyOverrides(errorNumbers);
+ 
+         return ExecutionStrategy(
+             dependencies => new DamengRetryingExecutionStrategy(
+@@ -75,4 +77,11 @@
+                 maxRetryDelay,
+                 errorNumbers));
+     }
++    private static void RejectNonemptyOverrides(int[]? numbers)
++    {
++        if (numbers is { Length: > 0 })
++        {
++            throw new NotSupportedException("W R1 does not support error-number retry overrides without a safe replay classifier.");
++        }
++    }
+ }
+--- a/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs
+@@ -2,7 +2,7 @@
+ using System.Data.Common;
+ using System.Globalization;
+ using System.Text.RegularExpressions;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Metadata;
+ using Microsoft.EntityFrameworkCore.Migrations;
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs
+@@ -1,6 +1,6 @@
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs
+@@ -1,5 +1,5 @@
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs
+@@ -1,5 +1,5 @@
+ using System.Collections.Frozen;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ using W.EntityFrameworkCore.Dameng.Storage.Internal;
+ 
+@@ -60,7 +60,7 @@
+     /// </summary>
+     /// <param name="dependencies">The execution-strategy dependencies.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         ExecutionStrategyDependencies dependencies,
+@@ -76,7 +76,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         DbContext context,
+@@ -84,7 +84,7 @@
+         TimeSpan maxRetryDelay,
+         IEnumerable<int>? errorNumbersToAdd)
+         : base(context, maxRetryCount, maxRetryDelay)
+-        => _additionalErrorNumbers = errorNumbersToAdd?.ToFrozenSet();
++        => _additionalErrorNumbers = ValidateAdditionalNumbers(errorNumbersToAdd);
+ 
+     /// <summary>
+     /// Initializes a strategy using the supplied retry settings.
+@@ -93,7 +93,7 @@
+     /// <param name="maxRetryCount">The maximum number of retry attempts.</param>
+     /// <param name="maxRetryDelay">The maximum delay between retries.</param>
+     /// <param name="errorNumbersToAdd">
+-    /// Additional <see cref="DmException.Number" /> values to treat as transient.
++    /// Error-number overrides. Nonempty values are unsupported in W R1.
+     /// </param>
+     public DamengRetryingExecutionStrategy(
+         ExecutionStrategyDependencies dependencies,
+@@ -101,7 +101,7 @@
+         TimeSpan maxRetryDelay,
+         IEnumerable<int>? errorNumbersToAdd)
+         : base(dependencies, maxRetryCount, maxRetryDelay)
+-        => _additionalErrorNumbers = errorNumbersToAdd?.ToFrozenSet();
++        => _additionalErrorNumbers = ValidateAdditionalNumbers(errorNumbersToAdd);
+ 
+     /// <summary>
+     /// Gets the configured additional transient error numbers.
+@@ -111,7 +111,15 @@
+ 
+     /// <inheritdoc />
+     protected override bool ShouldRetryOn(Exception exception)
+-        => (exception is DmException dmException
+-                && _additionalErrorNumbers?.Contains(dmException.Number) == true)
+-            || DamengTransientExceptionDetector.ShouldRetryOn(exception);
++        => DamengTransientExceptionDetector.ShouldRetryOn(exception);
++
++    private static FrozenSet<int>? ValidateAdditionalNumbers(IEnumerable<int>? values)
++    {
++        var numbers = values?.ToFrozenSet();
++        if (numbers is { Count: > 0 })
++        {
++            throw new NotSupportedException("W R1 does not support error-number retry overrides without a safe replay classifier.");
++        }
++        return numbers;
++    }
+ }
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs
+@@ -1,6 +1,6 @@
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ using Microsoft.EntityFrameworkCore.Storage.Json;
+ 
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs
+@@ -2,7 +2,7 @@
+ using System.Globalization;
+ using System.Linq.Expressions;
+ using System.Reflection;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Storage;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+--- a/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs
++++ b/src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs
+@@ -1,27 +1,11 @@
+-using Dm;
++using W.Dm;
+ 
+ namespace W.EntityFrameworkCore.Dameng.Storage.Internal;
+ 
+ internal static class DamengTransientExceptionDetector
+ {
+-    // DmException.Number exposes both negative server codes and positive ADO.NET
+-    // provider codes. Keep this list deliberately narrow: configuration,
+-    // authentication, syntax, constraint, and data errors must never be retried.
+-    private static readonly HashSet<int> TransientErrorNumbers =
+-    [
+-        -3003, // EC_RN_DEADLOCK
+-        -3404, // EC_RN_STMT_TIMEOUT
+-        -6003, // EC_CONNECT_CAN_NOT_ESTABLISHED
+-        -6004, // EC_SNET_FAIL
+-        -6010, // EC_CONNECT_LOST
+-        6001, // ECNET_COMMUNITION_ERROR
+-        6027, // ECNET_NO_SOCKET_DATA
+-        6060, // ECNET_CONNECTION_CLOSED
+-        6089, // ECNET_COMMAND_TIME_OUT
+-        6123, // ECNET_CONNPOOL_TIMEOUT
+-    ];
+-
++    // R1 has no public NotSent/ReplaySafe classifier. Numbers never prove safe replay.
+     public static bool ShouldRetryOn(Exception exception)
+-        => exception is DmException dmException
+-            && TransientErrorNumbers.Contains(dmException.Number);
++        => exception is DmException { IsTransient: true }
++            && exception is not DmCommitOutcomeUnknownException;
+ }
+--- a/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj
++++ b/src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj
+@@ -14,7 +14,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="DM.DmProvider" />
++    <PackageReference Include="W.DmProvider" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+   </ItemGroup>
+ 
+--- a/test/Shared/T12CandidateGuard.cs
++++ b/test/Shared/T12CandidateGuard.cs
+@@ -0,0 +1,33 @@
++using System.Runtime.CompilerServices;
++using System.Security.Cryptography;
++using System.Text.Json;
++using Microsoft.EntityFrameworkCore;
++using W.Dm;
++
++// Test-host proof of the actual package DLL. No database access or secret reading here.
++internal static class T12CandidateGuard
++{
++#pragma warning disable CA2255
++    [ModuleInitializer]
++#pragma warning restore CA2255
++    internal static void VerifyCandidate()
++    {
++        string expected = Environment.GetEnvironmentVariable("DAMENG_T12_DRIVER_DLL_SHA256")
++            ?? throw new InvalidOperationException("T12 candidate identity is required.");
++        string record = Environment.GetEnvironmentVariable("DAMENG_T12_DRIVER_LOAD_RECORD")
++            ?? throw new InvalidOperationException("T12 load evidence path is required.");
++        string path = typeof(DmConnection).Assembly.Location;
++        string actual = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
++        if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("T12 loaded driver does not match the candidate package.");
++        File.WriteAllText(record, JsonSerializer.Serialize(new
++        {
++            driver_dll_sha256 = actual,
++            loaded_path = path,
++            driver_assembly = typeof(DmConnection).Assembly.GetName().Name,
++            ef_assembly_version = typeof(DbContext).Assembly.GetName().Version?.ToString(),
++            runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
++            process_id = Environment.ProcessId
++        }) + "\n");
++    }
++}
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata.Builders;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Text.RegularExpressions;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs
+@@ -2,7 +2,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ using Xunit.Abstractions;
+ 
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
+@@ -6,7 +6,7 @@
+ using System.Text.RegularExpressions;
+ using System.Text.Json;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit;
+ using Xunit.Abstractions;
+@@ -301,7 +301,7 @@
+             Path.Combine(projectDirectory, "Program.cs"),
+             $$"""
+             using System.Security.Cryptography;
+-            using Dm;
++            using W.Dm;
+             using Microsoft.EntityFrameworkCore;
+             using Microsoft.EntityFrameworkCore.Infrastructure;
+             using Microsoft.EntityFrameworkCore.Metadata;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata.Builders;
+@@ -44,6 +44,7 @@
+             static (expected, actual) => Assert.Equal(expected, actual));
+ 
+     [DamengFact]
++    [Trait("Category", "OfficialCharacterization")]
+     public Task DateTimeOffsetRawAdoReadbackPreservesServerEvidence()
+         => ExtendedTypeStore.WithTableAsync(
+             "DATETIME(7) WITH TIME ZONE",
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs
+@@ -77,9 +77,10 @@
+             });
+ 
+     [DamengTheory]
++    [Trait("Category", "Improvement")]
+     [InlineData(IsolationLevel.ReadUncommitted)]
+     [InlineData(IsolationLevel.Serializable)]
+-    public Task SaveChangesFailsAfterBeginningReadUncommittedOrSerializable(IsolationLevel isolationLevel)
++    public Task SaveChangesSucceedsAfterBeginningReadUncommittedOrSerializable(IsolationLevel isolationLevel)
+         => DamengTestStore.WithEntityTableAsync(
+             async store =>
+             {
+@@ -104,10 +105,8 @@
+ 
+                     loaded.Name = $"隔离级别更新-{isolationLevel}";
+                     loaded.Version = 2;
+-                    var updateException = await Assert.ThrowsAsync<DbUpdateException>(
+-                        () => context.SaveChangesAsync());
+-                    AssertCommandTextHasNoValue(updateException);
+-                    context.ChangeTracker.Clear();
++                    Assert.Equal(1, await context.SaveChangesAsync());
++                    await transaction.RollbackAsync();
+                 }
+ 
+                 await using (var context = CreateContext(store))
+@@ -119,9 +118,16 @@
+                             Name = $"隔离级别插入-{isolationLevel}",
+                             Version = 1
+                         });
+-                    var insertException = await Assert.ThrowsAsync<DbUpdateException>(
+-                        () => context.SaveChangesAsync());
+-                    AssertCommandTextHasNoValue(insertException);
++                    Assert.Equal(1, await context.SaveChangesAsync());
++                    Assert.True(context.Entities.Local.Single().Id > 0);
++                    await transaction.RollbackAsync();
++                }
++                await using (var verify = CreateContext(store))
++                {
++                    var remaining = Assert.Single(await verify.Entities.AsNoTracking().ToListAsync());
++                    Assert.Equal(id, remaining.Id);
++                    Assert.Equal("隔离级别-种子", remaining.Name);
++                    Assert.Equal(1, remaining.Version);
+                 }
+             });
+ 
+@@ -198,12 +204,6 @@
+                             .SingleAsync());
+                 }
+             });
+-
+-    private static void AssertCommandTextHasNoValue(DbUpdateException exception)
+-    {
+-        var inner = Assert.IsType<InvalidOperationException>(exception.InnerException);
+-        Assert.Contains("CommandText has no value", inner.Message, StringComparison.Ordinal);
+-    }
+ 
+     private static IsolationContext CreateContext(DamengTestStore store)
+     {
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs
+@@ -4,7 +4,7 @@
+ using System.Globalization;
+ using System.Text.Encodings.Web;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ using Xunit.Abstractions;
+ 
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit.Abstractions;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Text;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata;
+@@ -334,10 +334,7 @@
+             catch (Exception exception)
+             {
+                 throw new InvalidOperationException(
+-                    $"EnsureSchema execution step {step} failed. Text: "
+-                    + text.Replace("\r", "\\r", StringComparison.Ordinal)
+-                        .Replace("\n", "\\n", StringComparison.Ordinal),
+-                    exception);
++                    $"EnsureSchema execution step {step} failed ({exception.GetType().Name}).");
+             }
+         }
+     }
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Data;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs
+@@ -3,7 +3,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Xunit;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore.Metadata;
+ using Microsoft.EntityFrameworkCore.Migrations;
+ using Microsoft.EntityFrameworkCore.Scaffolding;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs
+@@ -1,5 +1,5 @@
+ using System.Text;
+-using Dm;
++using W.Dm;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+ 
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs
+@@ -1,6 +1,6 @@
+ using System.Globalization;
+ using System.Security.Cryptography;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Xunit;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs
+@@ -3,7 +3,7 @@
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using W.EntityFrameworkCore.Dameng.TestData;
+ using Xunit;
+ using Xunit.Abstractions;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs
+@@ -1,7 +1,7 @@
+ using System.Data;
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs
+@@ -1,5 +1,5 @@
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Xunit;
+ 
+ namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
+@@ -9,7 +9,23 @@
+     public const string ConnectionStringVariable = "DAMENG_TEST_CONNECTION_STRING";
+ 
+     public static string? ConnectionString
+-        => Environment.GetEnvironmentVariable(ConnectionStringVariable);
++        => ConfigureTestConnection(Environment.GetEnvironmentVariable(ConnectionStringVariable));
++
++    private static string? ConfigureTestConnection(string? raw)
++    {
++        if (string.IsNullOrWhiteSpace(raw)) return null;
++        var builder = new global::W.Dm.DmConnectionStringBuilder(raw)
++        {
++            TransportSecurity = global::W.Dm.DmTransportSecurity.PlaintextAllowed,
++            PersistSecurityInfo = false,
++            Schema = "WDM_PROVIDER_TEST",
++            ConnectTimeout = TimeSpan.FromSeconds(20),
++            CommandTimeout = 20
++        };
++        if (!string.Equals(builder.User, "WDM_PROVIDER_TEST", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("The dedicated TEST user is required before authentication.");
++        return builder.ConnectionString;
++    }
+ 
+     public static string GetRequiredConnectionString()
+         => string.IsNullOrWhiteSpace(ConnectionString)
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs
+@@ -1,6 +1,6 @@
+ using System.Data.Common;
+ using System.Globalization;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Diagnostics;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj
+@@ -19,4 +19,5 @@
+   <ItemGroup>
+     <Compile Include="../Shared/QueryTranslationCases.cs" Link="QueryTranslationCases.cs" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs
+@@ -10,7 +10,23 @@
+         = "[environment] Set DAMENG_TEST_CONNECTION_STRING to run tests against an existing Dameng schema.";
+ 
+     public static string? ConnectionString
+-        => Environment.GetEnvironmentVariable(ConnectionStringVariable);
++        => ConfigureTestConnection(Environment.GetEnvironmentVariable(ConnectionStringVariable));
++
++    private static string? ConfigureTestConnection(string? raw)
++    {
++        if (string.IsNullOrWhiteSpace(raw)) return null;
++        var builder = new global::W.Dm.DmConnectionStringBuilder(raw)
++        {
++            TransportSecurity = global::W.Dm.DmTransportSecurity.PlaintextAllowed,
++            PersistSecurityInfo = false,
++            Schema = "WDM_PROVIDER_TEST",
++            ConnectTimeout = TimeSpan.FromSeconds(20),
++            CommandTimeout = 20
++        };
++        if (!string.Equals(builder.User, "WDM_PROVIDER_TEST", StringComparison.OrdinalIgnoreCase))
++            throw new InvalidOperationException("The dedicated TEST user is required before authentication.");
++        return builder.ConnectionString;
++    }
+ 
+     public static string GetRequiredConnectionString()
+         => string.IsNullOrWhiteSpace(ConnectionString)
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs
+@@ -1,7 +1,7 @@
+ using System.Collections.Concurrent;
+ using System.Data;
+ using System.Data.Common;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.TestUtilities;
+ 
+--- a/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj
+@@ -17,4 +17,5 @@
+   <ItemGroup>
+     <ProjectReference Include="../../src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs
+@@ -1,5 +1,5 @@
+ using System.Reflection;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit;
+ 
+@@ -8,172 +8,90 @@
+ public sealed class DamengExecutionStrategyTests
+ {
+     [Fact]
+-    public void EnableRetryOnFailureUsesDefaultDamengStrategy()
++    public void EnableRetryOnFailurePreservesDefaultSettingsWithoutClassifyingErrorsAsReplaySafe()
+     {
+         using var context = CreateContext(options => options.EnableRetryOnFailure());
+-
+-        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(
+-            context.Database.CreateExecutionStrategy());
+-
++        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(context.Database.CreateExecutionStrategy());
+         Assert.Equal(6, strategy.MaxRetryCount);
+         Assert.Equal(TimeSpan.FromSeconds(30), strategy.MaxRetryDelay);
+         Assert.True(strategy.RetriesOnFailure);
+     }
+ 
+     [Fact]
+-    public void EnableRetryOnFailureAppliesCustomSettingsAndCopiesErrorNumbers()
++    public void EmptyAdditionalNumbersPreserveCustomSettingsAndAreCopied()
+     {
+-        var additionalErrors = new List<int> { -12345 };
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-        optionsBuilder.UseDameng(
+-            "Server=localhost;Port=5236;User Id=test;PWD=test",
+-            options => options.EnableRetryOnFailure(
+-                maxRetryCount: 3,
+-                maxRetryDelay: TimeSpan.FromSeconds(4),
+-                additionalErrors));
+-
+-        additionalErrors.Add(-54321);
+-        using var context = new TestContext(optionsBuilder.Options);
+-        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(
+-            context.Database.CreateExecutionStrategy());
+-
++        var numbers = new List<int>();
++        using var context = CreateContext(options => options.EnableRetryOnFailure(3, TimeSpan.FromSeconds(4), numbers));
++        numbers.Add(-77777);
++        var strategy = Assert.IsType<DamengRetryingExecutionStrategy>(context.Database.CreateExecutionStrategy());
+         Assert.Equal(3, strategy.MaxRetryCount);
+         Assert.Equal(TimeSpan.FromSeconds(4), strategy.MaxRetryDelay);
+-        Assert.Equal([-12345], strategy.AdditionalErrorNumbers);
+-        Assert.False(
+-            strategy.AdditionalErrorNumbers
+-                is ICollection<int> { IsReadOnly: false });
++        Assert.Empty(strategy.AdditionalErrorNumbers!);
+     }
+ 
+     [Theory]
+-    [InlineData(-3003)]
+-    [InlineData(-3404)]
+-    [InlineData(-6003)]
+-    [InlineData(-6004)]
+-    [InlineData(-6010)]
+-    [InlineData(6001)]
+-    [InlineData(6027)]
+-    [InlineData(6060)]
+-    [InlineData(6089)]
+-    [InlineData(6123)]
+-    public void StrategyRecognizesOnlyExplicitDefaultTransientDamengCodes(int errorNumber)
++    [InlineData(-3003)] [InlineData(-3404)] [InlineData(-6003)] [InlineData(-6004)] [InlineData(-6010)]
++    [InlineData(6001)] [InlineData(6027)] [InlineData(6060)] [InlineData(6089)] [InlineData(6123)]
++    [InlineData(-2007)] [InlineData(-1040)] [InlineData(-1210)] [InlineData(-3002)] [InlineData(-6011)] [InlineData(0)]
++    public void UnclassifiedDriverErrorsAreNeverReplayed(int number)
+     {
+         using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
++        var strategy = new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, null);
++        var error = CreateError(number);
++        int attempts = 0;
++        Assert.Throws<DmException>(() => strategy.Execute(state: 42, (_, state) =>
++        {
++            attempts++;
++            if (attempts == 1) throw error;
++            return state;
++        }, verifySucceeded: null));
++        Assert.Equal(1, attempts);
++    }
+ 
+-        Assert.True(strategy.TestShouldRetryOn(CreateDmException(errorNumber)));
++    [Fact]
++    public void CommitOutcomeUnknownIsNeverReplayed()
++    {
++        using var context = CreateContext();
++        var strategy = new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, []);
++        var ctor = typeof(DmCommitOutcomeUnknownException).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
++            null, [typeof(Exception)], null)!;
++        var error = (DmCommitOutcomeUnknownException)ctor.Invoke([new TimeoutException("synthetic timeout")]);
++        int attempts = 0;
++        Assert.Throws<DmCommitOutcomeUnknownException>(() => strategy.Execute(state: 42, (_, state) =>
++        {
++            attempts++;
++            if (attempts == 1) throw error;
++            return state;
++        }, verifySucceeded: null));
++        Assert.False(error.IsTransient);
++        Assert.Equal(1, attempts);
+     }
+ 
+     [Theory]
+-    [InlineData(-2007)] // SQL syntax error
+-    [InlineData(-1040)] // Invalid connection string
+-    [InlineData(-1210)] // User locked
+-    [InlineData(-3002)] // Lock failure is intentionally not classified without stronger semantics
+-    [InlineData(-6011)] // Unknown host generally indicates configuration/DNS failure
+-    public void StrategyDoesNotRetryNonTransientOrAmbiguousDamengCodes(int errorNumber)
++    [InlineData(0)] [InlineData(-77777)] [InlineData(6001)] [InlineData(6089)]
++    public void NonemptyNumberOverridesAreExplicitlyRejected(int number)
+     {
+         using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
+-
+-        Assert.False(strategy.TestShouldRetryOn(CreateDmException(errorNumber)));
+-    }
+-
+-    [Fact]
+-    public void StrategyDoesNotRetryNonDamengTimeoutException()
+-    {
+-        using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(context);
+-
+-        Assert.False(strategy.TestShouldRetryOn(new TimeoutException()));
+-    }
+-
+-    [Fact]
+-    public void StrategyRetriesAnAdditionalErrorNumber()
+-    {
+-        using var context = CreateContext();
+-        var strategy = new TestDamengRetryingExecutionStrategy(
+-            context,
+-            maxRetryCount: 2,
+-            maxRetryDelay: TimeSpan.Zero,
+-            [-77777]);
+-        var attempts = 0;
+-
+-        var result = strategy.Execute(
+-            state: 42,
+-            (_, state) =>
+-            {
+-                if (++attempts < 3)
+-                {
+-                    throw CreateDmException(-77777);
+-                }
+-
+-                return state;
+-            },
+-            verifySucceeded: null);
+-
+-        Assert.Equal(42, result);
+-        Assert.Equal(3, attempts);
++        Assert.Throws<NotSupportedException>(() => new DamengRetryingExecutionStrategy(context, 2, TimeSpan.Zero, [number]));
++        Assert.Throws<NotSupportedException>(() => CreateContext(options => options.EnableRetryOnFailure([number])));
++        Assert.Throws<NotSupportedException>(() => CreateContext(options => options.EnableRetryOnFailure(2, TimeSpan.Zero, [number])));
+     }
+ 
+     [Fact]
+     public void CollectionOverloadRejectsNull()
+     {
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-
+-        Assert.Throws<ArgumentNullException>(
+-            () => optionsBuilder.UseDameng(
+-                "Server=localhost;Port=5236;User Id=test;PWD=test",
+-                options => options.EnableRetryOnFailure((ICollection<int>)null!)));
++        var builder = new DbContextOptionsBuilder<TestContext>();
++        Assert.Throws<ArgumentNullException>(() => builder.UseDameng("Server=localhost;Port=5236;User Id=test;PWD=test",
++            options => options.EnableRetryOnFailure((ICollection<int>)null!)));
+     }
+ 
+-    private static TestContext CreateContext(
+-        Action<Microsoft.EntityFrameworkCore.Infrastructure.DamengDbContextOptionsBuilder>? configure = null)
++    private static TestContext CreateContext(Action<Microsoft.EntityFrameworkCore.Infrastructure.DamengDbContextOptionsBuilder>? configure = null)
++        => new(new DbContextOptionsBuilder<TestContext>().UseDameng("Server=localhost;Port=5236;User Id=test;PWD=test", configure).Options);
++    private static DmException CreateError(int number)
+     {
+-        var optionsBuilder = new DbContextOptionsBuilder<TestContext>();
+-        optionsBuilder.UseDameng(
+-            "Server=localhost;Port=5236;User Id=test;PWD=test",
+-            configure);
+-
+-        return new TestContext(optionsBuilder.Options);
++        var error = typeof(DmError).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, [typeof(int), typeof(string)], null)!
++            .Invoke([number, "synthetic error"]);
++        return (DmException)typeof(DmException).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, [typeof(DmError)], null)!.Invoke([error]);
+     }
+-
+-    private static DmException CreateDmException(int errorNumber)
+-    {
+-        var errorConstructor = typeof(DmError).GetConstructor(
+-            BindingFlags.Instance | BindingFlags.NonPublic,
+-            binder: null,
+-            [typeof(int), typeof(string)],
+-            modifiers: null)!;
+-        var exceptionConstructor = typeof(DmException).GetConstructor(
+-            BindingFlags.Instance | BindingFlags.NonPublic,
+-            binder: null,
+-            [typeof(DmError)],
+-            modifiers: null)!;
+-        var error = (DmError)errorConstructor.Invoke([errorNumber, $"DM error {errorNumber}"]);
+-
+-        return (DmException)exceptionConstructor.Invoke([error]);
+-    }
+-
+-    private sealed class TestContext(DbContextOptions<TestContext> options)
+-        : DbContext(options);
+-
+-    private sealed class TestDamengRetryingExecutionStrategy : DamengRetryingExecutionStrategy
+-    {
+-        public TestDamengRetryingExecutionStrategy(DbContext context)
+-            : base(context)
+-        {
+-        }
+-
+-        public TestDamengRetryingExecutionStrategy(
+-            DbContext context,
+-            int maxRetryCount,
+-            TimeSpan maxRetryDelay,
+-            IEnumerable<int> errorNumbersToAdd)
+-            : base(context, maxRetryCount, maxRetryDelay, errorNumbersToAdd)
+-        {
+-        }
+-
+-        public bool TestShouldRetryOn(Exception exception)
+-            => ShouldRetryOn(exception);
+-    }
++    private sealed class TestContext(DbContextOptions<TestContext> options) : DbContext(options);
+ }
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs
+@@ -2,7 +2,7 @@
+ 
+ using System.Data;
+ using System.Text.Json;
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Storage;
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs
+@@ -1,4 +1,4 @@
+-using Dm;
++using W.Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore.Infrastructure;
+ using Microsoft.EntityFrameworkCore.Metadata;
+--- a/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj
++++ b/test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj
+@@ -16,4 +16,5 @@
+   <ItemGroup>
+     <ProjectReference Include="../../src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj" />
+   </ItemGroup>
++<ItemGroup><Compile Include="../Shared/T12CandidateGuard.cs" Link="T12CandidateGuard.cs" /></ItemGroup>
+ </Project>
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -4,10 +4,10 @@
+     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+   </PropertyGroup>
+   <ItemGroup>
+-    <PackageVersion Include="DM.DmProvider" Version="[8.3.1.47463,8.4.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.12,11.0.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="[10.0.12,11.0.0)" />
+-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.12,11.0.0)" />
++    <PackageVersion Include="W.DmProvider" Version="[0.1.0-r1.20260930064454]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.12]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="[10.0.12]" />
++    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.12]" />
+     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+     <PackageVersion Include="xunit" Version="2.9.3" />
+     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

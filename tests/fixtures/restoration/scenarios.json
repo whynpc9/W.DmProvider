@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "unicode_rows": [
+    {
+      "id": 1,
+      "value": "中文 CRUD：样例一",
+      "utf8_sha256": "e2f22fc6faba6736f2e1c19c508198258efa768cef4cac60c0279f3fdadba650"
+    },
+    {
+      "id": 2,
+      "value": "emoji 🚀 — 雪",
+      "utf8_sha256": "d3913f2426ff4529534e54b04aa597a6821bb3a7713ad8c3db2a94a90ddad915"
+    },
+    {
+      "id": 3,
+      "value": "SQL's; -- 合成记录",
+      "utf8_sha256": "1437655183ed586714676595cacd922044e541bf1d2ecfe81d44d49ff674416e"
+    },
+    {
+      "id": 4,
+      "value": "é + 组合字符",
+      "utf8_sha256": "9724b8d28d6045aa93667eb159a160f33bc8d8e11cab5fb027f006217eda1752"
+    },
+    {
+      "id": 5,
+      "value": " 空格保留 ",
+      "utf8_sha256": "17acbf859056973cb1b071856945f43c888a4832244ca9b1da2475dbc7677aeb"
+    }
+  ],
+  "lob": {
+    "length": 65536,
+    "algorithm": "(index * 31 + 7) % 256",
+    "sha256": "ef4636928161808e87035fa51983821677527ccd9661991c5d0126a778b2268a"
+  }
+}

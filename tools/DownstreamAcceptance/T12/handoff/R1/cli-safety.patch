@@ -1,0 +1,887 @@
+--- a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs
+@@ -1,8 +1,11 @@
+-using System.Data.Common;
++using System.Security.Cryptography;
++using System.Text;
++using System.Security;
+ using System.Diagnostics;
+ using System.Globalization;
+-using System.Text;
+ using System.Text.RegularExpressions;
++using System.Text.Json;
++using System.Data.Common;
+ using Dm;
+ using Microsoft.EntityFrameworkCore;
+ using Xunit;
+@@ -17,16 +20,11 @@
+ public sealed class DamengDotNetEfCliFunctionalTests(ITestOutputHelper output)
+ {
+     private const int CommandTimeoutSeconds = 300;
+-
+-    private static readonly string[] DebugEnvironmentVariableNames =
+-    [
+-        "DOTNET_ROOT",
+-        "MSBuildSDKsPath",
+-        "MSBuildExtensionsPath",
+-        "DOTNET_CLI_HOME",
+-        "NUGET_PACKAGES",
+-        "DOTNET_MULTILEVEL_LOOKUP"
+-    ];
++    private string currentPhase = "identity_preflight";
++
++    private const string EfCoreVersion = "10.0.12";
++    private const string SdkVersion = "10.0.401";
++    private const string NamedConnection = "T12Cli";
+ 
+     [DamengFact]
+     public async Task MigrationsAndScaffoldRunThroughDotNetEfCli()
+@@ -35,9 +33,18 @@
+         var suffix = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..12].ToUpperInvariant();
+         var tableName = $"EF10_CLI_{suffix}";
+         var sequenceName = $"EF10_CLISQ_{suffix}";
++        var historyName = $"EF10_CLIH_{suffix}";
+ 
+         var repoRoot = FindRepositoryRoot();
+-        var (efCoreVersion, dmProviderVersion) = ResolveLockedPackageVersions(repoRoot);
++        var efCoreVersion = EfCoreVersion;
++        var dmProviderVersion = RequiredEnvironment("DAMENG_T12_CANDIDATE_VERSION");
++        if (!Regex.IsMatch(dmProviderVersion, @"^\d+\.\d+\.\d+-[0-9A-Za-z.-]+$", RegexOptions.CultureInvariant))
++            throw new InvalidOperationException("CLI requires a unique prerelease candidate version.");
++        var dotnetHost = RequiredAbsolutePath("DAMENG_T12_DOTNET_HOST", directory: false);
++        _ = RequiredAbsolutePath("DAMENG_T12_NUGET_CONFIG", directory: false);
++        var cliRoot = RequiredAbsolutePath("DAMENG_T12_CLI_ROOT", directory: true);
++        foreach (var name in new[] { "DOTNET_CLI_HOME", "NUGET_PACKAGES", "NUGET_HTTP_CACHE_PATH" })
++            _ = RequiredAbsolutePath(name, directory: true);
+         var providerAssembly = Path.Combine(
+             repoRoot,
+             "src",
+@@ -49,15 +56,25 @@
+         Assert.True(
+             File.Exists(providerAssembly),
+             "Build the provider before running the CLI test: " + providerAssembly);
+-        var projectDirectory = Path.Combine(
+-            Path.GetTempPath(),
+-            $"dameng-ef-cli-{suffix.ToLowerInvariant()}");
+-
+-        var dotnetEf = await EnsureDotNetEfToolAsync(repoRoot, efCoreVersion);
++        var projectDirectory = Path.Combine(cliRoot, $"cli-{suffix.ToLowerInvariant()}");
++        bool ownsObjects = false;
++        string? contractFailureKind = null;
++        CliFailureSummary? contractFailure = null;
++        string? cleanupFailureKind = null;
+ 
+         Directory.CreateDirectory(projectDirectory);
+         try
+         {
++            await using (var connection = new DmConnection(connectionString))
++            {
++                await connection.OpenAsync();
++                await VerifyIdentityAsync(connection);
++                await AssertAbsentAsync(connection, "USER_TABLES", "TABLE_NAME", tableName);
++                await AssertAbsentAsync(connection, "USER_TABLES", "TABLE_NAME", historyName);
++                await AssertAbsentAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", sequenceName);
++                ownsObjects = true;
++            }
++            // No secret is needed for tool installation or SDK verification.
+             WriteCliProject(
+                 projectDirectory,
+                 providerAssembly,
+@@ -65,27 +82,26 @@
+                 dmProviderVersion,
+                 tableName,
+                 sequenceName,
++                historyName,
+                 suffix);
+-
+-            var dotnetHost = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+-            if (string.IsNullOrEmpty(dotnetHost))
+-            {
+-                dotnetHost = "dotnet";
+-            }
++            var dotnetEf = await EnsureDotNetEfToolAsync(cliRoot, efCoreVersion);
++            var sdk = await RunDotNetAsync(dotnetHost, projectDirectory, null, ["--version"]);
++            Assert.True(sdk.StandardOutput.Trim() == SdkVersion, "CLI SDK must exactly match the frozen host.");
+ 
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["restore", "--disable-parallel"]);
++                null,
++                ["restore", "--disable-parallel", "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "--use-lock-file", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            ValidateCliAssets(projectDirectory, dmProviderVersion);
+             // dotnet-ef evaluates and builds the project in its own process; that path is
+             // unreliable when hosted under dotnet test (ResolvePackageAssets fails with a
+             // NuGet LockFile NRE), so the build is done explicitly and ef runs --no-build.
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["build", "--no-restore"]);
++                null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
+ 
+             await RunDotNetEfAsync(
+                 dotnetEf,
+@@ -99,8 +115,8 @@
+             await RunDotNetAsync(
+                 dotnetHost,
+                 projectDirectory,
+-                connectionString,
+-                ["build", "--no-restore"]);
++                null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
+ 
+             await RunDotNetEfAsync(
+                 dotnetEf,
+@@ -146,7 +162,7 @@
+                     "1",
+                     await ScalarStringAsync(
+                         connection,
+-                        "SELECT COUNT(*) FROM \"__EFMigrationsHistory\"",
++                        $"SELECT COUNT(*) FROM \"{historyName}\"",
+                         null));
+             }
+ 
+@@ -157,9 +173,10 @@
+                 projectDirectory,
+                 connectionString,
+                 [
+-                    "dbcontext", "scaffold", connectionString,
++                    "dbcontext", "scaffold", "Name=ConnectionStrings:" + NamedConnection,
+                     "W.EntityFrameworkCore.Dameng",
+                     "--no-build",
++                    "--no-onconfiguring",
+                     "--table", tableName,
+                     "--context", "ScaffoldedCliContext",
+                     "--output-dir", "Scaffolded",
+@@ -168,8 +185,9 @@
+ 
+             var scaffoldedContext = File.ReadAllText(
+                 Path.Combine(projectDirectory, "Scaffolded", "ScaffoldedCliContext.cs"));
+-            output.WriteLine(Redact(connectionString, scaffoldedContext));
+-            Assert.Contains("UseDameng(", scaffoldedContext, StringComparison.Ordinal);
++            Assert.DoesNotContain("OnConfiguring", scaffoldedContext, StringComparison.Ordinal);
++            Assert.DoesNotContain(connectionString, scaffoldedContext, StringComparison.Ordinal);
++            Assert.Contains("DbContextOptions<ScaffoldedCliContext>", scaffoldedContext, StringComparison.Ordinal);
+             Assert.Contains(
+                 "entity.ToTable(\"EF10_CLI_",
+                 scaffoldedContext,
+@@ -198,19 +216,46 @@
+                     path => !path.EndsWith("ScaffoldedCliContext.cs", StringComparison.Ordinal)));
+             Assert.Contains("public long Id", scaffoldedEntity, StringComparison.Ordinal);
+             Assert.Contains("public string Code", scaffoldedEntity, StringComparison.Ordinal);
++            AssertGeneratedSourcesContainNoSecret(projectDirectory, connectionString);
++            await RunDotNetAsync(
++                dotnetHost, projectDirectory, null,
++                ["restore", "--locked-mode", "--disable-parallel", "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            ValidateCliAssets(projectDirectory, dmProviderVersion);
++            await RunDotNetAsync(
++                dotnetHost, projectDirectory, null,
++                ["build", "--no-restore", "-m:1", "/nodeReuse:false", "/p:UseSharedCompilation=false", "/p:ImportDirectoryBuildProps=false", "/p:ImportDirectoryBuildTargets=false", "--disable-build-servers"]);
++            var verification = await RunDotNetAsync(
++                dotnetHost, projectDirectory, connectionString,
++                ["run", "--no-build", "--no-restore", "--", "--t12-verify"]);
++            var candidateHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(typeof(DmConnection).Assembly.Location)));
++            Assert.True(verification.StandardOutput.Trim() == candidateHash,
++                "Nested CLI must load the same frozen candidate DLL and validate the scaffolded model.");
++            output.WriteLine("CLI candidate DLL sha256=" + candidateHash);
++        }
++        catch (Exception error)
++        {
++            contractFailureKind = error.GetType().FullName;
++            contractFailure = error is CliProcessFailure cli ? cli.Summary :
++                new CliFailureSummary(currentPhase, contractFailureKind ?? "unknown", null, null, null);
+         }
+         finally
+         {
+-            await using (var connection = new DmConnection(connectionString))
+-            {
+-                await connection.OpenAsync();
+-                await DropIfExistsAsync(connection, "USER_TABLES", "TABLE_NAME", tableName);
+-                await DropIfExistsAsync(connection, "USER_TABLES", "TABLE_NAME", "__EFMigrationsHistory");
+-                await DropIfExistsAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", sequenceName);
+-            }
+-
+-            TryDeleteDirectory(projectDirectory);
+-        }
++            try
++            {
++                if (ownsObjects)
++                {
++                    await CleanupOwnedObjectsAsync(connectionString, tableName, historyName, sequenceName);
++                    output.WriteLine("CLI owned objects absent on independent connection.");
++                }
++            }
++            catch (Exception error) { cleanupFailureKind = error.GetType().FullName; }
++            finally { TryDeleteDirectory(projectDirectory); }
++        }
++        if (contractFailureKind is not null || cleanupFailureKind is not null)
++            throw new InvalidOperationException(
++                "CLI contract failed; safe_summary=" + JsonSerializer.Serialize(new {
++                    body = contractFailure, body_exception_kind = contractFailureKind ?? "none",
++                    cleanup_exception_kind = cleanupFailureKind ?? "none" }));
+     }
+ 
+     // A project reference would drag the repository's lock-file props into the temp project
+@@ -222,8 +267,11 @@
+         string dmProviderVersion,
+         string tableName,
+         string sequenceName,
++        string historyName,
+         string suffix)
+     {
++        File.WriteAllText(Path.Combine(projectDirectory, "global.json"),
++            "{\"sdk\":{\"version\":\"10.0.401\",\"rollForward\":\"disable\"}}");
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "CliRoundtrip.csproj"),
+             $"""
+@@ -233,20 +281,80 @@
+                 <TargetFramework>net10.0</TargetFramework>
+                 <Nullable>enable</Nullable>
+                 <ImplicitUsings>enable</ImplicitUsings>
++                <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
++                <UseSharedCompilation>false</UseSharedCompilation>
++                <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+               </PropertyGroup>
+               <ItemGroup>
+                 <Reference Include="W.EntityFrameworkCore.Dameng">
+-                  <HintPath>{providerAssembly}</HintPath>
++                  <HintPath>{SecurityElement.Escape(providerAssembly)}</HintPath>
+                 </Reference>
+-                <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="{efCoreVersion}" />
+-                <PackageReference Include="DM.DmProvider" Version="{dmProviderVersion}" />
++                <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="[{efCoreVersion}]" />
++                <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[{efCoreVersion}]" />
++                <PackageReference Include="W.DmProvider" Version="[{dmProviderVersion}]" />
++                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+               </ItemGroup>
+             </Project>
+             """);
+ 
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "Program.cs"),
+-            """Console.WriteLine("cli roundtrip");""");
++            $$"""
++            using System.Security.Cryptography;
++            using Dm;
++            using Microsoft.EntityFrameworkCore;
++            using Microsoft.EntityFrameworkCore.Infrastructure;
++            using Microsoft.EntityFrameworkCore.Metadata;
++            using Microsoft.Extensions.Configuration;
++            using Microsoft.Extensions.DependencyInjection;
++            using Microsoft.Extensions.Hosting;
++
++            public static class Program
++            {
++                public static IHostBuilder CreateHostBuilder(string[] args)
++                    => new HostBuilder()
++                        .ConfigureAppConfiguration((host, configuration) => configuration.AddInMemoryCollection(
++                            new Dictionary<string, string?>
++                            {
++                                ["ConnectionStrings:T12Cli"] = Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")
++                            }))
++                        .ConfigureServices((host, services) => services.AddDbContext<CliDbContext>(
++                            options => options.UseDameng(host.Configuration.GetConnectionString("T12Cli")!)));
++
++                public static int Main(string[] args)
++                {
++                    if (!args.Contains("--t12-verify")) return 0;
++                    string verifyStage = "context_lookup";
++                    try
++                    {
++                        var contextType = typeof(Program).Assembly.GetType("ScaffoldedCliContext")
++                            ?? typeof(Program).Assembly.GetTypes().Single(type => type.Name == "ScaffoldedCliContext");
++                        verifyStage = "options_build";
++                        var genericBuilderType = typeof(DbContextOptionsBuilder<>).MakeGenericType(contextType);
++                        var genericBuilder = (DbContextOptionsBuilder)Activator.CreateInstance(genericBuilderType)!;
++                        genericBuilder.UseDameng(Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!);
++                        verifyStage = "context_create";
++                        using var configuredContext = (DbContext)Activator.CreateInstance(contextType, genericBuilder.Options)!;
++                        verifyStage = "design_model";
++                        var entity = configuredContext.GetService<IDesignTimeModel>().Model.GetEntityTypes().Single();
++                        verifyStage = "table_and_comments";
++                        if (entity.GetTableName() != "{{tableName}}"
++                            || entity.GetComment() != "命令行订单表"
++                            || entity.FindProperty("Code")?.GetComment() != "编码") return 3;
++                        verifyStage = "candidate_dll_hash";
++                        Console.WriteLine(Convert.ToHexString(SHA256.HashData(
++                            File.ReadAllBytes(typeof(DmConnection).Assembly.Location))));
++                        return 0;
++                    }
++                    catch (Exception error)
++                    {
++                        Console.Error.WriteLine("T12 model checker stage=" + verifyStage
++                            + " exception_kind=" + error.GetType().FullName);
++                        return 2;
++                    }
++                }
++            }
++            """);
+ 
+         File.WriteAllText(
+             Path.Combine(projectDirectory, "CliDbContext.cs"),
+@@ -266,11 +374,14 @@
+ 
+             public sealed class CliDbContext : DbContext
+             {
++                public CliDbContext(DbContextOptions<CliDbContext> options) : base(options) { }
++
+                 public DbSet<CliOrder> Orders => Set<CliOrder>();
+ 
+                 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                     => optionsBuilder.UseDameng(
+-                        Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!);
++                        Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING")!,
++                        dameng => dameng.MigrationsHistoryTable("{{historyName}}"));
+ 
+                 protected override void OnModelCreating(ModelBuilder modelBuilder)
+                 {
+@@ -302,148 +413,304 @@
+     }
+ 
+     private async Task RunDotNetEfAsync(
+-        string dotnetEf,
+-        string workingDirectory,
+-        string connectionString,
+-        string[] arguments)
+-    {
+-        var efArguments = new List<string>();
+-        efArguments.AddRange(arguments);
+-        await RunDotNetAsync(dotnetEf, workingDirectory, connectionString, efArguments);
+-    }
+-
+-    private async Task RunDotNetAsync(
+-        string dotnet,
+-        string workingDirectory,
+-        string connectionString,
+-        List<string> arguments)
+-    {
++        string dotnetEf, string workingDirectory, string connectionString, string[] arguments)
++        => await RunDotNetAsync(dotnetEf, workingDirectory, connectionString, arguments.ToList());
++
++    private sealed record ProcessResult(string StandardOutput, string StandardError, int ExitCode);
++
++    private void ValidateCliAssets(string projectDirectory, string candidateVersion)
++    {
++        string assetsPath = Path.Combine(projectDirectory, "obj", "project.assets.json");
++        using var assets = JsonDocument.Parse(File.ReadAllText(assetsPath));
++        var libraries = assets.RootElement.GetProperty("libraries").EnumerateObject().Select(item => item.Name).ToArray();
++        Assert.True(libraries.Contains("W.DmProvider/" + candidateVersion, StringComparer.Ordinal),
++            "Nested CLI assets must contain the exact candidate package.");
++        Assert.True(!libraries.Any(name => name.StartsWith("DM.DmProvider/", StringComparison.OrdinalIgnoreCase)),
++            "Nested CLI assets must not fall back to the official driver.");
++        Assert.True(libraries.Contains("Microsoft.EntityFrameworkCore.Relational/" + EfCoreVersion, StringComparer.Ordinal)
++            && libraries.Contains("Microsoft.EntityFrameworkCore.Design/" + EfCoreVersion, StringComparer.Ordinal),
++            "Nested CLI EF packages must match the frozen version.");
++        output.WriteLine("CLI assets_sha256=" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assetsPath)))
++            + " lock_sha256=" + Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(projectDirectory, "packages.lock.json")))));
++    }
++
++    private static void AssertGeneratedSourcesContainNoSecret(string projectDirectory, string connectionString)
++    {
++        var forbidden = new List<string> { connectionString };
++        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
++        foreach (string key in builder.Keys)
++            if (key.Contains("password", StringComparison.OrdinalIgnoreCase) || key.Equals("pwd", StringComparison.OrdinalIgnoreCase))
++            {
++                string? value = Convert.ToString(builder[key], CultureInfo.InvariantCulture);
++                if (!string.IsNullOrEmpty(value)) forbidden.Add(value);
++            }
++        foreach (string file in Directory.EnumerateFiles(projectDirectory, "*", SearchOption.AllDirectories))
++        {
++            if (Path.GetExtension(file) is not (".cs" or ".json" or ".sql" or ".xml")) continue;
++            string content = File.ReadAllText(file);
++            Assert.True(!forbidden.Any(value => content.Contains(value, StringComparison.Ordinal)),
++                "CLI generated text must not contain a connection or password literal.");
++        }
++    }
++
++    private async Task<ProcessResult> RunDotNetAsync(
++        string executable, string workingDirectory, string? connectionString, List<string> arguments)
++    {
++        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(CommandTimeoutSeconds));
+         var startInfo = new ProcessStartInfo
+         {
+-            FileName = dotnet,
++            FileName = executable,
+             WorkingDirectory = workingDirectory,
+             RedirectStandardOutput = true,
+             RedirectStandardError = true,
+             UseShellExecute = false
+         };
+-        foreach (var argument in arguments)
+-        {
+-            startInfo.ArgumentList.Add(argument);
+-        }
+-
+-        startInfo.Environment["DAMENG_TEST_CONNECTION_STRING"] = connectionString;
+-
+-        using var process = Process.Start(startInfo)
+-            ?? throw new InvalidOperationException("Failed to start dotnet ef.");
+-        var standardOutput = await process.StandardOutput.ReadToEndAsync();
+-        var standardError = await process.StandardError.ReadToEndAsync();
+-
+-        using var timeout = new CancellationTokenSource(
+-            TimeSpan.FromSeconds(CommandTimeoutSeconds));
++        foreach (var argument in arguments) startInfo.ArgumentList.Add(argument);
++        var host = RequiredAbsolutePath("DAMENG_T12_DOTNET_HOST", directory: false);
++        startInfo.Environment["DOTNET_HOST_PATH"] = host;
++        var hostDirectory = Path.GetDirectoryName(host)!;
++        startInfo.Environment["DOTNET_ROOT"] = hostDirectory;
++        // dotnet-ef starts its own bare dotnet/msbuild child. Pin that resolution
++        // to the same verified SDK host, without changing the parent's PATH.
++        startInfo.Environment.TryGetValue("PATH", out var inheritedPath);
++        startInfo.Environment["PATH"] = hostDirectory +
++            (string.IsNullOrEmpty(inheritedPath) ? "" : Path.PathSeparator + inheritedPath);
++        startInfo.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
++        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
++        startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
++        startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
++        startInfo.Environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0";
++        startInfo.Environment["NuGetAudit"] = "false";
++        startInfo.Environment.Remove("MSBuildSDKsPath");
++        startInfo.Environment.Remove("MSBuildExtensionsPath");
++        // Do not leak the wrapper connection into tool provisioning or SDK checks.
++        startInfo.Environment.Remove("DAMENG_TEST_CONNECTION_STRING");
++        startInfo.Environment.Remove("ConnectionStrings__" + NamedConnection);
++        if (connectionString is not null)
++        {
++            startInfo.Environment["DAMENG_TEST_CONNECTION_STRING"] = connectionString;
++        }
++        Process? process = null;
++        string stage = arguments[0] switch
++        {
++            "restore" => "restore", "build" => "build", "run" => "verify_model",
++            "tool" => "tool_provision", "--version" => "version",
++            "migrations" when arguments.Count > 1 && arguments[1] == "add" => "migrations_add",
++            "migrations" when arguments.Count > 1 && arguments[1] == "script" => "migrations_script",
++            "database" when arguments.Count > 1 && arguments[1] == "update" => "database_update",
++            "dbcontext" when arguments.Count > 1 && arguments[1] == "scaffold" => "scaffold",
++            _ => "unknown"
++        };
++        currentPhase = stage;
++        CliDiagnostic? diagnostic = null;
++        output.WriteLine("CLI subprocess stage=" + stage + " started.");
+         try
+         {
+-            await process.WaitForExitAsync(timeout.Token);
+-        }
+-        catch (OperationCanceledException)
+-        {
+-            process.Kill(entireProcessTree: true);
+-            throw new TimeoutException(
+-                $"dotnet {string.Join(' ', arguments)} timed out.");
+-        }
+-
+-        output.WriteLine(Redact(connectionString, $"dotnet {string.Join(' ', arguments)}"));
+-        output.WriteLine(Redact(connectionString, standardOutput));
+-        if (!string.IsNullOrWhiteSpace(standardError))
+-        {
+-            output.WriteLine(Redact(connectionString, standardError));
+-        }
+-
+-        if (process.ExitCode != 0)
+-        {
+-            var environmentDump = string.Join(
+-                "; ",
+-                DebugEnvironmentVariableNames
+-                    .Select(name => name + "=" + Environment.GetEnvironmentVariable(name)));
+-            throw new InvalidOperationException(
+-                $"dotnet {string.Join(' ', arguments)} exited with {process.ExitCode.ToString(CultureInfo.InvariantCulture)}. "
+-                + "env: " + environmentDump + " || "
+-                + Redact(connectionString, standardError.Length > 0 ? standardError : standardOutput));
+-        }
+-    }
+-
+-    // dotnet-ef must match the locked EF Core version: the 10.0.3 tool mishandles build
+-    // output paths on Unix and fails its own build. The tool lives under artifacts/ so the
+-    // global tool installation stays untouched.
+-    private async Task<string> EnsureDotNetEfToolAsync(string repoRoot, string efCoreVersion)
+-    {
+-        var toolDirectory = Path.Combine(repoRoot, "artifacts", "dotnet-ef-tool");
++            process = Process.Start(startInfo) ?? throw new InvalidOperationException("process_start_failed");
++            // Both streams and process wait use the same deadline from before launch.
++            var stdout = process.StandardOutput.ReadToEndAsync(timeout.Token);
++            var stderr = process.StandardError.ReadToEndAsync(timeout.Token);
++            await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(timeout.Token)).WaitAsync(timeout.Token);
++            var result = new ProcessResult(await stdout, await stderr, process.ExitCode);
++            output.WriteLine("CLI subprocess stage=" + stage + " exit=" + result.ExitCode.ToString(CultureInfo.InvariantCulture)
++                + " stdout_sha256=" + TextHash(result.StandardOutput)
++                + " stderr_sha256=" + TextHash(result.StandardError));
++            if (result.ExitCode != 0)
++            {
++                diagnostic = StructuredDiagnostic(result.StandardOutput, result.StandardError,
++                    connectionString ?? Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING"));
++                output.WriteLine("CLI safe_diagnostic=" + JsonSerializer.Serialize(diagnostic));
++                throw new CliProcessFailure(new CliFailureSummary(stage, "subprocess_nonzero_exit",
++                    result.ExitCode, diagnostic, null));
++            }
++            return result;
++        }
++        catch (OperationCanceledException error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            output.WriteLine("CLI subprocess stage=" + stage + " timed_out; own_tree_termination_kind=" + (termination ?? "none"));
++            throw new CliProcessFailure(new CliFailureSummary(stage, error.GetType().FullName ?? "timeout",
++                null, diagnostic, termination));
++        }
++        catch (CliProcessFailure error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            throw new CliProcessFailure(error.Summary with { TerminationExceptionKind = termination });
++        }
++        catch (Exception error)
++        {
++            string? termination = await CaptureOwnTreeTerminationAsync(process);
++            throw new CliProcessFailure(new CliFailureSummary(stage, error.GetType().FullName ?? "unknown",
++                null, diagnostic, termination));
++        }
++        finally { process?.Dispose(); }
++    }
++
++    private static async Task<string?> CaptureOwnTreeTerminationAsync(Process? process)
++    {
++        try { await KillOwnTreeAsync(process); return null; }
++        catch (Exception error) { return error.GetType().FullName ?? "unknown"; }
++    }
++
++    private sealed record CliDiagnostic(string StdoutSha256, string StderrSha256, bool SanitizerComplete,
++        string[] BuildCodes, string[] ExceptionKinds, string[] EfCategories, string? SafeExcerpt);
++    private sealed record CliFailureSummary(string Phase, string ExceptionKind, int? ExitCode,
++        CliDiagnostic? Diagnostic, string? TerminationExceptionKind);
++    private sealed class CliProcessFailure(CliFailureSummary summary) : InvalidOperationException("CLI subprocess failed safely.")
++    {
++        internal CliFailureSummary Summary { get; } = summary;
++    }
++
++    private static CliDiagnostic StructuredDiagnostic(string stdout, string stderr, string? connectionString)
++    {
++        string stdoutHash = TextHash(stdout), stderrHash = TextHash(stderr);
++        CliDiagnostic Unknown() => new(stdoutHash, stderrHash, false, [], [], ["unknown"], null);
++        try
++        {
++            var sensitive = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
++            void AddVariants(string value)
++            {
++                if (value.Length == 0) return;
++                foreach (string original in new[] { value, System.Net.WebUtility.HtmlDecode(value), Uri.UnescapeDataString(value) })
++                {
++                    if (original.Length == 0) continue;
++                    sensitive.Add(original);
++                    sensitive.Add(SecurityElement.Escape(original) ?? original);
++                    sensitive.Add(System.Net.WebUtility.HtmlEncode(original));
++                    sensitive.Add(Uri.EscapeDataString(original));
++                    sensitive.Add(JsonSerializer.Serialize(original)[1..^1]);
++                }
++            }
++            if (!string.IsNullOrWhiteSpace(connectionString))
++            {
++                var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
++                AddVariants(connectionString);
++                foreach (string key in builder.Keys)
++                {
++                    string normalized = Regex.Replace(key, @"[\s_]", "").ToLowerInvariant();
++                    bool credential = normalized is "password" or "pwd" or "user" or "userid" or "uid" or "username"
++                        or "server" or "host" or "hostname" or "datasource" or "address" or "addr" or "networkaddress"
++                        or "port" or "tcpport" or "database" or "initialcatalog"
++                        or "schema" or "servicename" or "sid" || normalized.Contains("password", StringComparison.Ordinal)
++                        || normalized.Contains("secret", StringComparison.Ordinal) || normalized.Contains("token", StringComparison.Ordinal)
++                        || normalized.StartsWith("user", StringComparison.Ordinal) || normalized.StartsWith("server", StringComparison.Ordinal);
++                    if (credential) AddVariants(Convert.ToString(builder[key], CultureInfo.InvariantCulture) ?? "");
++                }
++            }
++            string text = stdout + "\n" + stderr;
++            // Never publish this temporary string. Empty replacement avoids the
++            // redaction marker itself containing a short secret (for example "p").
++            foreach (string value in sensitive.OrderByDescending(value => value.Length))
++                text = text.Replace(value, "", StringComparison.OrdinalIgnoreCase);
++            bool ResidualSafe(string candidate)
++                => !sensitive.Any(value => candidate.Contains(value, StringComparison.OrdinalIgnoreCase))
++                    && !Regex.IsMatch(candidate, @"(?i)\b(?:password|pwd|user(?:\s*id|name)?|uid|server|host|data\s*source|address|addr|port|database|schema|connection\s*string|token|secret|api[\s_-]*key|clientsecret)[""']?\s*(?:=|:)\s*[""']?[^\s;,]+")
++                    && !Regex.IsMatch(candidate, @"(?i)\b[a-z][a-z0-9+.-]*://[^\s]+@")
++                    && !Regex.IsMatch(candidate, @"(?i)-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----");
++            if (!ResidualSafe(text)) return Unknown();
++            string[] codes = Regex.Matches(text, @"\b(?:CS|NU|MSB|NETSDK)[0-9]{3,6}\b")
++                .Select(match => match.Value).Distinct(StringComparer.Ordinal).Take(16).ToArray();
++            string[] knownExceptions = ["System.InvalidOperationException", "System.ArgumentException", "System.NullReferenceException",
++                "System.TypeLoadException", "System.MissingMethodException", "System.BadImageFormatException",
++                "System.IO.FileNotFoundException", "System.IO.FileLoadException", "System.Reflection.TargetInvocationException",
++                "Microsoft.EntityFrameworkCore.DbUpdateException", "W.Dm.DmException", "Dm.DmException"];
++            string[] types = knownExceptions.Where(name => Regex.IsMatch(text,
++                "(?<![A-Za-z0-9_.])" + Regex.Escape(name) + "(?![A-Za-z0-9_.])")).ToArray();
++            var categories = new List<string>();
++            void Classify(string token, string label) { if (text.Contains(token, StringComparison.OrdinalIgnoreCase)) categories.Add(label); }
++            Classify("Unable to create", "design_time_context_creation_failed");
++            Classify("No DbContext was found", "dbcontext_not_found");
++            Classify("More than one DbContext", "multiple_dbcontexts");
++            Classify("Unable to resolve service", "design_time_service_resolution_failed");
++            Classify("No suitable constructor", "context_constructor_missing");
++            Classify("no parameterless constructor", "context_constructor_missing");
++            Classify("No database provider has been configured", "database_provider_not_configured");
++            Classify("requires a primary key", "model_primary_key_missing");
++            Classify("Could not find file", "required_file_missing");
++            Classify("Specify a project", "project_selection_failed");
++            Classify("not compatible with", "dependency_version_incompatible");
++            Classify("Could not load file or assembly", "assembly_load_failed");
++            Classify("Method not found", "method_binding_failed");
++            Classify("design-time services", "design_time_services");
++            Classify("doesn't reference Microsoft.EntityFrameworkCore.Design", "design_package_missing");
++            Classify("startup project", "startup_project_context");
++            string[] classified = categories.Count == 0 ? ["unknown"] : categories.Distinct(StringComparer.Ordinal).ToArray();
++            string emitted = string.Join("|", codes.Concat(types).Concat(classified));
++            if (sensitive.Any(value => emitted.Contains(value, StringComparison.OrdinalIgnoreCase))) return Unknown();
++            // Only a fully redacted and rechecked string is eligible. ANSI CSI/OSC
++            // sequences are removed; all remaining C0/DEL bytes become explicit escapes.
++            string noAnsi = Regex.Replace(text,
++                @"\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1B]*(?:\x07|\x1B\\))", "");
++            var visible = new System.Text.StringBuilder();
++            foreach (char character in noAnsi)
++                if (character < ' ' || character == '\x7F')
++                    visible.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
++                else visible.Append(character);
++            string normalizedOutput = visible.ToString();
++            if (!ResidualSafe(normalizedOutput)) return Unknown();
++            var bounded = new System.Text.StringBuilder();
++            int utf8Bytes = 0;
++            foreach (var rune in normalizedOutput.EnumerateRunes())
++            {
++                if (utf8Bytes + rune.Utf8SequenceLength > 8192) break;
++                bounded.Append(rune.ToString());
++                utf8Bytes += rune.Utf8SequenceLength;
++            }
++            string excerpt = bounded.ToString();
++            if (System.Text.Encoding.UTF8.GetByteCount(excerpt) > 8192 || !ResidualSafe(excerpt)) return Unknown();
++            return new(stdoutHash, stderrHash, true, codes, types, classified, excerpt);
++        }
++        catch { return Unknown(); }
++    }
++
++    private static async Task KillOwnTreeAsync(Process? process)
++    {
++        if (process is null) return;
++        try
++        {
++            if (!process.HasExited) process.Kill(entireProcessTree: true);
++            using var reapDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
++            await process.WaitForExitAsync(reapDeadline.Token);
++        }
++        catch (Exception error) { throw SafeFailure("cli_process_tree_termination", error); }
++    }
++
++    private async Task<string> EnsureDotNetEfToolAsync(string cliRoot, string efCoreVersion)
++    {
++        var toolDirectory = Path.Combine(cliRoot, "dotnet-ef-" + efCoreVersion);
++        Directory.CreateDirectory(toolDirectory);
++        File.WriteAllText(Path.Combine(toolDirectory, "global.json"),
++            "{\"sdk\":{\"version\":\"10.0.401\",\"rollForward\":\"disable\"}}");
+         var toolPath = Path.Combine(toolDirectory, "dotnet-ef");
+-
+-        if (File.Exists(toolPath))
+-        {
+-            var installed = await ReadToolVersionAsync(toolPath);
+-            if (string.Equals(installed, efCoreVersion, StringComparison.Ordinal))
+-            {
+-                return toolPath;
+-            }
+-        }
+-
+-        var dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+-        if (string.IsNullOrEmpty(dotnet))
+-        {
+-            dotnet = "dotnet";
+-        }
+-
+-        Directory.CreateDirectory(toolDirectory);
+-        var action = File.Exists(toolPath) ? "update" : "install";
+-        await RunDotNetAsync(
+-            dotnet,
+-            repoRoot,
+-            DamengTestEnvironment.GetRequiredConnectionString(),
+-            [
+-                "tool", action, "dotnet-ef",
+-                "--version", efCoreVersion,
+-                "--tool-path", toolDirectory
+-            ]);
+-
+-        var version = await ReadToolVersionAsync(toolPath);
+-        Assert.True(
+-            string.Equals(version, efCoreVersion, StringComparison.Ordinal),
+-            $"dotnet-ef {efCoreVersion} could not be provisioned under artifacts/dotnet-ef-tool.");
+-        output.WriteLine("dotnet-ef provisioned: " + version);
++        if (!File.Exists(toolPath))
++            await RunDotNetAsync(
++                RequiredEnvironment("DAMENG_T12_DOTNET_HOST"), toolDirectory, null,
++                ["tool", "install", "dotnet-ef", "--version", efCoreVersion,
++                 "--tool-path", toolDirectory, "--configfile", RequiredEnvironment("DAMENG_T12_NUGET_CONFIG"), "--disable-parallel"]);
++        var result = await RunDotNetAsync(toolPath, toolDirectory, null, ["--version"]);
++        Assert.True(result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
++            .Any(line => line.Trim() == efCoreVersion || line.Trim().EndsWith(" " + efCoreVersion, StringComparison.Ordinal)),
++            "dotnet-ef must exactly match the frozen EF Core version.");
+         return toolPath;
+     }
+ 
+-    private static async Task<string?> ReadToolVersionAsync(string toolPath)
+-    {
+-        try
+-        {
+-            using var process = Process.Start(
+-                new ProcessStartInfo
+-                {
+-                    FileName = toolPath,
+-                    RedirectStandardOutput = true,
+-                    RedirectStandardError = true,
+-                    UseShellExecute = false,
+-                    ArgumentList = { "--version" }
+-                });
+-            var toolOutput = await process!.StandardOutput.ReadToEndAsync();
+-            await process.WaitForExitAsync();
+-            if (process.ExitCode != 0)
+-            {
+-                return null;
+-            }
+-
+-            var versionLine = toolOutput
+-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+-                .FirstOrDefault(line => line.Trim().Length > 0 && char.IsDigit(line.Trim()[0]));
+-            return versionLine?.Trim();
+-        }
+-        catch (Exception error) when (error is System.ComponentModel.Win32Exception or FileNotFoundException)
+-        {
+-            return null;
+-        }
+-    }
++    private static string RequiredEnvironment(string name)
++        => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value
++            ? value : throw new InvalidOperationException("Missing CLI input: " + name);
++
++    private static string RequiredAbsolutePath(string name, bool directory)
++    {
++        string path = RequiredEnvironment(name);
++        if (!Path.IsPathFullyQualified(path) || !(directory ? Directory.Exists(path) : File.Exists(path)))
++            throw new InvalidOperationException("Invalid CLI path input: " + name);
++        return path;
++    }
++
++    private static string TextHash(string text)
++        => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)));
++
++    private static InvalidOperationException SafeFailure(string stage, Exception error)
++        => new(stage + " failed; exception_kind=" + error.GetType().FullName);
+ 
+     private static string FindRepositoryRoot()
+     {
+@@ -462,46 +729,48 @@
+             "Could not locate the repository root from " + AppContext.BaseDirectory);
+     }
+ 
+-    private static (string EfCoreVersion, string DmProviderVersion) ResolveLockedPackageVersions(
+-        string repoRoot)
+-    {
+-        var props = File.ReadAllText(Path.Combine(repoRoot, "Directory.Packages.props"));
+-        var efCoreMatch = Regex.Match(
+-            props,
+-            "Microsoft\\.EntityFrameworkCore\\.Relational\"\\s+Version=\"\\[(?<version>[^,\\]]+)");
+-        var dmProviderMatch = Regex.Match(
+-            props,
+-            "DM\\.DmProvider\"\\s+Version=\"\\[(?<version>[^,\\]]+)");
+-        Assert.True(efCoreMatch.Success, "Directory.Packages.props must pin the EF Core range.");
+-        Assert.True(dmProviderMatch.Success, "Directory.Packages.props must pin the DM.DmProvider range.");
+-        return (efCoreMatch.Groups["version"].Value, dmProviderMatch.Groups["version"].Value);
+-    }
+-
+-    private static string Redact(string connectionString, string text)
+-    {
+-        var redacted = text.Replace(connectionString, "[redacted]", StringComparison.OrdinalIgnoreCase);
+-        var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
+-        foreach (string key in builder.Keys)
+-        {
+-            if (!key.Contains("password", StringComparison.OrdinalIgnoreCase)
+-                && !key.Equals("pwd", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("user", StringComparison.OrdinalIgnoreCase)
+-                && !key.Equals("uid", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("server", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("host", StringComparison.OrdinalIgnoreCase)
+-                && !key.Contains("data source", StringComparison.OrdinalIgnoreCase))
+-            {
+-                continue;
+-            }
+-
+-            var value = Convert.ToString(builder[key], CultureInfo.InvariantCulture);
+-            if (!string.IsNullOrEmpty(value))
+-            {
+-                redacted = redacted.Replace(value, "[redacted]", StringComparison.OrdinalIgnoreCase);
+-            }
+-        }
+-
+-        return redacted;
++    private static async Task CleanupOwnedObjectsAsync(string connectionString, string tableName, string historyName, string sequenceName)
++    {
++        var objects = new[]
++        {
++            (View: "USER_TABLES", Column: "TABLE_NAME", Name: tableName),
++            (View: "USER_TABLES", Column: "TABLE_NAME", Name: historyName),
++            (View: "USER_SEQUENCES", Column: "SEQUENCE_NAME", Name: sequenceName)
++        };
++        var failures = new List<string>();
++        foreach (var owned in objects)
++        {
++            try
++            {
++                await using var connection = new DmConnection(connectionString);
++                await connection.OpenAsync();
++                await VerifyIdentityAsync(connection);
++                await DropIfExistsAsync(connection, owned.View, owned.Column, owned.Name);
++            }
++            catch (Exception error) { failures.Add(error.GetType().FullName ?? "unknown"); }
++        }
++        // A failed command must not prevent attempts to remove the other owned objects.
++        await using var finalConnection = new DmConnection(connectionString);
++        await finalConnection.OpenAsync();
++        await VerifyIdentityAsync(finalConnection);
++        foreach (var owned in objects)
++            await AssertAbsentAsync(finalConnection, owned.View, owned.Column, owned.Name);
++        if (failures.Count > 0)
++            throw new InvalidOperationException("CLI cleanup failed; exception_kinds=" + string.Join(",", failures));
++    }
++
++    private static async Task VerifyIdentityAsync(DmConnection connection)
++    {
++        var identity = await ScalarStringAsync(connection, "SELECT USER FROM DUAL", null);
++        var schema = await ScalarStringAsync(connection, "SELECT SF_GET_SCHEMA_NAME_BY_ID(CURRENT_SCHID()) FROM DUAL", null);
++        if (identity != "WDM_PROVIDER_TEST" || schema != "WDM_PROVIDER_TEST")
++            throw new InvalidOperationException("CLI test account/schema identity mismatch.");
++    }
++
++    private static async Task AssertAbsentAsync(DmConnection connection, string view, string column, string name)
++    {
++        var count = await ScalarStringAsync(connection, $"SELECT COUNT(*) FROM {view} WHERE {column} = :name", name);
++        Assert.True(count == "0", "CLI owned object must be absent.");
+     }
+ 
+     private static async Task<string?> ScalarStringAsync(
+@@ -511,6 +780,7 @@
+     {
+         await using var command = connection.CreateCommand();
+         command.CommandText = sql;
++        command.CommandTimeout = 30;
+         if (parameterValue is not null)
+         {
+             var parameter = command.CreateParameter();
+@@ -534,6 +804,7 @@
+         await using (var count = connection.CreateCommand())
+         {
+             count.CommandText = $"SELECT COUNT(*) FROM {catalogView} WHERE {nameColumn} = :name";
++            count.CommandTimeout = 30;
+             var parameter = count.CreateParameter();
+             parameter.ParameterName = "name";
+             parameter.Value = objectName;
+@@ -547,6 +818,7 @@
+         var objectType = catalogView.Contains("SEQUENCE", StringComparison.Ordinal) ? "SEQUENCE" : "TABLE";
+         await using var drop = connection.CreateCommand();
+         drop.CommandText = $"DROP {objectType} \"{objectName}\"";
++        drop.CommandTimeout = 30;
+         await drop.ExecuteNonQueryAsync();
+     }
+ 

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>CommandProbe.Package</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);PACKAGE</DefineConstants>
+    <OutputPath>bin/Package/</OutputPath>
+    <RestoreSources>$(T08PackageSource)</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <PackageReference Include="W.DmProvider" Version="$(T08PackageVersion)" />
+  </ItemGroup>
+</Project>

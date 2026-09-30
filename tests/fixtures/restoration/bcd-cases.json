@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": [
+    { "id": 1, "value": "", "expected_hex": "" },
+    { "id": 2, "value": "0", "expected_hex": "f0" },
+    { "id": 3, "value": "12", "expected_hex": "21" },
+    { "id": 4, "value": "0123456789", "expected_hex": "1032547698" },
+    { "id": 5, "value": ".+", "expected_hex": "ba" },
+    { "id": 6, "value": "+-", "expected_hex": "cb" },
+    { "id": 7, "value": "A1", "expected_hex": "1f" },
+    { "id": 8, "value": "7", "expected_hex": "f7" }
+  ]
+}

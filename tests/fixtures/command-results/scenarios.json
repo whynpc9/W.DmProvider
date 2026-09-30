@@ -1,0 +1,1085 @@
+{
+  "schema_version": 1,
+  "fixture": "T08 command, reader, result sequence, and EF handoff scenarios",
+  "evidence_boundary": {
+    "synthetic_cases": "Each cases entry is a logical result sequence and desired client contract. All are marked not_run; values are synthetic application data, not DM server output.",
+    "real_database_probes": "Each real_database_probes entry is a procedure only and is marked planned_not_run. No server results are included.",
+    "protocol_data": "No DM packet bytes, opcodes, encoded responses, authentication data, or fabricated wire traces are present.",
+    "sql_values": "Names, parameter values, generated values, and error codes in cases are synthetic test tokens. They are not credentials or recorded database values."
+  },
+  "result_sequence_model": {
+    "results_field": "Ordered logical results supplied to the client-facing reader/command contract test.",
+    "kind_values": [
+      "rowset",
+      "update_count",
+      "error"
+    ],
+    "rowset_shape": {
+      "kind": "rowset",
+      "columns": "column metadata list",
+      "rows": "synthetic row values",
+      "records_affected": -1,
+      "sql_code": null
+    },
+    "update_count_shape": {
+      "kind": "update_count",
+      "columns": null,
+      "rows": null,
+      "records_affected": "integer or null when unknown",
+      "sql_code": null
+    },
+    "error_shape": {
+      "kind": "error",
+      "columns": null,
+      "rows": null,
+      "records_affected": null,
+      "sql_code": "synthetic code only"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "multi_two_select",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "FIRST_VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                11
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          },
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "SECOND_VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                22
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "NextResult"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "NextResult"
+          }
+        ]
+      },
+      "expected": {
+        "initial_current_result_index": 0,
+        "read_results": [
+          true,
+          true
+        ],
+        "next_result_results": [
+          true,
+          false
+        ],
+        "final_records_affected": -1
+      }
+    },
+    {
+      "case_id": "dml_then_select_rowcount",
+      "contract": "CMD-02",
+      "execution_status": "not_run",
+      "input": {
+        "composition": [
+          "dml",
+          "sql_rowcount_rowset"
+        ],
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 0,
+            "sql_code": null
+          },
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "SQL_ROWCOUNT",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                0
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "GetValue",
+            "ordinal": 0
+          }
+        ]
+      },
+      "expected": {
+        "first_readable_result_kind": "rowset",
+        "rowcount_value": 0,
+        "unrelated_probe_inserted_between_dml_and_rowcount": false
+      }
+    },
+    {
+      "case_id": "empty_first_rowset",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "EMPTY_VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [],
+            "records_affected": -1,
+            "sql_code": null
+          },
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "NEXT_VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                33
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "NextResult"
+          },
+          {
+            "action": "Read"
+          }
+        ]
+      },
+      "expected": {
+        "execute_reader_initial_result_index": 0,
+        "initial_field_count": 1,
+        "read_on_empty_rowset": false,
+        "read_false_auto_advanced": false,
+        "next_result": true,
+        "next_row_value": 33
+      }
+    },
+    {
+      "case_id": "later_sql_error",
+      "contract": "CMD-04",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                1
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          },
+          {
+            "kind": "error",
+            "columns": null,
+            "rows": null,
+            "records_affected": null,
+            "sql_code": 900001,
+            "sql_code_is_synthetic": true
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "NextResult"
+          }
+        ]
+      },
+      "expected": {
+        "later_error_propagated": true,
+        "failure_marker": "synthetic_error_900001",
+        "later_error_suppressed": false,
+        "post_error_connection_state": "must_be_proven_or_discarded"
+      }
+    },
+    {
+      "case_id": "scalar_empty_null_value",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "String"
+              }
+            ],
+            "rows": [],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteScalar"
+          }
+        ]
+      },
+      "expected": {
+        "scalar_value_kind": "no_row",
+        "scalar_return_marker": "null"
+      }
+    },
+    {
+      "case_id": "scalar_sql_null_dbnull",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "String"
+              }
+            ],
+            "rows": [
+              [
+                null
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteScalar"
+          }
+        ]
+      },
+      "expected": {
+        "scalar_value_kind": "sql_null",
+        "scalar_return_marker": "DBNull.Value"
+      }
+    },
+    {
+      "case_id": "nonquery_later_error",
+      "contract": "CMD-04",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          },
+          {
+            "kind": "error",
+            "columns": null,
+            "rows": null,
+            "records_affected": null,
+            "sql_code": 900001,
+            "sql_code_is_synthetic": true
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteNonQuery"
+          }
+        ]
+      },
+      "expected": {
+        "execution_succeeded": false,
+        "later_error_propagated": true,
+        "affected_count_returned": false,
+        "failure_marker": "synthetic_error_900001"
+      }
+    },
+    {
+      "case_id": "unknown_update_count",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": null,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "GetRecordsAffected"
+          }
+        ]
+      },
+      "expected": {
+        "records_affected": null,
+        "unknown_count_coerced_to_zero": false
+      }
+    },
+    {
+      "case_id": "dml_update_delete_0_1",
+      "contract": "CMD-01",
+      "execution_status": "not_run",
+      "input": {
+        "commands": [
+          {
+            "operation": "UPDATE",
+            "result_index": 0
+          },
+          {
+            "operation": "UPDATE",
+            "result_index": 1
+          },
+          {
+            "operation": "DELETE",
+            "result_index": 2
+          },
+          {
+            "operation": "DELETE",
+            "result_index": 3
+          }
+        ],
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 0,
+            "sql_code": null
+          },
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          },
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 0,
+            "sql_code": null
+          },
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteNonQuery",
+            "command_index": 0
+          },
+          {
+            "action": "ExecuteNonQuery",
+            "command_index": 1
+          },
+          {
+            "action": "ExecuteNonQuery",
+            "command_index": 2
+          },
+          {
+            "action": "ExecuteNonQuery",
+            "command_index": 3
+          }
+        ]
+      },
+      "expected": {
+        "records_affected_by_command": [
+          0,
+          1,
+          0,
+          1
+        ],
+        "command_order_preserved": true
+      }
+    },
+    {
+      "case_id": "identity_generated_columns",
+      "contract": "CMD-02",
+      "execution_status": "not_run",
+      "input": {
+        "key_strategy": "identity",
+        "generated_columns": [
+          "Id",
+          "Stamp",
+          "ComputedValue"
+        ],
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          },
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "Id",
+                "type": "Int64"
+              },
+              {
+                "name": "Stamp",
+                "type": "String"
+              },
+              {
+                "name": "ComputedValue",
+                "type": "Decimal"
+              }
+            ],
+            "rows": [
+              [
+                101,
+                "synthetic-stamp-a",
+                "12.50"
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "ReadGeneratedValues"
+          }
+        ]
+      },
+      "expected": {
+        "generated_column_names_in_order": [
+          "Id",
+          "Stamp",
+          "ComputedValue"
+        ],
+        "generated_values": [
+          101,
+          "synthetic-stamp-a",
+          "12.50"
+        ],
+        "all_generated_columns_returned": true,
+        "unrelated_probe_inserted_between_dml_and_readback": false
+      }
+    },
+    {
+      "case_id": "sequence_generated_columns",
+      "contract": "CMD-02",
+      "execution_status": "not_run",
+      "input": {
+        "key_strategy": "sequence",
+        "generated_columns": [
+          "Id",
+          "Stamp"
+        ],
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          },
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "Id",
+                "type": "Int64"
+              },
+              {
+                "name": "Stamp",
+                "type": "String"
+              }
+            ],
+            "rows": [
+              [
+                202,
+                "synthetic-stamp-b"
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "ReadGeneratedValues"
+          }
+        ]
+      },
+      "expected": {
+        "generated_column_names_in_order": [
+          "Id",
+          "Stamp"
+        ],
+        "generated_values": [
+          202,
+          "synthetic-stamp-b"
+        ],
+        "all_generated_columns_returned": true,
+        "unrelated_probe_inserted_between_dml_and_readback": false
+      }
+    },
+    {
+      "case_id": "semicolon_literal_comment",
+      "contract": "CMD-04",
+      "execution_status": "not_run",
+      "input": {
+        "command_text": "SELECT ':p0;@p1?' AS \"alias;:p0?\", \"schema;:p0\".\"table;@p1?\" WHERE A=:p0 AND B=@p1 -- ; :p9 @p9 ?\n/* ; :p8 @p8 ? */",
+        "parameters": [
+          {
+            "name": "p0",
+            "value": "synthetic-a"
+          },
+          {
+            "name": "p1",
+            "value": "synthetic-b"
+          }
+        ],
+        "operations": [
+          {
+            "action": "TokenizeParameters"
+          }
+        ]
+      },
+      "expected": {
+        "active_bind_markers_in_order": [
+          ":p0",
+          "@p1"
+        ],
+        "markers_inside_string_literals_bound": false,
+        "markers_inside_comments_bound": false,
+        "markers_inside_quoted_identifiers_bound": false,
+        "sql_split_on_semicolon": false,
+        "sql_text_interpolated_with_parameter_values": false
+      }
+    },
+    {
+      "case_id": "repeated_prepare_transaction",
+      "contract": "CMD-07",
+      "execution_status": "not_run",
+      "input": {
+        "command_text": "UPDATE \"APP\".\"Widgets\" SET \"Name\" = :p0 WHERE \"Id\" = :p1",
+        "parameters": [
+          {
+            "name": "p0",
+            "value": "synthetic-before"
+          },
+          {
+            "name": "p1",
+            "value": 303
+          }
+        ],
+        "results": [
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          },
+          {
+            "kind": "update_count",
+            "columns": null,
+            "rows": null,
+            "records_affected": 1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "Prepare"
+          },
+          {
+            "action": "BeginTransaction"
+          },
+          {
+            "action": "ExecuteNonQuery"
+          },
+          {
+            "action": "Commit"
+          },
+          {
+            "action": "ExecuteNonQuery"
+          }
+        ]
+      },
+      "expected": {
+        "command_text_after_each_operation": "UPDATE \"APP\".\"Widgets\" SET \"Name\" = :p0 WHERE \"Id\" = :p1",
+        "command_text_cleared_or_rewritten": false,
+        "prepared_plan_uses_current_parameter_snapshot": true
+      }
+    },
+    {
+      "case_id": "mixed_flags_single_row_close",
+      "contract": "CMD-05",
+      "execution_status": "not_run",
+      "input": {
+        "command_behavior_flags": [
+          "SingleRow",
+          "CloseConnection"
+        ],
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                1
+              ],
+              [
+                2
+              ],
+              [
+                3
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "Close"
+          }
+        ]
+      },
+      "expected": {
+        "flags_treated_as_union": true,
+        "close_connection_on_reader_close": true,
+        "reader_cleanup_still_required": true,
+        "read_results": [
+          true,
+          false
+        ],
+        "visible_rows_max": 1
+      }
+    },
+    {
+      "case_id": "mixed_flags_sequential_close",
+      "contract": "CMD-05",
+      "execution_status": "not_run",
+      "input": {
+        "command_behavior_flags": [
+          "SequentialAccess",
+          "CloseConnection"
+        ],
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "String"
+              }
+            ],
+            "rows": [
+              [
+                "synthetic-scalar"
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "Close"
+          }
+        ]
+      },
+      "expected": {
+        "flags_treated_as_union": true,
+        "close_connection_on_reader_close": true,
+        "sequential_access_flag_recognized": true,
+        "full_lob_streaming_claimed": false
+      }
+    },
+    {
+      "case_id": "mixed_flags_schema_keyinfo",
+      "contract": "CMD-05",
+      "execution_status": "not_run",
+      "input": {
+        "command_behavior_flags": [
+          "SchemaOnly",
+          "KeyInfo"
+        ],
+        "metadata_path_verified": false,
+        "results": [],
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          }
+        ]
+      },
+      "expected": {
+        "accepted": false,
+        "failure_family": "NotSupportedException",
+        "rejected_before_wire": true,
+        "wire_activity": false
+      }
+    },
+    {
+      "case_id": "metadata_unknown_no_extra_wire",
+      "contract": "CMD-05",
+      "execution_status": "not_run",
+      "input": {
+        "existing_metadata": [
+          {
+            "name": "VALUE",
+            "type": "String",
+            "key_known": false,
+            "base_table_known": false
+          }
+        ],
+        "operations": [
+          {
+            "action": "GetSchemaTable"
+          }
+        ]
+      },
+      "expected": {
+        "missing_key_metadata_marker": "DBNull.Value",
+        "missing_base_table_metadata_marker": "DBNull.Value",
+        "extra_command_count": 0,
+        "invented_key_information": false
+      }
+    },
+    {
+      "case_id": "early_close_side_effect",
+      "contract": "CMD-06",
+      "execution_status": "not_run",
+      "input": {
+        "results": [
+          {
+            "kind": "rowset",
+            "columns": [
+              {
+                "name": "VALUE",
+                "type": "Int32"
+              }
+            ],
+            "rows": [
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            "records_affected": -1,
+            "sql_code": null
+          }
+        ],
+        "already_started_operation": "reader_query",
+        "later_side_effect_operation": {
+          "kind": "write",
+          "send_state": "not_started"
+        },
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "Read"
+          },
+          {
+            "action": "Close"
+          }
+        ]
+      },
+      "expected": {
+        "reader_closed": true,
+        "unstarted_side_effect_operation_sent": false,
+        "connection_reusable_only_if_started_protocol_is_terminal": true,
+        "otherwise_discard_connection": true
+      }
+    },
+    {
+      "case_id": "concurrent_command_mutation",
+      "contract": "CMD-07",
+      "execution_status": "not_run",
+      "input": {
+        "initial_command_text": "INSERT INTO T (A, B) VALUES (:p0, :p1)",
+        "initial_parameters": [
+          {
+            "name": "p0",
+            "type": "String",
+            "value": "synthetic-before"
+          },
+          {
+            "name": "p1",
+            "type": "Binary",
+            "value_hex": "01020304"
+          }
+        ],
+        "operations": [
+          {
+            "action": "BeginExecute"
+          },
+          {
+            "action": "MutateCommandText",
+            "value": "DELETE FROM T"
+          },
+          {
+            "action": "MutateParameterValue",
+            "name": "p0",
+            "value": "synthetic-after"
+          },
+          {
+            "action": "MutateParameterByteArray",
+            "name": "p1",
+            "value_hex": "FF020304"
+          },
+          {
+            "action": "CompleteExecute"
+          }
+        ]
+      },
+      "expected": {
+        "active_plan_command_text": "INSERT INTO T (A, B) VALUES (:p0, :p1)",
+        "active_plan_parameter_p0": "synthetic-before",
+        "active_plan_parameter_p1_hex": "01020304",
+        "active_plan_uses_pre_execution_snapshot": true,
+        "parameter_mutation_must_not_retarget_active_plan": true
+      }
+    },
+    {
+      "case_id": "efcorerowcount_nextresult_characterization",
+      "contract": "CMD-03",
+      "execution_status": "not_run",
+      "input": {
+        "ef_core_next_result_values": [
+          false,
+          true
+        ],
+        "ef_core_rowcount_comment_occurrences": [
+          0,
+          1,
+          2
+        ],
+        "command_shape": "DML_followed_by_SQL_ROWCOUNT_result",
+        "operations": [
+          {
+            "action": "ExecuteReader"
+          },
+          {
+            "action": "NextResult"
+          }
+        ]
+      },
+      "expected": {
+        "source_characterization_required": true,
+        "behavior_golden_value": "not_assumed_by_fixture",
+        "switch_default_and_comment_count_are_separate_inputs": true
+      }
+    }
+  ],
+  "real_database_probes": [
+    {
+      "probe_id": "real_dml_update_delete_0_1",
+      "verification_status": "planned_not_run",
+      "purpose": "Compare UPDATE and DELETE affected counts 0/1 against independent final state.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use only uniquely named test-owned objects in the dedicated test schema."
+      ],
+      "steps": [
+        "Create and seed a unique test-owned table.",
+        "Run UPDATE and DELETE cases affecting zero and one row.",
+        "Read final state independently.",
+        "Remove only objects created by this probe."
+      ],
+      "evidence_limit": "This verifies the tested server and statements only; it does not infer arbitrary multi-statement semantics."
+    },
+    {
+      "probe_id": "real_identity_generated_columns",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify identity and multiple generated-column readback through the supported DML+SELECT path.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Create only uniquely named probe-owned objects."
+      ],
+      "steps": [
+        "Insert through parameter binding.",
+        "Read identity and other generated columns using the supported path.",
+        "Verify the values from a separate test-owned read.",
+        "Clean only this probe’s objects."
+      ],
+      "evidence_limit": "No fixture values represent returned database values."
+    },
+    {
+      "probe_id": "real_sequence_generated_columns",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify sequence key and additional generated-column readback without an intervening probe.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Create a unique test-owned sequence and table."
+      ],
+      "steps": [
+        "Insert using the supported sequence path.",
+        "Read sequence key and generated columns.",
+        "Verify independently and clean only objects created by this probe."
+      ],
+      "evidence_limit": "This applies only to the target server build and tested SQL path."
+    },
+    {
+      "probe_id": "real_scalar_no_row_vs_sql_null",
+      "verification_status": "planned_not_run",
+      "purpose": "Distinguish ExecuteScalar with no row from one row containing SQL NULL.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use harness-approved read-only queries."
+      ],
+      "steps": [
+        "Execute a query that returns no rows.",
+        "Execute a query that returns one SQL NULL value.",
+        "Compare the public results with null and DBNull.Value."
+      ],
+      "evidence_limit": "The probe procedure does not record or fabricate either server result."
+    },
+    {
+      "probe_id": "real_later_statement_error",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify a later error in a supported composite command is not suppressed.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Any preceding side effects must be restricted to a unique probe-owned object."
+      ],
+      "steps": [
+        "Execute the selected composite operation with an intentional later failure.",
+        "Record the surfaced exception and resulting connection state.",
+        "Verify/clean only probe-owned state."
+      ],
+      "evidence_limit": "A passing exception assertion alone does not prove the earlier statement’s server-side outcome."
+    },
+    {
+      "probe_id": "real_multiple_rowset_order_if_supported",
+      "verification_status": "planned_not_run",
+      "purpose": "Check public Read/NextResult order when a supported target operation is known to produce multiple rowsets.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "First identify a target-server-supported operation; do not infer support from this synthetic sequence."
+      ],
+      "steps": [
+        "Run only the identified supported operation.",
+        "Compare each visible rowset and empty rowset in order.",
+        "Record update-count behavior separately."
+      ],
+      "evidence_limit": "If no supported operation is available, this probe remains not run."
+    }
+  ]
+}

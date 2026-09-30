@@ -1,0 +1,1012 @@
+{
+  "schema_version": 1,
+  "fixture": "T10 and T11 transaction, savepoint, isolation, and ambient scenarios",
+  "evidence_boundary": {
+    "synthetic_cases": "Each cases entry is a deterministic logical state or barrier schedule and a desired contract. All are not_run.",
+    "real_database_probes": "Each real_database_probes entry is a procedure only and is planned_not_run.",
+    "protocol_data": "No transaction wire bytes, opcodes, encoded responses, or fabricated server acknowledgements are present. Send-attempt and acknowledgement fields are abstract harness events.",
+    "server_profiles": "No DM isolation level, savepoint support, Release syntax, DDL boundary, or ambient behavior is inferred from this fixture."
+  },
+  "abstract_transaction_states": [
+    "None",
+    "Starting",
+    "Active",
+    "Committing",
+    "Committed",
+    "RollingBack",
+    "RolledBack",
+    "CompletedExternally",
+    "OutcomeUnknown"
+  ],
+  "cases": [
+    {
+      "case_id": "tx_begin_active_only_after_ack",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "initial_state": "None",
+        "begin_isolation": "ReadCommitted",
+        "captured_session": {
+          "session_id": 11,
+          "session_generation": 3
+        },
+        "logical_begin_confirmation": "validated_success_ack"
+      },
+      "expected": {
+        "state_sequence": [
+          "Starting",
+          "Active"
+        ],
+        "transaction_returned_active_only_after_ack": true,
+        "captured_session_bound": {
+          "session_id": 11,
+          "session_generation": 3
+        }
+      }
+    },
+    {
+      "case_id": "tx_begin_without_confirmation_discards_session",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "initial_state": "None",
+        "captured_session": {
+          "session_id": 12,
+          "session_generation": 4
+        },
+        "logical_begin_confirmation": "missing_or_ambiguous"
+      },
+      "expected": {
+        "transaction_state": "not_active",
+        "connection_state": "Broken_or_Closed",
+        "session_reusable": false,
+        "server_begin_outcome_claimed": false
+      }
+    },
+    {
+      "case_id": "tx_nested_begin_rejected",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "existing_transaction_id": "tx-a",
+        "requested_begin_count": 2
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "nested_local_transaction",
+        "wire_activity": false,
+        "existing_transaction_remains_active": true
+      }
+    },
+    {
+      "case_id": "tx_active_command_requires_same_transaction",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "active_transaction": {
+          "id": "tx-a",
+          "connection_id": "conn-a",
+          "session": {
+            "session_id": 13,
+            "session_generation": 1
+          }
+        },
+        "command_cases": [
+          {
+            "name": "missing_transaction",
+            "connection_id": "conn-a",
+            "transaction_id": null
+          },
+          {
+            "name": "foreign_connection",
+            "connection_id": "conn-b",
+            "transaction_id": "tx-a"
+          },
+          {
+            "name": "different_transaction",
+            "connection_id": "conn-a",
+            "transaction_id": "tx-b"
+          },
+          {
+            "name": "matching_transaction",
+            "connection_id": "conn-a",
+            "transaction_id": "tx-a"
+          }
+        ]
+      },
+      "expected": {
+        "missing_and_mismatched_cases_rejected_before_wire": true,
+        "matching_active_transaction_admitted": true,
+        "wire_activity_for_rejected_cases": false
+      }
+    },
+    {
+      "case_id": "tx_unspecified_isolation_defaults_read_committed",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "requested_isolation": "Unspecified",
+        "product_default_isolation": "ReadCommitted",
+        "server_isolation_profile": "not_frozen"
+      },
+      "expected": {
+        "resolved_product_default": "ReadCommitted",
+        "server_support_claimed": false,
+        "actual_litmus_result": "not_filled"
+      }
+    },
+    {
+      "case_id": "tx_commit_pre_send_validation_failure_stays_active",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "failure_stage": "pre_send_validation",
+        "commit_send_attempt_marked": false
+      },
+      "expected": {
+        "transaction_state": "Active",
+        "connection_state": "Open",
+        "commit_wire_attempted": false,
+        "transaction_remains_usable": true
+      }
+    },
+    {
+      "case_id": "tx_commit_cancel_before_send_stays_active",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "cancellation_state": "already_cancelled_before_send",
+        "commit_send_attempt_marked": false
+      },
+      "expected": {
+        "transaction_state": "Active",
+        "commit_send_attempted": false,
+        "outcome_unknown": false,
+        "transaction_remains_usable": true
+      }
+    },
+    {
+      "case_id": "tx_commit_partial_or_indeterminate_send_unknown",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "abstract_transport_write_result": "partial_or_indeterminate",
+        "acknowledgement": "none"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "exception": "DmCommitOutcomeUnknownException",
+        "is_transient": false,
+        "connection_state": "Broken",
+        "transaction_replayed": false
+      }
+    },
+    {
+      "case_id": "tx_commit_cancel_after_attempt_unknown",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "cancellation_arrival": "after_attempt_before_ack",
+        "acknowledgement": "none"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "exception": "DmCommitOutcomeUnknownException",
+        "cancellation_only_reported": false,
+        "connection_state": "Broken",
+        "commit_replayed": false
+      }
+    },
+    {
+      "case_id": "tx_commit_response_lost_unknown",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "abstract_transport_write_result": "attempted",
+        "acknowledgement": "lost_or_timed_out"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "exception": "DmCommitOutcomeUnknownException",
+        "is_transient": false,
+        "connection_state": "Broken",
+        "automatic_reconnect_or_replay": false
+      }
+    },
+    {
+      "case_id": "tx_commit_invalid_ack_unknown",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "acknowledgement": "malformed_or_unverifiable"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "success_acknowledged": false,
+        "connection_state": "Broken",
+        "commit_replayed": false
+      }
+    },
+    {
+      "case_id": "tx_commit_ack_then_late_cancel_committed",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "acknowledgement": "validated_success",
+        "cancellation_arrival": "after_ack"
+      },
+      "expected": {
+        "transaction_state": "Committed",
+        "late_cancellation_changes_outcome": false,
+        "old_transaction_reusable": false,
+        "additional_commit_sent": false
+      }
+    },
+    {
+      "case_id": "tx_commit_server_error_not_assumed_rollback",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Committing",
+        "commit_send_attempt_marked": true,
+        "acknowledgement": "validated_server_error",
+        "server_transaction_semantics_profile": "not_frozen"
+      },
+      "expected": {
+        "server_error_propagated": true,
+        "rolled_back_assumed": false,
+        "final_outcome": "classify_only_from_verified_server_state"
+      }
+    },
+    {
+      "case_id": "tx_rollback_acknowledged",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "RollingBack",
+        "rollback_send_attempt_marked": true,
+        "acknowledgement": "validated_success"
+      },
+      "expected": {
+        "transaction_state": "RolledBack",
+        "old_transaction_reusable": false,
+        "connection_state": "Open"
+      }
+    },
+    {
+      "case_id": "tx_rollback_without_ack_outcome_unknown",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "RollingBack",
+        "rollback_send_attempt_marked": true,
+        "acknowledgement": "none"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "connection_state": "Broken",
+        "rollback_confirmed": false,
+        "connection_returned_to_pool": false
+      }
+    },
+    {
+      "case_id": "tx_active_dispose_rollback_acknowledged",
+      "contract": "TX-01",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "reader_open": false,
+        "session_synchronously_available": true,
+        "cleanup_timeout_source": "independent_CleanupTimeout",
+        "abstract_rollback_ack": "validated_success"
+      },
+      "expected": {
+        "rollback_attempted": true,
+        "transaction_state": "RolledBack",
+        "caller_statement_claims_rollback_acknowledged": true,
+        "connection_reusable_after_terminal_sync": true
+      }
+    },
+    {
+      "case_id": "tx_active_dispose_rollback_unknown",
+      "contract": "TX-01",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "reader_open": false,
+        "session_synchronously_available": true,
+        "cleanup_timeout_source": "independent_CleanupTimeout",
+        "abstract_rollback_ack": "missing"
+      },
+      "expected": {
+        "transaction_state": "OutcomeUnknown",
+        "connection_state": "Broken",
+        "rollback_success_claimed": false,
+        "connection_returned_to_pool": false,
+        "diagnostic_preserved": true
+      }
+    },
+    {
+      "case_id": "tx_dispose_reader_cleanup_timeout_discards",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "reader_state": "open",
+        "cleanup_deadline_state": "expired_before_safe_sync",
+        "captured_session": {
+          "session_id": 21,
+          "session_generation": 5
+        }
+      },
+      "expected": {
+        "reader_closed_or_transport_discarded": true,
+        "rollback_success_claimed": false,
+        "captured_session_discarded": true,
+        "no_unbounded_wait": true
+      }
+    },
+    {
+      "case_id": "tx_dispose_cleanup_failure_preserves_business_exception",
+      "contract": "TX-01",
+      "execution_status": "not_run",
+      "input": {
+        "propagating_business_exception": "SyntheticBusinessFailure",
+        "transaction_state": "Active",
+        "cleanup_rollback_ack": "missing"
+      },
+      "expected": {
+        "business_exception_remains_primary": true,
+        "cleanup_failure_recorded_in_diagnostics": true,
+        "connection_discarded": true,
+        "rollback_success_claimed": false
+      }
+    },
+    {
+      "case_id": "tx_terminal_dispose_idempotent_no_wire",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "terminal_states": [
+          "Committed",
+          "RolledBack"
+        ],
+        "dispose_calls_per_state": 3
+      },
+      "expected": {
+        "transaction_outcome_preserved": true,
+        "commit_or_rollback_attempts_after_terminal": 0,
+        "dispose_is_idempotent": true
+      }
+    },
+    {
+      "case_id": "tx_unknown_terminal_dispose_does_not_replay",
+      "contract": "TX-03",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "OutcomeUnknown",
+        "dispose_calls": 3
+      },
+      "expected": {
+        "additional_commit_attempts": 0,
+        "additional_rollback_attempts": 0,
+        "outcome_remains": "OutcomeUnknown",
+        "dispose_is_idempotent": true
+      }
+    },
+    {
+      "case_id": "tx_old_session_transaction_cannot_target_reopened_connection",
+      "contract": "TX-02",
+      "execution_status": "not_run",
+      "input": {
+        "old_transaction": {
+          "id": "tx-old",
+          "connection_id": "conn-a",
+          "session": {
+            "session_id": 31,
+            "session_generation": 8
+          }
+        },
+        "reopened_connection": {
+          "connection_id": "conn-a",
+          "session": {
+            "session_id": 31,
+            "session_generation": 9
+          }
+        },
+        "old_operation": "Commit"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "stale_transaction_session",
+        "new_session_affected": false,
+        "wire_activity_on_reopened_session": false
+      }
+    },
+    {
+      "case_id": "tx_savepoints_unsupported_until_profile_verified",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_savepoint_profile": "unverified",
+        "supports_savepoints_reported": false,
+        "requested_operation": "Save"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_family": "NotSupportedException",
+        "rejected_before_wire": true,
+        "savepoint_support_claimed": false
+      }
+    },
+    {
+      "case_id": "tx_savepoint_unicode_and_malicious_user_names_mapped",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_savepoint_profile": "synthetic_test_profile_for_client_mapping_only",
+        "user_names": [
+          "保存点🚀_é",
+          "x'); ROLLBACK; --"
+        ],
+        "logical_creations": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "generated_server_names_ascii": true,
+        "user_name_raw_interpolated": false,
+        "logical_mapping_is_per_transaction": true,
+        "actual_server_release_or_save_syntax_claimed": false
+      }
+    },
+    {
+      "case_id": "tx_savepoint_nul_and_profile_length_preflight",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_savepoint_profile": "synthetic_test_profile_for_preflight_only",
+        "synthetic_user_name_utf16_limit": 8,
+        "invalid_names": [
+          {
+            "utf16_code_units_hex": "005000000051",
+            "reason": "contains_nul"
+          },
+          {
+            "text": "123456789",
+            "utf16_code_units": 9,
+            "reason": "over_synthetic_profile_limit"
+          }
+        ]
+      },
+      "expected": {
+        "invalid_names_rejected_before_wire": true,
+        "raw_name_in_sql": false,
+        "synthetic_name_limit_is_not_claimed_as_server_limit": true
+      }
+    },
+    {
+      "case_id": "tx_savepoint_duplicate_name_replaces_mapping",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_savepoint_profile": "synthetic_test_profile_for_client_mapping_only",
+        "operations": [
+          {
+            "action": "Save",
+            "user_name": "checkpoint",
+            "generated_internal_name": "SP_1"
+          },
+          {
+            "action": "Save",
+            "user_name": "checkpoint",
+            "generated_internal_name": "SP_2"
+          },
+          {
+            "action": "RollbackTo",
+            "user_name": "checkpoint"
+          }
+        ]
+      },
+      "expected": {
+        "user_name_mapping_points_to_latest_sequence": true,
+        "rollback_targets_latest_logical_mapping": true,
+        "server_duplicate_name_behavior_assumed": false
+      }
+    },
+    {
+      "case_id": "tx_rollback_invalidates_later_savepoints",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_savepoint_profile": "synthetic_test_profile_for_client_mapping_only",
+        "created_names": [
+          "before",
+          "target",
+          "later"
+        ],
+        "operation": {
+          "action": "RollbackTo",
+          "user_name": "target"
+        }
+      },
+      "expected": {
+        "later_savepoint_invalidated": true,
+        "later_name_reuse_rejected_or_requires_new_save": true,
+        "server_savepoint_rollback_behavior_claimed": false
+      }
+    },
+    {
+      "case_id": "tx_release_unverified_is_logical_only",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "save_and_rollback_profile": "synthetic_test_profile_verified_for_client_path",
+        "release_syntax_profile": "unverified",
+        "user_name": "logical-release"
+      },
+      "expected": {
+        "client_mapping_released": true,
+        "release_wire_command_issued": false,
+        "server_resource_reclaimed_claimed": false,
+        "total_creation_count_decremented": false
+      }
+    },
+    {
+      "case_id": "tx_savepoint_total_resource_cap_survives_logical_release",
+      "contract": "TX-05",
+      "execution_status": "not_run",
+      "input": {
+        "server_release_syntax_profile": "unverified",
+        "synthetic_client_total_creation_cap": 2,
+        "operations": [
+          {
+            "action": "Save",
+            "user_name": "a"
+          },
+          {
+            "action": "ReleaseLogical",
+            "user_name": "a"
+          },
+          {
+            "action": "Save",
+            "user_name": "b"
+          },
+          {
+            "action": "Save",
+            "user_name": "c"
+          }
+        ]
+      },
+      "expected": {
+        "third_creation_rejected_before_wire": true,
+        "creation_count_after_logical_release": 2,
+        "synthetic_cap_is_not_a_server_limit": true
+      }
+    },
+    {
+      "case_id": "tx_unverified_isolation_levels_rejected_not_downgraded",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "requested_levels": [
+          "RepeatableRead",
+          "Snapshot",
+          "Chaos"
+        ],
+        "server_isolation_profile": "unverified"
+      },
+      "expected": {
+        "failure_family": "NotSupportedException",
+        "silent_downgrade_to_read_committed": false,
+        "wire_activity": false
+      }
+    },
+    {
+      "case_id": "tx_isolation_read_committed_barrier_litmus",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "isolation_level": "ReadCommitted",
+        "server_isolation_profile": "not_frozen",
+        "two_connections": [
+          "A",
+          "B"
+        ],
+        "barrier_schedule": [
+          {
+            "connection": "A",
+            "action": "BeginTransaction",
+            "isolation": "ReadCommitted"
+          },
+          {
+            "connection": "A",
+            "action": "UpdateTestOwnedRow",
+            "value": "uncommitted-marker"
+          },
+          {
+            "barrier": "A_WRITE_ACK_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "BeginTransaction",
+            "isolation": "ReadCommitted"
+          },
+          {
+            "connection": "B",
+            "action": "ReadTestOwnedRow",
+            "capture_slot": "during_A_uncommitted"
+          },
+          {
+            "barrier": "B_FIRST_READ_CAPTURED"
+          },
+          {
+            "connection": "A",
+            "action": "Rollback"
+          },
+          {
+            "barrier": "A_ROLLBACK_OUTCOME_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "ReadTestOwnedRow",
+            "capture_slot": "after_A_rollback"
+          },
+          {
+            "connection": "B",
+            "action": "CommitOrRollback"
+          }
+        ],
+        "fixed_sleep_used": false,
+        "observation_slots": [
+          "A_phase_one_result",
+          "B_concurrent_result",
+          "A_terminal_outcome",
+          "B_phase_two_result"
+        ],
+        "synthetic_values_are_schedule_markers_only": true,
+        "barrier_schedule_source": "synthetic_harness_ordering_not_server_trace"
+      },
+      "expected": {
+        "profile_policy": "product_default_requires_server_validation",
+        "observations_must_be_captured_not_prefilled": true,
+        "enable_level_only_after_profile_litmus_pass": true,
+        "barrier_order_used_instead_of_elapsed_sleep": true,
+        "if_profile_supported": "no_dirty_read_then_original_committed_value_after_A_rollback"
+      }
+    },
+    {
+      "case_id": "tx_isolation_read_uncommitted_barrier_litmus",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "isolation_level": "ReadUncommitted",
+        "server_isolation_profile": "not_frozen",
+        "two_connections": [
+          "A",
+          "B"
+        ],
+        "barrier_schedule": [
+          {
+            "connection": "A",
+            "action": "BeginTransaction",
+            "isolation": "ReadCommitted"
+          },
+          {
+            "connection": "A",
+            "action": "UpdateTestOwnedRow",
+            "value": "uncommitted-marker"
+          },
+          {
+            "barrier": "A_WRITE_ACK_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "BeginTransaction",
+            "isolation": "ReadUncommitted"
+          },
+          {
+            "connection": "B",
+            "action": "ReadTestOwnedRow",
+            "capture_slot": "during_A_uncommitted"
+          },
+          {
+            "barrier": "B_FIRST_READ_CAPTURED"
+          },
+          {
+            "connection": "A",
+            "action": "Rollback"
+          },
+          {
+            "barrier": "A_ROLLBACK_OUTCOME_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "ReadTestOwnedRow",
+            "capture_slot": "after_A_rollback"
+          },
+          {
+            "connection": "B",
+            "action": "CommitOrRollback"
+          }
+        ],
+        "fixed_sleep_used": false,
+        "observation_slots": [
+          "A_phase_one_result",
+          "B_concurrent_result",
+          "A_terminal_outcome",
+          "B_phase_two_result"
+        ],
+        "synthetic_values_are_schedule_markers_only": true,
+        "barrier_schedule_source": "synthetic_harness_ordering_not_server_trace"
+      },
+      "expected": {
+        "profile_policy": "do_not_assume_profile_support_or_dirty_read_result",
+        "observations_must_be_captured_not_prefilled": true,
+        "enable_level_only_after_profile_litmus_pass": true,
+        "barrier_order_used_instead_of_elapsed_sleep": true,
+        "if_profile_supported": "record_dirty_read_visibility_without_pre_filling_result"
+      }
+    },
+    {
+      "case_id": "tx_isolation_serializable_barrier_litmus",
+      "contract": "TX-06",
+      "execution_status": "not_run",
+      "input": {
+        "isolation_level": "Serializable",
+        "server_isolation_profile": "not_frozen",
+        "two_connections": [
+          "A",
+          "B"
+        ],
+        "barrier_schedule": [
+          {
+            "connection": "A",
+            "action": "BeginTransaction",
+            "isolation": "Serializable"
+          },
+          {
+            "connection": "A",
+            "action": "ReadTestOwnedRange",
+            "predicate": "synthetic_range",
+            "capture_slot": "range_before_B"
+          },
+          {
+            "barrier": "A_RANGE_READ_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "BeginTransaction",
+            "isolation": "ReadCommitted"
+          },
+          {
+            "connection": "B",
+            "action": "AttemptInsertMatchingRange",
+            "completion": "may_block_or_return"
+          },
+          {
+            "barrier": "B_INSERT_ATTEMPT_REACHED_HARNESS"
+          },
+          {
+            "connection": "A",
+            "action": "CommitOrRollback"
+          },
+          {
+            "barrier": "A_TERMINAL_OUTCOME_CAPTURED"
+          },
+          {
+            "connection": "B",
+            "action": "CompleteOrObserveInsertOutcome"
+          },
+          {
+            "connection": "A",
+            "action": "ReadTestOwnedRange",
+            "capture_slot": "range_after_B"
+          },
+          {
+            "connection": "B",
+            "action": "CommitOrRollback"
+          }
+        ],
+        "fixed_sleep_used": false,
+        "observation_slots": [
+          "A_phase_one_result",
+          "B_concurrent_result",
+          "A_terminal_outcome",
+          "B_phase_two_result"
+        ],
+        "synthetic_values_are_schedule_markers_only": true,
+        "barrier_schedule_source": "synthetic_harness_ordering_not_server_trace"
+      },
+      "expected": {
+        "profile_policy": "do_not_assume_profile_support_or_conflict_result",
+        "observations_must_be_captured_not_prefilled": true,
+        "enable_level_only_after_profile_litmus_pass": true,
+        "barrier_order_used_instead_of_elapsed_sleep": true,
+        "if_profile_supported": "record_block_abort_or_serializable_result_without_pre_filling_outcome"
+      }
+    },
+    {
+      "case_id": "tx_second_statement_error_requires_explicit_rollback",
+      "contract": "TX-04",
+      "execution_status": "not_run",
+      "input": {
+        "operations": [
+          {
+            "action": "ExecuteFirstStatement",
+            "result": "synthetic_success"
+          },
+          {
+            "action": "ExecuteSecondStatement",
+            "result": "synthetic_error"
+          },
+          {
+            "action": "ExplicitRollback",
+            "acknowledgement": "synthetic_success"
+          }
+        ],
+        "first_statement_side_effect_scope": "test_owned_object_only"
+      },
+      "expected": {
+        "later_error_propagated": true,
+        "explicit_rollback_attempted": true,
+        "final_server_state": "must_be_independently_verified",
+        "exception_alone_counts_as_rollback_proof": false
+      }
+    },
+    {
+      "case_id": "tx_ddl_implicit_commit_state_unverified",
+      "contract": "TX-07",
+      "execution_status": "not_run",
+      "input": {
+        "transaction_state": "Active",
+        "uncommitted_test_owned_change": true,
+        "operation": "DDL",
+        "server_transaction_state_signal": "unverified"
+      },
+      "expected": {
+        "rollback_claimed": false,
+        "transaction_outcome": "unknown_until_reliable_signal_or_probe",
+        "CompletedExternally_only_if_verified": true,
+        "extra_state_query_between_dml_and_generated_readback": false
+      }
+    },
+    {
+      "case_id": "tx_ambient_default_does_not_enlist",
+      "contract": "TX-08",
+      "execution_status": "not_run",
+      "input": {
+        "ambient_transaction_present": true,
+        "connection_enlist_setting": false,
+        "explicit_enlist_call": false
+      },
+      "expected": {
+        "ambient_transaction_joined": false,
+        "connection_local_transaction_semantics_preserved": true
+      }
+    },
+    {
+      "case_id": "tx_ambient_enlist_true_and_method_rejected",
+      "contract": "TX-08",
+      "execution_status": "not_run",
+      "input": {
+        "cases": [
+          {
+            "connection_enlist_setting": true,
+            "explicit_enlist_call": false
+          },
+          {
+            "connection_enlist_setting": false,
+            "explicit_enlist_call": true,
+            "ambient_transaction_present": true
+          }
+        ]
+      },
+      "expected": {
+        "accepted": false,
+        "failure_family": "NotSupportedException",
+        "implicit_or_distributed_enlistment_created": false,
+        "wire_activity": false
+      }
+    }
+  ],
+  "real_database_probes": [
+    {
+      "probe_id": "real_transaction_dispose_rollback_and_independent_readback",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify an uncommitted test-owned write is rolled back by Dispose and observe final state from a new connection.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Create a unique test-owned object outside the transaction."
+      ],
+      "steps": [
+        "Write a unique marker inside a transaction.",
+        "Dispose the active transaction without Commit.",
+        "Use a new connection to read final state.",
+        "Clean only objects created by this probe."
+      ],
+      "evidence_limit": "A client-side Rollback call alone does not prove server rollback."
+    },
+    {
+      "probe_id": "real_savepoint_profile_gate",
+      "verification_status": "planned_not_run",
+      "purpose": "Determine whether save/rollback semantics can be enabled for this exact server profile.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Do not assume RELEASE syntax or an existing savepoint capability."
+      ],
+      "steps": [
+        "Record server identity and isolation configuration.",
+        "Attempt only the approved Save/Rollback litmus after profile setup.",
+        "Read back independently and record cleanup.",
+        "Test Release only if its syntax has a separate verified basis."
+      ],
+      "evidence_limit": "No savepoint support level or Release syntax is asserted by this fixture."
+    },
+    {
+      "probe_id": "real_t11_isolation_and_savechanges_matrix",
+      "verification_status": "planned_not_run",
+      "purpose": "Compare ReadCommitted, ReadUncommitted, and Serializable against multiple command and EF paths.",
+      "preconditions": [
+        "Use the same verified WDM_PROVIDER_TEST identity and fixed server configuration.",
+        "Use two independent connections and barrier synchronization, never fixed sleeps.",
+        "Use unique test-owned rows and objects."
+      ],
+      "steps": [
+        "Run a single UPDATE ExecuteNonQuery litmus.",
+        "Run UPDATE plus SQL%ROWCOUNT ExecuteReader.",
+        "Run INSERT plus generated-key readback.",
+        "Run the approved savepoint combination.",
+        "Run the full EF SaveChanges path.",
+        "Capture values, errors, command text lifecycle, terminal states, and independent final state."
+      ],
+      "evidence_limit": "Do not merge results across server profiles or infer support from BeginTransaction success."
+    },
+    {
+      "probe_id": "real_ddl_implicit_commit_boundary",
+      "verification_status": "planned_not_run",
+      "purpose": "Observe DDL transaction boundary without reporting implicit commit as rollback success.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use disposable, uniquely named test-owned objects only."
+      ],
+      "steps": [
+        "Begin a transaction and write a unique test-owned marker.",
+        "Execute the selected DDL probe.",
+        "Observe the actual transaction signal if available.",
+        "Use a separate connection to verify data and object state.",
+        "Clean only probe-owned objects."
+      ],
+      "evidence_limit": "The procedure records no result and assumes no universal DDL rollback rule."
+    },
+    {
+      "probe_id": "real_two_connection_barrier_litmus",
+      "verification_status": "planned_not_run",
+      "purpose": "Record concurrent isolation observations for an explicitly identified server profile.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Synchronize each phase with barriers; do not use fixed delay sleeps."
+      ],
+      "steps": [
+        "Capture server build and isolation configuration.",
+        "Run dirty-read, repeat-read, and range-conflict schedules at supported levels.",
+        "Record all reads, blocking/errors, transaction outcomes, and final state."
+      ],
+      "evidence_limit": "Read results are intentionally blank in this fixture."
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "mode": "fixed",
+  "accepted": true,
+  "status": "review_contracts_verified",
+  "cases": {
+    "null_int32": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "real_zero": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "clob_length_and_copy": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "sequential_clob_length_and_copy": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "sequential_clob_forward_gap": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "empty_clob": {
+      "Pass": true,
+      "Status": "non_null_empty_clob_observed",
+      "Error": {
+        "utf16_length": 0
+      },
+      "Details": null
+    },
+    "server_comment_terminator": {
+      "Pass": true,
+      "Status": "first_close_42",
+      "Error": null,
+      "Details": null
+    },
+    "prepared_detach_and_rebind": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "active_explicit_transaction_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "own_active_reader_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "other_active_reader_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "transaction_guard": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": {
+        "client_rejection": {
+          "type": "System.NotSupportedException",
+          "kind": null,
+          "number": null
+        },
+        "active_after_rejection": true,
+        "rows_before_rollback": 1,
+        "final_outcome": "RolledBack",
+        "independent_connection_final_rows": 0
+      }
+    }
+  },
+  "table": "R1RV_EE22F24747E04A5AB0841633",
+  "nonce": "EE22F24747E04A5AB0841633CE210EF6",
+  "transport": "PlaintextAllowed",
+  "persist_security_info": false,
+  "raw_guard_payload_attempted": true,
+  "package_version": "0.1.0-r1.20260930151754",
+  "assembly_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86",
+  "assembly_mvid": "56d3b648-53a8-4003-8cee-9dd92da5a17a",
+  "server_identity_verified": true,
+  "server_version": "8.1.5.60",
+  "server_comment_value": 42,
+  "final_table_count": 0,
+  "all_required_contracts_pass": true
+}

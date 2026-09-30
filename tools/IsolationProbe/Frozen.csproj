@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>IsolationProbe.Frozen</AssemblyName><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);FROZEN</DefineConstants><OutputPath>bin/Frozen/</OutputPath>
+    <RestoreSources>$(MSBuildThisFileDirectory)../../packages</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="Program.cs" /><Compile Include="ProbeSafety.cs" /><Compile Include="Litmus.cs" /><Reference Include="W.DmProvider"><HintPath>../../.local/t10/accepted-binaries/net10.0/W.DmProvider.dll</HintPath><Private>true</Private></Reference></ItemGroup>
+</Project>

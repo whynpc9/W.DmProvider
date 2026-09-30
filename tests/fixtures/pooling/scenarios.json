@@ -1,0 +1,856 @@
+{
+  "schema_version": 1,
+  "fixture": "T15/T16 reset, pooling, DataSource, and lease lifecycle scenarios",
+  "virtual_time_model": {
+    "clock": "monotonic_virtual_ticks",
+    "fixed_sleep_allowed": false
+  },
+  "evidence_boundary": {
+    "synthetic_cases": "All cases are logical pool/reset state transitions with execution_status not_run.",
+    "real_database_probes": "All procedures are planned_not_run and contain no observed result.",
+    "protocol_and_secrets": "No reset opcode, session SQL, credentials, pool-key secret, certificate material, or captured server response is present.",
+    "capabilities": "No DM reset mechanism, server isolation profile, pool reset completeness, or server reuse capability is assumed."
+  },
+  "pool_states": [
+    "idle",
+    "leased",
+    "creating",
+    "resetting",
+    "closing",
+    "reserved"
+  ],
+  "reset_state_dimensions": [
+    "transaction",
+    "autocommit",
+    "isolation",
+    "schema",
+    "role_and_grants",
+    "timezone",
+    "NLS_and_language",
+    "temporary_objects",
+    "session_variables",
+    "session_locks",
+    "open_cursors_and_LOB_locators",
+    "prepared_statements",
+    "package_or_procedure_state"
+  ],
+  "cases": [
+    {
+      "case_id": "t15_unverified_reset_discards_session",
+      "contract": "POL-04/05/10",
+      "execution_status": "not_run",
+      "input": {
+        "reset_policy": "VerifiedResetOrDiscard",
+        "reset_profile": "unverified",
+        "session_state_changes": [
+          "schema",
+          "isolation"
+        ],
+        "lease_state": "returning"
+      },
+      "expected": {
+        "physical_session_reused": false,
+        "session_discarded": true,
+        "rollback_or_select1_counted_as_full_reset_proof": false,
+        "reuse_rate_claimed": false
+      }
+    },
+    {
+      "case_id": "t15_rollback_only_is_not_full_reset",
+      "contract": "POL-04/05",
+      "execution_status": "not_run",
+      "input": {
+        "reset_profile": "unverified",
+        "rollback_acknowledged": true,
+        "remaining_session_state_changes": [
+          "schema",
+          "role",
+          "timezone",
+          "temporary_object",
+          "session_variable"
+        ]
+      },
+      "expected": {
+        "reset_complete": false,
+        "session_entered_idle_pool": false,
+        "rollback_alone_proves_baseline": false,
+        "session_discarded": true
+      }
+    },
+    {
+      "case_id": "t15_verified_reset_restores_declared_profile_only",
+      "contract": "POL-04/05",
+      "execution_status": "not_run",
+      "input": {
+        "reset_profile": "synthetic_test_profile_with_verified_dimensions",
+        "verified_dimensions": [
+          "transaction",
+          "autocommit",
+          "isolation",
+          "schema",
+          "role_and_grants",
+          "timezone",
+          "NLS_and_language"
+        ],
+        "changed_dimensions": [
+          "schema",
+          "isolation",
+          "timezone"
+        ]
+      },
+      "expected": {
+        "reuse_allowed_only_after_each_changed_dimension_verified": true,
+        "unverified_dimensions_force_discard": true,
+        "profile_is_not_a_DM_server_claim": true
+      }
+    },
+    {
+      "case_id": "t15_reset_state_matrix_settings_and_objects",
+      "contract": "POL-05",
+      "execution_status": "not_run",
+      "input": {
+        "changed_state_dimensions": [
+          "transaction",
+          "autocommit",
+          "isolation",
+          "schema",
+          "role_and_grants",
+          "timezone",
+          "NLS_and_language",
+          "temporary_objects",
+          "session_variables",
+          "session_locks",
+          "open_cursors_and_LOB_locators",
+          "prepared_statements",
+          "package_or_procedure_state"
+        ],
+        "reset_evidence_by_dimension": {
+          "transaction": "not_verified",
+          "autocommit": "not_verified",
+          "isolation": "not_verified",
+          "schema": "not_verified",
+          "role_and_grants": "not_verified",
+          "timezone": "not_verified",
+          "NLS_and_language": "not_verified",
+          "temporary_objects": "not_verified",
+          "session_variables": "not_verified",
+          "session_locks": "not_verified",
+          "open_cursors_and_LOB_locators": "not_verified",
+          "prepared_statements": "not_verified",
+          "package_or_procedure_state": "not_verified"
+        },
+        "raw_sql_classification": "unknown"
+      },
+      "expected": {
+        "unverified_dimension_count_forces_discard": true,
+        "no_dimension_silently_assumed_clean": true,
+        "server_profile_state": "not_filled"
+      }
+    },
+    {
+      "case_id": "t15_unknown_raw_sql_forces_discard",
+      "contract": "POL-05",
+      "execution_status": "not_run",
+      "input": {
+        "last_operation_kind": "unclassified_raw_sql_or_procedure",
+        "first_token_classifier_result": "not_sufficient_for_reset_proof"
+      },
+      "expected": {
+        "session_reused": false,
+        "discarded_on_return": true,
+        "statement_prefix_scan_counts_as_full_reset_proof": false
+      }
+    },
+    {
+      "case_id": "t15_open_reader_prepared_statement_or_lock_forces_discard",
+      "contract": "POL-05",
+      "execution_status": "not_run",
+      "input": {
+        "return_state_variants": [
+          "reader_open",
+          "LOB_locator_open",
+          "session_lock_held",
+          "prepared_statement_state_unknown"
+        ]
+      },
+      "expected": {
+        "each_unverified_variant_reused": false,
+        "cleanup_and_reset_must_finish_before_idle": true,
+        "discard_if_bounded_cleanup_or_state_proof_fails": true
+      }
+    },
+    {
+      "case_id": "t15_reset_failure_releases_capacity_without_idle_reuse",
+      "contract": "POL-02/10",
+      "execution_status": "not_run",
+      "input": {
+        "physical_state": "resetting",
+        "reset_result": "failure",
+        "capacity_permit_owned": true
+      },
+      "expected": {
+        "session_entered_idle": false,
+        "session_discarded": true,
+        "capacity_permit_release_count": 1,
+        "pool_counts_consistent": true
+      }
+    },
+    {
+      "case_id": "t15_select1_is_health_check_not_reset_proof",
+      "contract": "POL-04/10",
+      "execution_status": "not_run",
+      "input": {
+        "validation_result": "connection_responded",
+        "session_state_profile": "unknown"
+      },
+      "expected": {
+        "health_check_can_prove_communication": true,
+        "health_check_proves_session_baseline": false,
+        "reuse_requires_separate_reset_evidence": true
+      }
+    },
+    {
+      "case_id": "t16_creating_and_resetting_count_against_max_pool_size",
+      "contract": "POL-01/02",
+      "execution_status": "not_run",
+      "input": {
+        "min_pool_size": 0,
+        "max_pool_size": 2,
+        "pool_slots": [
+          {
+            "slot": 1,
+            "state": "leased"
+          },
+          {
+            "slot": 2,
+            "state": "creating"
+          }
+        ],
+        "clock": "virtual",
+        "requested_slot_state": "resetting"
+      },
+      "expected": {
+        "physical_capacity_including_creating_resetting": 2,
+        "third_slot_admitted": false,
+        "capacity_exceeded": false,
+        "requested_resetting_slot_admitted": false
+      }
+    },
+    {
+      "case_id": "t16_min_max_pool_targets_remain_bounded",
+      "contract": "POL-01",
+      "execution_status": "not_run",
+      "input": {
+        "min_pool_size": 1,
+        "max_pool_size": 3,
+        "concurrent_open_requests": 6,
+        "barriers": [
+          "WARMUP_STARTED",
+          "OPEN_REQUESTS_RELEASED",
+          "ALL_LEASES_RETURNED"
+        ]
+      },
+      "expected": {
+        "physical_capacity_never_exceeds_max": true,
+        "minimum_target_is_not_a_hard_extra_capacity": true,
+        "fixed_sleep_used": false
+      }
+    },
+    {
+      "case_id": "t16_second_waiter_cancel_returns_no_permit",
+      "contract": "POL-01/02",
+      "execution_status": "not_run",
+      "input": {
+        "max_pool_size": 1,
+        "first_lease_state": "leased",
+        "second_waiter": {
+          "state": "queued",
+          "cancel_before_grant": true
+        },
+        "barriers": [
+          "WAITER_QUEUED",
+          "CANCEL_WAITER",
+          "FIRST_LEASE_RETURNED"
+        ]
+      },
+      "expected": {
+        "second_waiter_received_lease": false,
+        "permit_leak": false,
+        "first_lease_affected": false,
+        "fixed_sleep_used": false
+      }
+    },
+    {
+      "case_id": "t16_pool_acquire_timeout_not_reset_by_queue_wakeup",
+      "contract": "POL-01",
+      "execution_status": "not_run",
+      "input": {
+        "clock_unit": "virtual_ticks",
+        "pool_acquire_timeout_ticks": 20,
+        "waiter_wake_ticks": [
+          4,
+          9,
+          15,
+          20
+        ],
+        "permit_available_tick": 25
+      },
+      "expected": {
+        "timeout_tick": 20,
+        "timeout_budget_reset_on_wakeup": false,
+        "permit_acquired_after_deadline": false
+      }
+    },
+    {
+      "case_id": "t16_cancel_vs_grant_race_has_single_owner",
+      "contract": "POL-01/06",
+      "execution_status": "not_run",
+      "input": {
+        "max_pool_size": 1,
+        "race_orders": [
+          [
+            "WAITER_CANCELLED",
+            "LEASE_GRANT_ATTEMPT"
+          ],
+          [
+            "LEASE_GRANT_WINS",
+            "WAITER_CANCEL_OBSERVED"
+          ]
+        ],
+        "barriers": [
+          "POOL_PERMIT_RESERVED",
+          "RACE_RELEASED"
+        ]
+      },
+      "expected": {
+        "each_race_has_exactly_one_terminal_owner": true,
+        "lease_never_delivered_to_cancelled_waiter_and_another_waiter": true,
+        "permit_released_or_owned_exactly_once": true,
+        "fixed_sleep_used": false
+      }
+    },
+    {
+      "case_id": "t16_create_failure_releases_capacity_once",
+      "contract": "POL-02",
+      "execution_status": "not_run",
+      "input": {
+        "pool_slot_state": "creating",
+        "failure_stage": "physical_connect",
+        "permit_acquired": true
+      },
+      "expected": {
+        "connection_delivered": false,
+        "capacity_permit_release_count": 1,
+        "creating_count_after_failure": 0,
+        "leased_count_after_failure": 0
+      }
+    },
+    {
+      "case_id": "t16_initialize_failure_releases_capacity_once",
+      "contract": "POL-02",
+      "execution_status": "not_run",
+      "input": {
+        "pool_slot_state": "creating",
+        "failure_stage": "required_initialization",
+        "physical_connection_created": true
+      },
+      "expected": {
+        "connection_delivered": false,
+        "physical_session_discarded": true,
+        "capacity_permit_release_count": 1,
+        "pool_idle_count_increment": 0
+      }
+    },
+    {
+      "case_id": "t16_return_cleanup_failure_does_not_double_release",
+      "contract": "POL-02",
+      "execution_status": "not_run",
+      "input": {
+        "pool_slot_state": "closing",
+        "failure_stage": "reader_or_transaction_cleanup",
+        "permit_release_already_started": false
+      },
+      "expected": {
+        "session_entered_idle": false,
+        "session_discarded": true,
+        "capacity_permit_release_count": 1,
+        "all_pool_counts_nonnegative": true
+      }
+    },
+    {
+      "case_id": "t16_idle_lifetime_virtual_eviction",
+      "contract": "POL-10",
+      "execution_status": "not_run",
+      "input": {
+        "clock_unit": "virtual_ticks",
+        "idle_lifetime_ticks": 50,
+        "idle_return_tick": 0,
+        "checkout_attempt_ticks": [
+          49,
+          50,
+          51
+        ]
+      },
+      "expected": {
+        "eviction_decision_uses_virtual_clock": true,
+        "no_per_connection_thread": true,
+        "boundary_outcome": "assert_against_configured_idle_lifetime_policy"
+      }
+    },
+    {
+      "case_id": "t16_clearpool_epoch_retires_idle_and_leased",
+      "contract": "POL-07",
+      "execution_status": "not_run",
+      "input": {
+        "pool_epoch_before_clear": 4,
+        "pool_state": {
+          "idle": 2,
+          "leased": 1
+        },
+        "operations": [
+          {
+            "action": "ClearPool"
+          },
+          {
+            "action": "ReturnLeasedConnection"
+          }
+        ]
+      },
+      "expected": {
+        "pool_epoch_after_clear": 5,
+        "idle_connections_closed": true,
+        "leased_operation_force_interrupted": false,
+        "leased_connection_discarded_on_return": true
+      }
+    },
+    {
+      "case_id": "t16_clearallpools_epoch_retires_without_aborting_work",
+      "contract": "POL-07",
+      "execution_status": "not_run",
+      "input": {
+        "registry_pools": [
+          "pool-A",
+          "pool-B"
+        ],
+        "leased_pool": "pool-A",
+        "idle_pool": "pool-B",
+        "operation": "ClearAllPools"
+      },
+      "expected": {
+        "all_pool_epochs_advanced": true,
+        "idle_connections_closed": true,
+        "active_lease_aborted": false,
+        "active_lease_retired_on_return": true
+      }
+    },
+    {
+      "case_id": "t16_old_lease_cancel_cannot_abort_new_checkout",
+      "contract": "POL-06",
+      "execution_status": "not_run",
+      "input": {
+        "old_lease_identity": {
+          "pool_epoch": 7,
+          "lease_generation": 20,
+          "session_id": 81
+        },
+        "new_lease_identity": {
+          "pool_epoch": 7,
+          "lease_generation": 21,
+          "session_id": 81
+        },
+        "barriers": [
+          "OLD_LEASE_RETURNED",
+          "NEW_LEASE_CHECKED_OUT",
+          "OLD_CANCEL_CALLBACK_RELEASED"
+        ]
+      },
+      "expected": {
+        "old_cancel_matches_new_lease": false,
+        "new_transport_closed": false,
+        "new_lease_usable": true,
+        "fixed_sleep_used": false
+      }
+    },
+    {
+      "case_id": "t16_unknown_dirty_session_never_enters_idle",
+      "contract": "POL-04/05/10",
+      "execution_status": "not_run",
+      "input": {
+        "lease_return_outcome": "unknown_operation_or_reset_state",
+        "reset_policy": "VerifiedResetOrDiscard"
+      },
+      "expected": {
+        "idle_pool_inserted": false,
+        "physical_session_discarded": true,
+        "next_lease_can_observe_dirty_state": false
+      }
+    },
+    {
+      "case_id": "t16_return_revokes_external_lease_before_reset",
+      "contract": "POL-06",
+      "execution_status": "not_run",
+      "input": {
+        "lease_generation": 33,
+        "return_steps": [
+          "revoke_external_lease",
+          "unregister_cancellation",
+          "cleanup_reader_lob_transaction",
+          "reset_or_discard",
+          "idle_or_close"
+        ]
+      },
+      "expected": {
+        "external_old_object_invalid_before_cleanup": true,
+        "idle_inserted_before_reset_complete": false,
+        "old_statement_or_lob_cross_generation_allowed": false
+      }
+    },
+    {
+      "case_id": "t16_datasources_have_independent_pool_ownership",
+      "contract": "POL-03/07",
+      "execution_status": "not_run",
+      "input": {
+        "datasources": [
+          {
+            "id": "source-A",
+            "effective_configuration_ref": "same-synthetic-config"
+          },
+          {
+            "id": "source-B",
+            "effective_configuration_ref": "same-synthetic-config"
+          }
+        ]
+      },
+      "expected": {
+        "pool_lifetimes_independent_by_default": true,
+        "dispose_source_A_closes_source_B_pool": false
+      }
+    },
+    {
+      "case_id": "t16_datasource_connection_creation_states",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "operations": [
+          {
+            "api": "CreateConnection"
+          },
+          {
+            "api": "OpenConnectionAsync"
+          }
+        ]
+      },
+      "expected": {
+        "create_connection_initial_state": "Closed",
+        "open_connection_state": "Open",
+        "connection_string_exposes_password": false
+      }
+    },
+    {
+      "case_id": "t16_datasource_createcommand_connection_lifetime",
+      "contract": "POL-09",
+      "execution_status": "not_run",
+      "input": {
+        "command_paths": [
+          "non_reader_success",
+          "execution_failure",
+          "reader_returned_open"
+        ],
+        "reader_close_barrier": "READER_CLOSED"
+      },
+      "expected": {
+        "non_reader_connection_release_count": 1,
+        "failure_connection_release_count": 1,
+        "reader_connection_held_until_close": true,
+        "fetch_uses_same_connection": true
+      }
+    },
+    {
+      "case_id": "t16_datasource_dispose_waiters_idle_and_borrowed",
+      "contract": "POL-07",
+      "execution_status": "not_run",
+      "input": {
+        "datasource_state": "Open",
+        "pool_state": {
+          "idle": 1,
+          "leased": 1,
+          "waiters": 2
+        },
+        "barriers": [
+          "DISPOSE_STARTED",
+          "WAITERS_CANCELLED",
+          "BORROWER_RETURNED"
+        ]
+      },
+      "expected": {
+        "new_borrow_rejected": true,
+        "waiters_cancelled": true,
+        "idle_closed": true,
+        "borrowed_session_interrupted": false,
+        "borrowed_session_discarded_on_return": true,
+        "dispose_waits_forever_for_borrower": false
+      }
+    },
+    {
+      "case_id": "t16_pool_identity_complete_configuration_key",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "base_key": {
+          "endpoint": "db.example.test",
+          "port": 5236,
+          "user_identity": "synthetic-user-A",
+          "credential_identity_ref": "credential-A",
+          "schema": "TenantA",
+          "database_mode": "mode-A",
+          "charset": "UTF-8",
+          "timezone": "UTC",
+          "init_profile": "init-A",
+          "tls_policy": "RequireTls",
+          "ca_identity_ref": "ca-A",
+          "client_certificate_identity_ref": "client-cert-A",
+          "wire_configuration_ref": "wire-A"
+        },
+        "one_field_variants": [
+          "endpoint",
+          "port",
+          "user_identity",
+          "credential_identity_ref",
+          "schema",
+          "database_mode",
+          "charset",
+          "timezone",
+          "init_profile",
+          "tls_policy",
+          "ca_identity_ref",
+          "client_certificate_identity_ref",
+          "wire_configuration_ref"
+        ]
+      },
+      "expected": {
+        "different_effective_security_or_session_identity_means_distinct_pool_key": true,
+        "full_immutable_key_equality_used": true,
+        "string_hash_alone_is_identity": false
+      }
+    },
+    {
+      "case_id": "t16_pool_identity_preserves_case_sensitive_components",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "base": {
+          "password_identity_ref": "secret-A",
+          "schema": "TenantA"
+        },
+        "variants": [
+          {
+            "password_identity_ref": "secret-a",
+            "schema": "TenantA"
+          },
+          {
+            "password_identity_ref": "secret-A",
+            "schema": "tenanta"
+          }
+        ]
+      },
+      "expected": {
+        "password_case_folded": false,
+        "schema_case_folded": false,
+        "distinct_sensitive_identity_does_not_share_pool": true
+      }
+    },
+    {
+      "case_id": "t16_pool_identity_normalizes_only_equivalent_aliases",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "equivalent_configurations": [
+          {
+            "server_alias": "db.example.test",
+            "user_alias": "synthetic-user-A",
+            "effective_port": 5236
+          },
+          {
+            "data_source_alias": "db.example.test",
+            "user_id_alias": "synthetic-user-A",
+            "effective_port": 5236
+          }
+        ]
+      },
+      "expected": {
+        "equivalent_aliases_may_normalize_to_same_key": true,
+        "normalization_changes_only_documented_equivalent_fields": true
+      }
+    },
+    {
+      "case_id": "t16_hash_collision_uses_full_key_equality",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "key_A": {
+          "endpoint": "db-a.example.test",
+          "schema": "TenantA"
+        },
+        "key_B": {
+          "endpoint": "db-b.example.test",
+          "schema": "TenantA"
+        },
+        "synthetic_hash_override": 17
+      },
+      "expected": {
+        "hashes_equal": true,
+        "full_keys_equal": false,
+        "pool_keys_equal": false,
+        "cross_tenant_session_reuse": false
+      }
+    },
+    {
+      "case_id": "t16_pool_key_secrets_are_not_formatted_or_logged",
+      "contract": "POL-03",
+      "execution_status": "not_run",
+      "input": {
+        "password_configured": true,
+        "client_certificate_configured": true,
+        "diagnostic_path": "PoolKey.ToString_or_log_summary"
+      },
+      "expected": {
+        "password_value_present_in_fixture": false,
+        "certificate_private_material_present": false,
+        "secret_values_formatted": false,
+        "safe_nonsecret_identity_metadata_only": true
+      }
+    },
+    {
+      "case_id": "t16_pooling_default_off_registry_bounded",
+      "contract": "POL-08",
+      "execution_status": "not_run",
+      "input": {
+        "connection_pooling_setting": "default",
+        "registry_pool_limit": 2,
+        "synthetic_configuration_churn_count": 5
+      },
+      "expected": {
+        "implicit_pool_created_by_default": false,
+        "explicit_pool_registry_within_limit": true,
+        "zero_borrow_expired_registry_entry_removable": true
+      }
+    },
+    {
+      "case_id": "t16_min_lifetime_and_registry_churn_use_shared_scheduler",
+      "contract": "POL-08/10",
+      "execution_status": "not_run",
+      "input": {
+        "clock_unit": "virtual_ticks",
+        "idle_lifetime_ticks": 30,
+        "pool_registry_limit": 2,
+        "configuration_churn_events": [
+          0,
+          5,
+          10,
+          15,
+          20
+        ]
+      },
+      "expected": {
+        "maintenance_threads_scale_per_connection": false,
+        "registry_entry_count_bounded": true,
+        "maintenance_task_exceptions_observed": true
+      }
+    }
+  ],
+  "real_database_probes": [
+    {
+      "probe_id": "real_min_max_pool_and_waiter_accounting",
+      "verification_status": "planned_not_run",
+      "purpose": "Observe bounded capacity, a queued waiter, cancellation/timeout, and final permit accounting.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use a controlled local DataSource with small MinPoolSize/MaxPoolSize values."
+      ],
+      "steps": [
+        "Hold one lease and queue a second acquisition.",
+        "Cancel or timeout the waiter using barriers.",
+        "Return the first lease and acquire again.",
+        "Record physical/leased/creating/resetting/waiter counts and cleanup."
+      ],
+      "evidence_limit": "No counts or observed timing are prefilled."
+    },
+    {
+      "probe_id": "real_reset_state_matrix_or_discard_decision",
+      "verification_status": "planned_not_run",
+      "purpose": "Determine the exact session state dimensions a target reset mechanism restores.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use a disposable, isolated test schema and profile; do not change shared instance settings."
+      ],
+      "steps": [
+        "Mutate only test-owned session state dimensions that can be restored.",
+        "Return the lease under the candidate reset strategy.",
+        "Check each dimension on the next checkout.",
+        "Discard when any dimension lacks a reliable verification."
+      ],
+      "evidence_limit": "No reset opcode, syntax, permission, or capability is assumed."
+    },
+    {
+      "probe_id": "real_clearpool_and_datasource_lifecycle",
+      "verification_status": "planned_not_run",
+      "purpose": "Observe ClearPool/DataSource.Dispose with idle, leased, and waiting callers.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use barriers and bounded waits; do not use fixed sleep thresholds."
+      ],
+      "steps": [
+        "Create idle and leased connections plus a waiting acquisition.",
+        "Clear the pool or dispose the DataSource.",
+        "Observe idle closure, waiter cancellation, active operation completion, and retire-on-return behavior."
+      ],
+      "evidence_limit": "The procedure records the actual release counts when run; none are in this fixture."
+    },
+    {
+      "probe_id": "real_datasource_reader_ownership",
+      "verification_status": "planned_not_run",
+      "purpose": "Check DataSource.CreateCommand retains its source connection until a returned reader is closed.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use a supported read-only operation."
+      ],
+      "steps": [
+        "Execute through DataSource.CreateCommand and return a reader.",
+        "Keep it open across a row fetch.",
+        "Close it and observe one connection release.",
+        "Repeat with execution failure."
+      ],
+      "evidence_limit": "This does not assert pooling or reset success unless separately proven."
+    },
+    {
+      "probe_id": "real_pool_key_identity_without_secret_output",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify distinct credentials/security/schema identities do not share a pooled session and diagnostics do not expose secrets.",
+      "preconditions": [
+        "Use only explicitly provisioned test identities/configurations.",
+        "Do not print connection strings, credentials, certificate paths, or pool keys."
+      ],
+      "steps": [
+        "Create synthetic safe configuration variants with distinct identity dimensions.",
+        "Compare pool ownership and checkout identity under controlled conditions.",
+        "Inspect only redacted diagnostic fields."
+      ],
+      "evidence_limit": "No credential value or pool key is stored in this fixture."
+    },
+    {
+      "probe_id": "real_idle_lifetime_and_reuse_accounting",
+      "verification_status": "planned_not_run",
+      "purpose": "Record actual safe reuse/discard counts and validation latency for an approved profile.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use the configured virtual/controlled clock for policy tests and real elapsed values only as observations."
+      ],
+      "steps": [
+        "Return known clean and deliberately unverified sessions.",
+        "Observe reuse versus discard and idle eviction.",
+        "Report handshake counts separately from discard paths."
+      ],
+      "evidence_limit": "No performance or reuse-rate claim is made by this procedure fixture."
+    }
+  ]
+}

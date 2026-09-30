@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "fixture": "T05 session ownership",
+  "evidence_boundary": {
+    "offline_scenarios": "Synthetic state-machine inputs and expected client assertions; not execution results.",
+    "real_database_probes": "Candidate procedures only; no probe result is recorded.",
+    "protocol_payloads": "None. No wire bytes, encoded messages, server responses, or fabricated traces are included."
+  },
+  "identity_shape": ["session_id", "lease_generation", "execution_id", "invocation_id"],
+  "offline_scenarios": [
+    {
+      "id": "reader_holds_lease_until_close",
+      "category": "reader_lifecycle",
+      "setup": {"connection_state": "Open", "session_state": "Ready", "transaction_state": "None"},
+      "steps": [
+        {"action": "execute_reader", "actor": "command_a", "expect": {"accepted": true, "lease_owner": "reader_a", "session_state": "Busy", "purpose": "Reader", "identity": {"session_id": 101, "lease_generation": 3, "execution_id": 20, "invocation_id": 1}}},
+        {"action": "read", "actor": "reader_a", "synthetic_result": true, "expect": {"lease_retained": true}},
+        {"action": "execute_non_query", "actor": "command_b", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false, "lease_owner": "reader_a"}},
+        {"action": "close_reader", "actor": "reader_a", "expect": {"lease_released": true, "session_state": "Ready"}},
+        {"action": "begin_command", "actor": "command_b", "expect": {"accepted": true, "lease_owner": "command_b"}}
+      ],
+      "expected": {"reader_owns_lease_until_close": true, "conflicting_call_writes_no_bytes": true}
+    },
+    {
+      "id": "read_false_keeps_lease",
+      "category": "reader_lifecycle",
+      "setup": {"connection_state": "Open", "session_state": "Busy", "lease_owner": "reader_a", "reader_open": true},
+      "steps": [
+        {"action": "read", "actor": "reader_a", "synthetic_result": false, "expect": {"reader_open": true, "lease_retained": true, "session_state": "Busy"}},
+        {"action": "execute_non_query", "actor": "command_b", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false}},
+        {"action": "close_reader", "actor": "reader_a", "expect": {"lease_released": true, "session_state": "Ready"}}
+      ],
+      "expected": {"false_read_does_not_close_reader": true, "false_read_does_not_release_lease": true}
+    },
+    {
+      "id": "last_next_result_false_keeps_lease",
+      "category": "reader_lifecycle",
+      "setup": {"connection_state": "Open", "session_state": "Busy", "lease_owner": "reader_a", "reader_open": true, "result_index": 1},
+      "steps": [
+        {"action": "next_result", "actor": "reader_a", "synthetic_result": false, "expect": {"reader_open": true, "lease_retained": true, "session_state": "Busy"}},
+        {"action": "execute_non_query", "actor": "command_b", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false}},
+        {"action": "close_reader", "actor": "reader_a", "expect": {"lease_released": true, "session_state": "Ready"}}
+      ],
+      "expected": {"false_next_result_does_not_close_reader": true, "false_next_result_does_not_release_lease": true}
+    },
+    {
+      "id": "transaction_control_fails_fast_while_reader_owns_session",
+      "category": "exclusive_lease",
+      "setup": {"connection_state": "Open", "session_state": "Busy", "transaction_state": "Active", "lease_owner": "reader_a"},
+      "steps": [
+        {"action": "commit", "actor": "transaction_a", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false, "transaction_state": "Active"}},
+        {"action": "rollback", "actor": "transaction_a", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false, "transaction_state": "Active"}},
+        {"action": "close_reader", "actor": "reader_a", "expect": {"lease_released": true, "session_state": "Ready"}}
+      ],
+      "expected": {"transaction_control_does_not_compete_with_reader": true, "rejected_calls_do_not_change_transaction_outcome": true}
+    },
+    {
+      "id": "concurrent_read_on_same_reader_fails_fast",
+      "category": "invocation_exclusion",
+      "setup": {"session_state": "Busy", "lease_owner": "reader_a", "reader_open": true, "active_child_invocation": null},
+      "steps": [
+        {"action": "begin_read", "actor": "read_1", "expect": {"accepted": true, "active_child_invocation": 2, "root_lease_retained": true}},
+        {"action": "begin_read", "actor": "read_2", "while": "read_1_is_active", "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "waits_for_owner": false, "wire_activity": false, "active_child_invocation": 2}},
+        {"action": "complete_read", "actor": "read_1", "synthetic_result": true, "expect": {"active_child_invocation": null, "root_lease_retained": true}},
+        {"action": "close_reader", "actor": "reader_a", "expect": {"lease_released": true}}
+      ],
+      "expected": {"at_most_one_child_invocation_per_reader": true}
+    },
+    {
+      "id": "stale_identity_abort_cannot_abort_new_operation",
+      "category": "stale_identity",
+      "current_operation": {"session_id": 202, "lease_generation": 5, "execution_id": 32, "invocation_id": 9},
+      "stale_abort_vectors": [
+        {"stale_component": "session_id", "identity": {"session_id": 201, "lease_generation": 5, "execution_id": 32, "invocation_id": 9}},
+        {"stale_component": "lease_generation", "identity": {"session_id": 202, "lease_generation": 4, "execution_id": 32, "invocation_id": 9}},
+        {"stale_component": "execution_id", "identity": {"session_id": 202, "lease_generation": 5, "execution_id": 31, "invocation_id": 9}},
+        {"stale_component": "invocation_id", "identity": {"session_id": 202, "lease_generation": 5, "execution_id": 32, "invocation_id": 8}}
+      ],
+      "action": "abort_if_current",
+      "source": "late_callback",
+      "expect_for_each_vector": {"matched": false, "abort_applied": false, "current_operation_unchanged": true, "current_session_state": "Busy", "current_transport_closed": false}
+    },
+    {
+      "id": "checked_identity_overflow_fails_closed",
+      "category": "checked_overflow",
+      "max_value_decimal": "9223372036854775807",
+      "counter_already_at_max_before_increment": true,
+      "overflow_vectors": [
+        {"counter": "session_id", "setup": {"session_exists": false}, "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "rejection_reason": "counter_exhausted", "wrapped": false, "session_created": false, "reused_identity": false, "wire_activity": false}},
+        {"counter": "lease_generation", "setup": {"session_state": "Ready", "pooled_session": true}, "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "rejection_reason": "counter_exhausted", "wrapped": false, "session_state": "Closed", "transport_disposed": true, "wire_activity": false}},
+        {"counter": "execution_id", "setup": {"connection_state": "Open", "session_state": "Ready"}, "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "rejection_reason": "counter_exhausted", "wrapped": false, "session_state": "Broken", "transport_disposed": true, "wire_activity": false}},
+        {"counter": "invocation_id", "setup": {"connection_state": "Open", "session_state": "Busy", "lease_owner": "reader_a"}, "expect": {"accepted": false, "exception_assignable_to": "InvalidOperationException", "rejection_reason": "counter_exhausted", "wrapped": false, "session_state": "Broken", "lease_invalidated": true, "transport_disposed": true, "wire_activity": false}}
+      ],
+      "expected": "Reject exhausted identity space without wrap; a session whose identity cannot be issued is not reusable."
+    },
+    {
+      "id": "close_is_idempotent",
+      "category": "close_lifecycle",
+      "setup": {"connection_state": "Open", "session_state": "Ready", "transport_dispose_count": 0, "state_change_events": 0},
+      "actions": ["close", "close", "close"],
+      "expect_after_each": {"connection_state": "Closed", "session_state": "Closed", "transport_dispose_count": 1, "state_change_events": 1}
+    },
+    {
+      "id": "independent_sessions_can_overlap",
+      "category": "independent_connections",
+      "setup": {"connection_a": {"connection_state": "Open", "session_state": "Ready", "session_id": 301}, "connection_b": {"connection_state": "Open", "session_state": "Ready", "session_id": 302}},
+      "steps": [
+        {"action": "begin_execution", "actor": "connection_a", "expect": {"accepted": true, "session_state": "Busy"}},
+        {"action": "begin_execution", "actor": "connection_b", "while": "connection_a_is_busy", "expect": {"accepted": true, "session_state": "Busy"}},
+        {"action": "complete_execution", "actor": "connection_b", "expect": {"session_state": "Ready", "connection_a_still_busy": true}},
+        {"action": "complete_execution", "actor": "connection_a", "expect": {"session_state": "Ready"}}
+      ],
+      "expected": {"simultaneously_busy_sessions": 2, "global_serialization": false}
+    },
+    {
+      "id": "wire_entry_exception_breaks_session",
+      "category": "wire_fault",
+      "synthetic_fault_matrix": true,
+      "wire_entry_expectations": [
+        {"entry": "connect_handshake", "injected_exception_type": "IOException", "expect": {"session_state": "Closed", "connection_state": "Closed", "transport_detached_atomically": true, "transport_disposed": true, "session_can_return_to_pool": false}},
+        {"entry": "authentication", "injected_exception_type": "IOException", "expect": {"session_state": "Closed", "connection_state": "Closed", "transport_detached_atomically": true, "transport_disposed": true, "session_can_return_to_pool": false}},
+        {"entry": "query_request", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "response_decode", "injected_exception_type": "synthetic_decoder_exception_without_payload", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "transaction_control", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "reader_fetch", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "lob_read", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "prepare", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "schema_metadata", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}},
+        {"entry": "pool_validation", "injected_exception_type": "IOException", "expect": {"session_state": "Closed", "connection_state": "Closed", "transport_detached_atomically": true, "transport_disposed": true, "session_can_return_to_pool": false}},
+        {"entry": "pool_reset", "injected_exception_type": "IOException", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true, "late_success_cannot_restore_ready": true, "session_can_return_to_pool": false}}
+      ],
+      "call_site_fault_expectations": [
+        {"entry": "DmConnInstance constructor TCP Connect", "scope": "handshake", "expect": {"connection_state": "Closed", "transport_disposed": true}},
+        {"entry": "D.A(byte[], timeout, length) via Socket.Send", "scope": "send", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.A(byte[], timeout, length) via SSL Write", "scope": "send", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.__t02_method_06000A4D", "scope": "legacy receive, CRC, and decrypt", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.a(byte[], off, length) via Socket.Receive", "scope": "MSG receive", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.a(byte[], off, length) via SSL Read", "scope": "MSG receive", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.B(byte[], off, length)", "scope": "additional receive", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.ConfigureReadTimeout", "scope": "read-timeout configuration", "expect": {"session_state": "Broken", "connection_state": "Broken", "transport_detached_atomically": true, "transport_disposed": true}},
+        {"entry": "D.__t02_method_06000A63", "scope": "Poll/Receive health probe", "source_status": "currently unreferenced", "test_treatment": "inventory_only"}
+      ],
+      "no_protocol_payload_required": true,
+      "observed_socket_ssl_call_sites": [
+        {"entry": "DmConnInstance constructor TCP Connect", "scope": "handshake", "protocol_bytes": false, "failure_state": "Open failure returns the logical connection to Closed and disposes the transport."},
+        {"entry": "D.A(byte[], timeout, length)", "scope": "send", "transport_variants": ["Socket.Send", "SSL Write"]},
+        {"entry": "D.__t02_method_06000A4D", "scope": "legacy receive, CRC, and decrypt"},
+        {"entry": "D.a(byte[], off, length)", "scope": "MSG receive", "transport_variants": ["Socket.Receive", "SSL Read"]},
+        {"entry": "D.B(byte[], off, length)", "scope": "additional receive"},
+        {"entry": "D.ConfigureReadTimeout", "scope": "read-timeout configuration"},
+        {"entry": "D.__t02_method_06000A63", "scope": "Poll/Receive health probe", "source_status": "currently unreferenced"}
+      ],
+      "adjacent_probe_paths": [
+        {"entry": "DBAliveCheckThread TCP probe", "scope": "separate TCP health probe", "same_session_transport": false, "session_state_expectation": "not applicable"}
+      ],
+      "notes": [
+        "Call-site labels reflect the inventory supplied for T05 and contain no wire payload.",
+        "High-level operation buckets are abstract; map each active call site to its owning session and add concrete entries discovered during implementation.",
+        "The currently unreferenced Poll/Receive method is inventory-only until an active caller is established. A separate TCP probe does not borrow or abort the owning database session."
+      ]
+    },
+    {
+      "id": "lob_child_invocation_keeps_reader_lease_context",
+      "category": "nested_lob_context",
+      "setup": {"session_state": "Busy", "lease_owner": "reader_a", "reader_open": true, "root_identity": {"session_id": 401, "lease_generation": 6, "execution_id": 77, "invocation_id": 3}, "root_lease_acquisition_count": 1},
+      "child_invocations": [
+        {"context_path": ["reader", "lob_stream", "read_chunk"], "expected_identity": {"session_id": 401, "lease_generation": 6, "execution_id": 77, "invocation_id": 4}, "parent_invocation_id": 3},
+        {"context_path": ["reader", "lob_stream", "read_chunk"], "expected_identity": {"session_id": 401, "lease_generation": 6, "execution_id": 77, "invocation_id": 5}, "parent_invocation_id": 3}
+      ],
+      "expect_for_each_child": {"root_lease_reacquired": false, "root_lease_acquisition_count": 1, "root_lease_retained": true, "session_state": "Busy"},
+      "after_reader_close": {"root_lease_released": true, "session_state": "Ready"}
+    }
+  ],
+  "real_database_probes": [
+    {
+      "id": "real_reader_lease_until_close",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify provider-visible exclusion of a second command until a live reader is closed.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "Use a supported read-only harness query returning at least two rows; query and rows are supplied by the test harness."],
+      "steps": ["Open one test connection.", "Execute the query as a reader and consume one row.", "Attempt a second command on that connection while the reader is open; assert immediate InvalidOperationException or documented subtype.", "Close the reader and issue the second command again."],
+      "assertions": ["The conflict is rejected while the reader is open.", "The second command is admitted after reader close."],
+      "evidence_limits": ["This verifies provider-visible behavior, not zero wire bytes; pair with fake-transport assertions."]
+    },
+    {
+      "id": "real_read_false_still_holds_lease",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify Read returning false does not release the lease before reader Close.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "Use a supported read-only harness query with a finite result set."],
+      "steps": ["Open a reader.", "Read until Read returns false without disposing it.", "Attempt another command on the same connection and assert immediate rejection.", "Close the reader and retry."],
+      "assertions": ["Read false leaves the reader open and lease held.", "Reader Close releases the lease."]
+    },
+    {
+      "id": "real_next_result_false_still_holds_lease",
+      "verification_status": "planned_not_run",
+      "purpose": "When the public API and supported command can produce multiple result sets, verify NextResult returning false does not release the lease before reader Close.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "Use a harness-supplied supported operation with multiple result sets; do not assume a server response from this fixture."],
+      "steps": ["Execute the supported operation as a reader.", "Advance until NextResult returns false while leaving the reader undisposed.", "Attempt another command on the same connection and assert immediate rejection.", "Close the reader and retry."],
+      "assertions": ["NextResult false leaves the reader open and lease held.", "Reader Close releases the lease."],
+      "evidence_limits": ["Run only when the public API and target server support the required multiple-result-set operation."]
+    },
+    {
+      "id": "real_independent_connections_overlap",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify two independent sessions can progress while each is busy.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "Open two independent connections and use harness-controlled read-only operations."],
+      "steps": ["Start a reader on connection A and leave it open.", "Complete an operation on connection B while A remains busy.", "Complete and close A's reader."],
+      "assertions": ["Connection B progresses while A holds its lease.", "Each connection retains independent ownership."],
+      "evidence_limits": ["Use harness synchronization to define overlap; elapsed-time thresholds alone do not prove it."]
+    },
+    {
+      "id": "real_transaction_control_conflict",
+      "verification_status": "planned_not_run",
+      "purpose": "Where the public API and query permit a reader in a transaction, verify transaction control is rejected while the reader owns the session.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "Begin a transaction before opening the reader and associate its command with that transaction."],
+      "steps": ["Open a reader inside the transaction.", "Attempt Commit while it is open and assert immediate rejection.", "Close the reader and finish transaction cleanup using the supported API."],
+      "assertions": ["Commit does not compete with the reader lease.", "Rejected Commit does not silently change transaction outcome."]
+    },
+    {
+      "id": "real_lob_reader_ownership",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify functional chunked LOB reading while the reader owns the connection.",
+      "preconditions": ["Use WDM_PROVIDER_TEST through the repository test wrapper.", "If setup is required, create and clean only uniquely named objects owned by this test in the dedicated test schema."],
+      "steps": ["Read a test-owned LOB through the public reader and LOB API in multiple chunks.", "Attempt another command on the same connection while the reader is open and assert immediate rejection.", "Close the reader; clean only test-owned objects."],
+      "assertions": ["LOB data can be consumed under the reader root lease.", "A second command is excluded until reader close."],
+      "evidence_limits": ["Database success cannot prove child invocation identity propagation or absence of recursive root-lease acquisition."]
+    }
+  ],
+  "real_database_not_directly_provable": ["Stale identity matching", "Checked counter overflow and no-wrap behavior", "Every wire-entry exception poisoning its session", "Zero-byte fast failure", "Atomic abort-versus-response linearization"]
+}

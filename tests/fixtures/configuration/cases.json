@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "parse_success": [
+    {
+      "id": "canonical_keys_case_insensitive",
+      "connection_string": "SeRvEr=example.invalid;UsEr=TEST_SYNTH;PaSsWoRd=CANARY_T04;ScHeMa=MixedCase;Port=5236;Connect_Timeout=1250;Command_Timeout=45;Conn_Pool_Timeout=2500;SocketTimeout=3000;TransportSecurity=PlaintextAllowed",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04",
+        "schema": "MixedCase",
+        "connect_timeout_ms": 1250,
+        "pool_timeout_ms": 2500,
+        "socket_timeout_ms": 3000,
+        "command_timeout_seconds": 45,
+        "transport_security": "PlaintextAllowed"
+      }
+    },
+    {
+      "id": "transport_security_defaults_to_require_tls",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04",
+        "transport_security": "RequireTls"
+      }
+    },
+    {
+      "id": "host_alias",
+      "connection_string": "host=example.invalid;user=TEST_SYNTH;pwd=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "data_source_alias",
+      "connection_string": "data source=example.invalid;user id=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "username_alias",
+      "connection_string": "server=example.invalid;username=TEST_SYNTH;pwd=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "user_name_alias",
+      "connection_string": "server=example.invalid;user name=TEST_SYNTH;pwd=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "timeout_aliases_and_units",
+      "connection_string": "server=example.invalid;uid=TEST_SYNTH;pwd=CANARY_T04;connectTimeout=1234;sessionTimeout=31;connpooltimeout=2345;socket_timeout=3456",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04",
+        "connect_timeout_ms": 1234,
+        "pool_timeout_ms": 2345,
+        "socket_timeout_ms": 3456,
+        "command_timeout_seconds": 31
+      }
+    },
+    {
+      "id": "equivalent_duplicate_same_key",
+      "connection_string": "server=example.invalid;server=example.invalid;user=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "equivalent_duplicate_server_aliases",
+      "connection_string": "server=example.invalid;host=example.invalid;user=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "equivalent_duplicate_user_aliases",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;uid=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "quoted_semicolon_and_escaped_double_quotes",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=\"CANARY;semi; doubled \"\"quote\"\"\"",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY;semi; doubled \"quote\""
+      }
+    },
+    {
+      "id": "unicode_password_and_schema",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=\"密碼-雪🚀\";schema=租户_测试",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "密碼-雪🚀",
+        "schema": "租户_测试"
+      }
+    },
+    {
+      "id": "bracketed_ipv6_with_port",
+      "connection_string": "server=[2001:db8::31]:5237;user=TEST_SYNTH;password=CANARY_T04",
+      "expected": {
+        "server": "2001:db8::31",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    },
+    {
+      "id": "empty_initial_catalog_does_not_change_credentials",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;pwd=CANARY_T04;InitialCatalog=",
+      "expected": {
+        "server": "example.invalid",
+        "user": "TEST_SYNTH",
+        "password": "CANARY_T04"
+      }
+    }
+  ],
+  "parse_rejected": [
+    {
+      "id": "conflicting_same_server_key",
+      "connection_string": "server=first.example.invalid;server=second.example.invalid;user=TEST_SYNTH;password=CANARY_T04",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "conflicting_server_aliases",
+      "connection_string": "server=first.example.invalid;host=second.example.invalid;user=TEST_SYNTH;password=CANARY_T04",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "conflicting_user_aliases",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;uid=OTHER_SYNTH;password=CANARY_T04",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "conflicting_password_aliases_redacts_canary",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;pwd=OTHER_SYNTH_CANARY",
+      "error_kind": "ArgumentException",
+      "canary": "CANARY_T04"
+    },
+    {
+      "id": "bracketed_ipv6_port_conflicts_with_port_key",
+      "connection_string": "server=[2001:db8::31]:5237;port=5236;user=TEST_SYNTH;password=CANARY_T04",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "empty_connect_timeout",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;connect_timeout=",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "negative_connect_timeout",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;connect_timeout=-1",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "overflow_connect_timeout",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;connect_timeout=2147483648",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "negative_command_timeout_seconds",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;command_timeout=-1",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "overflow_command_timeout_seconds",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;command_timeout=2147483648",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "zero_port",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;port=0",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "overflow_port",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;port=65536",
+      "error_kind": "ArgumentException"
+    },
+    {
+      "id": "nonempty_initial_catalog_is_rejected",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;Initial Catalog=SYNTHETIC_CATALOG",
+      "error_kind": "NotSupportedException"
+    },
+    {
+      "id": "unknown_option_value_canary_is_not_echoed",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;unknown_option=CANARY_T04",
+      "error_kind": "NotSupportedException",
+      "canary": "CANARY_T04"
+    }
+  ],
+  "unsupported_nondefault": [
+    {
+      "id": "connection_pooling_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;conn_pooling=true"
+    },
+    {
+      "id": "ambient_enlistment_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;enlist=true"
+    },
+    {
+      "id": "read_write_routing_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;rwSeparate=1"
+    },
+    {
+      "id": "high_availability_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;rw_ha=true"
+    },
+    {
+      "id": "logging_directory_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;log_dir=t04-synthetic-log"
+    },
+    {
+      "id": "statement_pooling_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;stmt_pooling=true"
+    },
+    {
+      "id": "result_set_cache_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;enable_rs_cache=true"
+    }
+  ],
+  "timeout_typed": [
+    {
+      "id": "connect_timeout_12345_ms",
+      "property": "ConnectTimeout",
+      "ticks": 123450000,
+      "expected_legacy_milliseconds": 12345
+    },
+    {
+      "id": "pool_acquire_timeout_infinite",
+      "property": "PoolAcquireTimeout",
+      "ticks": 0,
+      "expected_legacy_milliseconds": 0
+    },
+    {
+      "id": "read_idle_timeout_25_ms",
+      "property": "ReadIdleTimeout",
+      "ticks": 250000,
+      "expected_legacy_milliseconds": 25
+    },
+    {
+      "id": "cleanup_timeout_2_seconds",
+      "property": "CleanupTimeout",
+      "ticks": 20000000,
+      "expected_legacy_milliseconds": 2000
+    }
+  ]
+}

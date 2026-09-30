@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "sdk": "10.0.203",
+  "O": {
+    "package_version": "8.3.1.47463",
+    "package_path": "packages/dm.dmprovider.8.3.1.47463.nupkg",
+    "package_sha256": "62ec22acef319847ee59610359f02f1d3e08dc76af39b92ba50b23cc25e22e75",
+    "assembly_sha256": "8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b",
+    "assembly_mvid": "d909b5af-965f-4cf9-a80a-a6181124e361",
+    "asset": "lib/net9.0/DM.DmProvider.dll"
+  },
+  "W-frozen-R1": {
+    "package_version": "0.1.0-r1.20260930051717",
+    "package_path": ".local/t12/packages/20260930T051717Z/W.DmProvider.0.1.0-r1.20260930051717.nupkg",
+    "package_sha256": "23b4b6a88f14bd58bfe98d6703e81181b89fd4c43390a2b22b1092d17c616df9",
+    "assembly_sha256": "ddd64493db5208efaabd2c7edd72350bc48b9f8ab1e5edac277a26c123621eb1",
+    "assembly_mvid": "ebec302b-ca05-4037-8e44-4bab084b226c",
+    "asset": "lib/net10.0/W.DmProvider.dll"
+  },
+  "target_server_version": "8.1.5.60"
+}

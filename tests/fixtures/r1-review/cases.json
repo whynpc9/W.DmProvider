@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "fixture": "R1 review logical regression vectors",
+  "evidence_boundary": {
+    "cases": "Synthetic client-contract inputs and expected behavior only. Every case is not_run.",
+    "database_and_wire": "No database connection, server response, packet, opcode, wire trace, or real credential is included.",
+    "clob": "BMP source text is logical data encoded as GB18030 by the fixture consumer. The conditional non-BMP vector is UTF-16-only and makes no GB18030 encoding claim."
+  },
+  "clob_sources": [
+    {
+      "source_id": "clob_bmp_mixed_gb18030",
+      "text": "A中e\u0301文",
+      "unicode_code_points": [
+        "U+0041",
+        "U+4E2D",
+        "U+0065",
+        "U+0301",
+        "U+6587"
+      ],
+      "normalization": "none; the e plus combining acute sequence remains decomposed",
+      "encoding": "GB18030",
+      "utf16_code_units": 5,
+      "encoded_byte_length": 10,
+      "hashes": {
+        "logical_text_utf8_sha256": "3515052b12283e5914ec146e8b94474f2f6a24d79689f746698d680dfd4df166",
+        "gb18030_payload_sha256": "dc0e8a49eae1a5217a264633da3d1b2e36a8e7124ae889d3d5c7524a27aed9db"
+      },
+      "hash_source_algorithm": "SHA-256 of the exact decoded text encoded as UTF-8, and separately SHA-256 of the same exact text encoded with Python standard-library str.encode(\"gb18030\"); no BOM, replacement, or Unicode normalization. Hashes cover generated content, not wire data."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "r1_rollback_first_block_close_exposes_commit",
+      "defect": "block_comment_terminates_at_first_close_not_nested",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "strict_rollback_to_savepoint_scan",
+        "sql": "ROLLBACK TO sp /* /* */ ; COMMIT -- */"
+      },
+      "expected": {
+        "accepted_as_single_savepoint_rollback": false,
+        "reason": "The first */ closes the block comment; the semicolon and COMMIT after it remain visible."
+      }
+    },
+    {
+      "case_id": "r1_rollback_nonnested_comment_positive",
+      "defect": "block_comment_terminates_at_first_close_not_nested",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "strict_rollback_to_savepoint_scan",
+        "sql": "ROLLBACK TO sp /* /* */"
+      },
+      "expected": {
+        "accepted_as_single_savepoint_rollback": true,
+        "comment_nesting": false
+      }
+    },
+    {
+      "case_id": "r1_rollback_quoted_identifier_hides_comment_delimiters",
+      "defect": "block_comment_terminates_at_first_close_not_nested",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "strict_rollback_to_savepoint_scan",
+        "sql": "ROLLBACK TO \"sp /* /* */\""
+      },
+      "expected": {
+        "accepted_as_single_savepoint_rollback": true,
+        "quoted_identifier_contents_scanned_as_comment": false
+      }
+    },
+    {
+      "case_id": "r1_sql_markers_after_first_comment_close_are_visible",
+      "defect": "block_comment_terminates_at_first_close_not_nested",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "scan_sql_markers",
+        "sql": "SELECT ':quoted ?' AS literal, :before /* hidden :comment /* inner */ :after, ?"
+      },
+      "expected": {
+        "named_markers_in_order": [
+          "before",
+          "after"
+        ],
+        "positional_marker_count": 1,
+        "quoted_and_commented_markers_ignored": true
+      }
+    },
+    {
+      "case_id": "r1_unterminated_block_comment_denied",
+      "defect": "block_comment_terminates_at_first_close_not_nested",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "strict_rollback_to_savepoint_scan",
+        "sql": "ROLLBACK TO sp /* unterminated /* inner"
+      },
+      "expected": {
+        "accepted_as_single_savepoint_rollback": false,
+        "reason": "unterminated_block_comment"
+      }
+    },
+    {
+      "case_id": "r1_getint32_sql_null_rejected",
+      "defect": "getint32_rejects_sql_null",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "GetInt32",
+        "column_type": "Int32",
+        "cell": {
+          "kind": "sql_null"
+        }
+      },
+      "expected": {
+        "outcome": "throw",
+        "reason": "SQL NULL is not an Int32 value"
+      }
+    },
+    {
+      "case_id": "r1_getint32_zero_preserved",
+      "defect": "getint32_rejects_sql_null",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "GetInt32",
+        "column_type": "Int32",
+        "cell": {
+          "kind": "value",
+          "value": 0
+        }
+      },
+      "expected": {
+        "outcome": "return",
+        "value": 0
+      }
+    },
+    {
+      "case_id": "r1_getchars_null_buffer_returns_full_utf16_length",
+      "defect": "clob_getchars_null_buffer_and_utf16_ranges",
+      "execution_status": "not_run",
+      "input": {
+        "source_ref": "clob_bmp_mixed_gb18030",
+        "operation": "GetChars",
+        "field_offset_utf16_units": 0,
+        "buffer": null,
+        "buffer_offset": 0,
+        "requested_length_utf16_units": 0
+      },
+      "expected": {
+        "returned_length_utf16_units": 5,
+        "full_value_length_query": true
+      }
+    },
+    {
+      "case_id": "r1_getchars_partial_and_zero_utf16_slices",
+      "defect": "clob_getchars_null_buffer_and_utf16_ranges",
+      "execution_status": "not_run",
+      "input": {
+        "source_ref": "clob_bmp_mixed_gb18030",
+        "operation": "GetChars",
+        "requests": [
+          {
+            "field_offset_utf16_units": 1,
+            "buffer_offset": 0,
+            "requested_length_utf16_units": 3,
+            "buffer_capacity_utf16_units": 3
+          },
+          {
+            "field_offset_utf16_units": 3,
+            "buffer_offset": 0,
+            "requested_length_utf16_units": 2,
+            "buffer_capacity_utf16_units": 2
+          },
+          {
+            "field_offset_utf16_units": 0,
+            "buffer_offset": 0,
+            "requested_length_utf16_units": 0,
+            "buffer_capacity_utf16_units": 0
+          }
+        ]
+      },
+      "expected": {
+        "offset_unit": "UTF16_CLR_char_units",
+        "results": [
+          {
+            "returned_length_utf16_units": 3,
+            "text": "中e\u0301"
+          },
+          {
+            "returned_length_utf16_units": 2,
+            "text": "\u0301文"
+          },
+          {
+            "returned_length_utf16_units": 0,
+            "text": ""
+          }
+        ],
+        "normalization_or_combining_mark_reordering": false
+      }
+    },
+    {
+      "case_id": "r1_getchars_empty_text_pending_server_confirmation",
+      "defect": "clob_getchars_null_buffer_and_utf16_ranges",
+      "execution_status": "not_run",
+      "verification_status": "planned_actual_server_confirmation",
+      "input": {
+        "logical_value_kind": "non_null_empty_text",
+        "server_expression": "unconfirmed",
+        "server_expression_confirmation": "planned",
+        "operation": "GetChars",
+        "field_offset_utf16_units": 0,
+        "buffer": null,
+        "buffer_offset": 0,
+        "requested_length_utf16_units": 0
+      },
+      "expected": {
+        "is_dbnull": false,
+        "returned_length_utf16_units": 0,
+        "actual_server_expression_claimed": false
+      }
+    },
+    {
+      "case_id": "r1_clob_sql_null_is_distinct_from_empty_text",
+      "defect": "clob_getchars_null_buffer_and_utf16_ranges",
+      "execution_status": "not_run",
+      "input": {
+        "logical_value_kind": "sql_null",
+        "operation": "IsDBNull"
+      },
+      "expected": {
+        "is_dbnull": true,
+        "GetChars_invoked": false
+      }
+    },
+    {
+      "case_id": "r1_getchars_surrogate_pair_offline_conditional",
+      "defect": "clob_getchars_null_buffer_and_utf16_ranges",
+      "execution_status": "not_run",
+      "condition": "offline_only_until_GB18030_emoji_mapping_is_independently_confirmed",
+      "input": {
+        "logical_value_kind": "UTF16_string_only",
+        "text": "\uD83D\uDE80",
+        "encoding": "undetermined",
+        "operation": "GetChars",
+        "requests": [
+          {
+            "field_offset_utf16_units": 0,
+            "requested_length_utf16_units": 1
+          },
+          {
+            "field_offset_utf16_units": 1,
+            "requested_length_utf16_units": 1
+          }
+        ]
+      },
+      "expected": {
+        "full_value_length_utf16_units": 2,
+        "slice_utf16_code_units": [
+          [
+            55357
+          ],
+          [
+            56960
+          ]
+        ],
+        "gb18030_encodability_claimed": false
+      }
+    },
+    {
+      "case_id": "r1_connection_null_detaches_prepared_owner",
+      "defect": "command_connection_null_must_not_execute_stale_prepared_owner",
+      "execution_status": "not_run",
+      "input": {
+        "logical_connections": [
+          "conn-a"
+        ],
+        "command_connection_initial": "conn-a",
+        "prepared_statement_owner": "conn-a",
+        "operations": [
+          "Prepare",
+          {
+            "set_Connection": null
+          },
+          "read_Connection",
+          "ExecuteNonQuery"
+        ],
+        "transport": "logical_harness_only"
+      },
+      "expected": {
+        "connection_after_assignment": null,
+        "execute_outcome": "rejected",
+        "execute_failure_class": "InvalidOperationException",
+        "prepared_statement_from_conn_a_executed": false,
+        "old_owner_execute_count_delta": 0
+      }
+    }
+  ]
+}

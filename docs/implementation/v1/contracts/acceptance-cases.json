@@ -1,0 +1,791 @@
+{
+  "schema_version": 1,
+  "status": "spec_only",
+  "count": 98,
+  "cases": [
+    {
+      "id": "BAS-01",
+      "spec": "specs/01-baseline-and-build.md",
+      "acceptance": "干净 checkout 在锁定 SDK 下 restore/build/test/pack 可执行。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAS-02",
+      "spec": "specs/01-baseline-and-build.md",
+      "acceptance": "官方包与产品依赖树隔离，最终 W nupkg 不依赖/不嵌入 DM.DmProvider.dll。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAS-03",
+      "spec": "specs/01-baseline-and-build.md",
+      "acceptance": "资源 en/zh-CN 等已保留范围能正常读取，不混入未授权原生库。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAS-04",
+      "spec": "specs/01-baseline-and-build.md",
+      "acceptance": "O/R 差异清单无未解释的功能变化；没有 DM 环境时只标 offline_verified。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAS-05",
+      "spec": "specs/01-baseline-and-build.md",
+      "acceptance": "根目录/产物不含测试连接串、数据库口令、证书私钥或原始认证报文。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-01",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "两个连接设置不同 schema、语言、池大小、日志选项，互不影响。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-02",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "旧毫秒键/新 TimeSpan 经不同写法得到一致内部期限；非法/溢出拒绝。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-03",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "InitialCatalog 不能更改凭据；没有 SYSDBA 默认口令。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-04",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "未知/哑选项不悄悄通过。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-05",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "W 类型可和官方类型在不同测试进程共存；应用 API 不伪装官方 assembly。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-06",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "R1 未完成 Pooling/DbBatch/Enlist/HA 时明确拒绝开启。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CFG-07",
+      "spec": "specs/02-api-and-configuration.md",
+      "acceptance": "所有配置输出路径、异常插值、诊断无原始秘密。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-01",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "一个 reader 持有 lease，第二 command/Commit/同 reader 并行 Read 均快速失败，不写任何字节。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-02",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "reader 读取分块 LOB 不递归获取根 lease，无死锁。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-03",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "旧 SQL 与 MSG<T> 两条路径无法交织请求/响应。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-04",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "Cancel/Close 与返回池、再次租用精确交错，旧回调不能关闭新请求。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-05",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "Open/Close/Dispose 多次调用不重复释放、不重复发状态事件。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-06",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "异常与取消后的状态只能是证明 Ready 或已断开；不存在“socket断了但对象继续可用”。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-07",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "独立连接可并行，不因为全局锁被串行化。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "SES-08",
+      "spec": "specs/03-session-and-ownership.md",
+      "acceptance": "fault injection 检查每一条 wire 入口都需要有效 lease 或专用 handshake lease。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NET-01",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "header 每次仅到达 1 byte，正常拼帧；随机 body 分片同样正确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NET-02",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "header/body 截断、负长度、加法溢出、超大长度、错误 CRC 均快速失败且无大分配/复用。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NET-03",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "连续 heartbeat 不能绕过命令超时。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NET-04",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "DNS/TCP/TLS/LOGIN 任一步失败或取消无 socket/native handle 泄漏。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NET-05",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "假 stream 只允许 ReadAsync/WriteAsync，异步路径不能调用同步 I/O（R2验收）。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TLS-01",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "正确链与正确主机名成功；未知 CA、过期、错主机名失败。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TLS-02",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "RequireTls 遇明文/AUTH_ONLY 不发送 LOGIN；没有“失败后降级成功”。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TLS-03",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "PlaintextAllowed 不让无效证书通过；离线撤销策略只按显式配置。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "NAT-01",
+      "spec": "specs/04-transport-protocol-and-security.md",
+      "acceptance": "错误 RID、缺库、缺导出符号错误可诊断，释放次数正确，秘密不出现在异常。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-01",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "UPDATE/DELETE 各 0/1 行，返回与数据库最终状态一致。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-02",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "identity/sequence 与非键生成列准确读回；无额外 probe 污染 SQL%ROWCOUNT。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-03",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "多 rowset、空 rowset、DML count 混合的 Read/NextResult 顺序正确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-04",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "复合 SQL 中后续错误不能丢失；失败后会话处于可证明状态。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-05",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "复合标志至少验证 SingleRow|CloseConnection、SequentialAccess|CloseConnection、SchemaOnly|KeyInfo（支持则正确，不支持则明确早拒绝）。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-06",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "早关 reader 不泄漏句柄，不执行额外尚未发送的写入；关闭后下一命令正常或明确需重开。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-07",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "CommandText 在 Prepare/事务/重复执行后未被内部清理置空。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CMD-08",
+      "spec": "specs/05-command-reader-and-ef-contract.md",
+      "acceptance": "EF 官方基线的正确功能在 W 候选包上通过；官方缺陷断言另作 characterization。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-01",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "enum {-10, 7, 1000}、Flags、byte/ulong 底层 enum 往返正确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-02",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "signed/unsigned min/max、越界、非整数转整数；正确值成功，越界明确失败。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-03",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "decimal(38,20)、极小值、负值、尾随零；不通过 double；超 CLR 范围有精确 provider-specific 或明确异常。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-04",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "\"不是GUID但长度恰好36...\" 的真实 36 字符测试保持 string；有效/无效显式 GetGuid 区分。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-05",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "UTF-8/GB18030 等声明字符集中的中文、emoji、组合字符、半代理项；不静默丢字。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-06",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "TimeSpan 正负、多天、边界 tick 与非可表示 scale；DateTimeOffset 正负偏移、闰日、7位小数。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-07",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "NULL/空字符串/空 byte[]、typed null、未确定类型 null。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-08",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "重复参数、注释/字符串占位符、Prepare 后换值和换类型。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TYP-09",
+      "spec": "specs/06-parameters-and-types.md",
+      "acceptance": "同步 getter 与异步 getter 返回的类型、值、异常一致；EF LOB/INTERVAL/时间戳现有功能通过。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-01",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "所有已声明兼容设置，未 Commit Dispose 后独立连接查不到写入；真实事务回滚正确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-02",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "Commit/Rollback/重复 Dispose、旧 transaction 与重新 Open 的 session 错配被拒绝。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-03",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "Commit 响应丢失与 token 竞争，outcome unknown、没有重放、没有回池。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-04",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "两条语句第二条失败后显式回滚；独立连接验证最终状态，而不只检查异常。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-05",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "保存点正反路径、重复/Unicode/恶意名称、回滚后后继失效；无注入。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-06",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "隔离级别 litmus tests 与 SaveChanges 最小复现单独记录。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-07",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "DDL 隐式提交不被写成回滚成功；状态和文档一致。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TX-08",
+      "spec": "specs/07-transactions-and-savepoints.md",
+      "acceptance": "ambient 配置拒绝/不参与语义准确，不存在伪事务。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "ASY-01",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "假 transport 的同步 Read/Write/Connect 直接抛测试异常；所有 Async API 在未提供回复时返回未完成 task，不能先堵塞调用线程。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "ASY-02",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "受控 barrier 释放响应后 task 完成；不要用固定 Sleep 假装测试非阻塞。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "ASY-03",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "覆盖 ExecuteReader 之后首次真正 Fetch、NextResult、Commit、Rollback、DisposeAsync，避免只测试缓存页。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CAN-01",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "发送前预取消为零字节且连接仍可用。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CAN-02",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "半包发送/半包响应时取消，task结束、状态Broken、无回池、无重连。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CAN-03",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "旧 ExecuteReader token 在返回后取消，不影响使用新 token 的 Read。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CAN-04",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "旧 lease 取消与新 lease 借用交错，不能关闭新 transport；用 barrier固定竞态。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "CAN-05",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "Cancel→Close、Close→Cancel、Cancel 与成功完成、重复 Cancel 均无死锁/双释放。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TMO-01",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "虚拟时钟验证每个预算、0无限和负值拒绝；COMMIT/LOB 不误用 ConnectTimeout。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "TMO-02",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "heartbeat/碎片持续到来不重置总 deadline；用户处理两行间隔不耗 Read 调用预算。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "ERR-01",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "Unknown 写入和 Unknown commit 无自动重试；错误码与 InnerException/最终状态准确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "PER-01",
+      "spec": "specs/08-async-cancellation-and-timeouts.md",
+      "acceptance": "独立连接高并发+真实延迟下观测 ThreadPool/吞吐/分配；不设未经测量的“必须10倍”指标。主门槛是没有随等待连接数线性增加的同步阻塞 worker。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-01",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "MaxPoolSize=1，一个占用、第二个等待可取消；所有结束后permit总数正确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-02",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "建连失败、初始化失败、取消、复位失败、清理异常均不漏容量。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-03",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "不同用户/密码/schema/TLS/证书不串池；相同有效配置别名得到预期身份。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-04",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "归还未完成事务后，下一租约看不到旧事务写入；实际数据库独立连接检查。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-05",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "修改schema/role/时区/临时对象/会话锁后 reset或discard，不泄漏给下一租约。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-06",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "取消callback与回收/checkout竞态不能破坏下一租约。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-07",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "DataSource关闭/ClearPool与活跃借用、等候者、维护线程竞争无死锁。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-08",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "长期多租户配置 churn 后注册表/线程/句柄/statement数量有界。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-09",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "DataSource.CreateCommand 返回reader时连接持有到关闭；执行失败也恰好归还一次。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "POL-10",
+      "spec": "specs/09-datasource-and-pooling.md",
+      "acceptance": "报告复位证明、实际复用率、验证RT；不把discard路径算握手优化。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-01",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "大字段GetStream第一块返回前未读取完整字段，峰值缓冲不随总长度线性增长。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-02",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "不可seek且长度未知Stream/TextReader输入逐块发送，准确往返。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-03",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "UTF-8/GB18030分片的每个可能边界、代理对、非法尾部。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-04",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "reader前进/关闭、事务终结、连接重新租用后旧流不能访问新会话。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-05",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "半途取消、输入流异常、GET/SET报文错误不回池、不重试、资源无泄漏。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-06",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "GetBytes/GetChars偏移/长度/空buffer/0长度符合契约；没有先全量物化。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-07",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "大值全量API超限明确抛错，不悄悄截断；流式API仍可读取。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "LOB-08",
+      "spec": "specs/10-streaming-lob.md",
+      "acceptance": "使用新驱动nupkg的EF 40KiB LOB既有回归不退化；EF整实体string仍物化属于消费层，不算驱动流式失败。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-01",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "数组10/100/1000行，单行/最后一行/中间行失败、总数与每行已知信息准确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-02",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "参数数/字节/帧边界拆块；SQL和值不被拼接混淆；未知状态不伪造。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-03",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "不同SQL+重名参数+空rowset+影响行数混合，结果顺序与归属准确。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-04",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "外部事务不被擅自提交；内部保存点保护已有更改；隐式事务错误回滚验证最终状态。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-05",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "reader早关与Commit响应丢失行为符合文档，无重放/回池。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-06",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "相同业务语义下比较RT/吞吐/p95/分配；记录Prepare/Fetch等开销。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "BAT-07",
+      "spec": "specs/11-array-binding-and-batch.md",
+      "acceptance": "原生批次未证明时能力false；顺序参考执行器不作为native性能证据。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "QA-01",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "无数据库CI能运行offline测试；缺数据库的release job明确失败。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "QA-02",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "每个新特性有Contract/Characterization/Improvement归属及状态记录。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "QA-03",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "测试清理只影响本次对象，失败后也不泄漏长期锁/连接。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "QA-04",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "最终nupkg在固定EF接入commit通过，包hash确为本次candidate。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "OBS-01",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "合成敏感标记不出现在日志/trace/失败制品；诊断回调异常不改业务结果。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "OBS-02",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "高并发与故障下计数可平衡，metrics不存在无限标签增长。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    },
+    {
+      "id": "REL-01",
+      "spec": "specs/12-tests-diagnostics-and-release.md",
+      "acceptance": "发行记录精确列出支持与未支持矩阵；skip、未知和观察不被写为通过。",
+      "status": "specified_not_implemented",
+      "evidence": [],
+      "note": "Concrete test methods may split this case; offline/integration/downstream evidence must be labeled by the implementation report."
+    }
+  ]
+}

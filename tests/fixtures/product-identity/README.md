@@ -1,0 +1,7 @@
+# Product identity fixtures
+
+`contract.json` records the T03 candidate identity contract from `docs/implementation/T03-design.md` and the first public API set in S02. The ten `core_types` are the initial API set. `DmDataAdapter` is listed separately as a compatibility type; its presence does not promise support or behavior coverage. This contract is source-derived and does not claim that a package build or acceptance check has passed.
+
+`resource_value_sha256` records the accepted official observation for `message.error`, copied from `official_observations.resources` in `docs/implementation/evidence/T02-validation.json`. The evidence file SHA-256 is `7fe8520b9b030395214601fac3918a7745182cb6e9a9a859d6f95ff42e071919`. Its observed culture set is exactly `neutral`, `en`, `zh-CN`, `zh-HK`, and `zh-TW`; each `value_sha256` is a non-empty lowercase 64-character hexadecimal digest. The fixed official asset is `DM.DmProvider` version `8.3.1.47463`, SHA-256 `8f6e59680d0a076df53bea50d5a2bdbd288535cd85b2d7ca5064c02adc9c6e6b` (the recorded observed and expected hashes agree). These are official baseline expectations and were not generated from W resources.
+
+`smoke-cases.json` contains synthetic Unicode strings and their SHA-256 hashes over each value's UTF-8 bytes. The values are test data only and do not require a database or credentials. Hashes were independently calculated with Python's `hashlib.sha256(value.encode("utf-8"))`.

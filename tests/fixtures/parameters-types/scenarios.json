@@ -1,0 +1,906 @@
+{
+  "schema_version": 1,
+  "fixture": "T09 parameter binding, type conversion, and precision scenarios",
+  "evidence_boundary": {
+    "synthetic_cases": "Every cases entry is a deterministic input plus contract expectation and is marked not_run. Values are not observed database rows or encoded wire values.",
+    "real_database_probes": "Every real_database_probes entry is only a procedure and is marked planned_not_run. No server result is included.",
+    "wire_data": "No protocol packets, byte-level encoded values, or fabricated server responses are present.",
+    "precision": "UInt64, tick counts, decimal coefficients, and high-precision decimal text are decimal strings. Fractions and offsets are strings, not JSON floating-point numbers."
+  },
+  "cases": [
+    {
+      "case_id": "typ01_enum_flags_exact_underlying_values",
+      "contract": "TYP-01",
+      "execution_status": "not_run",
+      "input": {
+        "enum_type": {
+          "name": "SyntheticStatus",
+          "underlying_type": "Int32"
+        },
+        "enum_values": [
+          {
+            "member": "Negative",
+            "underlying_decimal": "-10"
+          },
+          {
+            "member": "Small",
+            "underlying_decimal": "7"
+          },
+          {
+            "member": "Large",
+            "underlying_decimal": "1000"
+          }
+        ],
+        "flags_type": {
+          "name": "SyntheticPermission",
+          "underlying_type": "UInt32",
+          "members": [
+            {
+              "name": "Read",
+              "underlying_decimal": "1"
+            },
+            {
+              "name": "Write",
+              "underlying_decimal": "2"
+            },
+            {
+              "name": "Audit",
+              "underlying_decimal": "4"
+            }
+          ],
+          "combined_member_names": [
+            "Read",
+            "Audit"
+          ],
+          "combined_underlying_decimal": "5"
+        }
+      },
+      "expected": {
+        "round_trip_underlying_decimals": [
+          "-10",
+          "7",
+          "1000"
+        ],
+        "flags_combined_underlying_decimal": "5",
+        "enum_names_are_not_encoded_as_ordinals": true
+      }
+    },
+    {
+      "case_id": "typ01_byte_and_ulong_enum_underlying_values",
+      "contract": "TYP-01",
+      "execution_status": "not_run",
+      "input": {
+        "enum_cases": [
+          {
+            "name": "ByteCode",
+            "underlying_type": "Byte",
+            "value_decimal": "255"
+          },
+          {
+            "name": "UnsignedLongCode",
+            "underlying_type": "UInt64",
+            "value_decimal": "18446744073709551615"
+          }
+        ]
+      },
+      "expected": {
+        "round_trip_values_decimal": [
+          "255",
+          "18446744073709551615"
+        ],
+        "ulong_is_not_narrowed_to_int64": true,
+        "large_values_representation": "decimal_string"
+      }
+    },
+    {
+      "case_id": "typ02_signed_unsigned_integer_boundaries",
+      "contract": "TYP-02",
+      "execution_status": "not_run",
+      "input": {
+        "accepted_values": [
+          {
+            "requested_type": "SByte",
+            "minimum_decimal": "-128",
+            "maximum_decimal": "127"
+          },
+          {
+            "requested_type": "Byte",
+            "minimum_decimal": "0",
+            "maximum_decimal": "255"
+          },
+          {
+            "requested_type": "Int16",
+            "minimum_decimal": "-32768",
+            "maximum_decimal": "32767"
+          },
+          {
+            "requested_type": "UInt16",
+            "minimum_decimal": "0",
+            "maximum_decimal": "65535"
+          },
+          {
+            "requested_type": "Int32",
+            "minimum_decimal": "-2147483648",
+            "maximum_decimal": "2147483647"
+          },
+          {
+            "requested_type": "UInt32",
+            "minimum_decimal": "0",
+            "maximum_decimal": "4294967295"
+          },
+          {
+            "requested_type": "Int64",
+            "minimum_decimal": "-9223372036854775808",
+            "maximum_decimal": "9223372036854775807"
+          },
+          {
+            "requested_type": "UInt64",
+            "minimum_decimal": "0",
+            "maximum_decimal": "18446744073709551615"
+          }
+        ],
+        "all_integer_values_are_decimal_strings": true
+      },
+      "expected": {
+        "accepted_boundaries_round_trip_exactly": true,
+        "unsigned_inference_uses_sufficient_signed_width": true,
+        "no_value_passes_through_double": true
+      }
+    },
+    {
+      "case_id": "typ02_overflow_and_nonintegral_conversion_rejected",
+      "contract": "TYP-02",
+      "execution_status": "not_run",
+      "input": {
+        "rejected_values": [
+          {
+            "requested_type": "SByte",
+            "value_decimal": "-129",
+            "reason": "below_minimum"
+          },
+          {
+            "requested_type": "SByte",
+            "value_decimal": "128",
+            "reason": "above_maximum"
+          },
+          {
+            "requested_type": "Byte",
+            "value_decimal": "-1",
+            "reason": "below_minimum"
+          },
+          {
+            "requested_type": "Byte",
+            "value_decimal": "256",
+            "reason": "above_maximum"
+          },
+          {
+            "requested_type": "UInt16",
+            "value_decimal": "65536",
+            "reason": "above_maximum"
+          },
+          {
+            "requested_type": "UInt32",
+            "value_decimal": "4294967296",
+            "reason": "above_maximum"
+          },
+          {
+            "requested_type": "Int64",
+            "value_decimal": "9223372036854775808",
+            "reason": "above_maximum"
+          },
+          {
+            "requested_type": "Int32",
+            "source_type": "Decimal",
+            "value_decimal": "1.5",
+            "reason": "non_integral"
+          },
+          {
+            "requested_type": "UInt64",
+            "value_decimal": "18446744073709551616",
+            "reason": "above_maximum"
+          }
+        ]
+      },
+      "expected": {
+        "every_value_rejected": true,
+        "overflow_is_explicit": true,
+        "non_integral_value_is_not_truncated": true
+      }
+    },
+    {
+      "case_id": "typ02_double_getbyte_numeric_conversion",
+      "contract": "TYP-02",
+      "execution_status": "not_run",
+      "input": {
+        "source_type": "Double",
+        "numeric_values": [
+          {
+            "value_decimal": "12.0",
+            "getter": "GetByte"
+          },
+          {
+            "value_decimal": "-7.0",
+            "getter": "GetSByte"
+          }
+        ]
+      },
+      "expected": {
+        "getter_uses_numeric_conversion": true,
+        "date_conversion_used": false,
+        "integer_values_decimal": [
+          "12",
+          "-7"
+        ]
+      }
+    },
+    {
+      "case_id": "typ02_float_special_value_profile_gate",
+      "contract": "TYP-02",
+      "execution_status": "not_run",
+      "input": {
+        "server_value_support_profile": "synthetic_test_input_not_server_evidence",
+        "values": [
+          "1.25",
+          "NaN",
+          "Infinity",
+          "-Infinity"
+        ],
+        "special_value_policy": "must_be_explicit_per_supported_profile"
+      },
+      "expected": {
+        "finite_value_uses_numeric_codec": true,
+        "unsupported_special_values_rejected_before_encoding": true,
+        "actual_server_support_claimed": false
+      }
+    },
+    {
+      "case_id": "typ03_decimal38_20_coefficient_scale_exact",
+      "contract": "TYP-03",
+      "execution_status": "not_run",
+      "input": {
+        "requested_precision": 38,
+        "requested_scale": 20,
+        "values": [
+          {
+            "decimal_text_invariant": "123456789012345678.90123456789012345678",
+            "coefficient_decimal": "12345678901234567890123456789012345678",
+            "scale": 20
+          },
+          {
+            "decimal_text_invariant": "999999999999999999.99999999999999999999",
+            "coefficient_decimal": "99999999999999999999999999999999999999",
+            "scale": 20
+          },
+          {
+            "decimal_text_invariant": "0.00000000000000000001",
+            "coefficient_decimal": "1",
+            "scale": 20
+          },
+          {
+            "decimal_text_invariant": "-0.00000000000000000001",
+            "coefficient_decimal": "-1",
+            "scale": 20
+          }
+        ],
+        "precision_values_are_decimal_strings": true,
+        "target_decimal_wire_profile": "supplied_by_test_harness"
+      },
+      "expected": {
+        "if_decimal38_20_codec_supported": "provider_specific_coefficient_scale_exact",
+        "otherwise": "explicitly_reject_without_claiming_support",
+        "double_intermediate_used": false,
+        "precision_values_remain_decimal_strings": true
+      }
+    },
+    {
+      "case_id": "typ03_local_dmdecimal_trailing_zero_parse_format",
+      "contract": "TYP-03",
+      "execution_status": "not_run",
+      "input": {
+        "scope": "local_parse_format_only_no_server_or_wire",
+        "decimal_text_invariant": "123.4500",
+        "coefficient_decimal": "1234500",
+        "scale": 4
+      },
+      "expected": {
+        "local_parse_coefficient_decimal": "1234500",
+        "local_parse_scale": 4,
+        "local_format_exact": "123.4500",
+        "server_column_scale_inferred_from_input": false
+      }
+    },
+    {
+      "case_id": "typ03_decimal_precision_beyond_clr_and_scale_overflow",
+      "contract": "TYP-03",
+      "execution_status": "not_run",
+      "input": {
+        "provider_specific_value": {
+          "coefficient_decimal": "12345678901234567890123456789012345678",
+          "scale": 20,
+          "requested_precision": 38
+        },
+        "ordinary_clr_decimal_getter": "GetDecimal",
+        "explicit_scale_case": {
+          "requested_precision": 10,
+          "requested_scale": 2,
+          "decimal_text_invariant": "1.235",
+          "coefficient_decimal": "1235",
+          "input_scale": 3
+        }
+      },
+      "expected": {
+        "provider_specific_value_exact": true,
+        "ordinary_get_decimal_failure": "OverflowException",
+        "out_of_scale_value_rejected_without_rounding": true
+      }
+    },
+    {
+      "case_id": "typ04_guid_text_column_and_explicit_getguid",
+      "contract": "TYP-04",
+      "execution_status": "not_run",
+      "input": {
+        "column_declared_type": "CharOrVarchar36",
+        "text_value": "00112233-4455-6677-8899-aabbccddeeff",
+        "text_length_characters": 36,
+        "explicit_getter": "GetGuid"
+      },
+      "expected": {
+        "get_field_type": "String",
+        "get_value_type": "String",
+        "get_value_exact": "00112233-4455-6677-8899-aabbccddeeff",
+        "explicit_getguid_value": "00112233-4455-6677-8899-aabbccddeeff"
+      }
+    },
+    {
+      "case_id": "typ04_explicit_getguid_invalid_text",
+      "contract": "TYP-04",
+      "execution_status": "not_run",
+      "input": {
+        "column_declared_type": "CharOrVarchar36",
+        "text_value": "00112233-4455-6677-8899-aabbccddeefg",
+        "text_length_characters": 36,
+        "explicit_getter": "GetGuid"
+      },
+      "expected": {
+        "ordinary_get_value_type": "String",
+        "explicit_getguid_rejected": true,
+        "failure_family": "FormatException"
+      }
+    },
+    {
+      "case_id": "typ05_unicode_utf8_gb18030_and_lengths",
+      "contract": "TYP-05",
+      "execution_status": "not_run",
+      "input": {
+        "cases": [
+          {
+            "declared_charset": "UTF-8",
+            "text": "中文🚀é",
+            "expected_utf16_code_units": 6,
+            "expected_encoded_byte_length": 13,
+            "code_points_hex": [
+              "4E2D",
+              "6587",
+              "1F680",
+              "0065",
+              "0301"
+            ]
+          },
+          {
+            "declared_charset": "GB18030",
+            "text": "达梦数据库",
+            "expected_encoded_byte_length": 10,
+            "code_points_hex": [
+              "8FBE",
+              "68A6",
+              "6570",
+              "636E",
+              "5E93"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "round_trip_text_exact": true,
+        "utf16_length_and_encoded_byte_length_are_tracked_separately": true,
+        "combining_sequence_is_not_normalized": true,
+        "replacement_question_marks_inserted": false
+      }
+    },
+    {
+      "case_id": "typ05_unpaired_surrogate_strict_encoder",
+      "contract": "TYP-05",
+      "execution_status": "not_run",
+      "input": {
+        "declared_charset": "UTF-8",
+        "utf16_code_units_hex": "D800",
+        "input_kind": "unpaired_high_surrogate",
+        "replacement_fallback_allowed": false
+      },
+      "expected": {
+        "encoding_rejected": true,
+        "failure_family": "EncoderFallbackException",
+        "replacement_question_mark_inserted": false
+      }
+    },
+    {
+      "case_id": "typ06_clr_timespan_tick_construction_exact",
+      "contract": "TYP-06",
+      "execution_status": "not_run",
+      "input": {
+        "scope": "CLR_value_construction_only_no_server_or_wire",
+        "timespan_cases": [
+          {
+            "ticks_decimal": "1",
+            "meaning": "positive_one_tick"
+          },
+          {
+            "ticks_decimal": "-1",
+            "meaning": "negative_one_tick"
+          },
+          {
+            "ticks_decimal": "2592000000001",
+            "meaning": "three_days_plus_one_tick"
+          },
+          {
+            "ticks_decimal": "-9223372036854775808",
+            "meaning": "TimeSpan.MinValue"
+          },
+          {
+            "ticks_decimal": "9223372036854775807",
+            "meaning": "TimeSpan.MaxValue"
+          }
+        ]
+      },
+      "expected": {
+        "constructed_timespan_ticks_decimal_exact": true,
+        "clr_min_max_bounds_are_not_server_range_claims": true
+      }
+    },
+    {
+      "case_id": "typ06_server_interval_precision_range_conditional",
+      "contract": "TYP-06",
+      "execution_status": "not_run",
+      "input": {
+        "server_interval_profile": "not_frozen",
+        "representable_candidate_ticks_decimal": [
+          "1",
+          "-1",
+          "2592000000001",
+          "-9223372036854775808",
+          "9223372036854775807"
+        ],
+        "nonrepresentable_interval_scale": {
+          "fractional_digits": 8,
+          "available_tick_digits": 7
+        }
+      },
+      "expected": {
+        "if_range_and_scale_representable": "exact_tick_round_trip",
+        "otherwise": "explicit_rejection",
+        "silent_rounding_or_truncation": false,
+        "TimeSpan_is_not_treated_as_Time": true
+      }
+    },
+    {
+      "case_id": "typ06_date_time_offset_and_calendar_precision",
+      "contract": "TYP-06",
+      "execution_status": "not_run",
+      "input": {
+        "date_only": "2024-02-29",
+        "time_only": "23:59:59.9999999",
+        "date_time_without_zone": "2024-03-10T02:30:00.1234567",
+        "date_time_offset_cases": [
+          "2024-02-29T23:59:59.1234567+08:00",
+          "2024-02-29T00:00:00.7654321-05:30"
+        ],
+        "fractional_second_digits": 7,
+        "server_temporal_profile": "not_frozen"
+      },
+      "expected": {
+        "clr_date_only_and_time_only_parse_exact": true,
+        "clr_time_only_keeps_seven_fractional_digits": true,
+        "date_time_kind": "Unspecified",
+        "date_time_offset_clr_parse_keeps_original_offsets_and_ticks": true,
+        "if_server_type_range_and_scale_representable": "exact_round_trip",
+        "otherwise": "explicit_rejection",
+        "silent_timezone_conversion": false,
+        "silent_fractional_truncation": false,
+        "invariant_getstring_path_preserved_when_supported": true
+      }
+    },
+    {
+      "case_id": "typ07_null_empty_and_typed_null_distinct",
+      "contract": "TYP-07",
+      "execution_status": "not_run",
+      "input": {
+        "values": [
+          {
+            "kind": "sql_null",
+            "requested_type": "Varchar"
+          },
+          {
+            "kind": "empty_string",
+            "requested_type": "Varchar",
+            "value": ""
+          },
+          {
+            "kind": "sql_null",
+            "requested_type": "VarBinary"
+          },
+          {
+            "kind": "empty_byte_array",
+            "requested_type": "VarBinary",
+            "value_hex": ""
+          },
+          {
+            "kind": "nullable_enum_null",
+            "requested_type": "Int32"
+          },
+          {
+            "kind": "dbnull",
+            "requested_type": "Int32"
+          }
+        ]
+      },
+      "expected": {
+        "typed_null_keeps_requested_type": true,
+        "empty_string_is_not_null": true,
+        "empty_byte_array_is_not_null": true,
+        "nullable_enum_null_is_distinguished_from_dbnull": true
+      }
+    },
+    {
+      "case_id": "typ07_untyped_null_without_describe_rejected",
+      "contract": "TYP-07",
+      "execution_status": "not_run",
+      "input": {
+        "value_kind": "DBNull",
+        "explicit_dm_sql_type": null,
+        "explicit_db_type": null,
+        "server_describe_available": false
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "type_not_determined",
+        "varchar_null_fallback_used": false,
+        "wire_activity": false
+      }
+    },
+    {
+      "case_id": "typ08_parameter_prefix_tokenizer_reuse_and_conflict",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "command_text": "SELECT ':ghost' AS \"quoted:@ignored\", :p0, @P0, :p0 -- :comment\n/* @also_ignored */",
+        "parameters": [
+          {
+            "name": "p0",
+            "value": "synthetic-value"
+          }
+        ],
+        "parameter_name_comparison": "OrdinalIgnoreCase"
+      },
+      "expected": {
+        "recognized_occurrences": [
+          ":p0",
+          "@P0",
+          ":p0"
+        ],
+        "all_occurrences_reuse_one_parameter_value": true,
+        "markers_inside_literals_comments_and_quoted_identifiers_are_ignored": true
+      }
+    },
+    {
+      "case_id": "typ08_duplicate_normalized_parameter_names_rejected",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "parameter_name_comparison": "OrdinalIgnoreCase",
+        "parameters": [
+          {
+            "name": ":p0"
+          },
+          {
+            "name": "@P0"
+          }
+        ]
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "duplicate_after_single_prefix_normalization",
+        "sql_text_rewritten": false
+      }
+    },
+    {
+      "case_id": "typ08_named_positional_mix_rejected",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "command_text": "SELECT :p0, ? FROM T",
+        "parameter_markers": [
+          "named:p0",
+          "positional:1"
+        ]
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "named_and_positional_parameters_mixed",
+        "sql_text_rewritten": false
+      }
+    },
+    {
+      "case_id": "typ08_type_source_precedence_and_conflict",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "type_source_order": [
+          "DmSqlType",
+          "DbType",
+          "server_describe",
+          "CLR_inference"
+        ],
+        "cases": [
+          {
+            "explicit_dm_sql_type": "Integer",
+            "explicit_db_type": null,
+            "describe_type": "Varchar",
+            "clr_type": "String",
+            "expected_type": "Integer"
+          },
+          {
+            "explicit_dm_sql_type": null,
+            "explicit_db_type": "Int64",
+            "describe_type": "Int16",
+            "clr_type": "Int16",
+            "expected_type": "Int64"
+          },
+          {
+            "explicit_dm_sql_type": null,
+            "explicit_db_type": null,
+            "describe_type": "Decimal",
+            "clr_type": "DBNull",
+            "expected_type": "Decimal"
+          },
+          {
+            "explicit_dm_sql_type": null,
+            "explicit_db_type": null,
+            "describe_type": null,
+            "clr_type": "UInt16",
+            "expected_type": "Int32"
+          },
+          {
+            "explicit_dm_sql_type": "Integer",
+            "explicit_db_type": "String",
+            "describe_type": null,
+            "clr_type": "Int32",
+            "case": "conflicting_explicit_types",
+            "expected_type": null
+          }
+        ]
+      },
+      "expected": {
+        "selected_sources": [
+          "DmSqlType",
+          "DbType",
+          "server_describe",
+          "CLR_inference"
+        ],
+        "conflicting_explicit_types_rejected": true,
+        "default_enum_value_used_to_infer_explicitness": false
+      }
+    },
+    {
+      "case_id": "typ08_prepare_value_change_and_type_change",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "initial_parameter": {
+          "name": "p0",
+          "db_type": "String",
+          "size": 12,
+          "value": "before"
+        },
+        "operations": [
+          {
+            "action": "Prepare"
+          },
+          {
+            "action": "SetValue",
+            "value": "after"
+          },
+          {
+            "action": "Execute"
+          },
+          {
+            "action": "ChangeSize",
+            "size": 24
+          },
+          {
+            "action": "AttemptExecuteWithoutReprepare"
+          },
+          {
+            "action": "PrepareAgain"
+          },
+          {
+            "action": "Execute"
+          },
+          {
+            "action": "ChangeValueType",
+            "db_type": "Int32",
+            "value_decimal": "42"
+          },
+          {
+            "action": "AttemptExecuteWithoutReprepare"
+          },
+          {
+            "action": "PrepareAgain"
+          },
+          {
+            "action": "Execute"
+          }
+        ]
+      },
+      "expected": {
+        "value_change_after_prepare_allowed": true,
+        "type_or_size_change_invalidates_prepared_metadata": true,
+        "execution_after_type_change_requires_reprepare": true,
+        "execute_without_reprepare_rejected": true,
+        "reprepare_restores_execution": true,
+        "size_change_invalidates_prepared_metadata": true,
+        "type_change_invalidates_prepared_metadata": true
+      }
+    },
+    {
+      "case_id": "typ08_resetdbtype_restores_inference",
+      "contract": "TYP-08",
+      "execution_status": "not_run",
+      "input": {
+        "parameter_before_reset": {
+          "explicit_db_type": "Int16",
+          "clr_value_type": "UInt16",
+          "value_decimal": "65535"
+        },
+        "operations": [
+          {
+            "action": "ResetDbType"
+          },
+          {
+            "action": "InferFromClrValue"
+          }
+        ]
+      },
+      "expected": {
+        "explicit_type_source_cleared": true,
+        "inferred_type_can_hold_value": true,
+        "value_decimal_preserved": "65535",
+        "inferred_type": "Int32"
+      }
+    },
+    {
+      "case_id": "typ09_sync_async_getter_values_and_exceptions_match",
+      "contract": "TYP-09",
+      "execution_status": "not_run",
+      "input": {
+        "synthetic_getter_cases": [
+          {
+            "source_type": "Int32",
+            "value_decimal": "42",
+            "sync_getter": "GetInt32",
+            "async_getter": "GetFieldValueAsync<Int32>"
+          },
+          {
+            "source_type": "DateTimeOffset",
+            "value": "2024-02-29T23:59:59.1234567+08:00",
+            "sync_getter": "GetDateTimeOffset",
+            "async_getter": "GetFieldValueAsync<DateTimeOffset>"
+          },
+          {
+            "source_type": "Decimal",
+            "coefficient_decimal": "12345678901234567890123456789012345678",
+            "scale": 20,
+            "sync_getter": "GetDecimal",
+            "async_getter": "GetFieldValueAsync<Decimal>",
+            "expected_exception": "OverflowException"
+          },
+          {
+            "source_type": "TimeSpan",
+            "value_ticks_decimal": "-2592000000001",
+            "sync_getter": "GetTimeSpan",
+            "async_getter": "GetFieldValueAsync<TimeSpan>",
+            "legacy_get_string_parseable": true
+          }
+        ]
+      },
+      "expected": {
+        "sync_async_values_match": true,
+        "sync_async_types_match": true,
+        "sync_async_exception_types_match": true,
+        "synthetic_values_are_not_server_results": true
+      }
+    },
+    {
+      "case_id": "typ09_unsupported_complex_types_rejected",
+      "contract": "TYP-09",
+      "execution_status": "not_run",
+      "input": {
+        "requested_types": [
+          "ARRAY",
+          "CLASS",
+          "GEOMETRY",
+          "XDEC"
+        ],
+        "conversion_to_string_fallback_requested": false
+      },
+      "expected": {
+        "accepted": false,
+        "unsupported_types_rejected_explicitly": true,
+        "to_string_fallback_used": false
+      }
+    }
+  ],
+  "real_database_probes": [
+    {
+      "probe_id": "real_integer_decimal_boundaries",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify supported integer boundaries and DECIMAL coefficient/scale behavior on the supplied target server.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use only uniquely named objects created by the probe."
+      ],
+      "steps": [
+        "Bind signed, unsigned, enum, and decimal boundary values with explicit types.",
+        "Read values through typed and provider-specific getters.",
+        "Record exception family and independently verify test-owned row state.",
+        "Clean only probe-owned objects."
+      ],
+      "evidence_limit": "Fixture values are contract vectors, not database observations."
+    },
+    {
+      "probe_id": "real_unicode_charset_roundtrip",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify Unicode round trips under each explicitly configured supported server charset.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Record the actual server charset; run UTF-8 and GB18030 separately only when configured."
+      ],
+      "steps": [
+        "Bind a short synthetic string into a probe-owned value.",
+        "Read it back and compare code points and text.",
+        "Clean only probe-owned objects."
+      ],
+      "evidence_limit": "No encoding result is pre-filled; replacement or lossy behavior must be measured."
+    },
+    {
+      "probe_id": "real_guid_and_temporal_mappings",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify GUID-shaped CHAR(36) behavior and existing EF DateTimeOffset/INTERVAL text and typed getter compatibility.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use only unique probe-owned objects and supported column types."
+      ],
+      "steps": [
+        "Read a GUID-shaped character column through GetValue and explicit GetGuid.",
+        "Read approved temporal values through GetString and typed getters.",
+        "Compare exact text, offset, and tick precision.",
+        "Where the public API supports it, compare synchronous and asynchronous getter value, type, and exception outcomes."
+      ],
+      "evidence_limit": "The procedure does not assert server type compatibility before the target is checked."
+    },
+    {
+      "probe_id": "real_lob_null_empty_and_ef_compatibility",
+      "verification_status": "planned_not_run",
+      "purpose": "Check existing EF LOB behavior and distinguish NULL LOB from empty LOB where the target supports both.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Create uniquely named test-owned LOB objects if needed."
+      ],
+      "steps": [
+        "Run the existing consumer path for typed NULL and empty LOB values.",
+        "Record synchronous and asynchronous getter outcomes separately.",
+        "Read back and clean only objects created by this probe."
+      ],
+      "evidence_limit": "This does not assert complete streaming semantics or a fixed memory bound."
+    }
+  ]
+}

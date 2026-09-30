@@ -1,0 +1,19 @@
+{
+  "status": "static_ready_not_run",
+  "revision": "design_time_model_checker_and_static_failure_stage",
+  "ef_commit": "113014cc74dd1f751ef97226a78d2ec855b32c8c",
+  "file": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs",
+  "base_sha256": "b28f36785553c88ad4d83d252d9b983a824ba57b60020499dcefa1468639d52e",
+  "patched_sha256": "3c057ec5ab202e20eb81f5b75e876ef6d3578712dde24bcced43c68048f7fc52",
+  "patch_sha256": "f2baa32522dff40317018149049b6865bb25e0c47fc0dc6b81d0276de76c5bf0",
+  "parent_patch_sha256": "63a52f5b4906a6614fd0f7cfdbc2257e7d4e883dda930fe9752e95c556dd0a24",
+  "parent_patched_sha256": "a63623ae3184936dc5a3d0bfb44e7242690690a5f5bc92dfc7b1639900ed4b40",
+  "diagnostic_output": "codes_allowlisttypes_staticcategories_and_verified_redacted_UTF8_excerpt_max8192",
+  "raw_output_written": false,
+  "bounded_timeout_preserved": true,
+  "body_and_cleanup_preserved": true,
+  "tests_run": false,
+  "parent_diagnostic_patch_sha256": "bc9a85501dd5502bdebae33bafaf5117d10c55c44b74fcf3319f0e8cf974133c",
+  "parent_excerpt_patch_sha256": "f4cba2d684e717d4230d0c59dc00ffc6a1c7dfd148f949ea764037b0ba89eb1a",
+  "parent_PATH_patch_sha256": "65704cbd649bb86980c89a35c8a2673753e71b1766992a0e6458218da025a3bf"
+}

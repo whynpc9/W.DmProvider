@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>W_BLOB</DefineConstants>
+    <OutputPath>bin/BlobW/</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BlobRepro.cs" />
+    <ProjectReference Include="../../src/W.DmProvider/W.DmProvider.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,246 @@
+{
+  "status": "offline_verified",
+  "scope": "eight_offline_suites_only",
+  "integration": "integration_pending",
+  "release_accepted": false,
+  "database_environment_used": false,
+  "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86",
+  "candidate_version": "0.1.0-r1.20260930151754",
+  "suites": [
+    {
+      "suite": "Configuration",
+      "host": {
+        "stage": "Configuration_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 3.965
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 11,
+        "executed": 11,
+        "passed": 11,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Session",
+      "host": {
+        "stage": "Session_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.804
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 12,
+        "executed": 12,
+        "passed": 12,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Transport",
+      "host": {
+        "stage": "Transport_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.751
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 38,
+        "executed": 38,
+        "passed": 38,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Security",
+      "host": {
+        "stage": "Security_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 7.398
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 36,
+        "executed": 36,
+        "passed": 36,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Command",
+      "host": {
+        "stage": "Command_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.786
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 16,
+        "executed": 16,
+        "passed": 16,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Type",
+      "host": {
+        "stage": "Type_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.789
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 117,
+        "executed": 117,
+        "passed": 117,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Transaction",
+      "host": {
+        "stage": "Transaction_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.79
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 18,
+        "executed": 18,
+        "passed": 18,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    },
+    {
+      "suite": "Isolation",
+      "host": {
+        "stage": "Isolation_test",
+        "host_exit_code": 0,
+        "timed_out": false,
+        "elapsed_seconds": 1.883
+      },
+      "status": "offline_verified",
+      "counts": {
+        "total": 78,
+        "executed": 78,
+        "passed": 78,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      },
+      "tested_driver_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86"
+    }
+  ],
+  "failures": [],
+  "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r1-review/offline/20260930T151754Z-9f160f2c39d2",
+  "total_passed": 326
+}

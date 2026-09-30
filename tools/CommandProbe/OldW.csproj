@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>CommandProbe.OldW</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <OutputPath>bin/OldW/</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Reference Include="W.DmProvider">
+      <HintPath>../../.local/t08/baseline-w/net10.0/W.DmProvider.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,90 @@
+{
+  "status": "all_pending",
+  "gates": [
+    {
+      "id": "R0",
+      "required_tasks": [
+        "T01",
+        "T02"
+      ],
+      "requires": [
+        "reproducible restored baseline",
+        "O/R unexplained behavior differences resolved before claiming integration verification"
+      ]
+    },
+    {
+      "id": "R1",
+      "required_tasks": [
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "requires": [
+        "declared correctness/security scope integration-tested",
+        "final candidate nupkg downstream-tested",
+        "unsupported scopes explicit"
+      ]
+    },
+    {
+      "id": "R2",
+      "previous_gate": "R1",
+      "required_tasks": [
+        "T13",
+        "T14"
+      ],
+      "requires": [
+        "async I/O chain verified",
+        "cancellation/timeout/unknown outcomes validated"
+      ]
+    },
+    {
+      "id": "R3",
+      "previous_gate": "R2",
+      "required_tasks": [
+        "T15",
+        "T16",
+        "T17",
+        "T18",
+        "T25",
+        "T19"
+      ],
+      "requires": [
+        "session reset evidence or honest discard policy",
+        "streaming LOB verified",
+        "deployment profiles tested",
+        "independent boundary review",
+        "final package downstream evidence"
+      ]
+    },
+    {
+      "id": "R4.Arrays",
+      "previous_gate": "R3",
+      "required_tasks": [
+        "T20",
+        "T21",
+        "T23"
+      ],
+      "requires": [
+        "array binding evidence",
+        "same-semantics performance evidence"
+      ]
+    },
+    {
+      "id": "R4.NativeBatch",
+      "previous_gate": "R4.Arrays",
+      "required_tasks": [
+        "T22"
+      ],
+      "requires": [
+        "native execution/result/atomicity evidence; no sequential emulation mislabeled"
+      ]
+    }
+  ]
+}

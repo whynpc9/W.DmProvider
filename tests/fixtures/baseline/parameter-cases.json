@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "ascii",
+      "value": "parameter-case-001",
+      "utf8_sha256": "e1a8fd96b84c1bed4b9f1d97965272bcccdf53c723491aa0a171c30a7752b7ae"
+    },
+    {
+      "id": "chinese",
+      "value": "参数-绑定-测试",
+      "utf8_sha256": "1871c7126c724b7d8d9e3b328b036488b4a60762a6ee28b0731af737c3f9a825"
+    },
+    {
+      "id": "supplementary_emoji",
+      "value": "emoji-🧪-🚀",
+      "utf8_sha256": "ac28c332876a1942099ec02151d56e08aaa83738a195f19a824b99087185abfd"
+    },
+    {
+      "id": "quotes_semicolon",
+      "value": "single ' quote; double \" quote",
+      "utf8_sha256": "1ce946a6449740b1df365397a02eb9dc5e5dce35d5cde1f9f7a748f20c60bc26"
+    },
+    {
+      "id": "newline",
+      "value": "first line\nsecond line",
+      "utf8_sha256": "73621482ff083eca9ea88880393298f7d3f53402200780b0c16354a9beb0535a"
+    },
+    {
+      "id": "combining_character",
+      "value": "café",
+      "utf8_sha256": "81ef060bcd98adc7824eb5c1ada83c32491b16018e11e79f00ab9d09e04b015a"
+    },
+    {
+      "id": "surrounding_spaces",
+      "value": "  padded value  ",
+      "utf8_sha256": "3cec677fa257d879ded8d1db893b7df5063e50bb2a76ad46f0e266bd17e809d7"
+    }
+  ]
+}
