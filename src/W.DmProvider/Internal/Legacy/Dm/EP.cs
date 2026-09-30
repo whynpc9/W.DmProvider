@@ -152,10 +152,10 @@ internal class EP
 			conn.ConnProperty.PortActual = conn.ConnProperty.Port;
 			refreshStatus(alive: true, conn);
 		}
-		catch (Exception ex)
+		catch
 		{
 			refreshStatus(alive: false, conn);
-			throw ex;
+			throw;
 		}
 	}
 

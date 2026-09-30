@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.IO;
 using W.Dm.Config;
 using W.Dm.filter.log;
+using W.Dm.Internal.Sessions;
 
 namespace W.Dm.util;
 
@@ -29,19 +30,29 @@ internal static class DriverUtil
 
 	internal static void executeSetSchema(DmConnection conn)
 	{
-		conn.GetConnInstance().ConnProperty.AutoCommit = true;
-		if (conn.ConnProperty.Schema != DmOptionHelper.schemaDef && conn.ConnProperty.Schema != conn.ConnProperty.User)
+		string statement = FormatSchemaStatement(conn.ConnProperty.Schema);
+		if (statement == null)
+			return;
+		DmConnInstance instance = conn.GetConnInstance();
+		using var borrowed = conn.BeginInternalExecution(DmOperationPurpose.Query);
+		instance.ConnProperty.AutoCommit = true;
+		try
 		{
-			if (conn.ConnProperty.SchemaSensitive)
-			{
-				executeNonQuery(conn, "set schema \"" + conn.ConnProperty.Schema + "\"", null);
-			}
-			else
-			{
-				executeNonQuery(conn, "set schema " + conn.ConnProperty.Schema, null);
-			}
+			using var command = conn.CreateCommand(statement);
+			command.ExecuteInternalNonQuery(borrowed);
 		}
-		conn.GetConnInstance().ConnProperty.ClearAutoCommit();
+		finally
+		{
+			instance.ConnProperty.ClearAutoCommit();
+		}
+	}
+
+	// The complete SQL is one statement with one quoted identifier. It does not
+	// interpret SchemaSensitive or accept SQL fragments from configuration.
+	internal static string FormatSchemaStatement(string schema)
+	{
+		string name = DmSchemaValidator.Normalize(schema);
+		return string.IsNullOrEmpty(name) ? null : "set schema \"" + name.Replace("\"", "\"\"") + "\"";
 	}
 
 	internal static void executeNonQuery(DmConnection conn, string sql, DmParameter[] parameters)

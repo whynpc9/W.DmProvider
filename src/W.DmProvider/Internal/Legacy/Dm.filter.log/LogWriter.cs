@@ -36,14 +36,7 @@ internal class LogWriter
 
 	private string Now => DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss.fff", DateTimeFormatInfo.CurrentInfo);
 
-	private LogWriter()
-	{
-		_fileDir = DmSvcConfig.logDir;
-		_baseThread = new Thread(Run);
-		_baseThread.Name = "DmProvider-LogFlusher";
-		_baseThread.IsBackground = true;
-		_baseThread.Start();
-	}
+	private LogWriter() { }
 
 	private void Run()
 	{
@@ -138,16 +131,5 @@ internal class LogWriter
 		}
 	}
 
-	internal void WriteLine(string msg)
-	{
-		try
-		{
-			byte[] bytes = Encoding.UTF8.GetBytes(StringUtil.trimToEmpty(msg) + StringUtil.LINE_SEPARATOR);
-			_flushQueue.Enqueue(bytes);
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine(ex.StackTrace);
-		}
-	}
+	internal void WriteLine(string msg) { }
 }

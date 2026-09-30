@@ -1,4 +1,5 @@
 using System;
+using W.Dm.Internal.Types;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -596,30 +597,12 @@ public class DmDateTime
 
 	internal static int GetMicroSecond(DateTime dt)
 	{
-		string text = dt.TimeOfDay.TotalSeconds.ToString();
-		int num = text.IndexOf(".");
-		text = ((num == -1) ? "" : text.Substring(num + 1));
-		int num2 = text.Length;
-		while (text.Length < 6)
-		{
-			text += "0";
-			num2++;
-		}
-		return int.Parse(text);
+		return (int)(dt.Ticks % TimeSpan.TicksPerSecond / 10);
 	}
 
 	internal static int GetNanoSecond(DateTime dt)
 	{
-		string text = dt.TimeOfDay.TotalSeconds.ToString();
-		int num = text.IndexOf(".");
-		text = ((num == -1) ? "" : text.Substring(num + 1));
-		int num2 = text.Length;
-		while (text.Length < 9)
-		{
-			text += "0";
-			num2++;
-		}
-		return int.Parse(text);
+		return checked((int)(dt.Ticks % TimeSpan.TicksPerSecond * 100));
 	}
 
 	public byte[] GetByteArrayValue()
@@ -707,19 +690,17 @@ public class DmDateTime
 
 	public DateTime GetDate()
 	{
-		return Convert.ToDateTime(GetDateInString());
+		return BuildDateTime(GetYear(), GetMonth(), GetDay(), 0, 0, 0, 0);
 	}
 
 	public DateTime GetTime()
 	{
-		return Convert.ToDateTime(GetTimeInString());
+		return BuildDateTime(1900, 1, 1, GetHour(0), GetMinute(0), GetSecond(0), GetNano(0));
 	}
 
 	public DateTimeOffset GetTimeTZ()
 	{
-		string timeTZInString = GetTimeTZInString();
-		string format = "HH:mm:ss.fffffff zzz";
-		return DateTimeOffset.ParseExact(timeTZInString, format, null);
+		return BuildOffset(1900, 1, 1, GetHour(0), GetMinute(0), GetSecond(0), GetNano(0), GetTZ(0));
 	}
 
 	public string GetDateInString()
@@ -920,21 +901,27 @@ public class DmDateTime
 
 	public DateTime GetTimestamp()
 	{
-		string text = GetNano(24).ToString();
-		string text2 = GetDateInString() + " " + GetTimeOfTimestamp() + ".";
-		for (int i = text.Length; i < 7; i++)
-		{
-			text = "0" + text;
-		}
-		text2 += text;
-		return Convert.ToDateTime(text2);
+		return BuildDateTime(GetYear(), GetMonth(), GetDay(), GetHour(24), GetMinute(24), GetSecond(24), GetNano(24));
 	}
 
 	public DateTimeOffset GetTimestampTZ()
 	{
-		string dateTimeTzInString = GetDateTimeTzInString();
-		string format = "yyyy-MM-dd HH:mm:ss.fffffff zzz";
-		return DateTimeOffset.ParseExact(dateTimeTzInString, format, null);
+		return BuildOffset(GetYear(), GetMonth(), GetDay(), GetHour(24), GetMinute(24), GetSecond(24), GetNano(24), GetTZ(24));
+	}
+
+	private static DateTime BuildDateTime(int year, int month, int day, int hour, int minute, int second, int fractionalTicks)
+	{
+		if (fractionalTicks < 0 || fractionalTicks >= TimeSpan.TicksPerSecond)
+			throw new OverflowException("Temporal fraction cannot be represented by .NET ticks.");
+		try { return new DateTime(year, month, day, hour, minute, second, DateTimeKind.Unspecified).AddTicks(fractionalTicks); }
+		catch (ArgumentOutOfRangeException) { throw new OverflowException("Server temporal value is outside the .NET range."); }
+	}
+
+	private static DateTimeOffset BuildOffset(int year, int month, int day, int hour, int minute, int second, int fractionalTicks, short offsetMinutes)
+	{
+		DateTime local = BuildDateTime(year, month, day, hour, minute, second, fractionalTicks);
+		try { return new DateTimeOffset(local, TimeSpan.FromMinutes(offsetMinutes)); }
+		catch (ArgumentOutOfRangeException) { throw new OverflowException("Server timezone offset is outside the .NET range."); }
 	}
 
 	public static DateTime GetDateByString(string s)
@@ -1106,6 +1093,7 @@ public class DmDateTime
 
 	public static byte[] DmTimeDecodeFast(byte[] val)
 	{
+		if (val.Length == 12) return NormalizeRawMicroseconds(val);
 		byte[] array = new byte[12];
 		byte b = (byte)(DmConvertion.GetByte(val, 0) & 0x1F);
 		array[4] = b;
@@ -1114,12 +1102,8 @@ public class DmDateTime
 		byte b3 = (byte)((DmConvertion.GetByte(val, 1) >> 3) + ((DmConvertion.GetByte(val, 2) & 1) << 5));
 		array[6] = b3;
 		int num = (DmConvertion.GetByte(val, 2) >> 1) + (DmConvertion.GetByte(val, 3) << 7) + ((DmConvertion.GetByte(val, 4) & 0x1F) << 15);
-		num *= 1000;
-		if (num > 0)
-		{
-			string text = num.ToString();
-			num = int.Parse(text.Substring(0, 7 - Math.Max(0, 9 - text.Length)));
-		}
+		if (num < 0 || num > 999999) throw new OverflowException("TIME fractional value is outside the supported range.");
+		num = checked(num * 10); // microseconds to 100-ns ticks
 		array[7] = (byte)(num & 0xFF);
 		array[8] = (byte)((num >> 8) & 0xFF);
 		array[9] = (byte)((num >> 16) & 0xFF);
@@ -1142,7 +1126,7 @@ public class DmDateTime
 		int num2 = 0;
 		if (value.Length == 12)
 		{
-			return value;
+			return NormalizeRawMicroseconds(value);
 		}
 		byte[] array = new byte[12];
 		int num3 = 0;
@@ -1237,15 +1221,26 @@ public class DmDateTime
 		array[4] = b3;
 		array[5] = b4;
 		array[6] = b5;
-		if (num2 > 0)
-		{
-			string text = num2.ToString();
-			num2 = int.Parse(text.Substring(0, 7 - Math.Max(0, 9 - text.Length)));
-		}
+		if (num2 < 0 || num2 > 999999999 || num2 % 100 != 0)
+			throw new OverflowException("TIMESTAMP has fractional precision outside .NET ticks.");
+		num2 /= 100; // nanoseconds to exact 100-ns ticks
 		array[7] = (byte)(num2 & 0xFF);
 		array[8] = (byte)((num2 >> 8) & 0xFF);
 		array[9] = (byte)((num2 >> 16) & 0xFF);
 		return array;
+	}
+
+	private static byte[] NormalizeRawMicroseconds(byte[] raw)
+	{
+		int microseconds = raw[7] | (raw[8] << 8) | (raw[9] << 16);
+		if (microseconds > 999999)
+			throw new OverflowException("Temporal fraction is outside the legacy microsecond range.");
+		int ticks = checked(microseconds * 10);
+		byte[] normalized = (byte[])raw.Clone();
+		normalized[7] = (byte)ticks;
+		normalized[8] = (byte)(ticks >> 8);
+		normalized[9] = (byte)(ticks >> 16);
+		return normalized;
 	}
 
 	public static byte[] DmTimeFromRec4(byte[] dateTime, int CType)
@@ -1671,6 +1666,8 @@ public class DmDateTime
 		{
 			dt = dmdtDecodeFast(value);
 		}
+		if (column.type is 15 or 16 or 22 or 23 or 26 or 27)
+			DmTemporalCodec.ValidateWireNanoseconds(dt[6], column.scale);
 		if (column.mask == 4)
 		{
 			dt = transformTZ(dt, dbtz, ltz);

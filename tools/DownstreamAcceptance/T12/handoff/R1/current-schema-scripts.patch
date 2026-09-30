@@ -1,0 +1,1145 @@
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
+new file mode 100644
+index 0000000..d54070b
+--- /dev/null
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs
+@@ -0,0 +1,197 @@
++using System.Globalization;
++using System.Text.RegularExpressions;
++using Dm;
++using Xunit;
++
++namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
++
++// This fixture uses an existing ordinary TEST account. It never creates users,
++// schemas, tablespaces or grants, and never calls EnsureDeleted.
++public sealed class DamengCurrentSchemaScriptDatabase : IAsyncLifetime
++{
++    internal const string TestSchema = "WDM_PROVIDER_TEST";
++    private readonly HashSet<CurrentSchemaScriptObjectNames> _owned = [];
++    private string _connectionString = "";
++
++    public string ConnectionString => _connectionString;
++
++    public async Task InitializeAsync()
++    {
++        _connectionString = DamengTestEnvironment.GetRequiredConnectionString();
++        await using var connection = await OpenAsync();
++    }
++
++    public async Task DisposeAsync()
++    {
++        // A failed test's finally may have left cleanup pending. Retry only its
++        // previously claimed, exact names; no wildcard or fixed history table.
++        var failures = new List<string>();
++        foreach (var names in _owned.ToArray())
++        {
++            try { await CleanupAsync(names); }
++            catch (Exception exception) { failures.Add(Kind(exception)); }
++        }
++        if (failures.Count != 0)
++            throw new InvalidOperationException("Current-schema pending cleanup failed after all groups were attempted: "
++                + string.Join(",", failures));
++    }
++
++    public async Task<DmConnection> OpenAsync()
++    {
++        var connection = new DmConnection(_connectionString);
++        try
++        {
++            await connection.OpenAsync();
++            var user = Convert.ToString(await ScalarAsync(connection, "SELECT USER FROM DUAL"), CultureInfo.InvariantCulture);
++            var schema = Convert.ToString(await ScalarAsync(connection,
++                "SELECT SF_GET_SCHEMA_NAME_BY_ID(CURRENT_SCHID()) FROM DUAL"), CultureInfo.InvariantCulture);
++            if (!string.Equals(user, TestSchema, StringComparison.OrdinalIgnoreCase)
++                || !string.Equals(schema, TestSchema, StringComparison.OrdinalIgnoreCase))
++                throw new InvalidOperationException("Current-schema scripts require the dedicated TEST account and schema.");
++            return connection;
++        }
++        catch (Exception exception)
++        {
++            try { await connection.DisposeAsync(); } catch { }
++            throw SafeFailure("open_or_identity", exception);
++        }
++    }
++
++    internal async Task ClaimAsync(CurrentSchemaScriptObjectNames names)
++    {
++        if (_owned.Contains(names)) throw new InvalidOperationException("Script names were already claimed.");
++        foreach (var name in AllNames(names))
++        {
++            if (!Regex.IsMatch(name, "^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant))
++                throw new InvalidOperationException("Script fixture generated an invalid owned identifier.");
++        }
++
++        await using var connection = await OpenAsync();
++        await AssertAbsentAsync(connection, names);
++        // Registration happens only after every exact name was proven absent.
++        // A collision can never give this fixture authority to delete that object.
++        _owned.Add(names);
++    }
++
++    internal async Task CleanupAsync(CurrentSchemaScriptObjectNames names)
++    {
++        if (!_owned.Contains(names)) return;
++        var failures = new List<string>();
++        try
++        {
++            await using var connection = await OpenAsync();
++            foreach (var table in Tables(names))
++            {
++                try
++                {
++                    if (await CountAsync(connection, "USER_TABLES", "TABLE_NAME", table) != 0)
++                        await ExecuteAsync(connection, "DROP TABLE \"" + table + "\"");
++                }
++                catch (Exception exception) { failures.Add(Kind(exception)); }
++            }
++            try
++            {
++                if (await CountAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", names.Sequence) != 0)
++                    await ExecuteAsync(connection, "DROP SEQUENCE \"" + names.Sequence + "\"");
++            }
++            catch (Exception exception) { failures.Add(Kind(exception)); }
++        }
++        catch (Exception exception) { failures.Add(Kind(exception)); }
++
++        // Confirm server state on a fresh connection, even after a failed DROP.
++        try
++        {
++            await using var check = await OpenAsync();
++            await AssertAbsentAsync(check, names);
++            _owned.Remove(names);
++        }
++        catch (Exception exception) { failures.Add(Kind(exception)); }
++        if (failures.Count != 0)
++            throw new InvalidOperationException("Current-schema cleanup failed: " + string.Join(",", failures));
++    }
++
++    internal static IEnumerable<string> Tables(CurrentSchemaScriptObjectNames names)
++        => new[] { names.ChildTable, names.RenamedLookupTable, names.LookupTable, names.ParentTable, names.HistoryTable }
++            .Distinct(StringComparer.Ordinal);
++
++    private static IEnumerable<string> Indexes(CurrentSchemaScriptObjectNames names)
++        => new[] { names.Index, names.RenamedIndex }.Distinct(StringComparer.Ordinal);
++
++    private static IEnumerable<string> Constraints(CurrentSchemaScriptObjectNames names)
++		=> new[] { names.PrimaryKey, names.UniqueConstraint, names.CheckConstraint, names.ForeignKey,
++			"CPK_" + names.Prefix, "LPK_" + names.Prefix, "PK_" + names.HistoryTable }.Distinct(StringComparer.Ordinal);
++
++    internal static IEnumerable<string> AllNames(CurrentSchemaScriptObjectNames names)
++        => Tables(names).Concat([names.Sequence]).Concat(Indexes(names)).Concat(Constraints(names));
++
++    private static async Task AssertAbsentAsync(DmConnection connection, CurrentSchemaScriptObjectNames names)
++    {
++        foreach (var table in Tables(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_TABLES", "TABLE_NAME", table));
++        Assert.Equal(0L, await CountAsync(connection, "USER_SEQUENCES", "SEQUENCE_NAME", names.Sequence));
++        foreach (var index in Indexes(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_INDEXES", "INDEX_NAME", index));
++        foreach (var constraint in Constraints(names))
++            Assert.Equal(0L, await CountAsync(connection, "USER_CONSTRAINTS", "CONSTRAINT_NAME", constraint));
++    }
++
++    private static async Task<long> CountAsync(DmConnection connection, string catalog, string column, string name)
++        => Convert.ToInt64(await ScalarAsync(connection,
++            "SELECT COUNT(*) FROM " + catalog + " WHERE " + column + " = :owned_name", name), CultureInfo.InvariantCulture);
++
++    private static async Task<object?> ScalarAsync(DmConnection connection, string sql, string? name = null)
++    {
++        try
++        {
++            await using var command = connection.CreateCommand();
++            command.CommandText = sql;
++            if (name is not null)
++            {
++                var parameter = command.CreateParameter();
++                parameter.ParameterName = "owned_name";
++                parameter.Value = name;
++                command.Parameters.Add(parameter);
++            }
++            return await command.ExecuteScalarAsync();
++        }
++        catch (Exception exception) { throw SafeFailure("scalar", exception); }
++    }
++
++    private static async Task ExecuteAsync(DmConnection connection, string sql)
++    {
++        try
++        {
++            await using var command = connection.CreateCommand();
++            command.CommandText = sql;
++            await command.ExecuteNonQueryAsync();
++        }
++        catch (Exception exception) { throw SafeFailure("ddl_cleanup", exception); }
++    }
++
++    // The existing executor supplies SQL and Exception.ToString to its redactor.
++    // This replacement deliberately returns only a fixed, credential-free summary.
++    public static string Redact(string _) => "Current-schema script batch failed; raw SQL and exception text omitted.";
++
++    private static int? SafeNumber(Exception exception)
++        => exception is DmException dm ? dm.Number : exception.Data["DamengSafeNumber"] as int?;
++
++    private static string Kind(Exception exception)
++        => exception.GetType().FullName + (SafeNumber(exception) is { } number ? "/code=" + number : "");
++
++    internal static InvalidOperationException SafeFailure(string stage, Exception exception)
++    {
++        var frame = new System.Diagnostics.StackTrace(exception, true).GetFrame(0);
++        var method = frame?.GetMethod();
++        var failure = new InvalidOperationException("Current-schema script fixture failed at " + stage
++            + " (" + Kind(exception) + "); source=" + method?.DeclaringType?.Name + "." + method?.Name
++            + ":" + (frame?.GetFileLineNumber() ?? 0) + ".");
++        if (SafeNumber(exception) is { } number) failure.Data["DamengSafeNumber"] = number;
++        return failure;
++    }
++}
++
++[CollectionDefinition(DamengCurrentSchemaScriptSet.Name, DisableParallelization = true)]
++public sealed class DamengCurrentSchemaScriptSet : ICollectionFixture<DamengCurrentSchemaScriptDatabase>
++{
++    public const string Name = "DamengCurrentSchemaScripts";
++}
+diff --git a/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
+new file mode 100644
+index 0000000..5f8eb5b
+--- /dev/null
++++ b/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs
+@@ -0,0 +1,936 @@
++using System.Data.Common;
++using System.Globalization;
++using Dm;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Metadata;
++using Microsoft.EntityFrameworkCore.Migrations;
++using Microsoft.EntityFrameworkCore.Migrations.Operations;
++using Xunit;
++using Xunit.Abstractions;
++
++namespace W.EntityFrameworkCore.Dameng.FunctionalTests;
++
++// Same object/seed contracts as the original script tests, with current-schema
++// objects and reversible migrations. The original admin fixture remains untouched.
++[Collection(DamengCurrentSchemaScriptSet.Name)]
++[Trait("Category", "CurrentSchemaScripts")]
++public sealed class DamengCurrentSchemaScriptFunctionalTests(
++    DamengCurrentSchemaScriptDatabase database, ITestOutputHelper output)
++{
++    private const string CreateMigration = "20260930000100_CurrentSchemaCreate";
++    private const string AlterMigration = "20260930000200_CurrentSchemaAlter";
++    private readonly DamengCurrentSchemaScriptDatabase _database = database;
++
++    [Fact]
++    public async Task GeneratedCreateScriptAppliesSupportedCurrentSchemaModel()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            var options = new DbContextOptionsBuilder<CurrentSchemaScriptBootstrapContext>()
++                .UseDameng(_database.ConnectionString)
++                .ReplaceService<IModelCacheKeyFactory, CurrentSchemaScriptBootstrapCacheKeyFactory>().Options;
++            await using var context = new CurrentSchemaScriptBootstrapContext(options, names);
++            var script = context.Database.GenerateCreateScript();
++            AssertScriptBoundaries(script, idempotent: false);
++            Assert.Contains("IDENTITY(10,2)", script, StringComparison.Ordinal);
++            Assert.Contains("NEXTVAL", script, StringComparison.Ordinal);
++            Assert.Contains("UPPER(\"NAME\")", script, StringComparison.Ordinal);
++            Assert.Contains("ON DELETE CASCADE", script, StringComparison.Ordinal);
++            Assert.Contains("DESC", script, StringComparison.Ordinal);
++            Assert.Contains("SET IDENTITY_INSERT", script, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, script, idempotent: false);
++
++            await using var check = await _database.OpenAsync();
++            var seeded = await ReadParentAsync(check, names.ParentTable, "NOTE", 20);
++            Assert.Equal("种子", seeded.Name);
++            Assert.Equal("O'Brien", seeded.Extra);
++            Assert.Equal(22L, await InsertParentAsync(check, names.ParentTable, "新行"));
++            Assert.Equal(41L, await InsertChildAsync(check, names.ChildTable, 20));
++            Assert.Equal("DAMENG", await ScalarStringAsync(check,
++                "SELECT \"NORMALIZED_NAME\" FROM \"" + names.ChildTable + "\" WHERE \"ID\" = 41"));
++            Assert.Equal(new byte[] { 0, 0xA5, 0xFF }, await ScalarBytesAsync(check,
++                "SELECT \"PAYLOAD\" FROM \"" + names.ChildTable + "\" WHERE \"ID\" = 41"));
++            await AssertIndexAsync(check, names.Index, "ID");
++            foreach (var constraint in new[] { names.PrimaryKey, names.UniqueConstraint, names.CheckConstraint, names.ForeignKey })
++                await AssertConstraintAsync(check, constraint);
++            Assert.Equal(44L, await ScalarInt64Async(check, "SELECT \"" + names.Sequence + "\".NEXTVAL FROM DUAL"));
++            Assert.Equal(0L, await ScalarInt64Async(check,
++                "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = :name", ("name", names.HistoryTable)));
++            await ExecuteAsync(check, "DELETE FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 20");
++            Assert.Equal(0L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ChildTable + "\""));
++            Assert.Equal(1L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 22"));
++        });
++    }
++
++    [Fact]
++    public async Task NonIdempotentGeneratedUpAndDownScriptsPreserveHistoryAndSeed()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            var up = Generate(names, Migration.InitialDatabase, null, idempotent: false);
++            AssertMigrationScript(up, names);
++            Assert.Contains("ALTER TABLE", up, StringComparison.Ordinal);
++            Assert.Contains("RENAME", up, StringComparison.Ordinal);
++            Assert.Contains("INCREMENT BY 5", up, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, up, idempotent: false);
++            await using (var check = await _database.OpenAsync())
++            {
++                await AssertUpgradedModelAsync(check, names);
++                await AssertHistoryRowsAsync(check, names, CreateMigration, AlterMigration);
++                Assert.Equal(43L, await InsertChildAsync(check, names.ChildTable, 22));
++                Assert.Equal(48L, await ScalarInt64Async(check, "SELECT \"" + names.Sequence + "\".NEXTVAL FROM DUAL"));
++            }
++            var down = Generate(names, AlterMigration, Migration.InitialDatabase, idempotent: false);
++            await ExecuteScriptAsync(connection, down, idempotent: false);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    [Fact]
++    public async Task IdempotentGeneratedUpAndDownScriptsApplyExactlyOnce()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            var up = Generate(names, Migration.InitialDatabase, null, idempotent: true);
++            Assert.Contains("EXECUTE IMMEDIATE", up, StringComparison.Ordinal);
++            Assert.Contains("IF NOT EXISTS", up, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, up, idempotent: true);
++            await ExecuteScriptAsync(connection, up, idempotent: true);
++            await using (var check = await _database.OpenAsync())
++            {
++                Assert.Equal(1L, await ScalarInt64Async(check,
++                    "SELECT COUNT(*) FROM \"" + names.ParentTable + "\" WHERE \"ID\" = 20"));
++                Assert.Equal(1L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.ParentTable + "\""));
++                Assert.Equal(1L, await CountHistoryAsync(check, names.HistoryTable, CreateMigration));
++                Assert.Equal(1L, await CountHistoryAsync(check, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(check, names, CreateMigration, AlterMigration);
++            }
++            var down = Generate(names, AlterMigration, Migration.InitialDatabase, idempotent: true);
++            Assert.Contains("BEGIN", down, StringComparison.Ordinal);
++            await ExecuteScriptAsync(connection, down, idempotent: true);
++            await ExecuteScriptAsync(connection, down, idempotent: true);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    [Fact]
++    public async Task GeneratedMigrationRangesUpgradeAndDowngradeCurrentSchema()
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(NewPrefix());
++        await WithOwnedAsync(names, async connection =>
++        {
++            CurrentSchemaScriptNames.Prefix = names.Prefix;
++            await ExecuteScriptAsync(connection, Generate(names, Migration.InitialDatabase, CreateMigration, false), false);
++            await using (var first = await _database.OpenAsync())
++            {
++                var seeded = await ReadParentAsync(first, names.ParentTable, "NOTE", 20);
++                Assert.Equal("种子", seeded.Name);
++                Assert.Equal("O'Brien", seeded.Extra);
++                Assert.Equal(1L, await CountHistoryAsync(first, names.HistoryTable, CreateMigration));
++                Assert.Equal(0L, await CountHistoryAsync(first, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(first, names, CreateMigration);
++            }
++            await ExecuteScriptAsync(connection, Generate(names, CreateMigration, AlterMigration, false), false);
++            await using (var upgraded = await _database.OpenAsync())
++            {
++                await AssertUpgradedModelAsync(upgraded, names);
++                await AssertHistoryRowsAsync(upgraded, names, CreateMigration, AlterMigration);
++            }
++            await ExecuteScriptAsync(connection, Generate(names, AlterMigration, CreateMigration, false), false);
++            await using (var prior = await _database.OpenAsync())
++            {
++                var seeded = await ReadParentAsync(prior, names.ParentTable, "NOTE", 20);
++                Assert.Equal("O'Brien", seeded.Extra);
++                Assert.Equal(0L, await CountColumnAsync(prior, names.ParentTable, "STATUS"));
++                Assert.Equal(0L, await CountColumnAsync(prior, names.ParentTable, "DISPLAY_NOTE"));
++                Assert.Equal(1L, await CountColumnAsync(prior, names.LookupTable, "LABEL"));
++                Assert.Equal(1L, await CountHistoryAsync(prior, names.HistoryTable, CreateMigration));
++                Assert.Equal(0L, await CountHistoryAsync(prior, names.HistoryTable, AlterMigration));
++                await AssertHistoryRowsAsync(prior, names, CreateMigration);
++                await AssertIndexAsync(prior, names.Index, "ID");
++            }
++            await ExecuteScriptAsync(connection, Generate(names, CreateMigration, Migration.InitialDatabase, false), false);
++            await AssertRevertedAsync(names);
++        });
++    }
++
++    private string Generate(CurrentSchemaScriptObjectNames names, string from, string? to, bool idempotent)
++    {
++        using var context = new DamengCurrentSchemaScriptMigrationContext(
++            new DbContextOptionsBuilder<DamengCurrentSchemaScriptMigrationContext>()
++                .UseDameng(_database.ConnectionString, dm => dm.MigrationsHistoryTable(names.HistoryTable)).Options);
++        return context.GetService<IMigrator>().GenerateScript(fromMigration: from, toMigration: to,
++            options: idempotent ? MigrationsSqlGenerationOptions.Idempotent : MigrationsSqlGenerationOptions.Default);
++    }
++
++    private static async Task ExecuteScriptAsync(DmConnection connection, string script, bool idempotent)
++    {
++        AssertScriptBoundaries(script, idempotent);
++        await DamengScriptExecutor.ExecuteAsync(connection, script, idempotent, DamengCurrentSchemaScriptDatabase.Redact);
++    }
++
++    private static void AssertScriptBoundaries(string script, bool idempotent)
++    {
++        Assert.DoesNotContain("CREATE SCHEMA", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("DROP SCHEMA", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("CREATE USER", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("TABLESPACE", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("BEGIN TRANSACTION", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("@", script, StringComparison.Ordinal);
++        var batches = idempotent ? DamengScriptExecutor.SplitIdempotent(script) : DamengScriptExecutor.SplitStatements(script);
++        Assert.NotEmpty(batches);
++        Assert.All(batches, batch => Assert.DoesNotContain(batch.Split('\n'), line => line.Trim() == "/"));
++        foreach (var block in batches.Where(batch => batch.StartsWith("BEGIN", StringComparison.Ordinal)))
++            Assert.EndsWith("END;", block, StringComparison.Ordinal);
++        if (idempotent) Assert.Contains(batches, batch => batch.StartsWith("BEGIN", StringComparison.Ordinal));
++    }
++
++    private static async Task AssertHistoryRowsAsync(DmConnection connection,
++        CurrentSchemaScriptObjectNames names, params string[] migrationIds)
++    {
++        Assert.Equal((long)migrationIds.Length, await ScalarInt64Async(connection,
++            "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\""));
++        Assert.Equal((long)migrationIds.Length, await ScalarInt64Async(connection,
++            "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\" WHERE \"ProductVersion\" = :version",
++            ("version", "10.0.12")));
++        foreach (var migrationId in migrationIds)
++            Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, migrationId));
++    }
++
++    private async Task AssertRevertedAsync(CurrentSchemaScriptObjectNames names)
++    {
++        await using var check = await _database.OpenAsync();
++        foreach (var table in DamengCurrentSchemaScriptDatabase.Tables(names).Where(table => table != names.HistoryTable))
++            Assert.Equal(0L, await ScalarInt64Async(check,
++                "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = :name", ("name", table)));
++        Assert.Equal(0L, await ScalarInt64Async(check,
++            "SELECT COUNT(*) FROM USER_SEQUENCES WHERE SEQUENCE_NAME = :name", ("name", names.Sequence)));
++        Assert.Equal(0L, await ScalarInt64Async(check, "SELECT COUNT(*) FROM \"" + names.HistoryTable + "\""));
++    }
++
++    private async Task WithOwnedAsync(CurrentSchemaScriptObjectNames names, Func<DmConnection, Task> contract)
++    {
++        await _database.ClaimAsync(names);
++        output.WriteLine("owned_objects=" + string.Join(",", DamengCurrentSchemaScriptDatabase.AllNames(names)));
++        try
++        {
++            await using var connection = await _database.OpenAsync();
++            await contract(connection);
++        }
++        catch (Exception exception) { throw DamengCurrentSchemaScriptDatabase.SafeFailure("contract", exception); }
++        finally
++        {
++            await _database.CleanupAsync(names);
++            output.WriteLine("final_database_state=owned_objects_absent; verified_on_fresh_connection=true");
++        }
++    }
++
++    private static void AssertMigrationScript(string script, CurrentSchemaScriptObjectNames names)
++    {
++        Assert.Contains("IDENTITY(10,2)", script, StringComparison.Ordinal);
++        Assert.Contains(names.Sequence + "\".NEXTVAL", script, StringComparison.Ordinal);
++        Assert.Contains("UPPER(\"NAME\")", script, StringComparison.Ordinal);
++        Assert.Contains("ON DELETE CASCADE", script, StringComparison.Ordinal);
++        Assert.Contains("DESC", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("CREATE SCHEMA", script, StringComparison.Ordinal);
++        Assert.Contains("SET IDENTITY_INSERT", script, StringComparison.Ordinal);
++        Assert.DoesNotContain("@", script, StringComparison.Ordinal);
++    }
++
++    private static async Task AssertUpgradedModelAsync(DmConnection connection, CurrentSchemaScriptObjectNames names)
++    {
++        var seeded = await ReadParentAsync(connection, names.ParentTable, "DISPLAY_NOTE", 20);
++        Assert.Equal("种子", seeded.Name);
++        Assert.Equal("O'Brien", seeded.Extra);
++        Assert.Equal(1, await ScalarInt32Async(
++            connection,
++            "SELECT \"STATUS\" FROM \"" + names.ParentTable + "\" WHERE \"ID\" = :id",
++            ("id", 20L)));
++
++        Assert.Equal(22L, await InsertParentAsync(connection, names.ParentTable, "新行", includeStatus: true));
++        Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, "20260930000100_CurrentSchemaCreate"));
++        Assert.Equal(1L, await CountHistoryAsync(connection, names.HistoryTable, "20260930000200_CurrentSchemaAlter"));
++        Assert.Equal(0L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME = :name",
++            ("name", names.Index)));
++        await AssertIndexAsync(connection, names.RenamedIndex, descendingColumn: null);
++        Assert.Equal(0L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM \"" + names.Schema + "\".\"" + names.RenamedLookupTable + "\""));
++        Assert.Equal(0L, await CountColumnAsync(connection, names.RenamedLookupTable, "LABEL"));
++    }
++
++    private static async Task AssertIndexAsync(
++        DmConnection connection,
++        string indexName,
++        string? descendingColumn)
++    {
++        Assert.Equal(1L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME = :name",
++            ("name", indexName)));
++
++        if (descendingColumn is null
++            || await ScalarInt64Async(
++                connection,
++                "SELECT COUNT(*) FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = 'USER_IND_COLUMNS' AND COLUMN_NAME = 'DESCEND'")
++            == 0)
++        {
++            return;
++        }
++
++        Assert.Equal(1L, await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_IND_COLUMNS WHERE INDEX_NAME = :name AND COLUMN_NAME = :column "
++            + "AND UPPER(DESCEND) IN ('DESC', 'Y', 'YES')",
++            ("name", indexName),
++            ("column", descendingColumn)));
++    }
++
++    private static async Task AssertConstraintAsync(DmConnection connection, string constraintName)
++        => Assert.Equal(
++            1L,
++            await ScalarInt64Async(
++                connection,
++                "SELECT COUNT(*) FROM USER_CONSTRAINTS WHERE CONSTRAINT_NAME = :name",
++                ("name", constraintName)));
++
++    private static async Task<long> CountColumnAsync(
++        DmConnection connection,
++        string tableName,
++        string columnName)
++        => await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM USER_TAB_COLUMNS WHERE TABLE_NAME = :table_name AND COLUMN_NAME = :column_name",
++            ("table_name", tableName),
++            ("column_name", columnName));
++
++    private static async Task<long> CountHistoryAsync(
++        DmConnection connection,
++        string historyTable,
++        string migrationId)
++        => await ScalarInt64Async(
++            connection,
++            "SELECT COUNT(*) FROM \"" + historyTable + "\" WHERE \"MigrationId\" = :id",
++            ("id", migrationId));
++
++    private static async Task<(string Name, string? Extra)> ReadParentAsync(
++        DmConnection connection,
++        string tableName,
++        string extraColumn,
++        long id)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = "SELECT \"NAME\", \"" + extraColumn + "\" FROM \"" + tableName + "\" WHERE \"ID\" = :id";
++        AddParameter(command, "id", id);
++        await using var reader = await command.ExecuteReaderAsync();
++        Assert.True(await reader.ReadAsync());
++        return (reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1));
++    }
++
++    private static async Task<long> InsertParentAsync(
++        DmConnection connection,
++        string tableName,
++        string name,
++        bool includeStatus = false)
++    {
++        if (includeStatus)
++        {
++            await ExecuteAsync(
++                connection,
++                "INSERT INTO \"" + tableName + "\" (\"NAME\", \"STATUS\") VALUES (:name, :status)",
++                ("name", name),
++                ("status", 1));
++        }
++        else
++        {
++            await ExecuteAsync(
++                connection,
++                "INSERT INTO \"" + tableName + "\" (\"NAME\") VALUES (:name)",
++                ("name", name));
++        }
++
++        return await ScalarInt64Async(
++            connection,
++            "SELECT \"ID\" FROM \"" + tableName + "\" WHERE \"NAME\" = :name",
++            ("name", name));
++    }
++
++    private static async Task<long> InsertChildAsync(
++        DmConnection connection,
++        string tableName,
++        long parentId)
++    {
++        await ExecuteAsync(
++            connection,
++            "INSERT INTO \"" + tableName + "\" (\"PARENT_ID\", \"NAME\", \"PAYLOAD\") VALUES (:parent_id, :name, :payload)",
++            ("parent_id", parentId),
++            ("name", "dameng"),
++            ("payload", new byte[] { 0, 0xA5, 0xFF }));
++
++        return await ScalarInt64Async(
++            connection,
++            "SELECT \"ID\" FROM \"" + tableName + "\" WHERE \"NAME\" = :name",
++            ("name", "dameng"));
++    }
++
++    private static async Task ExecuteAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        await command.ExecuteNonQueryAsync();
++    }
++
++    private static async Task<long> ScalarInt64Async(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToInt64(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
++    }
++
++    private static async Task<int> ScalarInt32Async(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
++    }
++
++    private static async Task<string> ScalarStringAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        return Convert.ToString(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture)
++            ?? throw new InvalidOperationException("Dameng returned no scalar value.");
++    }
++
++    private static async Task<byte[]> ScalarBytesAsync(
++        DmConnection connection,
++        string sql,
++        params (string Name, object Value)[] parameters)
++    {
++        await using var command = connection.CreateCommand();
++        command.CommandText = sql;
++        foreach (var (name, value) in parameters)
++        {
++            AddParameter(command, name, value);
++        }
++
++        var scalar = await command.ExecuteScalarAsync();
++        return scalar as byte[] ?? throw new InvalidOperationException("Dameng did not return a byte array.");
++    }
++
++    private static void AddParameter(DbCommand command, string name, object value)
++    {
++        var parameter = command.CreateParameter();
++        parameter.ParameterName = name;
++        parameter.Value = value;
++        command.Parameters.Add(parameter);
++    }
++
++    private static string NewPrefix()
++        => "T12S_" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..16].ToUpperInvariant();
++}
++
++internal static class CurrentSchemaScriptNames
++{
++    public static string Prefix { get; set; } = "";
++}
++
++internal sealed record CurrentSchemaScriptObjectNames(
++    string Prefix,
++    string ParentTable,
++    string ChildTable,
++    string Sequence,
++    string Schema,
++    string LookupTable,
++    string RenamedLookupTable,
++    string Index,
++    string RenamedIndex,
++    string PrimaryKey,
++    string UniqueConstraint,
++    string CheckConstraint,
++    string ForeignKey,
++    string HistoryTable)
++{
++    public static CurrentSchemaScriptObjectNames ForPrefix(string prefix)
++        => new(
++            prefix,
++            "P_" + prefix,
++            "C_" + prefix,
++            "S_" + prefix,
++            DamengCurrentSchemaScriptDatabase.TestSchema,
++            "L_" + prefix,
++            "L_" + prefix,
++            "IX_" + prefix,
++            "IX_" + prefix,
++            "PK_" + prefix,
++            "AK_" + prefix,
++            "CK_" + prefix,
++            "FK_" + prefix,
++            "H_" + prefix);
++
++    public static CurrentSchemaScriptObjectNames ForMigrationPrefix(string prefix)
++        => new(
++            prefix,
++            "MP_" + prefix,
++            "MC_" + prefix,
++            "MS_" + prefix,
++            DamengCurrentSchemaScriptDatabase.TestSchema,
++            "ML_" + prefix,
++            "MR_" + prefix,
++            "IX_" + prefix,
++            "IY_" + prefix,
++            "PK_" + prefix,
++            "AK_" + prefix,
++            "CK_" + prefix,
++            "FK_" + prefix,
++            "H_" + prefix);
++}
++
++internal sealed class CurrentSchemaScriptBootstrapContext(
++    DbContextOptions<CurrentSchemaScriptBootstrapContext> options,
++    CurrentSchemaScriptObjectNames names)
++    : DbContext(options)
++{
++    public CurrentSchemaScriptObjectNames Names { get; } = names;
++
++    protected override void OnModelCreating(ModelBuilder modelBuilder)
++    {
++        modelBuilder.HasSequence<long>(Names.Sequence)
++            .StartsAt(41)
++            .IncrementsBy(3)
++            .HasMin(41)
++            .HasMax(1000);
++
++        modelBuilder.Entity<CurrentSchemaScriptParent>(entity =>
++        {
++            entity.ToTable(Names.ParentTable);
++            entity.HasKey(item => item.Id).HasName(Names.PrimaryKey);
++            entity.HasAlternateKey(item => item.Name).HasName(Names.UniqueConstraint);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("BIGINT")
++                .UseDamengIdentityColumn(seed: 10, increment: 2);
++            entity.Property(item => item.Name)
++                .HasColumnName("NAME")
++                .HasMaxLength(64)
++                .IsRequired();
++            entity.Property(item => item.Note)
++                .HasColumnName("NOTE")
++                .HasMaxLength(100);
++            entity.HasData(new CurrentSchemaScriptParent
++            {
++                Id = 20,
++                Name = "种子",
++                Note = "O'Brien"
++            });
++        });
++
++        modelBuilder.Entity<CurrentSchemaScriptChild>(entity =>
++        {
++            entity.ToTable(
++                Names.ChildTable,
++                table => table.HasCheckConstraint(Names.CheckConstraint, "LENGTH(\"NAME\") > 0"));
++            entity.HasKey(item => item.Id).HasName("CPK_" + Names.Prefix);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("BIGINT")
++                .UseDamengSequence(Names.Sequence);
++            entity.Property(item => item.ParentId)
++                .HasColumnName("PARENT_ID")
++                .HasColumnType("BIGINT");
++            entity.Property(item => item.Name)
++                .HasColumnName("NAME")
++                .HasMaxLength(100)
++                .IsRequired();
++            entity.Property(item => item.NormalizedName)
++                .HasColumnName("NORMALIZED_NAME")
++                .HasComputedColumnSql("UPPER(\"NAME\")", stored: false);
++            entity.Property(item => item.Payload)
++                .HasColumnName("PAYLOAD")
++                .HasMaxLength(8)
++                .IsRequired();
++            entity.HasIndex(item => new { item.Name, item.Id })
++                .IsUnique()
++                .IsDescending(false, true)
++                .HasDatabaseName(Names.Index);
++            entity.HasOne<CurrentSchemaScriptParent>()
++                .WithMany()
++                .HasForeignKey(item => item.ParentId)
++                .HasPrincipalKey(item => item.Id)
++                .HasConstraintName(Names.ForeignKey)
++                .OnDelete(DeleteBehavior.Cascade);
++        });
++
++        modelBuilder.Entity<CurrentSchemaScriptLookup>(entity =>
++        {
++            entity.ToTable(Names.LookupTable);
++            entity.HasKey(item => item.Id).HasName("LPK_" + Names.Prefix);
++            entity.Property(item => item.Id)
++                .HasColumnName("ID")
++                .HasColumnType("INT")
++                .ValueGeneratedNever();
++            entity.Property(item => item.Label)
++                .HasColumnName("LABEL")
++                .HasMaxLength(20)
++                .IsRequired();
++        });
++    }
++}
++
++internal sealed class CurrentSchemaScriptBootstrapCacheKeyFactory : IModelCacheKeyFactory
++{
++    public object Create(DbContext context, bool designTime)
++        => context is CurrentSchemaScriptBootstrapContext bootstrap
++            ? (context.GetType(), bootstrap.Names.Prefix, designTime)
++            : (context.GetType(), designTime);
++}
++
++internal sealed class CurrentSchemaScriptParent
++{
++    public long Id { get; set; }
++
++    public string Name { get; set; } = "";
++
++    public string? Note { get; set; }
++}
++
++internal sealed class CurrentSchemaScriptChild
++{
++    public long Id { get; set; }
++
++    public long ParentId { get; set; }
++
++    public string Name { get; set; } = "";
++
++    public string? NormalizedName { get; set; }
++
++    public byte[] Payload { get; set; } = [];
++}
++
++internal sealed class CurrentSchemaScriptLookup
++{
++    public int Id { get; set; }
++
++    public string Label { get; set; } = "";
++}
++
++public sealed class DamengCurrentSchemaScriptMigrationContext(DbContextOptions<DamengCurrentSchemaScriptMigrationContext> options)
++    : DbContext(options);
++
++[DbContext(typeof(DamengCurrentSchemaScriptMigrationContext))]
++[Migration("20260930000100_CurrentSchemaCreate")]
++public sealed class CurrentSchemaCreateScriptObjectsMigration : Migration
++{
++    protected override void Up(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.CreateSequence<long>(
++            name: names.Sequence,
++            startValue: 41,
++            incrementBy: 3,
++            minValue: 41,
++            maxValue: 1000,
++            cyclic: false);
++
++        migrationBuilder.Operations.Add(CreateParentTable(names));
++        migrationBuilder.InsertData(
++            table: names.ParentTable,
++            columns: ["ID", "NAME", "NOTE"],
++            columnTypes: ["BIGINT", "NVARCHAR2(64)", "NVARCHAR2(100)"],
++            values: new object[] { 20L, "种子", "O'Brien" });
++        migrationBuilder.Operations.Add(CreateChildTable(names));
++        migrationBuilder.Operations.Add(new CreateIndexOperation
++        {
++            Name = names.Index,
++            Table = names.ChildTable,
++            Columns = ["NAME", "ID"],
++            IsUnique = true,
++            IsDescending = [false, true]
++        });
++        migrationBuilder.Operations.Add(CreateLookupTable(names));
++    }
++
++    protected override void Down(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.DropTable(names.LookupTable);
++        migrationBuilder.DropTable(names.ChildTable);
++        migrationBuilder.DropTable(names.ParentTable);
++        migrationBuilder.DropSequence(names.Sequence);
++    }
++
++    protected override void BuildTargetModel(ModelBuilder modelBuilder)
++        => CurrentSchemaScriptMigrationModel.Build(modelBuilder, altered: false);
++
++    private static CreateTableOperation CreateParentTable(CurrentSchemaScriptObjectNames names)
++    {
++        var id = Column("ID", "BIGINT", nullable: false);
++        id["Dameng:ValueGenerationStrategy"] = DamengValueGenerationStrategy.IdentityColumn;
++        id["Dameng:IdentitySeed"] = 10L;
++        id["Dameng:IdentityIncrement"] = 2;
++
++        var table = new CreateTableOperation
++        {
++            Name = names.ParentTable,
++            PrimaryKey = Key(names.PrimaryKey, names.ParentTable, "ID")
++        };
++        table.Columns.Add(id);
++        table.Columns.Add(Column("NAME", "NVARCHAR2(64)", nullable: false));
++        table.Columns.Add(Column("NOTE", "NVARCHAR2(100)", nullable: true));
++        table.UniqueConstraints.Add(new AddUniqueConstraintOperation
++        {
++            Name = names.UniqueConstraint,
++            Table = names.ParentTable,
++            Columns = ["NAME"]
++        });
++        return table;
++    }
++
++    private static CreateTableOperation CreateChildTable(CurrentSchemaScriptObjectNames names)
++    {
++        var id = Column("ID", "BIGINT", nullable: false);
++        id["Dameng:ValueGenerationStrategy"] = DamengValueGenerationStrategy.Sequence;
++        id["Dameng:SequenceName"] = names.Sequence;
++
++        var table = new CreateTableOperation
++        {
++            Name = names.ChildTable,
++            PrimaryKey = Key("CPK_" + names.Prefix, names.ChildTable, "ID")
++        };
++        table.Columns.Add(id);
++        table.Columns.Add(Column("PARENT_ID", "BIGINT", nullable: false));
++        table.Columns.Add(Column("NAME", "NVARCHAR2(100)", nullable: false));
++        table.Columns.Add(new AddColumnOperation
++        {
++            Name = "NORMALIZED_NAME",
++            Table = names.ChildTable,
++            ClrType = typeof(string),
++            ColumnType = "NVARCHAR2(100)",
++            IsNullable = true,
++            ComputedColumnSql = "UPPER(\"NAME\")",
++            IsStored = false
++        });
++        table.Columns.Add(new AddColumnOperation
++        {
++            Name = "PAYLOAD",
++            Table = names.ChildTable,
++            ClrType = typeof(byte[]),
++            ColumnType = "VARBINARY(8)",
++            IsNullable = false
++        });
++        table.CheckConstraints.Add(new AddCheckConstraintOperation
++        {
++            Name = names.CheckConstraint,
++            Table = names.ChildTable,
++            Sql = "LENGTH(\"NAME\") > 0"
++        });
++        table.ForeignKeys.Add(new AddForeignKeyOperation
++        {
++            Name = names.ForeignKey,
++            Table = names.ChildTable,
++            Columns = ["PARENT_ID"],
++            PrincipalTable = names.ParentTable,
++            PrincipalColumns = ["ID"],
++            OnDelete = ReferentialAction.Cascade
++        });
++        return table;
++    }
++
++    private static CreateTableOperation CreateLookupTable(CurrentSchemaScriptObjectNames names)
++    {
++        var table = new CreateTableOperation
++        {
++            Name = names.LookupTable,
++            PrimaryKey = Key("LPK_" + names.Prefix, names.LookupTable, "ID")
++        };
++        table.Columns.Add(Column("ID", "INT", nullable: false));
++        table.Columns.Add(Column("LABEL", "NVARCHAR2(20)", nullable: false));
++        return table;
++    }
++
++    private static AddColumnOperation Column(string name, string columnType, bool nullable)
++        => new()
++        {
++            Name = name,
++            ClrType = columnType == "BIGINT" ? typeof(long) : columnType == "INT" ? typeof(int) : typeof(string),
++            ColumnType = columnType,
++            IsNullable = nullable
++        };
++
++    private static AddPrimaryKeyOperation Key(
++        string name,
++        string table,
++        string column,
++        string? schema = null)
++        => new()
++        {
++            Name = name,
++            Table = table,
++            Schema = schema,
++            Columns = [column]
++        };
++}
++
++[DbContext(typeof(DamengCurrentSchemaScriptMigrationContext))]
++[Migration("20260930000200_CurrentSchemaAlter")]
++public sealed class CurrentSchemaAlterScriptObjectsMigration : Migration
++{
++    protected override void Up(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.RenameColumn(
++            name: "NOTE",
++            table: names.ParentTable,
++            newName: "DISPLAY_NOTE");
++        migrationBuilder.AddColumn<int>(
++            name: "STATUS",
++            table: names.ParentTable,
++            type: "INT",
++            nullable: false,
++            defaultValue: 1);
++        migrationBuilder.RenameIndex(
++            name: names.Index,
++            newName: names.RenamedIndex,
++            table: names.ChildTable);
++        migrationBuilder.AlterSequence(
++            name: names.Sequence,
++            incrementBy: 5,
++            minValue: 41,
++            maxValue: 1000,
++            cyclic: false,
++            oldIncrementBy: 3,
++            oldMinValue: 41,
++            oldMaxValue: 1000,
++            oldCyclic: false);
++        migrationBuilder.DropColumn(
++            name: "LABEL",
++            table: names.LookupTable);
++        migrationBuilder.RenameTable(
++            name: names.LookupTable,
++            newName: names.RenamedLookupTable);
++    }
++
++    protected override void Down(MigrationBuilder migrationBuilder)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        migrationBuilder.RenameTable(name: names.RenamedLookupTable, newName: names.LookupTable);
++        migrationBuilder.AddColumn<string>(name: "LABEL", table: names.LookupTable,
++            type: "NVARCHAR2(20)", nullable: false, defaultValue: "");
++        migrationBuilder.AlterSequence(name: names.Sequence, incrementBy: 3, minValue: 41,
++            maxValue: 1000, cyclic: false, oldIncrementBy: 5, oldMinValue: 41,
++            oldMaxValue: 1000, oldCyclic: false);
++        migrationBuilder.RenameIndex(name: names.RenamedIndex, newName: names.Index, table: names.ChildTable);
++        migrationBuilder.DropColumn(name: "STATUS", table: names.ParentTable);
++        migrationBuilder.RenameColumn(name: "DISPLAY_NOTE", table: names.ParentTable, newName: "NOTE");
++    }
++
++    protected override void BuildTargetModel(ModelBuilder modelBuilder)
++        => CurrentSchemaScriptMigrationModel.Build(modelBuilder, altered: true);
++}
++
++internal static class CurrentSchemaScriptMigrationModel
++{
++    public static void Build(ModelBuilder modelBuilder, bool altered)
++    {
++        var names = CurrentSchemaScriptObjectNames.ForMigrationPrefix(CurrentSchemaScriptNames.Prefix);
++        modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
++        modelBuilder.HasSequence<long>(names.Sequence)
++            .StartsAt(41)
++            .IncrementsBy(altered ? 5 : 3)
++            .HasMin(41)
++            .HasMax(1000);
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptParent",
++            entity =>
++            {
++                entity.ToTable(names.ParentTable);
++                entity.Property<long>("ID").HasColumnType("BIGINT").UseDamengIdentityColumn(10, 2);
++                entity.Property<string>("NAME").HasMaxLength(64).IsRequired();
++                entity.Property<string>(altered ? "DISPLAY_NOTE" : "NOTE").HasMaxLength(100);
++                if (altered)
++                {
++                    entity.Property<int>("STATUS").HasColumnType("INT").HasDefaultValue(1);
++                }
++
++                entity.HasKey("ID").HasName(names.PrimaryKey);
++                entity.HasAlternateKey("NAME").HasName(names.UniqueConstraint);
++            });
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptChild",
++            entity =>
++            {
++                entity.ToTable(names.ChildTable);
++                entity.Property<long>("ID")
++                    .HasColumnType("BIGINT")
++                    .UseDamengSequence(names.Sequence);
++                entity.Property<long>("PARENT_ID").HasColumnType("BIGINT");
++                entity.Property<string>("NAME").HasMaxLength(100).IsRequired();
++                entity.Property<string>("NORMALIZED_NAME")
++                    .HasComputedColumnSql("UPPER(\"NAME\")", stored: false);
++                entity.Property<byte[]>("PAYLOAD").HasMaxLength(8).IsRequired();
++                entity.HasKey("ID");
++                entity.HasIndex("NAME", "ID").IsUnique().HasDatabaseName(altered ? names.RenamedIndex : names.Index);
++                entity.HasOne("CurrentSchemaScriptParent")
++                    .WithMany()
++                    .HasForeignKey("PARENT_ID")
++                    .HasConstraintName(names.ForeignKey)
++                    .OnDelete(DeleteBehavior.Cascade);
++            });
++
++        modelBuilder.Entity(
++            "CurrentSchemaScriptLookup",
++            entity =>
++            {
++                entity.ToTable(altered ? names.RenamedLookupTable : names.LookupTable);
++                entity.Property<int>("ID").HasColumnType("INT").ValueGeneratedNever();
++                if (!altered)
++                {
++                    entity.Property<string>("LABEL").HasMaxLength(20).IsRequired();
++                }
++
++                entity.HasKey("ID");
++            });
++    }
++}

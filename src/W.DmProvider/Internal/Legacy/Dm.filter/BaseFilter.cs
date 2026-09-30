@@ -17,50 +17,9 @@ public class BaseFilter : IFilter
 
 	internal static void CreateFilterChain(IFilterInfo filterInfo, DmConnProperty connProperty = null)
 	{
-		BaseFilter baseFilter = null;
-		IList<BaseFilter> list = null;
-		if (DmSvcConfig.logLevel != LogLevel.OFF)
-		{
-			list = list ?? new List<BaseFilter>();
-			list.Add(LogFilter.Instance);
-			filterInfo.LogInfo = new LogInfo();
-		}
-		if (connProperty != null)
-		{
-			if (connProperty.ConnPooling)
-			{
-				list = list ?? new List<BaseFilter>();
-				ConnPoolFilter instance = ConnPoolFilter.Instance;
-				instance.ConnPoolSize = connProperty.ConnPoolSize;
-				instance.ConnPoolTimeout = connProperty.ConnPoolTimeout;
-				instance.ConnPoolIdleExpiredTime = connProperty.ConnPoolIdleExpiredTime;
-				instance.ConnPoolIdleClearInterval = connProperty.ConnPoolIdleClearInterval;
-				list.Add(instance);
-			}
-			if (connProperty.DoSwitch != DoSwitch.OFF)
-			{
-				list = list ?? new List<BaseFilter>();
-				list.Add(ReconnectFilter.Instance);
-				filterInfo.RecoverInfo = new RecoverInfo();
-			}
-			if (connProperty.RwSeparate > 0)
-			{
-				list = list ?? new List<BaseFilter>();
-				list.Add(RWFilter2.Instance);
-				filterInfo.RWInfo = new RWInfo();
-			}
-		}
-		if (list != null && list.Count > 0)
-		{
-			baseFilter = list[0];
-			BaseFilter baseFilter2 = baseFilter;
-			for (int i = 1; i < list.Count; i++)
-			{
-				baseFilter2.next = list[i];
-				baseFilter2 = baseFilter2.next;
-			}
-		}
-		filterInfo.filterHead = baseFilter;
+		// T04: legacy shared filters are disabled. A later per-session pipeline may be added.
+		if (filterInfo.filterHead != null)
+			throw new NotSupportedException("Legacy filter injection is unsupported.");
 	}
 
 	public virtual string getServerVersion(DmConnection conn)

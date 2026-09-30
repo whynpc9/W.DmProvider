@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using W.Dm.Internal.Types;
 
 namespace W.Dm;
 
@@ -35,11 +36,12 @@ internal class Dmxdec
 		return len;
 	}
 
-	[DllImport("dmcalc.dll")]
-	public static extern int xdec_from_char(nint xdec, string str, uint len);
+	public static int xdec_from_char(nint xdec, string str, uint len) =>
+		throw new NotSupportedException("Native decimal conversion is not enabled by this provider version.");
 }
 public class DmXDec
 {
+	internal ReadOnlySpan<byte> WireValue => m_b;
 	private const int XDEC_TEMPBUF_SIZE = 21;
 
 	private const int XDEC_POSITIVE = 193;
@@ -559,223 +561,21 @@ public class DmXDec
 
 	public byte[] StrToDec(string str, int prec, int scal, bool dmxdec_direct)
 	{
-		str = str.Trim();
-		if (!dmxdec_direct)
-		{
-			str = checkStr(str, prec, scal);
-			if (checkZero(str))
-			{
-				return fixZero();
-			}
-		}
-		else
-		{
-			if (prec != 0)
-			{
-				m_max_len = prec;
-			}
-			else
-			{
-				m_max_len = 38;
-			}
-			if (checkZero2(str))
-			{
-				return fixZero();
-			}
-		}
-		str = setExp(str);
-		str = setSign(str);
-		string decInt = rmvUnnecessaryZeros(str);
-		setDecInt(decInt);
-		processExp();
-		setMN();
-		checkOverFlow();
-		return fixDec(fixFlag(), processStrInt(), processStrDec());
+		// dmxdec_direct is retained for source compatibility, not permission to
+		// round, truncate or bypass the declared DECIMAL precision and scale.
+		return DmNumericCodec.EncodeDecimal(DmDecimal.Parse(str), prec, scal);
 	}
 
 	internal void StrToDec(ref byte[] ret, string str, int prec, int scal, bool dmxdec_direct)
 	{
-		str = str.Trim();
-		if (!dmxdec_direct)
-		{
-			str = checkStr(str, prec, scal);
-			if (checkZero(str))
-			{
-				fixZero(ref ret);
-				return;
-			}
-		}
-		else
-		{
-			if (prec != 0)
-			{
-				m_max_len = prec;
-			}
-			else
-			{
-				m_max_len = 38;
-			}
-			if (checkZero2(str))
-			{
-				fixZero(ref ret);
-				return;
-			}
-		}
-		str = setExp(str);
-		str = setSign(str);
-		string decInt = rmvUnnecessaryZeros(str);
-		setDecInt(decInt);
-		processExp();
-		setMN();
-		checkMaxLen();
-		checkOverFlow();
-		fixDec(ref ret, fixFlag(), processStrInt(), processStrDec());
+		ret = StrToDec(str, prec, scal, dmxdec_direct);
 	}
 
-	internal string decToString(byte[] arr)
-	{
-		int num = arr.Length;
-		bool flag = true;
-		short num2 = 0;
-		int num3 = 0;
-		int num4 = 0;
-		int num5 = 0;
-		bool flag2 = true;
-		int num6 = 0;
-		bool flag3 = false;
-		bool flag4 = false;
-		if (arr.Length == 0 || arr.Length > 21)
-		{
-			throw new InvalidCastException();
-		}
-		if (arr[0] == 128)
-		{
-			return "0";
-		}
-		StringBuilder stringBuilder = new StringBuilder();
-		num2 = arr[0];
-		while (num > 0 && arr[num - 1] == 0)
-		{
-			num--;
-		}
-		if ((arr[0] & 0x80) == 128)
-		{
-			num3 = num2 - 193;
-			if (num > 1)
-			{
-				stringBuilder.Append(arr[1] - 1);
-			}
-			for (num6 = 2; num6 < num; num6++)
-			{
-				if (arr[num6] - 1 < 10)
-				{
-					stringBuilder.Append("0");
-				}
-				stringBuilder.Append(arr[num6] - 1);
-			}
-			if (arr[1] - 1 < 10)
-			{
-				flag2 = false;
-			}
-		}
-		else
-		{
-			flag = false;
-			num3 = 62 - num2;
-			if (num > 1 && arr[1] != 102)
-			{
-				stringBuilder.Append(101 - arr[1]);
-			}
-			for (num6 = 2; num6 < num; num6++)
-			{
-				if (arr[num6] != 102)
-				{
-					if (101 - arr[num6] < 10)
-					{
-						stringBuilder.Append("0");
-					}
-					stringBuilder.Append(101 - arr[num6]);
-				}
-			}
-			if (101 - arr[1] < 10)
-			{
-				flag2 = false;
-			}
-		}
-		if (num3 > 0)
-		{
-			num5 = ((!flag2) ? (num3 * 2 + 1) : (num3 * 2 + 2));
-			if (num5 > stringBuilder.Length)
-			{
-				num4 = num5 - stringBuilder.Length;
-				stringBuilder.Append('0', num4);
-			}
-			else if (num5 < stringBuilder.Length)
-			{
-				stringBuilder.Insert(num5, '.');
-				flag3 = true;
-			}
-		}
-		else if (num3 == 0)
-		{
-			if (stringBuilder.Length > 2)
-			{
-				if (flag2)
-				{
-					stringBuilder.Insert(2, '.');
-					num5 = 2;
-					flag3 = true;
-				}
-				else
-				{
-					stringBuilder.Insert(1, '.');
-					num5 = 1;
-					flag3 = true;
-				}
-			}
-		}
-		else
-		{
-			num3 *= -1;
-			num4 = ((!flag2) ? (num3 * 2 - 1) : (num3 * 2 - 2));
-			stringBuilder.Insert(0, "0.");
-			flag3 = true;
-			num5 = 2;
-			for (num6 = 0; num6 < num4; num6++)
-			{
-				stringBuilder.Insert(2, "0");
-			}
-			stringBuilder = new StringBuilder(rmvUnnecessaryZeros(stringBuilder.ToString().Substring(0, stringBuilder.Length)));
-			stringBuilder.Insert(0, "0");
-		}
-		if (flag3)
-		{
-			while (stringBuilder[stringBuilder.Length - 1] == '0' || stringBuilder[stringBuilder.Length - 1] == '.')
-			{
-				if (stringBuilder[stringBuilder.Length - 1] == '.')
-				{
-					flag4 = true;
-				}
-				stringBuilder.Remove(stringBuilder.Length - 1, 1);
-				if (flag4)
-				{
-					break;
-				}
-			}
-		}
-		if (flag)
-		{
-			return stringBuilder.ToString();
-		}
-		StringBuilder stringBuilder2 = new StringBuilder();
-		stringBuilder2.Append("-");
-		stringBuilder2.Append(stringBuilder.ToString());
-		return stringBuilder2.ToString();
-	}
+	internal string decToString(byte[] arr) => DmNumericCodec.DecodeDecimal(arr).ToString();
 
 	public DmXDec Parse(string s)
 	{
-		return new DmXDec(StrToDec(s, 0, 0, dmxdec_direct: true));
+		return new DmXDec(StrToDec(s, 0, -1, dmxdec_direct: true));
 	}
 
 	public override string ToString()

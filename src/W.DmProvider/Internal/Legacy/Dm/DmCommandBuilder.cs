@@ -28,7 +28,15 @@ public sealed class DmCommandBuilder : DbCommandBuilder, IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
 	public LogInfo LogInfo { get; set; }
 

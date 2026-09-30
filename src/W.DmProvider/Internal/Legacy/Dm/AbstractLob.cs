@@ -1,3 +1,6 @@
+using System;
+using W.Dm.Internal.Sessions;
+
 namespace W.Dm;
 
 public class AbstractLob
@@ -47,6 +50,35 @@ public class AbstractLob
 	public bool readOver;
 
 	internal DmConnInstance ConnInstance;
+	private DmExecutionLease executionLease;
+
+	internal void AttachExecutionLease(DmExecutionLease lease)
+	{
+		if (lease == null || !ReferenceEquals(lease.Session, ConnInstance?.Session))
+			throw new InvalidOperationException("LOB session does not match its reader.");
+		executionLease = lease;
+	}
+
+	internal DmInvocation BeginPublicOperation()
+	{
+		if (local) return null;
+		if (executionLease != null) return executionLease.BeginInvocation();
+		// A freshly decoded LOB can be consumed by the command that is still decoding it.
+		if (DmInvocation.Current?.Lease.Session == ConnInstance?.Session) return null;
+		throw new InvalidOperationException("LOB has no active reader lease.");
+	}
+
+	internal DmInvocation BeginInternalOperation()
+	{
+		if (local) return null;
+		if (executionLease != null)
+		{
+			if (DmInvocation.Current?.Lease == executionLease) return null;
+			return executionLease.BeginInvocation();
+		}
+		if (DmInvocation.Current?.Lease.Session == ConnInstance?.Session) return null;
+		throw new InvalidOperationException("LOB has no current session owner.");
+	}
 
 	public bool local = true;
 
@@ -121,6 +153,7 @@ public class AbstractLob
 
 	internal long do_length()
 	{
+		using var invocation = BeginInternalOperation();
 		if (m_length == -1)
 		{
 			m_length = ConnInstance.GetCsi().A(this);

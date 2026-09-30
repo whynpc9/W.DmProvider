@@ -5,6 +5,15 @@
 ## 规范包入口
 
 - [实际实施进度](progress.json)、[T01 报告](reports/T01.md)、[T02 报告](reports/T02.md)、[T03 报告](reports/T03.md)：任务执行状态和验证证据独立于原始规范包保存。
+- [T04 报告](reports/T04.md)：配置、安全默认值、能力守卫及框架边界的独立验收。
+- [T05 报告](reports/T05.md)：物理会话、执行所有权、Reader/LOB 并发隔离和故障清理的独立验收。
+- [T06 报告](reports/T06.md)：单次建连、短读写、帧校验、解码预算和统一期限的独立验收。
+- [T07 报告](reports/T07.md)：证书/主机名校验、真实 TLS 模式矩阵及 native 释放边界的独立验收。
+- [T08 报告](reports/T08.md)：命令快照、多结果、有限清理及实际 NuGet 包保存 SQL 契约的独立验收。
+- [T09 报告](reports/T09.md)：参数类型来源、精确数值、Unicode 和时间精度的独立验收。
+- [T10 报告](reports/T10.md)：本地事务 outcome、保存点、有限回滚和 DDL 边界的独立验收。
+- [T11 报告](reports/T11.md)：隔离级别所有权与确认修复、正常公开入口及实际包 EF 保存验收。
+- [T12 / R1 报告](reports/T12.md)：实际候选包、固定 EF 接入、CLI 与当前 schema 脚本验收；[R1 兼容矩阵](../compatibility/R1.md)。按用户指令停在 R1，T13–T25 尚未启动。
 - [v1 README](v1/README.md)：产品范围、发布切片和全局不变量。
 - [任务 DAG](v1/tasks.json)与[任务依赖表](v1/contracts/task-plan.md)：25 项实施任务。
 - [分项 spec](v1/specs/01-baseline-and-build.md)：S01–S13，从构建恢复到高级能力门槛。

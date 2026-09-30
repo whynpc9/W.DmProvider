@@ -137,6 +137,7 @@ public class FldrStatement
 
 	public FldrStatement(DmConnection connection, FldrConfig config)
 	{
+		throw new NotSupportedException("Native bulk loading is unsupported.");
 		this.connection = connection;
 		setFldrTableInfo(config.schemaName, config.tableName, config.parallelFlag ? 1 : 0, config.indexOption);
 		setFldrProperties(config);

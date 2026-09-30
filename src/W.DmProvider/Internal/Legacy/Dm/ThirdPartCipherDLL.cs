@@ -60,14 +60,14 @@ internal class ThirdPartCipherDLL : IDisposable
 
 	internal cipher_hash_final hashFinal;
 
-	[DllImport("Kernel32.dll")]
-	internal static extern nint LoadLibrary(string cipherPath);
+	internal static nint LoadLibrary(string cipherPath) =>
+		throw new NotSupportedException("Third-party native ciphers are not enabled by this provider version.");
 
-	[DllImport("Kernel32.dll")]
-	internal static extern nint GetProcAddress(nint hModule, string procName);
+	internal static nint GetProcAddress(nint hModule, string procName) =>
+		throw new NotSupportedException("Third-party native ciphers are not enabled by this provider version.");
 
-	[DllImport("Kernel32.dll")]
-	internal static extern nint FreeLibrary(nint hModule);
+	internal static nint FreeLibrary(nint hModule) =>
+		throw new NotSupportedException("Third-party native ciphers are not enabled by this provider version.");
 
 	internal Delegate GetAddress(nint hModule, string procName, Type t)
 	{
@@ -81,22 +81,7 @@ internal class ThirdPartCipherDLL : IDisposable
 
 	internal ThirdPartCipherDLL(string cipherPath)
 	{
-		nint num = LoadLibrary(cipherPath);
-		if (num == IntPtr.Zero)
-		{
-			throw new SystemException("load thirdPart dll failed!");
-		}
-		getCount = (cipher_get_count)GetAddress(num, "cipher_get_count", typeof(cipher_get_count));
-		getInfo = (cipher_get_info)GetAddress(num, "cipher_get_info", typeof(cipher_get_info));
-		encryptInit = (cipher_encrypt_init)GetAddress(num, "cipher_encrypt_init", typeof(cipher_encrypt_init));
-		getCipherTextSize = (cipher_get_cipher_text_size)GetAddress(num, "cipher_get_cipher_text_size", typeof(cipher_get_cipher_text_size));
-		encrypt = (cipher_encrypt)GetAddress(num, "cipher_encrypt", typeof(cipher_encrypt));
-		cleanup = (cipher_cleanup)GetAddress(num, "cipher_cleanup", typeof(cipher_cleanup));
-		decryptInit = (cipher_decrypt_init)GetAddress(num, "cipher_decrypt_init", typeof(cipher_decrypt_init));
-		decrypt = (cipher_decrypt)GetAddress(num, "cipher_decrypt", typeof(cipher_decrypt));
-		hashInit = (cipher_hash_init)GetAddress(num, "cipher_hash_init", typeof(cipher_hash_init));
-		hashUpdate = (cipher_hash_update)GetAddress(num, "cipher_hash_update", typeof(cipher_hash_update));
-		hashFinal = (cipher_hash_final)GetAddress(num, "cipher_hash_final", typeof(cipher_hash_final));
+		throw new NotSupportedException("Third-party native ciphers are not enabled by this provider version.");
 	}
 
 	public void Dispose()

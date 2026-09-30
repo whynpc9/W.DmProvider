@@ -21,7 +21,7 @@ public class DmClob : AbstractLob
 		}
 		else if (fetchAll)
 		{
-			loadAllData();
+			LoadAllDataOwned();
 		}
 	}
 
@@ -45,11 +45,19 @@ public class DmClob : AbstractLob
 
 	public string getSubString(long pos, int len)
 	{
-		return do_getSubString(pos + 1, len);
+		using var invocation = BeginPublicOperation();
+		return GetSubStringOwned(pos + 1, len);
 	}
 
 	public string do_getSubString(long pos, int len)
 	{
+		using var invocation = BeginPublicOperation();
+		return GetSubStringOwned(pos, len);
+	}
+
+	private string GetSubStringOwned(long pos, int len)
+	{
+		using var invocation = BeginInternalOperation();
 		if (pos < 1 || len < 0)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -72,22 +80,33 @@ public class DmClob : AbstractLob
 		return ConnInstance.GetCsi().A(this, pos, len);
 	}
 
+	internal string GetSubStringUnderOwner(long pos, int len) => GetSubStringOwned(pos + 1, len);
+
 	public int SetString(long pos, string str)
 	{
+		using var invocation = BeginPublicOperation();
 		if (str == null)
 		{
-			return do_setString(pos + 1, "", 0, 0);
+			return SetStringOwned(pos + 1, "", 0, 0);
 		}
-		return do_setString(pos + 1, str, 0, str.length());
+		return SetStringOwned(pos + 1, str, 0, str.length());
 	}
 
 	public int SetString(long pos, string str, int offset, int len)
 	{
-		return do_setString(pos + 1, str, offset, len);
+		using var invocation = BeginPublicOperation();
+		return SetStringOwned(pos + 1, str, offset, len);
 	}
 
 	public int do_setString(long pos, string str, int offset, int len)
 	{
+		using var invocation = BeginPublicOperation();
+		return SetStringOwned(pos, str, offset, len);
+	}
+
+	private int SetStringOwned(long pos, string str, int offset, int len)
+	{
+		using var invocation = BeginInternalOperation();
 		if (pos < 1 || offset < 0 || len < 0 || offset + len > str.length())
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -118,11 +137,19 @@ public class DmClob : AbstractLob
 
 	public void Truncate(long len)
 	{
-		do_truncate(len);
+		using var invocation = BeginPublicOperation();
+		TruncateOwned(len);
 	}
 
 	public void do_truncate(long len)
 	{
+		using var invocation = BeginPublicOperation();
+		TruncateOwned(len);
+	}
+
+	private void TruncateOwned(long len)
+	{
+		using var invocation = BeginInternalOperation();
 		if (len < 0)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -151,9 +178,16 @@ public class DmClob : AbstractLob
 
 	public void loadAllData()
 	{
+		using var invocation = BeginPublicOperation();
+		LoadAllDataOwned();
+	}
+
+	private void LoadAllDataOwned()
+	{
+		using var invocation = BeginInternalOperation();
 		if (!local && storageType != 1 && !fetchAll)
 		{
-			data = do_getSubString(1L, (int)do_length());
+			data = GetSubStringOwned(1L, (int)do_length());
 			m_length = data.length();
 			fetchAll = true;
 		}
@@ -174,25 +208,28 @@ public class DmClob : AbstractLob
 
 	public byte[] GetBytes(long pos, int len)
 	{
-		return ByteUtil.fromString(do_getSubString(pos + 1, len), serverEncoding);
+		using var invocation = BeginPublicOperation();
+		return ByteUtil.fromString(GetSubStringOwned(pos + 1, len), serverEncoding);
 	}
 
 	internal Stream GetStream()
 	{
 		int num = (int)m_length;
 		MemoryStream memoryStream = new MemoryStream(num);
-		memoryStream.Write(GetBytes(0L, (int)do_length()), 0, num);
+		memoryStream.Write(ByteUtil.fromString(GetSubStringOwned(1L, (int)do_length()), serverEncoding), 0, num);
 		memoryStream.Position = 0L;
 		return memoryStream;
 	}
 
 	public string GetString(long pos, int length)
 	{
-		return getSubString(pos, length);
+		using var invocation = BeginPublicOperation();
+		return GetSubStringOwned(pos + 1, length);
 	}
 
 	public long length()
 	{
+		using var invocation = BeginPublicOperation();
 		return do_length();
 	}
 }

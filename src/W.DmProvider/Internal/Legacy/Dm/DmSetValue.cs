@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+using System.Numerics;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Types;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -953,51 +955,10 @@ internal class DmSetValue
 			}
 			break;
 		case 17:
-		{
-			array = (byte[])(object)StringUtil.hexStringToBytes(x);
-			int num = array.Length;
-			byte[] array2;
-			if (prec == num || prec == 0)
-			{
-				array2 = array;
-			}
-			else
-			{
-				array2 = new byte[prec];
-				if (prec > num)
-				{
-					Array.Copy(array, 0, array2, 0, num);
-					for (int i = num; i < prec; i++)
-					{
-						array2[i] = 0;
-					}
-				}
-				else
-				{
-					Array.Copy(array, 0, array2, 0, prec);
-				}
-			}
-			paraVal.SetInValue(array2);
-			break;
-		}
+			throw new NotSupportedException("Implicit text-to-binary parameter conversion is not supported.");
 		case 12:
 		case 18:
-		{
-			array = (byte[])(object)StringUtil.hexStringToBytes(x);
-			int num = array.Length;
-			byte[] array2;
-			if (prec < num && prec != 0)
-			{
-				array2 = new byte[prec];
-				Array.Copy(array, 0, array2, 0, prec);
-			}
-			else
-			{
-				array2 = array;
-			}
-			paraVal.SetInValue(array2);
-			break;
-		}
+			throw new NotSupportedException("Implicit text-to-binary parameter conversion is not supported.");
 		case 14:
 		{
 			if (typeFlag != 1)
@@ -1144,6 +1105,9 @@ internal class DmSetValue
 			SetNull(paraVal);
 			return;
 		}
+		if (prec > 0 && x.Length > prec)
+			throw new OverflowException("Binary parameter exceeds the declared byte capacity.");
+		if (prec < 0) prec = 0; // Unknown capacity must never become an array length.
 		if (typeFlag != 1)
 		{
 			paraVal.SetInValue(x);
@@ -1158,25 +1122,14 @@ internal class DmSetValue
 		{
 			int num = x.Length;
 			byte[] array;
-			if (prec == num || prec == 0)
+			if (prec <= num)
 			{
 				array = x;
 			}
 			else
 			{
 				array = new byte[prec];
-				if (prec > num)
-				{
-					Array.Copy(x, 0, array, 0, num);
-					for (int i = num; i < prec; i++)
-					{
-						array[i] = 0;
-					}
-				}
-				else
-				{
-					Array.Copy(x, 0, array, 0, prec);
-				}
+				Array.Copy(x, 0, array, 0, num);
 			}
 			paraVal.SetInValue(array);
 			break;
@@ -1187,28 +1140,18 @@ internal class DmSetValue
 		case 18:
 		case 19:
 		{
-			int num = x.Length;
-			if (prec < num && prec != 0)
-			{
-				byte[] array = new byte[prec];
-				Array.Copy(x, 0, array, 0, prec);
-				paraVal.SetInValue(array);
-			}
-			else
-			{
-				paraVal.SetInValue(ref x);
-			}
+			paraVal.SetInValue(ref x);
 			break;
 		}
 		case 0:
 		{
 			int num = x.Length;
 			byte[] array;
-			if (prec == num || prec == 0)
+			if (prec <= num)
 			{
 				array = x;
 			}
-			else if (prec > num)
+			else
 			{
 				array = new byte[prec];
 				Array.Copy(x, 0, array, 0, num);
@@ -1216,11 +1159,6 @@ internal class DmSetValue
 				{
 					array[j] = 32;
 				}
-			}
-			else
-			{
-				array = new byte[prec];
-				Array.Copy(x, 0, array, 0, prec);
 			}
 			paraVal.SetInValue(array);
 			break;
@@ -1352,7 +1290,15 @@ internal class DmSetValue
 		byte[] ret = null;
 		if (typeFlag != 1)
 		{
-			if (cType == 26)
+			if (cType == 14)
+			{
+				SetDate(paraVal, x, cType, prec, scale, typeFlag, paraInternal);
+			}
+			else if (cType == 15)
+			{
+				SetTime(paraVal, x, cType, prec, scale, typeFlag, paraInternal);
+			}
+			else if (cType == 26)
 			{
 				byte[] ret2 = null;
 				DmDateTime.DmdtEncodeFast2(ref ret2, x);
@@ -1361,14 +1307,15 @@ internal class DmSetValue
 				paraVal.SetPrec(prec);
 				paraVal.SetScale(scale);
 			}
-			else
+			else if (cType == 16)
 			{
-				DmDateTime dmDateTime = new DmDateTime(x, prec, 6, 2, m_Statement.G().ConnProperty.TimeZone);
+				DmDateTime dmDateTime = new DmDateTime(x, prec, scale, 2, m_Statement.G().ConnProperty.TimeZone);
 				paraVal.SetInValue(DmDateTime.DmdtEncodeFast(dmDateTime.GetByteArrayValue()));
 				paraVal.SetSqlType(16);
-				paraVal.SetPrec(8);
-				paraVal.SetScale(6);
+				paraVal.SetPrec(prec);
+				paraVal.SetScale(scale);
 			}
+			else throw new NotSupportedException("DateTime target type is not supported by this wire mode.");
 			return;
 		}
 		switch (cType)
@@ -1459,22 +1406,23 @@ internal class DmSetValue
 		byte[] ret = null;
 		if (typeFlag != 1)
 		{
-			if (scale <= 6)
+			if (cType == 23)
 			{
-				DmDateTime dmDateTime = new DmDateTime(x.DateTime, prec, 6, 3, Convert.ToInt16(x.Offset.TotalMinutes));
+				DmDateTime dmDateTime = new DmDateTime(x.DateTime, prec, scale, 3, Convert.ToInt16(x.Offset.TotalMinutes));
 				paraVal.SetInValue(DmDateTime.DmdttzEncodeFast(dmDateTime.GetByteArrayValue()));
 				paraVal.SetSqlType(23);
-				paraVal.SetPrec(8);
-				paraVal.SetScale(6);
+				paraVal.SetPrec(prec);
+				paraVal.SetScale(scale);
 			}
-			else
+			else if (cType == 27)
 			{
 				DmDateTime.Dmdt2TzEncodeFast2(ref paraVal.m_InValue, x.DateTime, Convert.ToInt16(x.Offset.TotalMinutes));
 				paraVal.SetInValue();
 				paraVal.SetSqlType(27);
-				paraVal.SetPrec(9);
+				paraVal.SetPrec(prec);
 				paraVal.SetScale(scale);
 			}
+			else throw new NotSupportedException("DateTimeOffset target type is not supported by this wire mode.");
 			return;
 		}
 		switch (cType)
@@ -1552,16 +1500,129 @@ internal class DmSetValue
 		}
 	}
 
-	public void SetObject(DmParamValue paraVal, object x, DmConnection conn, string typeName, int cType, DmParameterInternal paraInternal)
+	private static bool TrySetExactNumeric(DmParamValue paraVal, object value, int cType,
+		int precision, int scale, byte typeFlag)
+	{
+		if (value is bool booleanValue) value = booleanValue ? 1 : 0;
+		byte[] encoded;
+		switch (cType)
+		{
+		case 3:
+		{
+			BigInteger integer = DmNumericInput.ToIntegerExact(value, BigInteger.Zero, BigInteger.One);
+			encoded = DmConvertion.ByteToByteArray((byte)(int)integer);
+			break;
+		}
+		case 5:
+		{
+			BigInteger integer = DmNumericInput.ToIntegerExact(value, sbyte.MinValue, sbyte.MaxValue);
+			encoded = DmConvertion.ByteToByteArray(unchecked((byte)(sbyte)integer));
+			break;
+		}
+		case 6:
+		{
+			BigInteger integer = DmNumericInput.ToIntegerExact(value, short.MinValue, short.MaxValue);
+			encoded = DmConvertion.ShortToByteArray((short)integer);
+			break;
+		}
+		case 7:
+		{
+			BigInteger integer = DmNumericInput.ToIntegerExact(value, int.MinValue, int.MaxValue);
+			encoded = DmConvertion.IntToByteArray((int)integer);
+			break;
+		}
+		case 8:
+		{
+			BigInteger integer = DmNumericInput.ToIntegerExact(value, long.MinValue, long.MaxValue);
+			encoded = DmConvertion.LongToByteArray((long)integer);
+			break;
+		}
+		case 9:
+			encoded = DmNumericInput.EncodeDecimalInput(value, precision, scale);
+			break;
+		case 24:
+			if (scale < 0) throw new InvalidOperationException("Scaled INT64 requires a known scale.");
+			encoded = DmNumericInput.EncodeScaledInt64Input(value, precision, scale);
+			break;
+		default:
+			return false;
+		}
+		paraVal.SetInValue(encoded);
+		if (typeFlag != 1)
+		{
+			paraVal.SetSqlType(cType);
+			paraVal.SetPrec(precision);
+			int wireScale = scale < 0 ? DmNumericInput.ToExactDecimal(value).Scale : scale;
+			paraVal.SetScale(wireScale);
+		}
+		return true;
+	}
+
+	// Command binding has already resolved its wire type. Legacy advisory branches must
+	// not replace it based on the CLR runtime type; the real server flag stays intact.
+	internal void SetResolvedObject(DmParamValue paraVal, object x, DmConnection conn, string typeName,
+		int cType, DmParameterInternal paraInternal, int? precisionOverride = null, int? scaleOverride = null)
+	{
+		int precision = precisionOverride ?? paraInternal.GetPrecision();
+		int scale = scaleOverride ?? (cType == 9 && paraInternal.GetTypeFlag() != 1 ? -1 : paraInternal.GetScale());
+		if (paraInternal.GetTypeFlag() != 1 && cType == 17 && precisionOverride == null)
+			precision = x is Guid ? 16 : x is byte[] bytes ? bytes.Length : precision;
+		if (cType is 0 or 1 or 2 or 19)
+		{
+			if (x is Enum) x = DmNumericInput.ToEnumUnderlying(x);
+			x = x switch
+			{
+				float value => ((float)DmNumericInput.ValidateFiniteFloating(value)).ToString("R", CultureInfo.InvariantCulture),
+				double value => ((double)DmNumericInput.ValidateFiniteFloating(value)).ToString("R", CultureInfo.InvariantCulture),
+				bool value => value ? "1" : "0",
+				sbyte or byte or short or ushort or int or uint or long or ulong or decimal or BigInteger or DmDecimal
+					=> DmNumericInput.ToExactDecimal(x).ToString(),
+				_ => x
+			};
+		}
+		if (cType == 10 && x is double wide)
+		{
+			DmNumericInput.ValidateFiniteFloating(wide);
+			float narrow = (float)wide;
+			if (!float.IsFinite(narrow) || (double)narrow != wide)
+				throw new OverflowException("Double input cannot be represented exactly as Single.");
+			x = narrow;
+		}
+		SetObjectCore(paraVal, x, conn, typeName, cType, paraInternal, precision, scale, codecTypeFlag: 1);
+		if (!paraVal.GetIsInDataNull() && cType is 10 or 11)
+		{
+			byte[] encoded = paraVal.GetInValue();
+			if (encoded.Length != (cType == 10 ? 4 : 8))
+				throw new InvalidOperationException("Floating codec does not match the resolved wire type.");
+			if (cType == 10) DmNumericInput.ValidateFiniteFloating(BitConverter.ToSingle(encoded, 0));
+			else DmNumericInput.ValidateFiniteFloating(BitConverter.ToDouble(encoded, 0));
+		}
+		if (paraInternal.GetTypeFlag() != 1)
+		{
+			int wireScale = scale;
+			if (wireScale < 0) wireScale = x is null or DBNull ? 0 : DmNumericInput.ToExactDecimal(x).Scale;
+			paraVal.SetSqlType(cType);
+			paraVal.SetPrec(precision);
+			paraVal.SetScale(wireScale);
+		}
+	}
+
+	public void SetObject(DmParamValue paraVal, object x, DmConnection conn, string typeName, int cType,
+		DmParameterInternal paraInternal, int? precisionOverride = null, int? scaleOverride = null)
+		=> SetObjectCore(paraVal, x, conn, typeName, cType, paraInternal, precisionOverride, scaleOverride,
+			paraInternal.GetTypeFlag());
+
+	private void SetObjectCore(DmParamValue paraVal, object x, DmConnection conn, string typeName, int cType,
+		DmParameterInternal paraInternal, int? precisionOverride, int? scaleOverride, byte codecTypeFlag)
 	{
 		if (54 == cType)
 		{
 			ResetCTypeIfUnknown(paraInternal);
 			cType = 2;
 		}
-		int precision = paraInternal.GetPrecision();
-		int scale = paraInternal.GetScale();
-		byte typeFlag = paraInternal.GetTypeFlag();
+		int precision = precisionOverride ?? paraInternal.GetPrecision();
+		int scale = scaleOverride ?? (cType == 9 && paraInternal.GetTypeFlag() != 1 ? -1 : paraInternal.GetScale());
+		byte typeFlag = codecTypeFlag;
 		if (x == null)
 		{
 			SetNull(paraVal);
@@ -1572,6 +1633,15 @@ internal class DmSetValue
 			SetNull(paraVal);
 			return;
 		}
+		if ((cType is 12 or 17 or 18) && (x is string or char[]))
+			throw new NotSupportedException("Implicit text-to-binary parameter conversion is not supported.");
+		if ((cType is 0 or 1 or 2 or 19) && x is byte[])
+			throw new NotSupportedException("Implicit binary-to-text parameter conversion is not supported.");
+		x = DmTemporalCodec.NormalizeForWire(x, cType, scale,
+			conn?.GetConnInstance()?.ConnProperty.ServerVersion);
+		if (x is Enum) x = DmNumericInput.ToEnumUnderlying(x);
+		if (x is float or double) x = DmNumericInput.ValidateFiniteFloating(x);
+		if (TrySetExactNumeric(paraVal, x, cType, precision, scale, typeFlag)) return;
 		if (x is byte)
 		{
 			SetInt(paraVal, (byte)x, cType, precision, scale, typeFlag, paraInternal);
@@ -1601,6 +1671,11 @@ internal class DmSetValue
 		if (x is decimal)
 		{
 			SetBigDecimal(paraVal, (decimal)x, cType, precision, scale, typeFlag, paraInternal);
+			return;
+		}
+		if (x is DmDecimal exactDecimal && cType is 0 or 1 or 2 or 19)
+		{
+			SetString(paraVal, exactDecimal.ToString(), cType, precision, scale, typeFlag, paraInternal);
 			return;
 		}
 		if (x is short)
@@ -1713,40 +1788,23 @@ internal class DmSetValue
 			SetDmDecimal(paraVal, (DmXDec)x, cType, precision, scale, typeFlag, paraInternal);
 			return;
 		}
-		if (x is Guid)
+		if (x is Guid guid)
 		{
-			if (typeFlag == 1)
+			if (cType is 0 or 1 or 2 or 19)
 			{
-				if ((cType == 0 || cType == 2 || cType == 1) && (precision == 36 || precision == 8188))
-				{
-					SetString(paraVal, ((Guid)x/*cast due to constrained. prefix*/).ToString(), cType, precision, scale, typeFlag, paraInternal);
-				}
-				else if ((cType == 17 || cType == 18) && precision == 16)
-				{
-					SetBytes(paraVal, ((Guid)x).ToByteArray(), cType, precision, scale, 1, isComplexType: false);
-				}
+				if (typeFlag == 1 && precision is > 0 and < 36)
+					throw new OverflowException("GUID text requires at least 36 characters.");
+				SetString(paraVal, guid.ToString("D"), cType, precision, scale, typeFlag, paraInternal);
+				return;
 			}
-			else
+			if (cType is 17 or 18)
 			{
-				SetString(paraVal, ((Guid)x/*cast due to constrained. prefix*/).ToString(), cType, precision, scale, typeFlag, paraInternal);
+				if (precision != 16 && (typeFlag == 1 || precision != 0))
+					throw new OverflowException("GUID binary storage requires exactly 16 bytes.");
+				SetBytes(paraVal, guid.ToByteArray(), cType, 16, scale, typeFlag, isComplexType: false);
+				return;
 			}
-			return;
-		}
-		if (x.GetType().BaseType == typeof(Enum))
-		{
-			string[] names = Enum.GetNames(x.GetType());
-			int num = 0;
-			string[] array = names;
-			for (int i = 0; i < array.Length; i++)
-			{
-				if (array[i].Equals(x.ToString()))
-				{
-					SetInt(paraVal, num, cType, precision, scale, typeFlag, paraInternal);
-					return;
-				}
-				num++;
-			}
-			throw new SystemException("Value is of unknown data type");
+			throw new NotSupportedException("GUID requires a character or 16-byte binary parameter.");
 		}
 		if (x is Array && !typeName.Equals(""))
 		{

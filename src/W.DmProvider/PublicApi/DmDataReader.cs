@@ -7,6 +7,10 @@ using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
 using W.Dm.filter;
 using W.Dm.util;
+using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Execution;
+using W.Dm.Internal.Types;
+using W.Dm.Internal.Transport;
 
 namespace W.Dm;
 
@@ -40,9 +44,9 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	protected long m_CurrentRow = -1L;
 
-	private long m_RecordsAffected;
+	private readonly DmResultCursor resultCursor = new();
 
-	protected bool m_IsClosed;
+	protected volatile bool m_IsClosed;
 
 	private bool is_SequentialAccess;
 
@@ -53,6 +57,59 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private bool skipCol = true;
 
 	private ArrayList m_Clobs = new ArrayList();
+
+	private DmExecutionLease executionLease;
+	private DmCommandPlan commandPlan;
+	private Action<DmCommandPlan> releaseCommandPlan;
+	private bool ownsExecutionLease;
+	private bool registeredReader;
+	private int closeStarted;
+	internal static Action<OperationIdentity> AfterInvocationEntered;
+
+	internal void AttachExecutionLease(DmExecutionLease lease, bool ownsLease = true)
+	{
+		if (lease == null || !ReferenceEquals(lease.Session, m_Conn.Session))
+			throw new InvalidOperationException("Reader session does not match its execution lease.");
+		if (Interlocked.CompareExchange(ref executionLease, lease, null) != null)
+			throw new InvalidOperationException("Reader already owns an execution lease.");
+		ownsExecutionLease = ownsLease;
+		if (ownsLease && lease.Purpose == DmOperationPurpose.Reader)
+		{
+			try { lease.Session.RegisterReader(lease, this); registeredReader = true; }
+			catch
+			{
+				Interlocked.CompareExchange(ref executionLease, null, lease);
+				ownsExecutionLease = false;
+				throw;
+			}
+		}
+	}
+
+	internal void AttachCommandPlan(DmCommandPlan plan, Action<DmCommandPlan> release)
+	{
+		if (plan == null || release == null) throw new ArgumentNullException();
+		if (Interlocked.CompareExchange(ref commandPlan, plan, null) != null)
+			throw new InvalidOperationException("Reader already owns a command plan.");
+		releaseCommandPlan = release;
+	}
+
+	private DmExecutionLease ReaderLease => Volatile.Read(ref executionLease) ??
+		throw new InvalidOperationException("Reader has no execution lease.");
+
+	private DmInvocation BeginReaderInvocation()
+	{
+		if (m_IsClosed) throw new InvalidOperationException("Reader is closed.");
+		return ReaderLease.BeginInvocation();
+	}
+
+	private DmInvocation BeginInternalInvocation()
+	{
+		var lease = Volatile.Read(ref executionLease);
+		if (DmInvocation.Current?.Lease == lease && lease != null) return null;
+		// ExecuteScalar owns a private reader for the duration of its command invocation.
+		if (lease == null && DmInvocation.Current?.Lease.Session == m_Conn?.Session) return null;
+		return BeginReaderInvocation();
+	}
 
 	public bool bdta;
 
@@ -68,7 +125,15 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
 	public LogInfo LogInfo { get; set; }
 
@@ -100,22 +165,26 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	{
 		get
 		{
-			if (m_DbInfo != null && m_DbInfo.GetHasResultSet())
-			{
-				return -1;
-			}
-			return (int)m_RecordsAffected;
+			return resultCursor.HasReadableRowset ? -1 : resultCursor.RecordsAffected;
 		}
 	}
 
-	internal bool do_IsClosed => m_IsClosed;
+	internal bool do_IsClosed
+	{
+		get
+		{
+			var lease = Volatile.Read(ref executionLease);
+			return m_IsClosed || (lease != null && !lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration));
+		}
+	}
 
-	internal int do_FieldCount => m_DbInfo.GetColumnCount();
+	internal int do_FieldCount { get { checkClosed(); return m_DbInfo.GetColumnCount(); } }
 
 	public override object this[int number]
 	{
 		get
 		{
+			using var invocation = BeginReaderInvocation();
 			if (filterHead == null)
 			{
 				return do_this(number);
@@ -128,6 +197,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	{
 		get
 		{
+			using var invocation = BeginReaderInvocation();
 			if (filterHead == null)
 			{
 				return do_this(name);
@@ -221,7 +291,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			colInfo[i].isBdta = bdta;
 		}
 		m_RowCount = m_DbInfo.GetRowCount();
-		m_RecordsAffected = m_DbInfo.GetRecordsAffected();
+		resultCursor.Observe(m_DbInfo);
 		m_Statement = m_RsCache.statement;
 		m_Conn = m_Statement.G();
 		string serverEncoding = m_Conn.ConnProperty.ServerEncoding;
@@ -230,7 +300,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		DmField[] colInfo2 = m_ColInfo;
 		m_GetVal = new DmGetValue(serverEncoding, statement, newLobFlag, colInfo2);
 		m_Behavior = behavior;
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SequentialAccess))
+		if ((m_Behavior & CommandBehavior.SequentialAccess) != 0)
 		{
 			is_SequentialAccess = true;
 		}
@@ -252,7 +322,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			}
 		}
 		m_RowCount = m_DbInfo.GetRowCount();
-		m_RecordsAffected = m_DbInfo.GetRecordsAffected();
+		resultCursor.Observe(m_DbInfo);
 		m_Statement = stmt;
 		m_Conn = m_Statement.G();
 		string serverEncoding = m_Conn.ConnProperty.ServerEncoding;
@@ -261,7 +331,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		DmField[] colInfo2 = m_ColInfo;
 		m_GetVal = new DmGetValue(serverEncoding, statement, newLobFlag, colInfo2);
 		m_Behavior = behavior;
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SequentialAccess))
+		if ((m_Behavior & CommandBehavior.SequentialAccess) != 0)
 		{
 			is_SequentialAccess = true;
 		}
@@ -280,26 +350,75 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal void do_Close()
 	{
-		lock (this)
+		CloseCore(allowOwnedInvocation: true);
+	}
+
+	internal void CloseForTransactionCleanup(DmDeadline deadline)
+	{
+		CloseCore(allowOwnedInvocation: false, cleanupDeadlineOverride: deadline);
+	}
+
+	private void CloseCore(bool allowOwnedInvocation, DmDeadline? cleanupDeadlineOverride = null)
+	{
+		if (Interlocked.CompareExchange(ref closeStarted, 1, 0) != 0) return;
+		var lease = Volatile.Read(ref executionLease);
+		var active = DmInvocation.Current;
+		DmInvocation invocation = null;
+		bool ownedInvocation = allowOwnedInvocation && active != null && active.Lease == lease;
+		if (lease != null && !ownedInvocation)
 		{
-			m_IsClosed = true;
-			m_DbInfo = null;
-			m_ColInfo = null;
-			m_CurrentRow = -1L;
-			if (m_RsCache != null)
+			TimeSpan cleanupTimeout = commandPlan?.CleanupTimeout ?? m_Conn.Conn.Settings.CleanupTimeout;
+			try
 			{
-				m_RsCache = null;
+				invocation = cleanupDeadlineOverride is { } deadline
+					? lease.BeginCleanupInvocation(deadline)
+					: lease.BeginCleanupInvocation(cleanupTimeout);
 			}
-			if (m_Statement != null && !m_Statement.P())
+			catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException or TimeoutException)
 			{
-				m_Statement.p();
-				m_Statement = null;
-			}
-			if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.CloseConnection) && m_Conn != null && m_Conn.Conn != null)
-			{
-				m_Conn.Conn.do_Close();
+				// Cleanup has no safe wire owner. Detach only the captured session.
+				lease.Session.Detach(lease.Identity)?.AbortTransport();
 			}
 		}
+		try { CloseOwned(); }
+		catch
+		{
+			lease?.Session.Detach(lease.Identity)?.AbortTransport();
+			throw;
+		}
+		finally
+		{
+			invocation?.Dispose();
+			var released = Interlocked.Exchange(ref executionLease, null);
+			try
+			{
+				if (registeredReader) released?.Session.UnregisterReader(released, this);
+				if (ownsExecutionLease) released?.Dispose();
+			}
+			finally
+			{
+				var plan = Interlocked.Exchange(ref commandPlan, null);
+				if (plan != null) releaseCommandPlan?.Invoke(plan);
+			}
+		}
+	}
+
+	internal void CloseOwned()
+	{
+		if (m_IsClosed) return;
+		m_IsClosed = true;
+		m_DbInfo = null;
+		m_ColInfo = null;
+		m_CurrentRow = -1L;
+		m_RsCache = null;
+		var statement = m_Statement;
+		m_Statement = null;
+		var lease = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
+		bool sameSession = lease != null && lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration)
+			&& ReferenceEquals(m_Conn?.Session, lease.Session);
+		if (sameSession && statement != null && !statement.P()) statement.p();
+		if (sameSession && (m_Behavior & CommandBehavior.CloseConnection) != 0)
+			m_Conn.Conn?.CloseExpectedSession(lease.Session);
 	}
 
 	internal bool do_GetBoolean(int i)
@@ -314,6 +433,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal byte do_GetByte(int i)
 	{
+		using var invocation = BeginInternalInvocation();
 		byte[] value = null;
 		checkClosed();
 		GetByteArrayValue(i, ref value);
@@ -325,6 +445,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal long do_GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
 	{
+		using var invocation = BeginInternalInvocation();
 		checkClosed();
 		skipCol = false;
 		byte[] value = null;
@@ -386,6 +507,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal long do_GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
 	{
+		using var invocation = BeginInternalInvocation();
 		string text = null;
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetChars(int i,long fieldoffset,char[] buffer,int bufferoffset,int length)");
 		checkClosed();
@@ -406,9 +528,10 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				byte[] value = null;
 				GetByteArrayValue(i, ref value);
 				dmClob = new DmClob(value, m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
+				BindLob(dmClob);
 				m_Clobs[i] = dmClob;
 			}
-			text = dmClob.getSubString(fieldoffset, length);
+			text = dmClob.GetSubStringUnderOwner(fieldoffset, length);
 			length = Math.Min(length, text.Length);
 			Array.Copy(text.ToCharArray(), 0, buffer, bufferoffset, length);
 			return length;
@@ -506,7 +629,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal IEnumerator do_GetEnumerator()
 	{
-		if (m_Behavior == CommandBehavior.CloseConnection)
+		if ((m_Behavior & CommandBehavior.CloseConnection) != 0)
 		{
 			return new DbEnumerator(this, closeReader: true);
 		}
@@ -538,29 +661,20 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetGuid(int i)");
 		checkClosed();
 		GetByteArrayValue(i, ref value);
+		if (value == null) throw new InvalidCastException("SQL NULL cannot be read as Guid.");
 		int cType = m_ColInfo[i].GetCType();
-		int precision = m_ColInfo[i].GetPrecision();
-		int scale = m_ColInfo[i].GetScale();
-		if (value == null)
+		if (cType is 0 or 1 or 2 or 54)
 		{
-			return new Guid("");
+			string text = m_GetVal.GetString(i, value, cType, m_ColInfo[i].GetPrecision(), m_ColInfo[i].GetScale());
+			if (text != null && Guid.TryParseExact(text.TrimEnd(), "D", out Guid parsed)) return parsed;
+			throw new FormatException("GUID text is not in the declared 36-character format.");
 		}
-		switch (cType)
+		if (cType is 17 or 18)
 		{
-		case 0:
-		case 1:
-		case 2:
-		case 54:
-			return new Guid(m_GetVal.GetString(i, value, cType, precision, scale));
-		case 17:
-		case 18:
-			if (value != null && value.Length == 16)
-			{
-				return new Guid(m_GetVal.GetBytes(i, value, cType, precision, scale));
-			}
-			break;
+			if (value.Length != 16) throw new FormatException("Binary GUID must contain exactly 16 bytes.");
+			return new Guid(value);
 		}
-		return new Guid("");
+		throw new InvalidCastException("Column storage is not a supported GUID format.");
 	}
 
 	internal short do_GetInt16(int i)
@@ -689,20 +803,44 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal Type do_GetProviderSpecificFieldType(int ordinal)
 	{
-		return base.GetProviderSpecificFieldType(ordinal);
+		CheckIndex(ordinal);
+		if (m_ColInfo[ordinal].GetCType() is 9 or 24) return typeof(DmDecimal);
+		return do_GetFieldType(ordinal);
 	}
 
 	internal object do_GetProviderSpecificValue(int ordinal)
 	{
-		return base.GetProviderSpecificValue(ordinal);
+		using var invocation = BeginInternalInvocation();
+		CheckIndex(ordinal);
+		int cType = m_ColInfo[ordinal].GetCType();
+		if (cType is not (9 or 24)) return GetValueOwned(ordinal);
+		byte[] value = null;
+		GetByteArrayValue(ordinal, ref value);
+		if (value == null) return DBNull.Value;
+		int precision = m_ColInfo[ordinal].GetPrecision();
+		int scale = m_ColInfo[ordinal].GetScale();
+		return cType == 9
+			? DmNumericCodec.DecodeDecimal(value, precision > 0 && scale >= 0 ? scale : null)
+			: DmNumericCodec.DecodeScaledInt64(value, scale);
 	}
 
 	internal int do_GetProviderSpecificValues(object[] values)
 	{
-		return base.GetProviderSpecificValues(values);
+		using var invocation = BeginInternalInvocation();
+		checkClosed();
+		if (values == null) return 0;
+		int count = Math.Min(values.Length, m_DbInfo.GetColumnCount());
+		for (int i = 0; i < count; i++) values[i] = do_GetProviderSpecificValue(i);
+		return count;
 	}
 
 	internal DataTable do_GetSchemaTable()
+	{
+		using var invocation = BeginInternalInvocation();
+		return GetSchemaTableOwned();
+	}
+
+	private DataTable GetSchemaTableOwned()
 	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetSchemaTable()");
 		checkClosed();
@@ -718,6 +856,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal DataTable do_GetDataTable()
 	{
+		using var invocation = BeginInternalInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "do_GetDataTable()");
 		checkClosed();
 		DataTable dataTable = new DataTable();
@@ -727,6 +866,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal string do_GetString(int i)
 	{
+		using var invocation = BeginInternalInvocation();
 		byte[] value = null;
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetString(int i)");
 		checkClosed();
@@ -742,6 +882,12 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	}
 
 	internal object do_GetValue(int i)
+	{
+		using var invocation = BeginInternalInvocation();
+		return GetValueOwned(i);
+	}
+
+	internal object GetValueOwned(int i)
 	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetValue(int i)");
 		CheckIndex(i);
@@ -775,18 +921,14 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		if (DmSqlType.isComplexType(cType, scale))
 		{
-			if (m_Statement.f().ComplexTypeToBytes)
-			{
-				DmBlob blob = GetBlob((short)i);
-				return blob.GetBytes(0L, (int)blob.do_length());
-			}
-			return DB2N.toComplexType(value, m_ColInfo[i], m_Conn);
+			throw new NotSupportedException("Complex type value decoding is not supported by this provider version.");
 		}
-		return m_GetVal.GetObject(i, value, cType, precision, scale);
+		return BindLob(m_GetVal.GetObject(i, value, cType, precision, scale));
 	}
 
 	internal int do_GetValues(object[] values)
 	{
+		using var invocation = BeginInternalInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetValues(object[] values)");
 		checkClosed();
 		if (values == null)
@@ -807,6 +949,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal bool do_IsDBNull(int i)
 	{
+		using var invocation = BeginInternalInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "IsDBNull(int i)");
 		checkClosed();
 		byte[] value = null;
@@ -820,73 +963,86 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal bool do_NextResult()
 	{
+		using var invocation = BeginInternalInvocation();
+		return NextResultOwned();
+	}
+
+	private bool NextResultOwned() => AdvanceToReadableResultOwned(initialSeek: false);
+
+	internal void SeekFirstReadableResultOwned()
+	{
+		if (!resultCursor.HasReadableRowset && !resultCursor.IsTerminal)
+			AdvanceToReadableResultOwned(initialSeek: true);
+	}
+
+	private bool AdvanceToReadableResultOwned(bool initialSeek)
+	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "NextResult()");
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SingleResult))
-		{
+		checkClosed();
+		if ((!initialSeek && (m_Behavior & CommandBehavior.SingleResult) != 0) || resultCursor.IsTerminal)
 			return false;
-		}
-		if (m_Statement == null)
-		{
-			return false;
-		}
-		if (m_Statement.f() == null)
-		{
-			return false;
-		}
-		string commandText = m_Statement.f().GetCommandText();
-		if (!m_Conn.ConnProperty.EFCoreNextResult && !commandText.isEmpty())
-		{
-			int num = commandText.IndexOf("/*EFCOREROWCOUNT*/");
-			if (num < 0)
-			{
-				return false;
-			}
-			if (commandText.LastIndexOf("/*EFCOREROWCOUNT*/") == num)
-			{
-				return false;
-			}
-		}
 		global::W.Dm.Internal.Legacy.A.A statement = m_Statement;
-		if (statement.f().RefCursorStmtArr != null && statement.f().RefCursorStmtArr.Count > statement.f().RefCursorStmtArr_cur)
+		if (statement?.f() == null) return false;
+		if (statement.f().RefCursorStmtArr != null &&
+			statement.f().RefCursorStmtArr.Count > statement.f().RefCursorStmtArr_cur)
+			throw new NotSupportedException("Reference cursor results are not supported by this provider version.");
+
+		for (int step = 0; step < 4096; step++)
 		{
-			statement = (global::W.Dm.Internal.Legacy.A.A)statement.f().RefCursorStmtArr[statement.f().RefCursorStmtArr_cur];
-			statement.f().IncRefCur();
-			m_DbInfo = statement.F();
-			m_ColInfo = m_DbInfo.GetColumnsInfo();
-			m_RsCache = statement.l();
-			m_RowCount = m_DbInfo.GetRowCount();
-			m_StartRow = 0L;
-			m_CurrentRow = -1L;
-			m_IsClosed = false;
+			DmInfo next = statement.h().A(statement, m_DbInfo, 0);
+			resultCursor.Observe(next);
+			ApplyResult(next, statement);
+			if (resultCursor.IsTerminal) return false;
+			if (resultCursor.HasReadableRowset) return true;
 		}
-		else
-		{
-			m_DbInfo = statement.h().A(statement, m_DbInfo, 0);
-			m_ColInfo = m_DbInfo.GetColumnsInfo();
-			m_RsCache = statement.l();
-			m_RowCount = m_DbInfo.GetRowCount();
-			m_StartRow = 0L;
-			m_CurrentRow = -1L;
-			m_IsClosed = false;
-		}
-		return m_DbInfo.GetHasResultSet();
+		var owner = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
+		owner?.Session.Detach(owner.Identity)?.AbortTransport();
+		throw new System.IO.InvalidDataException("Result sequence exceeds the supported bound.");
+	}
+
+	internal bool NextResultForCommandOwned() => NextResultOwned();
+
+	private void ApplyResult(DmInfo info, global::W.Dm.Internal.Legacy.A.A statement)
+	{
+		m_DbInfo = info;
+		m_Statement = statement;
+		m_ColInfo = info.GetColumnsInfo();
+		bdta = info.rsBdta;
+		if (m_ColInfo != null)
+			foreach (DmColumn column in m_ColInfo) column.isBdta = bdta;
+		m_RsCache = info.GetHasResultSet() ? statement.l() : null;
+		m_RowCount = info.GetRowCount();
+		m_StartRow = 0L;
+		m_CurrentRow = -1L;
+		m_is_single_row = 0;
+		m_SequentialSeq = -1;
+		m_StreamPos = 0L;
+		m_Clobs.Clear();
+		m_GetVal = new DmGetValue(m_Conn.ConnProperty.ServerEncoding, statement,
+			m_Conn.ConnProperty.NewLobFlag, m_ColInfo);
 	}
 
 	internal bool do_Read()
 	{
+		using var invocation = BeginInternalInvocation();
+		return ReadOwned();
+	}
+
+	internal bool ReadOwned()
+	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Read()");
 		checkClosed();
 		ClearClobs();
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SequentialAccess))
+		if ((m_Behavior & CommandBehavior.SequentialAccess) != 0)
 		{
 			m_SequentialSeq = -1;
 		}
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SingleRow) && m_CurrentRow != -1)
+		if ((m_Behavior & CommandBehavior.SingleRow) != 0 && m_CurrentRow != -1)
 		{
 			m_is_single_row = 1;
 			return false;
 		}
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SchemaOnly))
+		if ((m_Behavior & CommandBehavior.SchemaOnly) != 0)
 		{
 			m_RowCount = 0L;
 			return false;
@@ -914,7 +1070,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	{
 		if (filterHead == null)
 		{
-			do_Close();
+			CloseCore(allowOwnedInvocation: false);
 		}
 		else
 		{
@@ -924,6 +1080,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override bool GetBoolean(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetBoolean(i);
@@ -933,6 +1090,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override byte GetByte(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetByte(i);
@@ -942,6 +1100,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetBytes(i, fieldOffset, buffer, bufferoffset, length);
@@ -951,6 +1110,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override char GetChar(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetChar(i);
@@ -960,6 +1120,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetChars(i, fieldoffset, buffer, bufferoffset, length);
@@ -969,6 +1130,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override string GetDataTypeName(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetDataTypeName(i);
@@ -978,6 +1140,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override DateTime GetDateTime(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetDateTime(i);
@@ -987,6 +1150,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override decimal GetDecimal(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetDecimal(i);
@@ -996,6 +1160,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override double GetDouble(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetDouble(i);
@@ -1005,6 +1170,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override IEnumerator GetEnumerator()
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetEnumerator();
@@ -1014,6 +1180,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override Type GetFieldType(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetFieldType(i);
@@ -1023,6 +1190,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override float GetFloat(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetFloat(i);
@@ -1032,6 +1200,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override Guid GetGuid(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetGuid(i);
@@ -1041,6 +1210,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override short GetInt16(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetInt16(i);
@@ -1050,6 +1220,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override int GetInt32(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetInt32(i);
@@ -1059,6 +1230,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override long GetInt64(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetInt64(i);
@@ -1068,6 +1240,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override string GetName(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetName(i);
@@ -1077,6 +1250,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override int GetOrdinal(string name)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetOrdinal(name);
@@ -1086,6 +1260,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override Type GetProviderSpecificFieldType(int ordinal)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetProviderSpecificFieldType(ordinal);
@@ -1095,6 +1270,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override object GetProviderSpecificValue(int ordinal)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetProviderSpecificValue(ordinal);
@@ -1104,6 +1280,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override int GetProviderSpecificValues(object[] values)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetProviderSpecificValues(values);
@@ -1113,15 +1290,17 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override DataTable GetSchemaTable()
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetSchemaTable();
+			return GetSchemaTableOwned();
 		}
 		return filterHead.GetSchemaTable(this);
 	}
 
 	public override string GetString(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetString(i);
@@ -1131,6 +1310,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override object GetValue(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetValue(i);
@@ -1140,24 +1320,69 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override T GetFieldValue<T>(int ordinal)
 	{
-		object value = GetValue(ordinal);
+		using var invocation = BeginReaderInvocation();
+		if (typeof(T) == typeof(Guid)) return (T)(object)do_GetGuid(ordinal);
+		if (typeof(T) == typeof(DmDecimal)) return (T)do_GetProviderSpecificValue(ordinal);
+		if (typeof(T) == typeof(byte)) return (T)(object)do_GetByte(ordinal);
+		if (typeof(T) == typeof(short)) return (T)(object)do_GetInt16(ordinal);
+		if (typeof(T) == typeof(int)) return (T)(object)do_GetInt32(ordinal);
+		if (typeof(T) == typeof(long)) return (T)(object)do_GetInt64(ordinal);
+		if (typeof(T) == typeof(float)) return (T)(object)do_GetFloat(ordinal);
+		if (typeof(T) == typeof(double)) return (T)(object)do_GetDouble(ordinal);
+		if (typeof(T) == typeof(decimal)) return (T)(object)do_GetDecimal(ordinal);
+		if (typeof(T) == typeof(sbyte) || typeof(T) == typeof(ushort) ||
+			typeof(T) == typeof(uint) || typeof(T) == typeof(ulong))
+			return GetAdditionalInteger<T>(ordinal);
+		object value = do_GetValue(ordinal);
+		if (value is DBNull && typeof(T) != typeof(object) && typeof(T) != typeof(DBNull))
+			throw new InvalidCastException("A NULL column cannot be read as the requested CLR type.");
+		if (typeof(T) == typeof(TimeSpan) && value is DmIntervalDT interval)
+		{
+			return (T)(object)interval.ToTimeSpanExact();
+		}
 		if (typeof(T) == typeof(DateOnly) && value is DateTime dateTime)
 		{
+			if (m_ColInfo[ordinal].GetCType() != 14 || dateTime.TimeOfDay != TimeSpan.Zero)
+				throw new InvalidCastException("DateOnly requires a DATE column.");
 			return (T)(object)DateOnly.FromDateTime(dateTime);
 		}
 		if (typeof(T) == typeof(TimeOnly) && value is DateTime dateTime2)
 		{
+			if (m_ColInfo[ordinal].GetCType() != 15)
+				throw new InvalidCastException("TimeOnly requires a TIME column.");
 			return (T)(object)TimeOnly.FromDateTime(dateTime2);
 		}
 		if (typeof(T) == typeof(TimeOnly) && value is TimeSpan timeSpan)
 		{
+			if (m_ColInfo[ordinal].GetCType() != 15)
+				throw new InvalidCastException("TimeOnly requires a TIME column.");
 			return (T)(object)TimeOnly.FromTimeSpan(timeSpan);
 		}
-		return (T)Convert.ChangeType(value, typeof(T));
+		if (value is T exact) return exact;
+		throw new InvalidCastException("Column cannot be read as the requested CLR type.");
+	}
+
+	private T GetAdditionalInteger<T>(int ordinal)
+	{
+		CheckIndex(ordinal);
+		checkClosed();
+		byte[] value = null;
+		GetByteArrayValue(ordinal, ref value);
+		int cType = m_ColInfo[ordinal].GetCType();
+		int precision = m_ColInfo[ordinal].GetPrecision();
+		int scale = m_ColInfo[ordinal].GetScale();
+		if (typeof(T) == typeof(sbyte))
+			return (T)(object)m_GetVal.GetSByte(ordinal, value, cType, precision, scale);
+		if (typeof(T) == typeof(ushort))
+			return (T)(object)m_GetVal.GetUshort(ordinal, value, cType, precision, scale);
+		if (typeof(T) == typeof(uint))
+			return (T)(object)m_GetVal.GetUint(ordinal, value, cType, precision, scale);
+		return (T)(object)m_GetVal.GetUlong(ordinal, value, cType, precision, scale);
 	}
 
 	public override int GetValues(object[] values)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_GetValues(values);
@@ -1167,6 +1392,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override bool IsDBNull(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
 			return do_IsDBNull(i);
@@ -1176,18 +1402,21 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public override bool NextResult()
 	{
+		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_NextResult();
+			return NextResultOwned();
 		}
 		return filterHead.NextResult(this);
 	}
 
 	public override bool Read()
 	{
+		using var invocation = BeginReaderInvocation();
+		AfterInvocationEntered?.Invoke(invocation.Identity);
 		if (filterHead == null)
 		{
-			return do_Read();
+			return ReadOwned();
 		}
 		return filterHead.Read(this);
 	}
@@ -1248,17 +1477,17 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private void FillSchemaColumn(DataRow row, DmColumn dmCol, int i)
 	{
 		row["ColumnName"] = dmCol.GetName();
-		row["ColumnOrdinal"] = i + 1;
+		row["ColumnOrdinal"] = i;
 		row["ColumnSize"] = dmCol.GetSize();
 		row["NumericPrecision"] = dmCol.GetPrecision();
 		row["NumericScale"] = dmCol.GetScale();
-		row["IsUnique"] = false;
-		row["IsKey"] = false;
-		row["BaseServerName"] = "DM";
-		row["BaseCatalogName"] = "";
-		row["BaseSchemaName"] = dmCol.GetSchema();
-		row["BaseTableName"] = dmCol.GetTable();
-		row["BaseColumnName"] = dmCol.GetBaseColumn();
+		row["IsUnique"] = DBNull.Value;
+		row["IsKey"] = DBNull.Value;
+		row["BaseServerName"] = DBNull.Value;
+		row["BaseCatalogName"] = DBNull.Value;
+		row["BaseSchemaName"] = string.IsNullOrEmpty(dmCol.GetSchema()) ? DBNull.Value : dmCol.GetSchema();
+		row["BaseTableName"] = string.IsNullOrEmpty(dmCol.GetTable()) ? DBNull.Value : dmCol.GetTable();
+		row["BaseColumnName"] = string.IsNullOrEmpty(dmCol.GetBaseColumn()) ? DBNull.Value : dmCol.GetBaseColumn();
 		row["DataType"] = DmSqlType.CTypeToSystemType(dmCol.GetCType(), dmCol.GetPrecision(), m_Conn.ConnProperty);
 		row["AllowDBNull"] = dmCol.GetNullable();
 		row["ProviderType"] = dmCol.GetCType();
@@ -1274,124 +1503,30 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private void FillSchemaTable(DataTable schTbl)
 	{
-		bool flag = true;
-		string text = null;
-		string text2 = null;
 		for (int i = 0; i < m_ColInfo.Length; i++)
 		{
-			if (i == 0)
-			{
-				text = m_ColInfo[i].GetSchema();
-				text2 = m_ColInfo[i].GetTable();
-			}
-			if (text == null || text2 == null)
-			{
-				flag = false;
-			}
-			else if (!text.Equals(m_ColInfo[i].GetSchema()) || !text2.Equals(m_ColInfo[i].GetTable()))
-			{
-				flag = false;
-			}
-			DataRow dataRow = schTbl.NewRow();
-			FillSchemaColumn(dataRow, m_ColInfo[i], i);
-			dataRow["IsReadOnly"] = !m_DbInfo.GetUpdatable();
-			schTbl.Rows.Add(dataRow);
+			DataRow row = schTbl.NewRow();
+			FillSchemaColumn(row, m_ColInfo[i], i);
+			row["IsReadOnly"] = !m_DbInfo.GetUpdatable();
+			schTbl.Rows.Add(row);
 		}
-		if (!flag)
-		{
-			return;
-		}
-		string text3 = null;
-		DataRow dataRow2 = null;
-		DmDataReader keyCols = GetKeyCols(text, text2);
-		if (keyCols == null)
-		{
-			return;
-		}
-		while (keyCols.do_Read())
-		{
-			text3 = keyCols.GetString(0);
-			for (int j = 0; j < schTbl.Rows.Count; j++)
-			{
-				dataRow2 = schTbl.Rows[j];
-				if (Convert.ToString(dataRow2["BaseColumnName"]).Equals(text3))
-				{
-					dataRow2["IsKey"] = true;
-					if (keyCols.m_RowCount == 1)
-					{
-						dataRow2["IsUnique"] = true;
-					}
-					break;
-				}
-			}
-		}
-		keyCols.do_Close();
-		keyCols = GetUniqueCols(text, text2);
-		if (keyCols == null)
-		{
-			return;
-		}
-		while (keyCols.do_Read())
-		{
-			text3 = keyCols.GetString(0);
-			for (int k = 0; k < schTbl.Rows.Count; k++)
-			{
-				dataRow2 = schTbl.Rows[k];
-				if (Convert.ToString(dataRow2["BaseColumnName"]).Equals(text3))
-				{
-					if (keyCols.m_RowCount == 1)
-					{
-						dataRow2["IsUnique"] = true;
-					}
-					break;
-				}
-			}
-		}
-		keyCols.do_Close();
 	}
 
 	public DmDataReader GetKeyCols(string schema, string table)
 	{
-		if (schema == null || table == null)
-		{
-			return null;
-		}
-		string escStringName = DmStringUtil.GetEscStringName(schema);
-		string escStringName2 = DmStringUtil.GetEscStringName(table);
-		string text = "SELECT COLS.NAME FROM SYS.SYSINDEXES INDS, (SELECT OBJ.NAME, CON.ID, CON.TYPE$, CON.TABLEID, CON.COLID, CON.INDEXID FROM SYS.SYSCONS AS CON, SYS.SYSOBJECTS AS OBJ WHERE OBJ.SUBTYPE$='CONS' AND OBJ.ID=CON.ID) CONS, SYS.SYSCOLUMNS COLS, (SELECT NAME ,ID FROM SYS.SYSOBJECTS WHERE SUBTYPE$='UTAB' AND NAME = '" + escStringName2 + "' AND SCHID=(SELECT ID FROM SYS.SYSOBJECTS WHERE NAME = '" + escStringName + "' AND TYPE$='SCH')) TAB, (SELECT ID, NAME FROM SYS.SYSOBJECTS WHERE SUBTYPE$='INDEX')OBJ_INDS WHERE CONS.TYPE$='P' AND CONS.INDEXID=INDS.ID AND INDS.ID=OBJ_INDS.ID AND TAB.ID=COLS.ID AND CONS.TABLEID=TAB.ID AND SF_COL_IS_IDX_KEY(INDS.KEYNUM, INDS.KEYINFO,COLS.COLID)=1";
-		DmDataReader result = null;
-		try
-		{
-			result = m_Conn.GetStmtFromPool((DmCommand)m_Conn.Conn.CreateCommand()).__t02_method_060008B1(text, CommandBehavior.Default);
-		}
-		catch (Exception)
-		{
-		}
-		return result;
+		throw new NotSupportedException("Independent metadata readers are not supported by this session.");
 	}
+
 
 	public DmDataReader GetUniqueCols(string schema, string table)
 	{
-		if (schema == null || table == null)
-		{
-			return null;
-		}
-		string escStringName = DmStringUtil.GetEscStringName(schema);
-		string escStringName2 = DmStringUtil.GetEscStringName(table);
-		string text = "SELECT COLS.NAME FROM SYS.SYSINDEXES INDS, (SELECT OBJ.NAME, CON.ID, CON.TYPE$, CON.TABLEID, CON.COLID, CON.INDEXID FROM SYS.SYSCONS AS CON, SYS.SYSOBJECTS AS OBJ WHERE OBJ.SUBTYPE$='CONS' AND OBJ.ID=CON.ID) CONS, SYS.SYSCOLUMNS COLS, (SELECT NAME ,ID FROM SYS.SYSOBJECTS WHERE SUBTYPE$='UTAB' AND NAME = '" + escStringName2 + "' AND SCHID=(SELECT ID FROM SYS.SYSOBJECTS WHERE NAME = '" + escStringName + "' AND TYPE$='SCH')) TAB, (SELECT ID, NAME FROM SYS.SYSOBJECTS WHERE SUBTYPE$='INDEX')OBJ_INDS WHERE CONS.TYPE$='U' AND CONS.INDEXID=INDS.ID AND INDS.ID=OBJ_INDS.ID AND TAB.ID=COLS.ID AND CONS.TABLEID=TAB.ID AND SF_COL_IS_IDX_KEY(INDS.KEYNUM, INDS.KEYINFO,COLS.COLID)=1";
-		DmDataReader result = null;
-		try
-		{
-			result = m_Conn.GetStmtFromPool((DmCommand)m_Conn.Conn.CreateCommand()).__t02_method_060008B1(text, CommandBehavior.Default);
-		}
-		catch (Exception)
-		{
-		}
-		return result;
+		throw new NotSupportedException("Independent metadata readers are not supported by this session.");
 	}
+
 
 	public bool Previous()
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Previous()");
 		checkClosed();
 		ClearClobs();
@@ -1406,6 +1541,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public bool First()
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "First()");
 		checkClosed();
 		ClearClobs();
@@ -1420,6 +1556,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public bool Last()
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Last()");
 		checkClosed();
 		ClearClobs();
@@ -1434,6 +1571,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public bool Absolute(int pos)
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Absolute()");
 		checkClosed();
 		ClearClobs();
@@ -1448,6 +1586,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public bool Relative(int pos)
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Relative()");
 		checkClosed();
 		ClearClobs();
@@ -1462,6 +1601,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public new DbDataReader GetData(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetData(int i)");
 		checkClosed();
 		DmError.ThrowUnsupportedException();
@@ -1470,6 +1610,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public DateTimeOffset GetDateTimeOffset(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		byte[] value = null;
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetDateTime(int i)");
 		checkClosed();
@@ -1482,6 +1623,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public DmXDec GetDmDecimal(int i)
 	{
+		using var invocation = BeginReaderInvocation();
 		byte[] value = null;
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetDecimal(int i)");
 		checkClosed();
@@ -1501,14 +1643,37 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	public DmBlob GetBlob(short i)
 	{
+		using var invocation = BeginReaderInvocation();
+		return GetBlobOwned(i);
+	}
+
+	private DmBlob GetBlobOwned(short i)
+	{
 		checkClosed();
-		return new DmBlob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
+		return BindLob(new DmBlob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2));
 	}
 
 	public DmClob GetClob(short i)
 	{
+		using var invocation = BeginReaderInvocation();
+		return GetClobOwned(i);
+	}
+
+	private DmClob GetClobOwned(short i)
+	{
 		checkClosed();
-		return new DmClob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
+		return BindLob(new DmClob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2));
+	}
+
+	private T BindLob<T>(T value)
+	{
+		if (value is AbstractLob lob)
+		{
+			var lease = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
+			if (lease == null) throw new InvalidOperationException("LOB has no reader execution lease.");
+			lob.AttachExecutionLease(lease);
+		}
+		return value;
 	}
 
 	private void GetByteArrayValue(int columnIndex, ref byte[] value)
@@ -1536,7 +1701,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private byte[] GetByteArrayValue(int columnIndex)
 	{
 		byte[] data = null;
-		if ((Convert.ToByte(m_Behavior) & 0x3F) == Convert.ToByte(CommandBehavior.SingleRow) && m_is_single_row == 1)
+		if ((m_Behavior & CommandBehavior.SingleRow) != 0 && m_is_single_row == 1)
 		{
 			return null;
 		}
@@ -1577,7 +1742,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private void checkClosed()
 	{
-		if (m_IsClosed || m_Statement == null || m_Statement.P())
+		if (do_IsClosed || m_Statement == null || m_Statement.P())
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_RESULTSET_CLOSED);
 		}

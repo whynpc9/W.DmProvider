@@ -18,6 +18,7 @@ public class DmFldrExport : IDisposable
 
 	public DmFldrExport(string ip, int port, string username, string pwd, DM_CHARSET charset)
 	{
+		throw new NotSupportedException("Native FLDR export is unsupported.");
 		_ip = ip;
 		_port = port;
 		_username = username;

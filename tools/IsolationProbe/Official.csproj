@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>IsolationProbe.Official</AssemblyName><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);OFFICIAL</DefineConstants><OutputPath>bin/Official/</OutputPath>
+    <RestoreSources>$(MSBuildThisFileDirectory)../../packages</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="Program.cs" /><Compile Include="ProbeSafety.cs" /><Compile Include="Litmus.cs" /><PackageReference Include="DM.DmProvider" Version="8.3.1.47463" /></ItemGroup>
+</Project>

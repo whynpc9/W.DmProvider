@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using W.Dm;
 using W.Dm.util;
@@ -34,6 +35,7 @@ internal class b
 	[SpecialName]
 	internal void A(int P_0)
 	{
+		if (P_0 < 0 || P_0 > __t02_field_04000AC3.Length) throw new InvalidDataException("Invalid buffer length.");
 		__t02_field_04000AC5 = P_0;
 	}
 
@@ -61,11 +63,14 @@ internal class b
 
 	internal b(byte[] P_0)
 	{
-		__t02_field_04000AC3 = P_0;
+		__t02_field_04000AC3 = P_0 ?? throw new ArgumentNullException(nameof(P_0));
+		if (P_0.Length > 64 * 1024 * 1024) throw new InvalidDataException("Buffer exceeds frame limit.");
+		__t02_field_04000AC5 = P_0.Length;
 	}
 
 	internal void a(int P_0)
 	{
+		if (P_0 < 0 || P_0 > __t02_field_04000AC3.Length) throw new InvalidDataException("Invalid buffer length.");
 		__t02_field_04000AC5 = P_0;
 		__t02_field_04000AC4 = 0;
 		Array.Clear(__t02_field_04000AC3, 0, P_0);
@@ -73,21 +78,34 @@ internal class b
 
 	internal void B(int P_0)
 	{
-		if (__t02_field_04000AC5 + P_0 > __t02_field_04000AC3.Length)
+		int required;
+		try { required = checked(__t02_field_04000AC5 + P_0); }
+		catch (OverflowException ex) { throw new InvalidDataException("Buffer length overflow.", ex); }
+		if (P_0 < 0 || required > 64 * 1024 * 1024) throw new InvalidDataException("Buffer exceeds frame limit.");
+		if (required > __t02_field_04000AC3.Length)
 		{
-			byte[] array = new byte[__t02_field_04000AC3.Length * 2 + P_0];
+			int capacity = Math.Min(64 * 1024 * 1024, Math.Max(required, checked(__t02_field_04000AC3.Length * 2)));
+			byte[] array = new byte[capacity];
 			Array.Copy(__t02_field_04000AC3, 0, array, 0, __t02_field_04000AC5);
 			__t02_field_04000AC3 = array;
 		}
 	}
 
+	private void RequireReadable(int offset, int count)
+	{
+		if (offset < 0 || count < 0 || offset > __t02_field_04000AC5 || count > __t02_field_04000AC5 - offset)
+			throw new InvalidDataException("Protocol decoder read beyond the received frame.");
+	}
+
 	internal byte __t02_method_06000AB4(int P_0)
 	{
+		RequireReadable(P_0, 1);
 		return __t02_field_04000AC3[P_0];
 	}
 
 	internal short C(int P_0)
 	{
+		RequireReadable(P_0, 2);
 		int num = 0xFF & __t02_field_04000AC3[P_0];
 		P_0++;
 		int num2 = 0xFF & __t02_field_04000AC3[P_0];
@@ -97,6 +115,7 @@ internal class b
 
 	internal ushort c(int P_0)
 	{
+		RequireReadable(P_0, 2);
 		int num = 0xFF & __t02_field_04000AC3[P_0];
 		P_0++;
 		int num2 = 0xFF & __t02_field_04000AC3[P_0];
@@ -106,6 +125,7 @@ internal class b
 
 	internal int D(int P_0)
 	{
+		RequireReadable(P_0, 2);
 		int num = 0xFF & __t02_field_04000AC3[P_0];
 		P_0++;
 		int num2 = 0xFF & __t02_field_04000AC3[P_0];
@@ -114,6 +134,7 @@ internal class b
 
 	internal int d(int P_0)
 	{
+		RequireReadable(P_0, 4);
 		int num = 4;
 		int num2 = P_0 + num;
 		long num3 = 0xFF & __t02_field_04000AC3[--num2];
@@ -125,11 +146,13 @@ internal class b
 
 	internal long E(int P_0)
 	{
+		RequireReadable(P_0, 4);
 		return (__t02_field_04000AC3[P_0++] & 0xFF) | ((long)(__t02_field_04000AC3[P_0++] & 0xFF) << 8) | ((long)(__t02_field_04000AC3[P_0++] & 0xFF) << 16) | ((long)(__t02_field_04000AC3[P_0++] & 0xFF) << 24);
 	}
 
 	internal long e(int P_0)
 	{
+		RequireReadable(P_0, 8);
 		long num = 0L;
 		int num2 = P_0 + 8;
 		for (int i = 0; i < 8; i++)
@@ -141,11 +164,13 @@ internal class b
 
 	internal byte[] A(int P_0, int P_1)
 	{
+		RequireReadable(P_0, P_1);
 		return DmConvertion.GetBytes(__t02_field_04000AC3, P_0, P_1);
 	}
 
 	internal string A(int P_0, int P_1, string P_2)
 	{
+		RequireReadable(P_0, P_1);
 		return DmConvertion.GetString(__t02_field_04000AC3, P_0, P_1, P_2);
 	}
 
@@ -221,9 +246,12 @@ internal class b
 
 	internal byte[] A(byte[] P_0, int P_1, int P_2)
 	{
-		byte[] sourceArray = A(__t02_field_04000AC4, P_2);
+		if (P_0 == null) throw new ArgumentNullException(nameof(P_0));
+		if (P_1 < 0 || P_2 < 0 || P_1 > P_0.Length || P_2 > P_0.Length - P_1)
+			throw new InvalidDataException("Decoder target range is invalid.");
+		RequireReadable(__t02_field_04000AC4, P_2);
+		Array.Copy(__t02_field_04000AC3, __t02_field_04000AC4, P_0, P_1, P_2);
 		__t02_field_04000AC4 += P_2;
-		Array.Copy(sourceArray, 0, P_0, P_1, P_2);
 		return P_0;
 	}
 
@@ -291,6 +319,7 @@ internal class b
 
 	internal void f(int P_0)
 	{
+		RequireReadable(__t02_field_04000AC4, P_0);
 		__t02_field_04000AC4 += P_0;
 	}
 
@@ -301,6 +330,7 @@ internal class b
 
 	internal void G(int P_0)
 	{
+		RequireReadable(P_0, 0);
 		__t02_field_04000AC4 = P_0;
 	}
 

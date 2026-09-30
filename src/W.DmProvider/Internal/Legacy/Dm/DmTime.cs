@@ -56,43 +56,19 @@ public class DmTime
 
 	public byte[] GetByteArrayValue()
 	{
-		string timeWithNano = GetTimeWithNano();
 		byte[] array = new byte[12];
-		char[] separator = ":.".ToCharArray();
-		string[] array2 = timeWithNano.Split(separator);
-		byte b = byte.Parse(array2[0], DmConst.invariantCulture);
-		byte b2 = byte.Parse(array2[1], DmConst.invariantCulture);
-		byte b3 = byte.Parse(array2[2], DmConst.invariantCulture);
-		array[4] = b;
-		array[5] = b2;
-		array[6] = b3;
-		int num = 0;
-		if (array2.Length > 3)
-		{
-			num = (int)(double.Parse(string.Concat(string.Concat("" + "0", "."), array2[3]), DmConst.invariantCulture) * 1000000.0);
-		}
-		Array.Copy(DmConvertion.IntToByteArray(num), 0, array, 7, 3);
+		array[4] = GetHour();
+		array[5] = GetMinute();
+		array[6] = GetSecond();
+		int microseconds = GetNano();
+		if (microseconds > 999999) throw new OverflowException("TIME fraction exceeds microsecond precision.");
+		Array.Copy(DmConvertion.IntToByteArray(microseconds), 0, array, 7, 3);
 		return array;
 	}
 
 	public byte[] GetTzByteArrayValue()
 	{
-		string timeWithNano = GetTimeWithNano();
-		byte[] array = new byte[12];
-		char[] separator = ":.".ToCharArray();
-		string[] array2 = timeWithNano.Split(separator);
-		byte b = byte.Parse(array2[0], DmConst.invariantCulture);
-		byte b2 = byte.Parse(array2[1], DmConst.invariantCulture);
-		byte b3 = byte.Parse(array2[2], DmConst.invariantCulture);
-		array[4] = b;
-		array[5] = b2;
-		array[6] = b3;
-		int num = 0;
-		if (array2.Length > 3)
-		{
-			num = (int)(double.Parse(string.Concat(string.Concat("" + "0", "."), array2[3]), DmConst.invariantCulture) * 1000000.0);
-		}
-		Array.Copy(DmConvertion.IntToByteArray(num), 0, array, 7, 3);
+		byte[] array = GetByteArrayValue();
 		byte[] array3 = DmConvertion.ShortToByteArray(GetTZ());
 		array[10] = array3[0];
 		array[11] = array3[1];

@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Numerics;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -80,25 +82,29 @@ public class DmIntervalDT
 
 	public DmIntervalDT(TimeSpan timeSpan, int scale)
 	{
-		days = timeSpan.Days;
-		hours = timeSpan.Hours;
-		minutes = timeSpan.Minutes;
-		seconds = timeSpan.Seconds;
-		string text = timeSpan.ToString();
-		int num = text.LastIndexOf('.');
-		int num2 = text.LastIndexOf(':');
-		if (num > num2)
-		{
-			fraction = Convert.ToInt32(text.Substring(num + 1, 6));
-			if (timeSpan.Milliseconds < 0)
-			{
-				fraction = -fraction;
-			}
-		}
-		checkSignAndReset();
 		secScale = scale & 0xF;
 		leadScale = (scale >> 4) & 0xF;
 		type = (byte)((scale >> 8) & 0xF);
+		if (type != QUA_DHMS || leadScale is < 1 or > LEADSCALE_MAX || secScale is < 0 or > 6)
+			throw new NotSupportedException("TimeSpan requires DAY TO SECOND with supported precision.");
+		negative = timeSpan.Ticks < 0;
+		BigInteger remaining = new BigInteger(timeSpan.Ticks);
+		if (negative) remaining = -remaining; // Handles TimeSpan.MinValue without Math.Abs(long).
+		BigInteger subsecondTicks = remaining % TimeSpan.TicksPerSecond;
+		long tickQuantum = 1;
+		for (int digit = secScale; digit < 7; digit++) tickQuantum = checked(tickQuantum * 10);
+		if (subsecondTicks % tickQuantum != 0)
+			throw new OverflowException("TimeSpan fraction exceeds the declared INTERVAL scale.");
+		days = checked((int)(remaining / TimeSpan.TicksPerDay));
+		if (days.ToString(CultureInfo.InvariantCulture).Length > leadScale)
+			throw new OverflowException("TimeSpan day count exceeds the declared INTERVAL leading precision.");
+		remaining %= TimeSpan.TicksPerDay;
+		hours = (int)(remaining / TimeSpan.TicksPerHour);
+		remaining %= TimeSpan.TicksPerHour;
+		minutes = (int)(remaining / TimeSpan.TicksPerMinute);
+		remaining %= TimeSpan.TicksPerMinute;
+		seconds = (int)(remaining / TimeSpan.TicksPerSecond);
+		fraction = (int)(subsecondTicks / 10); // Legacy wire stores microseconds.
 		scaleForSvr = scale;
 	}
 
@@ -510,9 +516,22 @@ public class DmIntervalDT
 
 	private void SetNano(string nano)
 	{
-		double num = Convert.ToDouble("0." + nano);
-		int num2 = (int)Math.Pow(10.0, secScale);
-		fraction = (int)(num * (double)num2);
+		if (secScale < 0 || secScale > 6 || string.IsNullOrEmpty(nano))
+			throw new OverflowException("INTERVAL fractional precision is unsupported.");
+		foreach (char digit in nano)
+			if (digit is < '0' or > '9') throw new FormatException("INTERVAL fraction is not decimal digits.");
+		if (nano.Length > secScale)
+		{
+			for (int index = secScale; index < nano.Length; index++)
+				if (nano[index] != '0') throw new OverflowException("INTERVAL fraction exceeds the declared scale.");
+		}
+		if (nano.Length > 6)
+		{
+			for (int index = 6; index < nano.Length; index++)
+				if (nano[index] != '0') throw new OverflowException("INTERVAL cannot represent sub-microsecond precision.");
+			nano = nano.Substring(0, 6);
+		}
+		fraction = int.Parse(nano.PadRight(6, '0'), CultureInfo.InvariantCulture);
 	}
 
 	private void checkStrValue(string str, int maxNum, params char[] seperators)
@@ -612,8 +631,8 @@ public class DmIntervalDT
 			string text5 = formatStrByDefault(getHour().ToString());
 			string text4 = formatStrByDefault(getMinute().ToString());
 			string text2 = formatStrByDefault(getSecond().ToString());
-			string text3 = formatStrByScale(getMsec().ToString(), secScale);
-			text = text + text6 + " " + text5 + ":" + text4 + ":" + text2 + "." + text3 + "' DAY(" + leadScale + ") TO SECOND(" + secScale + ")";
+			string text3 = FormatSecondFraction();
+			text = text + text6 + " " + text5 + ":" + text4 + ":" + text2 + text3 + "' DAY(" + leadScale + ") TO SECOND(" + secScale + ")";
 			break;
 		}
 		case 7:
@@ -634,8 +653,8 @@ public class DmIntervalDT
 			string text5 = formatStrByScale(getHour().ToString(), leadScale);
 			string text4 = formatStrByDefault(getMinute().ToString());
 			string text2 = formatStrByDefault(getSecond().ToString());
-			string text3 = formatStrByScale(getMsec().ToString(), secScale);
-			text = text + text5 + ":" + text4 + ":" + text2 + "." + text3 + "' HOUR(" + leadScale + ") TO SECOND(" + secScale + ")";
+			string text3 = FormatSecondFraction();
+			text = text + text5 + ":" + text4 + ":" + text2 + text3 + "' HOUR(" + leadScale + ") TO SECOND(" + secScale + ")";
 			break;
 		}
 		case 10:
@@ -648,19 +667,30 @@ public class DmIntervalDT
 		{
 			string text4 = formatStrByScale(getMinute().ToString(), leadScale);
 			string text2 = formatStrByDefault(getSecond().ToString());
-			string text3 = formatStrByScale(getMsec().ToString(), secScale);
-			text = text + text4 + ":" + text2 + "." + text3 + "' MINUTE(" + leadScale + ") TO SECOND(" + secScale + ")";
+			string text3 = FormatSecondFraction();
+			text = text + text4 + ":" + text2 + text3 + "' MINUTE(" + leadScale + ") TO SECOND(" + secScale + ")";
 			break;
 		}
 		case 12:
 		{
 			string text2 = formatStrByScale(getSecond().ToString(), leadScale);
-			string text3 = formatStrByScale(getMsec().ToString(), secScale);
-			text = text + text2 + "." + text3 + "' SECOND(" + leadScale + "," + secScale + ")";
+			string text3 = FormatSecondFraction();
+			text = text + text2 + text3 + "' SECOND(" + leadScale + "," + secScale + ")";
 			break;
 		}
 		}
 		return text;
+	}
+
+	private string FormatSecondFraction()
+	{
+		if (secScale is < 0 or > 6 || fraction is < 0 or > 999999)
+			throw new OverflowException("INTERVAL fractional precision is unsupported.");
+		int quantum = 1;
+		for (int digit = secScale; digit < 6; digit++) quantum = checked(quantum * 10);
+		if (fraction % quantum != 0)
+			throw new OverflowException("INTERVAL fraction exceeds the declared scale.");
+		return secScale == 0 ? string.Empty : "." + fraction.ToString("D6", CultureInfo.InvariantCulture).Substring(0, secScale);
 	}
 
 	private string formatStrByScale(string str, int scale)
@@ -1155,18 +1185,22 @@ public class DmIntervalDT
 
 	public string GetTimeSpanFormatString()
 	{
-		DmIntervalDT dmIntervalDT = convertTo(1574);
-		string text = dmIntervalDT.days + "." + dmIntervalDT.hours + ":" + dmIntervalDT.minutes + ":" + dmIntervalDT.seconds + ".";
-		string text2 = dmIntervalDT.fraction.ToString();
-		for (int num = 6 - text2.Length; num > 0; num--)
-		{
-			text += "0";
-		}
-		text += text2;
-		if (!dmIntervalDT.negative)
-		{
-			return text;
-		}
-		return "-" + text;
+		return ToTimeSpanExact().ToString("c", CultureInfo.InvariantCulture);
+	}
+
+	internal TimeSpan ToTimeSpanExact()
+	{
+		if (secScale < 0 || secScale > 6 || days < 0 || hours < 0 || minutes < 0 || seconds < 0 || fraction < 0 || fraction > 999999)
+			throw new OverflowException("INTERVAL cannot be represented by TimeSpan at the declared scale.");
+		int fractionQuantum = 1;
+		for (int digit = secScale; digit < 6; digit++) fractionQuantum = checked(fractionQuantum * 10);
+		if (fraction % fractionQuantum != 0)
+			throw new OverflowException("INTERVAL fraction exceeds the declared scale.");
+		BigInteger ticks = ((((BigInteger)days * 24 + hours) * 60 + minutes) * 60 + seconds)
+			* TimeSpan.TicksPerSecond + (long)fraction * 10;
+		if (negative) ticks = -ticks;
+		if (ticks < TimeSpan.MinValue.Ticks || ticks > TimeSpan.MaxValue.Ticks)
+			throw new OverflowException("INTERVAL exceeds the TimeSpan range.");
+		return TimeSpan.FromTicks((long)ticks);
 	}
 }

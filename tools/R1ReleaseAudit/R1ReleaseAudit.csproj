@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><AssemblyName>R1ReleaseAudit</AssemblyName>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../../src/W.DmProvider/W.DmProvider.csproj" /></ItemGroup>
+</Project>

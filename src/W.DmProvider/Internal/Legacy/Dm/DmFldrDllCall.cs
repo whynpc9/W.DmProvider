@@ -1,9 +1,8 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace W.Dm;
 
-public class DmFldrDllCall
+internal class DmFldrDllCall
 {
 	private const int FLDR_SUCCESS = 0;
 
@@ -38,8 +37,7 @@ public class DmFldrDllCall
 		return true;
 	}
 
-	[DllImport("dmfldr")]
-	public static extern int fldr_alloc(out nint fsinst);
+	public static int fldr_alloc(out nint fsinst) => throw NativeFldrUnavailable();
 
 	public static void AllocSinst(out nint fsinst)
 	{
@@ -49,8 +47,7 @@ public class DmFldrDllCall
 		}
 	}
 
-	[DllImport("dmfldr", EntryPoint = "fldr_fetch_data")]
-	private static extern int fetch_data(nint fsinst, nint handle, ref byte data, int dataLen);
+	private static int fetch_data(nint fsinst, nint handle, ref byte data, int dataLen) => throw NativeFldrUnavailable();
 
 	public static void FetchData(nint fsinst, nint handle, ref byte data, int dataLen)
 	{
@@ -61,8 +58,7 @@ public class DmFldrDllCall
 		}
 	}
 
-	[DllImport("dmfldr", EntryPoint = "fldr_export")]
-	private static extern int export(nint fsinst, string ctlBuf);
+	private static int export(nint fsinst, string ctlBuf) => throw NativeFldrUnavailable();
 
 	public static void Export(nint fsinst, string ctlBuf)
 	{
@@ -73,8 +69,7 @@ public class DmFldrDllCall
 		}
 	}
 
-	[DllImport("dmfldr", EntryPoint = "fldr_fetch_data_len")]
-	private static extern int fetch_data_len(nint fsinst, out nint handle, ref int dataLen);
+	private static int fetch_data_len(nint fsinst, out nint handle, ref int dataLen) => throw NativeFldrUnavailable();
 
 	public static void FetchDataLen(nint fsinst, out nint handle, ref int dataLen)
 	{
@@ -85,8 +80,7 @@ public class DmFldrDllCall
 		}
 	}
 
-	[DllImport("dmfldr")]
-	public static extern int fldr_free(nint fsinst);
+	public static int fldr_free(nint fsinst) => throw NativeFldrUnavailable();
 
 	public static void FreeSinst(nint fsinst)
 	{
@@ -96,11 +90,11 @@ public class DmFldrDllCall
 		}
 	}
 
-	[DllImport("dmfldr", EntryPoint = "fldr_set_attr")]
-	public static extern int fldr_set_attr_1(nint fsinst, int attr, nint value, int length);
+	public static int fldr_set_attr_1(nint fsinst, int attr, nint value, int length) => throw NativeFldrUnavailable();
 
-	[DllImport("dmfldr", EntryPoint = "fldr_set_attr")]
-	public static extern int fldr_set_attr_2(nint fsinst, int attr, string value, int length);
+	public static int fldr_set_attr_2(nint fsinst, int attr, string value, int length) => throw NativeFldrUnavailable();
+
+	private static NotSupportedException NativeFldrUnavailable() => new("Native FLDR is not enabled by this provider version.");
 
 	public static void SetAttr(nint fsinst, int attr, object value, int length)
 	{

@@ -1,0 +1,617 @@
+{
+  "schema": 1,
+  "task": "T12/R1",
+  "status": "finalized_bounded_R1_handoff",
+  "candidate": {
+    "package_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/packages/20260930T064454Z/W.DmProvider.0.1.0-r1.20260930064454.nupkg",
+    "version": "0.1.0-r1.20260930064454",
+    "package_sha256": "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8",
+    "driver_dll_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+    "source_sha256": "a2f637dd96d37ad89bf480b0ec742b40c0c0fe01929aa90de75d00c3fa587f8b"
+  },
+  "source_link": false,
+  "driver_precommit": "8e42481e12fd7fd23ce25074fc6b1ca01686167e",
+  "driver_source_file_count": 278,
+  "delivery_commit": "external association after delivery; not embedded in this immutable package",
+  "ef_commit": "113014cc74dd1f751ef97226a78d2ec855b32c8c",
+  "ef_archive_sha256": "9dead07c1de4220bd13bdadab0ed2713f43008af5e7c0cf7a629549a6739096d",
+  "ef_version": "10.0.12",
+  "driver_sdk": "10.0.203",
+  "ef_sdk": "10.0.401",
+  "independent_evidence": {
+    "summary": ".local/verification/t12/final-validation-summary.json",
+    "summary_sha256": "4a707c1bfcd0bf3232e7462d03b5743d88955ebf0546599d9a07c4ea63759f94",
+    "producer_counts": "298/298",
+    "gates": [
+      {
+        "lane": "unit",
+        "run": ".local/t12/ef/20260930-r1-full-v5/results-unit-20260930T065853598890Z",
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-full-v5/results-unit-20260930T065853598890Z"
+        ],
+        "host_exit_code": 0,
+        "counts": {
+          "total": 307,
+          "executed": 307,
+          "passed": 307,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0,
+          "outcome": "Completed"
+        },
+        "sensitive_artifact_detected": false,
+        "loaded_driver_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "source_tools_posthash_verified": true,
+        "input_manifest": ".local/t12/ef/20260930-r1-full-v5/manifest.json",
+        "input_manifest_sha256": "bbc2193146f807f64e1b13a8243f10dbe99ad90db213eae6fe6c663905b30de3"
+      },
+      {
+        "lane": "functional",
+        "run": ".local/t12/ef/20260930-r1-full-v5/results-functional-20260930T065334300527Z",
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-full-v5/results-functional-20260930T065334300527Z",
+          "--filter",
+          "FullyQualifiedName!~DamengMigrationScriptFunctionalTests&Category!~CapabilityProbe&FullyQualifiedName!~DamengDotNetEfCliFunctionalTests&FullyQualifiedName!~DamengCurrentSchemaScriptFunctionalTests&Category!~OfficialCharacterization"
+        ],
+        "host_exit_code": 0,
+        "counts": {
+          "total": 76,
+          "executed": 76,
+          "passed": 76,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0,
+          "outcome": "Completed"
+        },
+        "sensitive_artifact_detected": false,
+        "loaded_driver_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "source_tools_posthash_verified": true,
+        "input_manifest": ".local/t12/ef/20260930-r1-full-v5/manifest.json",
+        "input_manifest_sha256": "bbc2193146f807f64e1b13a8243f10dbe99ad90db213eae6fe6c663905b30de3",
+        "database_state": {
+          "identity_verified": true,
+          "current_schema_verified": true,
+          "inventory_before": 0,
+          "inventory_after": 0,
+          "independent_final_inventory_matches": true
+        }
+      },
+      {
+        "lane": "specification",
+        "run": ".local/t12/ef/20260930-r1-full-v5/results-specification-20260930T065920401171Z",
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-full-v5/results-specification-20260930T065920401171Z"
+        ],
+        "host_exit_code": 0,
+        "counts": {
+          "total": 4,
+          "executed": 4,
+          "passed": 4,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0,
+          "outcome": "Completed"
+        },
+        "sensitive_artifact_detected": false,
+        "loaded_driver_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "source_tools_posthash_verified": true,
+        "input_manifest": ".local/t12/ef/20260930-r1-full-v5/manifest.json",
+        "input_manifest_sha256": "bbc2193146f807f64e1b13a8243f10dbe99ad90db213eae6fe6c663905b30de3",
+        "database_state": {
+          "identity_verified": true,
+          "current_schema_verified": true,
+          "inventory_before": 0,
+          "inventory_after": 0,
+          "independent_final_inventory_matches": true
+        }
+      },
+      {
+        "lane": "scripts",
+        "run": ".local/t12/ef/20260930-r1-full-v5/results-scripts-20260930T065624393874Z",
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-full-v5/results-scripts-20260930T065624393874Z",
+          "--filter",
+          "FullyQualifiedName~DamengCurrentSchemaScriptFunctionalTests"
+        ],
+        "host_exit_code": 0,
+        "counts": {
+          "total": 4,
+          "executed": 4,
+          "passed": 4,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0,
+          "outcome": "Completed"
+        },
+        "sensitive_artifact_detected": false,
+        "loaded_driver_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "source_tools_posthash_verified": true,
+        "input_manifest": ".local/t12/ef/20260930-r1-full-v5/manifest.json",
+        "input_manifest_sha256": "bbc2193146f807f64e1b13a8243f10dbe99ad90db213eae6fe6c663905b30de3",
+        "database_state": {
+          "identity_verified": true,
+          "current_schema_verified": true,
+          "inventory_before": 0,
+          "inventory_after": 0,
+          "independent_final_inventory_matches": true
+        }
+      },
+      {
+        "lane": "cli",
+        "run": ".local/t12/ef/20260930-r1-cli-final-v6/results-cli-20260930T071422118104Z",
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-cli-final-v6/results-cli-20260930T071422118104Z",
+          "--filter",
+          "FullyQualifiedName~DamengDotNetEfCliFunctionalTests"
+        ],
+        "host_exit_code": 0,
+        "counts": {
+          "total": 1,
+          "executed": 1,
+          "passed": 1,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0,
+          "outcome": "Completed"
+        },
+        "sensitive_artifact_detected": false,
+        "loaded_driver_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "source_tools_posthash_verified": true,
+        "input_manifest": ".local/t12/ef/20260930-r1-cli-final-v6/manifest.json",
+        "input_manifest_sha256": "739072380d4489900b2c598e3a8b581fdf2b4e79717e471d1da545f429df1603",
+        "database_state": {
+          "identity_verified": true,
+          "current_schema_verified": true,
+          "inventory_before": 0,
+          "inventory_after": 0,
+          "independent_final_inventory_matches": true
+        }
+      }
+    ]
+  },
+  "combined_patch_sha256": "947e415a987f818cc22db17bc42580dc26d077e8d907e8d9a74dee12990a9fe2",
+  "changed_files": [
+    {
+      "path": "Directory.Packages.props",
+      "base_sha256": "6fbaf094eec6064d9811f4460f2ae70da3307202afc01e3607a99c88fb768ec2",
+      "accepted_sha256": "630db32f85b68b9a0d339298f916d74ea1bc3d37fa3c623258a15718ac43ef09",
+      "lock_origin": null
+    },
+    {
+      "path": "scripts/local-test/LocalTest.csproj",
+      "base_sha256": "966fb0d3da26cb687d74b00abf5b6c93d5e81db2bd72432fa096a77b227ec7ce",
+      "accepted_sha256": "cca9c87de6bf1d2deb2ed2ade9e7207799ebcbc0389400042bac604c9f063d20",
+      "lock_origin": null
+    },
+    {
+      "path": "scripts/local-test/Program.cs",
+      "base_sha256": "14a5beec621bed914fac78d6e83112642784d85432b8b54e6b867ea5b65aa7b9",
+      "accepted_sha256": "e252ee94050ff655c6d286aefd42fbf5a1b8aa56f685a9cd37cc93c5e6230a1f",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Infrastructure/DamengDbContextOptionsBuilder.cs",
+      "base_sha256": "e1c793cdb05eff0c77f17d9019f93a08cfc3a740283fe5b77f8a1972b0914583",
+      "accepted_sha256": "1c6142081dc742ab0bf424a3a5f7b41b18327b4c3fa9d0c8500fef24d8561fe1",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Scaffolding/Internal/DamengDatabaseModelFactory.cs",
+      "base_sha256": "71426f0f0ca40b269815a57712d8537527034c9824896b48ddfccb5336fd109c",
+      "accepted_sha256": "fd3da651203f75191a339c6b8f6d0536acce1062f3c4201d383ba6c4d2ca8d74",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengByteArrayTypeMapping.cs",
+      "base_sha256": "806e8a7dd4f2a2cf7bd64b9044795957624f43f961b22100c135a4376438bd99",
+      "accepted_sha256": "f68e1a87dd5b057d95d58479a652163594bcad6d6b70822475327029e226b937",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRelationalConnection.cs",
+      "base_sha256": "50bf9f8efe8e46a8da95e8fad49a6de654be4ff0d8f8cd1c1e847f96e9eb3e96",
+      "accepted_sha256": "20d06a921d0ff4c9699a0ebec12142df717b85af7b624a070981d6c5c91f765e",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengRetryingExecutionStrategy.cs",
+      "base_sha256": "a868ab680f305ee9d1d59ead97bdf22cf6d5aff40ff5ff6850d6100c1906bb5f",
+      "accepted_sha256": "67db09530a11663a35d9bb211aa7950750c1a2b5f4cbad0fb42676192e196716",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengStringTypeMapping.cs",
+      "base_sha256": "09fa50760592e11b61f4d0fc78d475a088df67c9ca38d0fef2471e66d4ab21a6",
+      "accepted_sha256": "71b73847f5604ff5c9c08c7ab196bbdf2df58169adda334826ba34ee5e320467",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTimeSpanTypeMapping.cs",
+      "base_sha256": "d5d718c0cb9bca862fcb6f07820150a8dfee4329b8aed7552bcbe875e2374c8e",
+      "accepted_sha256": "2da3748a3e78304060342ab2cf23f64d75a2c6b967e5c06121da269a849a2bf2",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/Storage/Internal/DamengTransientExceptionDetector.cs",
+      "base_sha256": "3dc60f4f670fb9f3846df8463029f4d37b50859417585aa6da23db8bf7849743",
+      "accepted_sha256": "82385e60d2dfef8a385dc789ed9c5020af40afa2fb6f77cc7400709795668e76",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/W.EntityFrameworkCore.Dameng.csproj",
+      "base_sha256": "39dc551d6a92a3ae72ecb3ed0c847a40c1bc60445055bde30b627c8d2e97cde4",
+      "accepted_sha256": "926edbac91d63a6595c8d9264fbd67d1731bac16dd6ab1b4b6b19ed0288ed3f7",
+      "lock_origin": null
+    },
+    {
+      "path": "src/W.EntityFrameworkCore.Dameng/packages.lock.json",
+      "base_sha256": "f14395220dad7a04d1448a7822e53ba70d6fe15505d25036edf7b2f19bbfceec",
+      "accepted_sha256": "2659395bb0a3989f739900a4512465b1dd9921ceeac05b9fb1054a1f1d9899b4",
+      "lock_origin": null
+    },
+    {
+      "path": "test/Shared/T12CandidateGuard.cs",
+      "base_sha256": null,
+      "accepted_sha256": "00679736704e12e77ee4551d7dd01c4a777b8bd5f63af3641e5d3a4dec480f4e",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/ApplicationCompatibilityFunctionalTests.cs",
+      "base_sha256": "ccdf6af13b42c7340be841d6d5267169478bc477c5b73d8a62974692e5d885e2",
+      "accepted_sha256": "3e039ba1cde52df6ce527850660d12b099071ae6bc070be66fd46099daccc322",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengBasicStringTranslationFunctionalTests.cs",
+      "base_sha256": "0f844380844c9afaae610189a674dc72a9f8f91e272cee6dc2902ffa9c954619",
+      "accepted_sha256": "d1ff6f5d30fce9378cb707dc7bc04e078e99cd6dbe89abe8de70f71980687e85",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptDatabase.cs",
+      "base_sha256": null,
+      "accepted_sha256": "712fec8749c2d35db7329a8b256d3bf5ca5d220cfe16fb03f552e381f8c9f311",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengCurrentSchemaScriptFunctionalTests.cs",
+      "base_sha256": null,
+      "accepted_sha256": "4222c47ff3341952d9e464ed40e29e2959ea76e968096f79b940a28fcbde5919",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs",
+      "base_sha256": "819466bfe87c4701547bd95f876d90f3bf2a1de9ebd005a416a60e1f8b733eef",
+      "accepted_sha256": "949c373e25407336186e21b26934f8db2aca4577475f2a11365e09998cdcb995",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateTimeOffsetMemberFunctionalTests.cs",
+      "base_sha256": "daaef4744ca78b91de50683958839689569dd0016d342be8a12b25d4839f9aea",
+      "accepted_sha256": "3ea8a35bf1affbae20a230fe11c96f4b20cd9897a7d2c726604f55b7ab23c51c",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDesignTimeCapabilityProbeTests.cs",
+      "base_sha256": "83c42c53cf16780eb4f3ce292072b3ec0f6aaa61247d40e400c52ec5bb31d6b5",
+      "accepted_sha256": "a93271f1210f393672013983cc3cf9aedb46d810c5dac5604cc90f987d684f0c",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDotNetEfCliFunctionalTests.cs",
+      "base_sha256": "b28f36785553c88ad4d83d252d9b983a824ba57b60020499dcefa1468639d52e",
+      "accepted_sha256": "685fe703524554ac042a6e01bf0a2460ecdeadae29701d6a7c55f22181cbc0d1",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengExtendedTypeMappingFunctionalTests.cs",
+      "base_sha256": "774f32d02ab882cfc39c91673436dbe1c892780929f7b58b136f210a3374e7e0",
+      "accepted_sha256": "16d19cbff8f5cc2ab809ed4562548720c7493dae0f93a1c0794e0f65dc7f7c57",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengIsolationLevelFunctionalTests.cs",
+      "base_sha256": "d07615af78d46c4cbb3062528f24fd5eaca15bbc5c3ae9ddce3a9f9881aae566",
+      "accepted_sha256": "a2e962fc5b3cc04f59929611dcb967c53468222ea3c0e5a738e7651f23aa6509",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengJsonCapabilityProbeTests.cs",
+      "base_sha256": "d065b99fa4e7c978051c3b6c7b188df31080e26cc14df2bb6080ae6ab9d53430",
+      "accepted_sha256": "279f586a2b3530bf7110d7a64a32aa1dddb40361aadb3bdfa46197205ec128e9",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengLobQueryFunctionalTests.cs",
+      "base_sha256": "09783d031092a72c94d0de8e77f81f2c7ad1a42cb4a91f3065d745ae823648cf",
+      "accepted_sha256": "166855599c9fd5e07ef95e60b5dea044cb2ed7412a851437df0ac992db74f002",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMathTranslationFunctionalTests.cs",
+      "base_sha256": "31c3be27140e1be6f6e4b9d21f66558b76f4842db5f662dbf047b62f7da65a84",
+      "accepted_sha256": "1191c8440c23827dedc5cdc946b051193d63e248fd18d03266b539361c4b056b",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationScriptFunctionalTests.cs",
+      "base_sha256": "b848c4858c2c8695b013a2cef4ae64ae3f14d4cc00bb8084f77a4251b5260220",
+      "accepted_sha256": "a3b8d7daa84bffe0ce49717dce6babe52d94462cc1f677ce0951c75d2b8b8172",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengMigrationsFunctionalTests.cs",
+      "base_sha256": "ea79c1317423a9172b7d5fad2971bad94c6fe37486469e3aa69cae4501416ba0",
+      "accepted_sha256": "3416501416b843ae475930ddf2a594993cf65fdef4e0d1d6e7afd91c277f0ff2",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengProviderFunctionalTests.cs",
+      "base_sha256": "5f79becd05d45e83713b1f14b91cfe81f80eb3daac2ef4092e679b10564ec2a3",
+      "accepted_sha256": "553f681125727426cbc449c90e43ac1bafc19c6c65da3f669dbd80fe94e641ea",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengQueryCapabilityProbeTests.cs",
+      "base_sha256": "8e2625c3806a2ec36b0889cc838126cdd88c6f001812fc7a8850eef6d142eddb",
+      "accepted_sha256": "3d79203a9c3fe48d8722f1aef9b8b5ffcb37ae7c4c455683fa70a574d8b20389",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengReverseEngineeringFunctionalTests.cs",
+      "base_sha256": "e95050fee51330f717f7bce27ea1826a6aa8fccec46e385436ce0b7bd0e8b899",
+      "accepted_sha256": "e2c3802a5eed1cf0a0b6ec2e38ab31d094343729dab89e16f78feef826f99bf5",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptExecutor.cs",
+      "base_sha256": "a58f202a383f51d579d56d81cd89ffeb7f221b688354b158a9a998f68a18c376",
+      "accepted_sha256": "f29f42594d0a165876af8a54ff4293616ce7b39e09c2dfa023a4b2a26b85e15a",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengScriptTestDatabase.cs",
+      "base_sha256": "f7073c44575aa11fc95df30547ff0d46a4365f3c6dc7c89f1b5d4479a74b6efb",
+      "accepted_sha256": "f4f87fdc4b023e04908a2f4d6949d4d1007a25ecc757293ff9aab970d0c47f8d",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengSequenceAndTranslationFunctionalTests.cs",
+      "base_sha256": "f0567b8cf45880fb691ffdebd7d3ad4d9be62204a9af10ef3abf544ba66ac9a7",
+      "accepted_sha256": "42e00c3cb85161555f5dc2d2b8c45b17b4a4e2b8299d49fcefc373eadaf36e05",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateCapabilityProbeTests.cs",
+      "base_sha256": "d96862d1c833770745c65c4fbff51a964038d9024b7f52cf2e0b4864e657d6bf",
+      "accepted_sha256": "a3f28eec59c014e1a99de200f32777eb0674f6e6e23d1f17076282e2e69b9f97",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs",
+      "base_sha256": "fe5abf9d658a293561b98802f38d3421aa2bfd0f1b20422b5ec04608a651200f",
+      "accepted_sha256": "76e626ab37a5b9831a82e9980ad31ab5c58299e498122b92ca205ef6acb2ae25",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTestEnvironment.cs",
+      "base_sha256": "612f0158849f85439340432bf85e7c758d4b3b0a14b4d6cc061385492930b2ed",
+      "accepted_sha256": "80061897853c6bfe528da6de0e4797f210ed06eebd0c52c14d2daf4fb155d04e",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengTrimCharacterFunctionalTests.cs",
+      "base_sha256": "6b4a295c2dcf275c7d31ca739290bbe760940b8863723be8c771272b65a9dc86",
+      "accepted_sha256": "d1db3d399cd70020ec832ac12be2f15cc605ea14866cbe03faa8cb07edb7515d",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "base_sha256": "a425aaeda7658b35cf621cd327dcd124dd2bad1555d4ebee934f4a9fa09a31d8",
+      "accepted_sha256": "4717c3f20c99c66e56db4a0acb6b1470f662589d6240f631c93118cbb501a6a2",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json",
+      "base_sha256": "878ee51116d478a3d23b5916a452d454d00a32000cfa49c289df99ba3325f1fd",
+      "accepted_sha256": "f756b4559e67a6012dca16ab4f3525edee8d42c4763042152e5c00560f4e301a",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Specification.Tests/DamengTestEnvironment.cs",
+      "base_sha256": "8cca00641c2e77a8e2378bcff9037900025a99deb16eae23ce4560330d0a5fe2",
+      "accepted_sha256": "b973ee95617b15376e25502df2c400c39254fdc0370e7daabffa2957c1b518c8",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Specification.Tests/TestUtilities/DamengTestStore.cs",
+      "base_sha256": "4f68cfee0ea22ac9c2e06bfe5044333f479ce2d1d4316933cbf6a1ed54f73ee0",
+      "accepted_sha256": "927486411f3c2c8fa4a9101431169d3357f87162090ab2a491bfdf50c1732351",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj",
+      "base_sha256": "18380c2ad2fb5b86e0d4448b1c7f20802b7f8c02b23fb9fbc7e6d471b9bad94d",
+      "accepted_sha256": "a7f67b49d52b4c32e188691ec81e568fc025fb9af58f572c409934d025748d40",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Specification.Tests/packages.lock.json",
+      "base_sha256": "685ecc8feabfd49aca9a1dd8cdb651564e3d30480d4e9b01c3cfae0ea77cc4b9",
+      "accepted_sha256": "0238794345312b93e39916aab071201c4e7cf382da837bf0ae0851d9dad1efe1",
+      "lock_origin": "full-v5 accepted restore graph"
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Tests/DamengExecutionStrategyTests.cs",
+      "base_sha256": "7a98fb5c5c83d33530889cc02d47b4ad6890eb2a35b2c01c62034439982ef98b",
+      "accepted_sha256": "4b05108d6cb764a5eeb7596b500aadb524d1e44573ba70ae374239698377a02e",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Tests/DamengTypeMappingTests.cs",
+      "base_sha256": "e8816dbe2ee78fe097c7b54e7b260eba665ca8106ce8735bc5a8f6f781c3e230",
+      "accepted_sha256": "c200acde78c5f497204cc4c28dd5ad040dbd69a5c9cecb7b237af7952b7b3832",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Tests/ProviderConfigurationTests.cs",
+      "base_sha256": "ec3f424b0972175e1628f945ed4ad2356ca1b142e612ca77e6af75a25919bec3",
+      "accepted_sha256": "9a5678abd1a32e6ba8409ed1d2b20665db0915dc07ae96c824d87c1913de5496",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj",
+      "base_sha256": "7497ffd6835f063d8059f66e8d4c05011496dc9fa53f3e0df3566cbb018ae624",
+      "accepted_sha256": "60d785cb2dcbbbdc7e576482989a6a0001a964ab774d1245654be42074655d45",
+      "lock_origin": null
+    },
+    {
+      "path": "test/W.EntityFrameworkCore.Dameng.Tests/packages.lock.json",
+      "base_sha256": "dbc3ee36dd461e95b16e18785374172740e19cdb2652d5beb6755672f39cdf0f",
+      "accepted_sha256": "8f1f8b76e72b83ecfb73d5dc1caf8ec1ccabe4133936adbd2f6b9e1205e12ce4",
+      "lock_origin": "full-v5 accepted restore graph"
+    }
+  ],
+  "component_patches": {
+    "bridge.patch": "791e8cab59ce1348017214f169415f4eda1756460d77a684f4200dcb1df5f6d1",
+    "current-schema-scripts.patch": "6603ae6481c9683e50b7cf5db648206da35107fff8ed8afae31269bd3aca9398",
+    "cli-safety.patch": "f2baa32522dff40317018149049b6865bb25e0c47fc0dc6b81d0276de76c5bf0"
+  },
+  "accepted_input_manifests": {
+    "full-v5": "bbc2193146f807f64e1b13a8243f10dbe99ad90db213eae6fe6c663905b30de3",
+    "cli-final-v6": "739072380d4489900b2c598e3a8b581fdf2b4e79717e471d1da545f429df1603"
+  },
+  "original_ef_workspace": {
+    "read_only_in_this_task": true,
+    "observed_head": "5b5bb25d466408663447f6774a41609f8e809220",
+    "observed_user_modified_tracked_files": 8,
+    "archive_pin_did_not_follow_user_head": true
+  },
+  "exclusions": [
+    "original admin migration fixture (user/tablespace lifecycle)",
+    "SchemaCreationGuard (CREATE/DROP SCHEMA)",
+    "CapabilityProbe observations",
+    "official raw DateTimeOffset representation characterization",
+    "original secrets and launcher all/admin"
+  ],
+  "limitations": [
+    "Only observed macOS arm64/.NET10 and DM8.1.5.60 profile; not all OS/RID/DM8 or EF10.x",
+    "Specification is four tests, not complete upstream relational conformance",
+    "Async API call compatibility only; true async/cancellation/pooling/streaming LOB are not implemented/accepted",
+    "Native XDEC/complex types/distributed or ambient transaction support not enabled",
+    "DDL implicitly commits; code rollback does not undo database DDL",
+    "Local candidate package consumption only; no remote NuGet publication or Staging/Production acceptance",
+    "SourceLink absent; precommit plus exact 278-file source hash is the package source identity",
+    "Original admin launcher remains outside tested consumer graphs; do not use solution-wide all/admin gates to replace the listed lanes"
+  ]
+}

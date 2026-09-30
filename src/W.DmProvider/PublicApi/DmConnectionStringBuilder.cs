@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using System.Threading;
 using W.Dm.Config;
 using W.Dm.filter;
@@ -11,11 +12,17 @@ namespace W.Dm;
 
 public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 {
+	private const string TlsCaCertificatePathKey = "tls_ca_certificate_path";
+	private const string TlsClientCertificatePathKey = "tls_client_certificate_path";
+	private const string TlsClientPrivateKeyPathKey = "tls_client_private_key_path";
+	private const string TlsClientCertificatePasswordKey = "tls_client_certificate_password";
+	private const string TlsRevocationModeKey = "tls_revocation_mode";
 	internal long id = -1L;
 
 	internal static long idGenerator;
 
 	private static List<DmOption> options;
+	private static readonly Dictionary<string, string> aliases = new(StringComparer.OrdinalIgnoreCase);
 
 	internal Dictionary<string, object> property = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,13 +40,34 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	private BaseFilter legacyFilterHead;
+	public BaseFilter filterHead
+	{
+		get => legacyFilterHead;
+		set
+		{
+			if (value != null) throw new NotSupportedException("Legacy connection filters are not supported.");
+			legacyFilterHead = null;
+		}
+	}
 
-	public LogInfo LogInfo { get; set; }
+	public LogInfo LogInfo
+	{
+		get => null;
+		set { if (value != null) throw new NotSupportedException("Legacy logging is not supported."); }
+	}
 
-	public RWInfo RWInfo { get; set; }
+	public RWInfo RWInfo
+	{
+		get => null;
+		set { if (value != null) throw new NotSupportedException("Legacy read/write routing is not supported."); }
+	}
 
-	public RecoverInfo RecoverInfo { get; set; }
+	public RecoverInfo RecoverInfo
+	{
+		get => null;
+		set { if (value != null) throw new NotSupportedException("Legacy automatic recovery is not supported."); }
+	}
 
 	public string Server
 	{
@@ -1067,18 +1095,96 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 
 	public string InitialCatalog
 	{
+		get => string.Empty;
 		set
 		{
-			do_setThis(DmConst.PROP_KEY_USER, value);
-			if (value.ToString().Length > 48)
-			{
-				do_setThis(DmConst.PROP_KEY_PASSWORD, value.ToString().Substring(0, 48));
-			}
-			else
-			{
-				do_setThis(DmConst.PROP_KEY_PASSWORD, value);
-			}
+			SetCore("initial catalog", value, strictDuplicate: false);
 		}
+	}
+
+	/// <summary>Typed connection deadline. The legacy ConnectionTimeout property is milliseconds.</summary>
+	public TimeSpan ConnectTimeout
+	{
+		get => TimeSpan.FromMilliseconds(ConnectionTimeout);
+		set => SetMilliseconds(DmConst.PROP_KEY_CONNECTION_TIMEOUT, value, allowZero: true);
+	}
+
+	public TimeSpan PoolAcquireTimeout
+	{
+		get => TimeSpan.FromMilliseconds(ConnPoolTimeout);
+		set => SetMilliseconds(DmConst.PROP_KEY_CONN_POOL_TIMEOUT, value, allowZero: true);
+	}
+
+	public TimeSpan ReadIdleTimeout
+	{
+		get => TimeSpan.FromMilliseconds(SocketTimeout);
+		set => SetMilliseconds(DmConst.PROP_KEY_SOCKET_TIMEOUT, value, allowZero: true);
+	}
+
+	public TimeSpan CleanupTimeout
+	{
+		get => TimeSpan.FromMilliseconds(Convert.ToInt32(do_getThis("cleanup_timeout")));
+		set => SetMilliseconds("cleanup_timeout", value, allowZero: false);
+	}
+
+	public DmTransportSecurity TransportSecurity
+	{
+		get => (DmTransportSecurity)do_getThis("transport_security");
+		set => do_setThis("transport_security", value);
+	}
+
+	public string TlsCaCertificatePath
+	{
+		get => Convert.ToString(do_getThis(TlsCaCertificatePathKey));
+		set => do_setThis(TlsCaCertificatePathKey, value);
+	}
+
+	public string TlsClientCertificatePath
+	{
+		get => Convert.ToString(do_getThis(TlsClientCertificatePathKey));
+		set => do_setThis(TlsClientCertificatePathKey, value);
+	}
+
+	public string TlsClientPrivateKeyPath
+	{
+		get => Convert.ToString(do_getThis(TlsClientPrivateKeyPathKey));
+		set => do_setThis(TlsClientPrivateKeyPathKey, value);
+	}
+
+	public string TlsClientCertificatePassword
+	{
+		get => Convert.ToString(do_getThis(TlsClientCertificatePasswordKey));
+		set => do_setThis(TlsClientCertificatePasswordKey, value);
+	}
+
+	public DmTlsRevocationMode TlsRevocationMode
+	{
+		get => (DmTlsRevocationMode)do_getThis(TlsRevocationModeKey);
+		set => do_setThis(TlsRevocationModeKey, value);
+	}
+
+	public bool PersistSecurityInfo
+	{
+		get => (bool)do_getThis("persist_security_info");
+		set => do_setThis("persist_security_info", value);
+	}
+
+	public int MaxMessageSize
+	{
+		get => DmConnectionSettings.DefaultMaxMessageSize;
+		set => do_setThis("max_message_size", value);
+	}
+
+	public int MaxMaterializedLobSize
+	{
+		get => DmConnectionSettings.DefaultMaxMaterializedLobSize;
+		set => do_setThis("max_materialized_lob_size", value);
+	}
+
+	public int LobChunkSize
+	{
+		get => DmConnectionSettings.DefaultLobChunkSize;
+		set => do_setThis("lob_chunk_size", value);
 	}
 
 	public bool ShowExtraInfo
@@ -1106,83 +1212,24 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 	}
 
 	internal bool do_IsFixedSize => base.IsFixedSize;
-
 	internal int do_Count => base.Count;
-
 	internal ICollection do_Keys => base.Keys;
-
 	internal ICollection do_Values => base.Values;
 
 	public override object this[string keyword]
 	{
-		get
-		{
-			if (filterHead == null)
-			{
-				return do_getThis(keyword);
-			}
-			return filterHead.getThis(this, keyword);
-		}
+		get => do_getThis(keyword);
 		set
 		{
-			if (filterHead == null)
-			{
-				do_setThis(keyword, value);
-			}
-			else
-			{
-				filterHead.setThis(this, keyword, value);
-			}
+			try { SetCore(keyword, value, strictDuplicate: true); }
+			catch { invalidAfterFailedAssignment = true; throw; }
 		}
 	}
 
-	public override bool IsFixedSize
-	{
-		get
-		{
-			if (filterHead == null)
-			{
-				return do_IsFixedSize;
-			}
-			return filterHead.getIsFixedSize(this);
-		}
-	}
-
-	public override int Count
-	{
-		get
-		{
-			if (filterHead == null)
-			{
-				return do_Count;
-			}
-			return filterHead.getCount(this);
-		}
-	}
-
-	public override ICollection Keys
-	{
-		get
-		{
-			if (filterHead == null)
-			{
-				return do_Keys;
-			}
-			return filterHead.getKeys(this);
-		}
-	}
-
-	public override ICollection Values
-	{
-		get
-		{
-			if (filterHead == null)
-			{
-				return do_Values;
-			}
-			return filterHead.getValues(this);
-		}
-	}
+	public override bool IsFixedSize => base.IsFixedSize;
+	public override int Count => base.Count;
+	public override ICollection Keys => base.Keys;
+	public override ICollection Values => base.Values;
 
 	static DmConnectionStringBuilder()
 	{
@@ -1277,235 +1324,405 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		options.Add(new DmOption(DmConst.PROP_KEY_DBA_PASSWORD, defaultvalue: DmOptionHelper.DbaPasswordDef, basetype: typeof(string), syn: null, maxvalue: null, minvalue: 0L));
 		options.Add(new DmOption(DmConst.PROP_KEY_SHOW_EXTRA_INFO, defaultvalue: DmOptionHelper.ShowExtraInfo, basetype: typeof(bool), syn: null, maxvalue: null, minvalue: 0L));
 		options.Add(new DmOption(DmConst.PROP_KEY_EFCORE_NEXT_RESULT, defaultvalue: DmOptionHelper.EFCoreNextResultDef, basetype: typeof(bool), syn: null, maxvalue: null, minvalue: 0L));
+		foreach (DmOption option in options)
+		{
+			aliases.Add(option.Keyword, option.Keyword);
+			if (option.Synonym != null)
+				foreach (string synonym in option.Synonym)
+					if (!aliases.TryAdd(synonym, option.Keyword) && !aliases[synonym].Equals(option.Keyword, StringComparison.OrdinalIgnoreCase))
+						throw new InvalidOperationException("Conflicting legacy connection aliases.");
+		}
 	}
+
+	private bool invalidAfterFailedAssignment;
 
 	public DmConnectionStringBuilder()
 	{
 		do_Clear();
 	}
 
-	public DmConnectionStringBuilder(string connectionstring)
-		: this()
+	public DmConnectionStringBuilder(string connectionString) : this()
 	{
-		lock (this)
+		ConnectionString = connectionString;
+	}
+
+	// DbConnectionStringBuilder.ConnectionString is non-virtual. This typed entry point
+	// validates on a temporary builder, then replaces the current state.
+	public new string ConnectionString
+	{
+		get
 		{
-			base.ConnectionString = connectionstring;
+			EnsureValid();
+			return base.ConnectionString;
+		}
+		set
+		{
+			var candidate = new DmConnectionStringBuilder();
+			try
+			{
+				foreach (var (key, rawValue) in DmConnectionStringParser.Parse(value))
+					candidate[key] = rawValue;
+				candidate.EnsureValid();
+				candidate.ToSettings();
+			}
+			catch (NotSupportedException)
+			{
+				throw;
+			}
+			catch (Exception)
+			{
+				throw new ArgumentException("Invalid connection string.", nameof(value));
+			}
+			var priorEntries = new List<KeyValuePair<string, object>>();
+			foreach (string key in base.Keys) priorEntries.Add(new(key, base[key]));
+			var priorProperty = new Dictionary<string, object>(property, StringComparer.OrdinalIgnoreCase);
+			var priorSetProperty = new Dictionary<string, object>(setProperty, StringComparer.OrdinalIgnoreCase);
+			bool priorInvalid = invalidAfterFailedAssignment;
+			try
+			{
+				CopyValidated(candidate);
+			}
+			catch
+			{
+				base.Clear();
+				foreach (var entry in priorEntries) base[entry.Key] = entry.Value;
+				property.Clear();
+				foreach (var entry in priorProperty) property[entry.Key] = entry.Value;
+				setProperty.Clear();
+				foreach (var entry in priorSetProperty) setProperty[entry.Key] = entry.Value;
+				invalidAfterFailedAssignment = priorInvalid;
+				throw new InvalidOperationException("Unable to replace connection settings.");
+			}
 		}
 	}
 
-	private void ParseServer(string keyword, string value)
+	private void CopyValidated(DmConnectionStringBuilder candidate)
 	{
-		int num = value.ToString().IndexOf(":");
-		string value2 = value.ToString().Substring(0, num);
-		if (!string.IsNullOrEmpty(value2))
+		base.Clear();
+		foreach (string key in candidate.baseKeys) base[key] = candidate.baseValue(key);
+		property.Clear();
+		foreach (var entry in candidate.property) property[entry.Key] = entry.Value;
+		setProperty.Clear();
+		foreach (var entry in candidate.setProperty) setProperty[entry.Key] = entry.Value;
+		invalidAfterFailedAssignment = false;
+	}
+
+	private ICollection baseKeys => base.Keys;
+	private object baseValue(string key) => base[key];
+
+	internal DmConnectionSettings ToSettings()
+	{
+		EnsureValid();
+		return new DmConnectionSettings(this);
+	}
+
+	public string ToRedactedString() => ToSettings().ToConnectionString(includeSecrets: false);
+
+	private void EnsureValid()
+	{
+		if (invalidAfterFailedAssignment)
+			throw new InvalidOperationException("The connection string builder must be cleared or assigned a valid connection string.");
+	}
+
+	private void SetMilliseconds(string key, TimeSpan value, bool allowZero)
+	{
+		if (value < TimeSpan.Zero || (!allowZero && value == TimeSpan.Zero) ||
+			value.Ticks % TimeSpan.TicksPerMillisecond != 0 || value.TotalMilliseconds > int.MaxValue)
+			throw new ArgumentOutOfRangeException(nameof(value), "The timeout must be a whole number of milliseconds within range.");
+		do_setThis(key, checked((int)value.TotalMilliseconds));
+	}
+
+	private static string Canonical(string keyword)
+	{
+		if (keyword == null) throw new ArgumentNullException(nameof(keyword));
+		keyword = keyword.Trim();
+		if (keyword.Length == 0) throw new ArgumentException("A connection setting name is required.", nameof(keyword));
+		if (keyword.Equals("host", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_SERVER;
+		foreach (string newKey in new[] { "initial_catalog", "transport_security", "persist_security_info", "cleanup_timeout", "max_message_size", "max_materialized_lob_size", "lob_chunk_size",
+			TlsCaCertificatePathKey, TlsClientCertificatePathKey, TlsClientPrivateKeyPathKey, TlsClientCertificatePasswordKey, TlsRevocationModeKey })
+			if (keyword.Equals(newKey, StringComparison.OrdinalIgnoreCase)) return newKey;
+		if (keyword.Equals("initial catalog", StringComparison.OrdinalIgnoreCase) ||
+			keyword.Equals("initialcatalog", StringComparison.OrdinalIgnoreCase)) return "initial_catalog";
+		if (keyword.Equals("transportsecurity", StringComparison.OrdinalIgnoreCase)) return "transport_security";
+		if (keyword.Equals("tlscacertificatepath", StringComparison.OrdinalIgnoreCase)) return TlsCaCertificatePathKey;
+		if (keyword.Equals("tlsclientcertificatepath", StringComparison.OrdinalIgnoreCase)) return TlsClientCertificatePathKey;
+		if (keyword.Equals("tlsclientprivatekeypath", StringComparison.OrdinalIgnoreCase)) return TlsClientPrivateKeyPathKey;
+		if (keyword.Equals("tlsclientcertificatepassword", StringComparison.OrdinalIgnoreCase)) return TlsClientCertificatePasswordKey;
+		if (keyword.Equals("tlsrevocationmode", StringComparison.OrdinalIgnoreCase)) return TlsRevocationModeKey;
+		if (keyword.Equals("persistsecurityinfo", StringComparison.OrdinalIgnoreCase)) return "persist_security_info";
+		if (keyword.Equals("poolacquiretimeout", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_CONN_POOL_TIMEOUT;
+		if (keyword.Equals("readidletimeout", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_SOCKET_TIMEOUT;
+		if (keyword.Equals("cleanuptimeout", StringComparison.OrdinalIgnoreCase)) return "cleanup_timeout";
+		if (keyword.Equals("maxmessagesize", StringComparison.OrdinalIgnoreCase)) return "max_message_size";
+		if (keyword.Equals("maxmaterializedlobsize", StringComparison.OrdinalIgnoreCase)) return "max_materialized_lob_size";
+		if (keyword.Equals("lobchunksize", StringComparison.OrdinalIgnoreCase)) return "lob_chunk_size";
+		return aliases.TryGetValue(keyword, out string canonical) ? canonical :
+			throw new NotSupportedException("Unknown connection setting.");
+	}
+
+	private static bool IsNewSetting(string key) => key is "initial_catalog" or "transport_security" or
+		"persist_security_info" or "cleanup_timeout" or "max_message_size" or
+		"max_materialized_lob_size" or "lob_chunk_size" or
+		TlsCaCertificatePathKey or TlsClientCertificatePathKey or TlsClientPrivateKeyPathKey or
+		TlsClientCertificatePasswordKey or TlsRevocationModeKey;
+
+	private static bool ParseBoolean(object value, string key)
+	{
+		if (value is bool b) return b;
+		string text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
+		if (text.Equals("true", StringComparison.OrdinalIgnoreCase) || text.Equals("yes", StringComparison.OrdinalIgnoreCase) || text == "1") return true;
+		if (text.Equals("false", StringComparison.OrdinalIgnoreCase) || text.Equals("no", StringComparison.OrdinalIgnoreCase) || text == "0") return false;
+		throw new ArgumentException($"Invalid boolean setting '{key}'.");
+	}
+
+	private static int ParseInt(object value, string key, int min, int max)
+	{
+		string text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (!int.TryParse(text, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int number) || number < min || number > max)
+			throw new ArgumentOutOfRangeException(key, $"Setting '{key}' is outside its supported range.");
+		return number;
+	}
+
+	private static int ParseLanguage(object value)
+	{
+		string text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (int.TryParse(text, out int number) && number is >= 0 and <= 3) return number;
+		if (Enum.TryParse<SupportedLanguage>(text, true, out var language) && Enum.IsDefined(language)) return (int)language;
+		throw new ArgumentException("Invalid language setting.");
+	}
+
+	private static DmTransportSecurity ParseTransport(object value)
+	{
+		if (value is DmTransportSecurity policy && Enum.IsDefined(policy)) return policy;
+		string text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (text.Equals(nameof(DmTransportSecurity.RequireTls), StringComparison.OrdinalIgnoreCase)) return DmTransportSecurity.RequireTls;
+		if (text.Equals(nameof(DmTransportSecurity.PlaintextAllowed), StringComparison.OrdinalIgnoreCase)) return DmTransportSecurity.PlaintextAllowed;
+		throw new ArgumentException("Invalid transport security setting.");
+	}
+
+	private static DmTlsRevocationMode ParseTlsRevocationMode(object value)
+	{
+		if (value is DmTlsRevocationMode mode && Enum.IsDefined(mode)) return mode;
+		string text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (text.Equals(nameof(DmTlsRevocationMode.Online), StringComparison.OrdinalIgnoreCase)) return DmTlsRevocationMode.Online;
+		if (text.Equals(nameof(DmTlsRevocationMode.NoCheck), StringComparison.OrdinalIgnoreCase)) return DmTlsRevocationMode.NoCheck;
+		throw new ArgumentException("Invalid TLS revocation mode.");
+	}
+
+	private static string ParseTlsPath(object value)
+	{
+		string path = Convert.ToString(value) ?? string.Empty;
+		if (path.Length == 0) return string.Empty;
+		if (path.IndexOfAny(new[] { '\0', '\r', '\n' }) >= 0 || !Path.IsPathFullyQualified(path))
+			throw new ArgumentException("TLS certificate paths must be absolute.");
+		return path;
+	}
+
+	private static (string host, int? port) ParseServerValue(object value)
+	{
+		string server = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (server.Length == 0) return (string.Empty, null);
+		if (server.StartsWith('['))
 		{
-			do_setThis(keyword, value2);
-			string value3 = value.ToString().Substring(num + 1);
-			if (!string.IsNullOrEmpty(value3))
+			int closing = server.IndexOf(']');
+			if (closing <= 1) throw new ArgumentException("Invalid server address.");
+			string host = server.Substring(1, closing - 1);
+			if (!System.Net.IPAddress.TryParse(host, out var bracketAddress) || bracketAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+				throw new ArgumentException("Invalid server address.");
+			if (closing == server.Length - 1) return (host, null);
+			if (server[closing + 1] != ':' || closing + 2 >= server.Length) throw new ArgumentException("Invalid server address.");
+			return (host, ParseInt(server.Substring(closing + 2), "port", 1, 65535));
+		}
+		int colon = server.IndexOf(':');
+		if (colon == 0) throw new ArgumentException("Invalid server address.");
+		if (colon > 0 && colon == server.LastIndexOf(':'))
+			return (server.Substring(0, colon), ParseInt(server.Substring(colon + 1), "port", 1, 65535));
+		if (colon >= 0 && (!System.Net.IPAddress.TryParse(server, out var address) || address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6))
+			throw new ArgumentException("Invalid server address.");
+		return (server, null); // bare IPv6 literal or hostname without a colon
+	}
+
+	private static bool IsSupported(string key) => key.Equals(DmConst.PROP_KEY_SERVER, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_PORT, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_USER, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_PASSWORD, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_SCHEMA, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_LANGUAGE, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_CONNECTION_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_COMMAND_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_CONN_POOL_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_SOCKET_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+		IsNewSetting(key);
+
+	private static object Normalize(string key, object value)
+	{
+		if (key == "initial_catalog")
+		{
+			if (string.IsNullOrEmpty(Convert.ToString(value))) return string.Empty;
+			throw new NotSupportedException("A nonempty InitialCatalog is not supported.");
+		}
+		if (key == "transport_security") return ParseTransport(value);
+		if (key == TlsRevocationModeKey) return ParseTlsRevocationMode(value);
+		if (key is TlsCaCertificatePathKey or TlsClientCertificatePathKey or TlsClientPrivateKeyPathKey) return ParseTlsPath(value);
+		if (key == TlsClientCertificatePasswordKey) return Convert.ToString(value) ?? string.Empty;
+		if (key == "persist_security_info") return ParseBoolean(value, key);
+		if (key == "max_message_size") return ParseInt(value, key, DmConnectionSettings.DefaultMaxMessageSize, DmConnectionSettings.DefaultMaxMessageSize);
+		if (key == "max_materialized_lob_size") return ParseInt(value, key, DmConnectionSettings.DefaultMaxMaterializedLobSize, DmConnectionSettings.DefaultMaxMaterializedLobSize);
+		if (key == "lob_chunk_size") return ParseInt(value, key, DmConnectionSettings.DefaultLobChunkSize, DmConnectionSettings.DefaultLobChunkSize);
+		if (key == "cleanup_timeout") return ParseInt(value, key, 1, int.MaxValue);
+		if (key.Equals(DmConst.PROP_KEY_PORT, StringComparison.OrdinalIgnoreCase)) return ParseInt(value, key, 1, 65535);
+		if (key.Equals(DmConst.PROP_KEY_LANGUAGE, StringComparison.OrdinalIgnoreCase)) return ParseLanguage(value);
+		if (key.Equals(DmConst.PROP_KEY_CONNECTION_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+			key.Equals(DmConst.PROP_KEY_COMMAND_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+			key.Equals(DmConst.PROP_KEY_CONN_POOL_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+			key.Equals(DmConst.PROP_KEY_SOCKET_TIMEOUT, StringComparison.OrdinalIgnoreCase)) return ParseInt(value, key, 0, int.MaxValue);
+		if (key.Equals(DmConst.PROP_KEY_SERVER, StringComparison.OrdinalIgnoreCase)) return ParseServerValue(value).host;
+		if (key.Equals(DmConst.PROP_KEY_SCHEMA, StringComparison.OrdinalIgnoreCase))
+			return DmSchemaValidator.Normalize(Convert.ToString(value));
+		if (key.Equals(DmConst.PROP_KEY_USER, StringComparison.OrdinalIgnoreCase) ||
+			key.Equals(DmConst.PROP_KEY_PASSWORD, StringComparison.OrdinalIgnoreCase)) return Convert.ToString(value) ?? string.Empty;
+		DmOption option = DmOptionHelper.GetOption(key, options);
+		if (option == null) throw new NotSupportedException("Unknown connection setting.");
+		object defaultValue = option.Defaultvalue;
+		if (defaultValue is bool defaultBoolean)
+		{
+			bool parsedBoolean = ParseBoolean(value, key);
+			if (parsedBoolean != defaultBoolean) throw new NotSupportedException($"Setting '{key}' is not supported with a nondefault value.");
+			return parsedBoolean;
+		}
+		if (defaultValue is string || defaultValue == null)
+		{
+			string text = Convert.ToString(value) ?? string.Empty;
+			if (!string.Equals(text, Convert.ToString(defaultValue) ?? string.Empty, StringComparison.Ordinal))
+				throw new NotSupportedException($"Setting '{key}' is not supported with a nondefault value.");
+			return text;
+		}
+		if (defaultValue is Enum)
+		{
+			string text = Convert.ToString(value) ?? string.Empty;
+			if (text.Equals(defaultValue.ToString(), StringComparison.OrdinalIgnoreCase) ||
+				(long.TryParse(text, out long ordinal) && ordinal == Convert.ToInt64(defaultValue))) return defaultValue;
+			throw new NotSupportedException($"Setting '{key}' is not supported with a nondefault value.");
+		}
+		string numericText = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+		if (!long.TryParse(numericText, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out long parsed) ||
+			parsed != Convert.ToInt64(defaultValue))
+			throw new NotSupportedException($"Setting '{key}' is not supported with a nondefault value.");
+		return parsed;
+	}
+
+	private void SetCore(string keyword, object value, bool strictDuplicate)
+	{
+		string key = Canonical(keyword);
+		if (value != null && value is not string && value is not bool && value is not byte &&
+			value is not short && value is not int && value is not long && value is not Enum)
+			throw new ArgumentException("Unsupported connection setting value type.");
+		object normalized = Normalize(key, value);
+		if (key == "initial_catalog")
+		{
+			base.Remove(key);
+			return;
+		}
+		if (key.Equals(DmConst.PROP_KEY_SERVER, StringComparison.OrdinalIgnoreCase))
+		{
+			var parsed = ParseServerValue(value);
+			if (parsed.port.HasValue)
 			{
-				do_setThis(DmConst.PROP_KEY_PORT, value3);
+				if (strictDuplicate && setProperty.TryGetValue(DmConst.PROP_KEY_PORT, out var existingPort) && !Equals(existingPort, parsed.port.Value))
+					throw new ArgumentException("Conflicting values for connection setting 'port'.");
 			}
+		}
+		if (strictDuplicate && setProperty.TryGetValue(key, out var existing) && !Equals(existing, normalized))
+			throw new ArgumentException($"Conflicting values for connection setting '{key}'.");
+		property[key] = normalized;
+		setProperty[key] = normalized;
+		base[key] = normalized;
+		if (key.Equals(DmConst.PROP_KEY_SERVER, StringComparison.OrdinalIgnoreCase))
+		{
+			var parsed = ParseServerValue(value);
+			if (parsed.port.HasValue) SetCore(DmConst.PROP_KEY_PORT, parsed.port.Value, strictDuplicate);
 		}
 	}
 
 	internal object do_getThis(string keyword)
 	{
-		try
-		{
-			return property[keyword];
-		}
-		catch (KeyNotFoundException)
-		{
-			throw new NotSupportedException(keyword + " does not exist");
-		}
+		EnsureValid();
+		string key = Canonical(keyword);
+		return property.TryGetValue(key, out object value) ? value : throw new NotSupportedException("Unknown connection setting.");
 	}
 
-	internal void do_setThis(string keyword, object value)
-	{
-		DmOption option = DmOptionHelper.GetOption(keyword, options);
-		if (option != null)
-		{
-			keyword = keyword.Trim();
-			do_Remove(keyword);
-			value = option.ValidateValue(value);
-			if (option.Equals(DmOptionHelper.GetOption(DmConst.PROP_KEY_SERVER, options)) && !value.ToString().StartsWith("(") && !value.ToString().StartsWith("[") && value.ToString().Contains(":"))
-			{
-				ParseServer(keyword, value.ToString());
-				return;
-			}
-			lock (this)
-			{
-				DmOptionHelper.SetProperty(option, value, property);
-				base[keyword] = value;
-				DmOptionHelper.SetProperty(option, value, setProperty);
-				if (keyword.Equals(DmConst.PROP_KEY_LOG_LEVEL, StringComparison.OrdinalIgnoreCase) || keyword.Equals(DmConst.PROP_KEYSYN_LOG_LEVEL, StringComparison.OrdinalIgnoreCase))
-				{
-					DmSvcConfig.logLevel = (LogLevel)value;
-				}
-				else if (keyword.Equals(DmConst.PROP_KEY_LOG_DIR, StringComparison.OrdinalIgnoreCase) || keyword.Equals(DmConst.PROP_KEYSYN_LOG_DIR, StringComparison.OrdinalIgnoreCase))
-				{
-					DmSvcConfig.logDir = DriverUtil.FormatDir(Convert.ToString(value));
-				}
-				else if (keyword.Equals(DmConst.PROP_KEY_LOG_SIZE, StringComparison.OrdinalIgnoreCase) || keyword.Equals(DmConst.PROP_KEYSYN_LOG_SIZE, StringComparison.OrdinalIgnoreCase))
-				{
-					DmSvcConfig.logSize = Convert.ToInt32(value);
-				}
-				else if (keyword.Equals(DmConst.PROP_KEY_DB_ALIVE_CHECK_FREQ, StringComparison.OrdinalIgnoreCase) || keyword.Equals(DmConst.PROP_KEYSYN_DB_ALIVE_CHECK_FREQ, StringComparison.OrdinalIgnoreCase))
-				{
-					DmSvcConfig.dbAliveCheckFreq = Convert.ToInt32(value);
-				}
-				else if (keyword.Equals(DmConst.PROP_KEY_DB_ALIVE_CHECK_TIMEOUT, StringComparison.OrdinalIgnoreCase) || keyword.Equals(DmConst.PROP_KEYSYN_DB_ALIVE_CHECK_TIMEOUT, StringComparison.OrdinalIgnoreCase))
-				{
-					DmSvcConfig.dbAliveCheckTimeout = Convert.ToInt32(value);
-				}
-				return;
-			}
-		}
-		throw new NotSupportedException(keyword + " does not exist");
-	}
+	internal void do_setThis(string keyword, object value) => SetCore(keyword, value, strictDuplicate: false);
 
 	internal void do_Clear()
 	{
 		base.Clear();
-		lock (this)
-		{
-			foreach (DmOption option in options)
-			{
-				DmOptionHelper.SetProperty(option, option.Defaultvalue, property);
-			}
-			setProperty.Clear();
-		}
+		property.Clear();
+		setProperty.Clear();
+		foreach (DmOption option in options)
+			property[option.Keyword] = option.Defaultvalue;
+		property[DmConst.PROP_KEY_SERVER] = string.Empty;
+		property[DmConst.PROP_KEY_USER] = string.Empty;
+		property[DmConst.PROP_KEY_PASSWORD] = string.Empty;
+		property[DmConst.PROP_KEY_PORT] = 5236;
+		property[DmConst.PROP_KEY_LANGUAGE] = 0;
+		property[DmConst.PROP_KEY_CONNECTION_TIMEOUT] = 5000;
+		property[DmConst.PROP_KEY_COMMAND_TIMEOUT] = 30;
+		property[DmConst.PROP_KEY_CONN_POOL_TIMEOUT] = 5000;
+		property[DmConst.PROP_KEY_SOCKET_TIMEOUT] = 0;
+		property["cleanup_timeout"] = 5000;
+		property["transport_security"] = DmTransportSecurity.RequireTls;
+		property[TlsCaCertificatePathKey] = string.Empty;
+		property[TlsClientCertificatePathKey] = string.Empty;
+		property[TlsClientPrivateKeyPathKey] = string.Empty;
+		property[TlsClientCertificatePasswordKey] = string.Empty;
+		property[TlsRevocationModeKey] = DmTlsRevocationMode.Online;
+		property["persist_security_info"] = false;
+		property["max_message_size"] = DmConnectionSettings.DefaultMaxMessageSize;
+		property["max_materialized_lob_size"] = DmConnectionSettings.DefaultMaxMaterializedLobSize;
+		property["lob_chunk_size"] = DmConnectionSettings.DefaultLobChunkSize;
+		invalidAfterFailedAssignment = false;
 	}
 
-	internal bool do_ContainsKey(string keyword)
-	{
-		return property.ContainsKey(keyword);
-	}
-
+	internal bool do_ContainsKey(string keyword) => property.ContainsKey(Canonical(keyword));
 	internal bool do_Remove(string keyword)
 	{
-		DmOption option = DmOptionHelper.GetOption(keyword, options);
-		if (option != null)
-		{
-			keyword = keyword.Trim();
-			lock (this)
-			{
-				DmOptionHelper.SetProperty(option, option.Defaultvalue, property);
-				setProperty.Remove(option.Keyword);
-				if (option.Synonym != null)
-				{
-					string[] synonym = option.Synonym;
-					foreach (string key in synonym)
-					{
-						setProperty.Remove(key);
-					}
-				}
-				if (base.Remove(option.Keyword))
-				{
-					return true;
-				}
-				if (option.Synonym != null)
-				{
-					string[] synonym = option.Synonym;
-					foreach (string keyword2 in synonym)
-					{
-						if (base.Remove(keyword2))
-						{
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
+		string key = Canonical(keyword);
+		bool removed = base.Remove(key);
+		setProperty.Remove(key);
+		if (key == "initial_catalog") return removed;
+		DmOption option = DmOptionHelper.GetOption(key, options);
+		if (option != null) property[key] = option.Defaultvalue;
+		else property.Remove(key);
+		if (key.Equals(DmConst.PROP_KEY_SERVER, StringComparison.OrdinalIgnoreCase) || key.Equals(DmConst.PROP_KEY_USER, StringComparison.OrdinalIgnoreCase) || key.Equals(DmConst.PROP_KEY_PASSWORD, StringComparison.OrdinalIgnoreCase)) property[key] = string.Empty;
+		if (key.Equals(DmConst.PROP_KEY_COMMAND_TIMEOUT, StringComparison.OrdinalIgnoreCase)) property[key] = 30;
+		if (key.Equals(DmConst.PROP_KEY_LANGUAGE, StringComparison.OrdinalIgnoreCase)) property[key] = 0;
+		if (key == "transport_security") property[key] = DmTransportSecurity.RequireTls;
+		if (key is TlsCaCertificatePathKey or TlsClientCertificatePathKey or TlsClientPrivateKeyPathKey or TlsClientCertificatePasswordKey) property[key] = string.Empty;
+		if (key == TlsRevocationModeKey) property[key] = DmTlsRevocationMode.Online;
+		if (key == "persist_security_info") property[key] = false;
+		if (key == "cleanup_timeout") property[key] = 5000;
+		if (key == "max_message_size") property[key] = DmConnectionSettings.DefaultMaxMessageSize;
+		if (key == "max_materialized_lob_size") property[key] = DmConnectionSettings.DefaultMaxMaterializedLobSize;
+		if (key == "lob_chunk_size") property[key] = DmConnectionSettings.DefaultLobChunkSize;
+		if (key.Equals(DmConst.PROP_KEY_SOCKET_TIMEOUT, StringComparison.OrdinalIgnoreCase)) property[key] = 0;
+		return removed;
 	}
 
-	internal bool do_EquivalentTo(DmConnectionStringBuilder connectionStringBuilder)
-	{
-		return base.EquivalentTo(connectionStringBuilder);
-	}
-
-	internal bool do_ShouldSerialize(string keyword)
-	{
-		return base.ShouldSerialize(keyword);
-	}
-
+	internal bool do_EquivalentTo(DmConnectionStringBuilder other) => base.EquivalentTo(other);
+	internal bool do_ShouldSerialize(string keyword) => base.ShouldSerialize(Canonical(keyword));
 	internal bool do_TryGetValue(string keyword, out object value)
 	{
-		return base.TryGetValue(keyword, out value);
+		string key = Canonical(keyword);
+		return property.TryGetValue(key, out value);
 	}
+	internal void do_GetProperties(Hashtable propertyDescriptors) => base.GetProperties(propertyDescriptors);
 
-	internal void do_GetProperties(Hashtable propertyDescriptors)
-	{
-		base.GetProperties(propertyDescriptors);
-	}
-
-	public override void Clear()
-	{
-		if (filterHead == null)
-		{
-			do_Clear();
-		}
-		else
-		{
-			filterHead.Clear(this);
-		}
-	}
-
-	public override bool ContainsKey(string keyword)
-	{
-		if (filterHead == null)
-		{
-			return do_ContainsKey(keyword);
-		}
-		return filterHead.ContainsKey(this, keyword);
-	}
-
-	public override bool Remove(string keyword)
-	{
-		if (filterHead == null)
-		{
-			return do_Remove(keyword);
-		}
-		return filterHead.Remove(this, keyword);
-	}
-
-	public override bool EquivalentTo(DbConnectionStringBuilder connectionStringBuilder)
-	{
-		if (filterHead == null)
-		{
-			return do_EquivalentTo((DmConnectionStringBuilder)connectionStringBuilder);
-		}
-		return filterHead.EquivalentTo(this, (DmConnectionStringBuilder)connectionStringBuilder);
-	}
-
-	public override bool ShouldSerialize(string keyword)
-	{
-		if (filterHead == null)
-		{
-			return do_ShouldSerialize(keyword);
-		}
-		return filterHead.ShouldSerialize(this, keyword);
-	}
-
-	public override bool TryGetValue(string keyword, out object value)
-	{
-		if (filterHead == null)
-		{
-			return do_TryGetValue(keyword, out value);
-		}
-		return filterHead.TryGetValue(this, keyword, out value);
-	}
-
-	protected override void GetProperties(Hashtable propertyDescriptors)
-	{
-		if (filterHead == null)
-		{
-			do_GetProperties(propertyDescriptors);
-		}
-		else
-		{
-			filterHead.GetProperties(this, propertyDescriptors);
-		}
-	}
+	public override void Clear() => do_Clear();
+	public override bool ContainsKey(string keyword) => do_ContainsKey(keyword);
+	public override bool Remove(string keyword) => do_Remove(keyword);
+	public override bool EquivalentTo(DbConnectionStringBuilder connectionStringBuilder) =>
+		connectionStringBuilder is DmConnectionStringBuilder other && do_EquivalentTo(other);
+	public override bool ShouldSerialize(string keyword) => do_ShouldSerialize(keyword);
+	public override bool TryGetValue(string keyword, out object value) => do_TryGetValue(keyword, out value);
+	protected override void GetProperties(Hashtable propertyDescriptors) => do_GetProperties(propertyDescriptors);
 }

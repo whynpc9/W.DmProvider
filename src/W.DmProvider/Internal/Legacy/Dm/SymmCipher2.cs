@@ -13,26 +13,14 @@ internal class SymmCipher2 : Cipher
 
 	private const int HASH_SIZE = 16;
 
-	[DllImport("dmcyt")]
-	internal static extern int cyt_sys_init(nint env);
-
-	[DllImport("dmcyt")]
-	internal static extern int cyt_get_cipher_text_size(int id, int plain_text_size);
-
-	[DllImport("dmcyt")]
-	internal static extern int cyt_do_encrypt(nint env, int id, byte[] key, int key_size, byte[] plain_text, int plain_text_size, byte[] cipher_text, int cipher_buf_size);
-
-	[DllImport("dmcyt")]
-	internal static extern int cyt_hash_gen_digest(int id, byte[] msg, int msg_size, byte[] digest_buf, int digest_buf_size);
-
-	[DllImport("dmcyt")]
-	internal static extern int cyt_do_decrypt(nint env, int id, byte[] key, int key_size, byte[] cipher_text, int cipher_text_size, byte[] plain_text, int plain_text_buf_size);
-
-	[DllImport("dmcyt")]
-	internal static extern int dm_dh_gen_common_key(byte[] clientKeyY, byte[] clientKeyX, byte[] serverPubKey, byte[] sessionKey);
-
-	[DllImport("dmcyt")]
-	internal static extern int cyt_load_ssl_lib();
+	internal static int cyt_sys_init(nint env) => throw NativeCipherUnavailable();
+	internal static int cyt_get_cipher_text_size(int id, int plain_text_size) => throw NativeCipherUnavailable();
+	internal static int cyt_do_encrypt(nint env, int id, byte[] key, int key_size, byte[] plain_text, int plain_text_size, byte[] cipher_text, int cipher_buf_size) => throw NativeCipherUnavailable();
+	internal static int cyt_hash_gen_digest(int id, byte[] msg, int msg_size, byte[] digest_buf, int digest_buf_size) => throw NativeCipherUnavailable();
+	internal static int cyt_do_decrypt(nint env, int id, byte[] key, int key_size, byte[] cipher_text, int cipher_text_size, byte[] plain_text, int plain_text_buf_size) => throw NativeCipherUnavailable();
+	internal static int dm_dh_gen_common_key(byte[] clientKeyY, byte[] clientKeyX, byte[] serverPubKey, byte[] sessionKey) => throw NativeCipherUnavailable();
+	internal static int cyt_load_ssl_lib() => throw NativeCipherUnavailable();
+	private static NotSupportedException NativeCipherUnavailable() => new("Native message cipher is not enabled by this provider version.");
 
 	public SymmCipher2(int cipherType, byte[] key)
 	{

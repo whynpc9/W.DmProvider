@@ -1,0 +1,656 @@
+{
+  "schema_version": 1,
+  "fixture": "T07 TLS and native resource synthetic scenarios",
+  "evidence_boundary": {
+    "contract_vectors": "Synthetic scenario parameters and desired client assertions only; every case is marked not_run.",
+    "certificates": "The test harness is expected to generate temporary certificates with standard cryptography APIs. No certificate, key, private-key password, PFX, credential, or real certificate path is included.",
+    "wire_semantics": "Server ENABLE_ENCRYPT configuration, recovered STARTUP wire-mode labels, and the owned-instance mapping are separate fields. The local mapping is environment-specific evidence; each case remains not_run, and no wire-5 success is represented.",
+    "native_assets": "Native library paths and load outcomes are synthetic harness inputs; no native binary is included.",
+    "server_results": "No result is asserted by any case. The separately referenced owned-instance mode matrix is environment observation, not a generic protocol mapping or a fixture execution result."
+  },
+  "mode_catalogue": {
+    "field_meanings": {
+      "server_enable_encrypt": "Server-side ENABLE_ENCRYPT configuration supplied to the controlled server harness.",
+      "negotiated_wire_encrypt": "Decoded STARTUP Encrypt integer consumed by the W client guard.",
+      "case_status": "Every entry in cases remains a synthetic contract vector marked not_run; environment observations below are separate evidence."
+    },
+    "server_configuration_modes": [
+      {
+        "server_enable_encrypt": 0,
+        "documented_semantics": "no TLS / plaintext"
+      },
+      {
+        "server_enable_encrypt": 1,
+        "documented_semantics": "mutual verification and encrypted data"
+      },
+      {
+        "server_enable_encrypt": 2,
+        "documented_semantics": "certificate authentication without encrypted data (AUTH_ONLY)"
+      },
+      {
+        "server_enable_encrypt": 4,
+        "documented_semantics": "encrypted data without server verification of the client"
+      },
+      {
+        "server_enable_encrypt": 5,
+        "documented_semantics": "encrypted data with client verification of the server"
+      },
+      {
+        "server_enable_encrypt": 6,
+        "documented_semantics": "TLCP"
+      }
+    ],
+    "recovered_wire_mode_constants": [
+      {
+        "negotiated_wire_encrypt": 0,
+        "recovered_source_label": "Encrypt=0 none",
+        "product_policy": "accepted only with PlaintextAllowed"
+      },
+      {
+        "negotiated_wire_encrypt": 1,
+        "recovered_source_label": "ENCRYPT_MODE_SSL",
+        "product_policy": "full TLS with strict client validation"
+      },
+      {
+        "negotiated_wire_encrypt": 2,
+        "recovered_source_label": "ENCRYPT_MODE_SSL_AUTH_ONLY",
+        "product_policy": "rejected before LOGIN"
+      },
+      {
+        "negotiated_wire_encrypt": 3,
+        "recovered_source_label": "ENCRYPT_MODE_GMSSL",
+        "product_policy": "unsupported"
+      },
+      {
+        "negotiated_wire_encrypt": 4,
+        "recovered_source_label": "ENCRYPT_MODE_WITHOUT_AUTH",
+        "product_policy": "full TLS with strict client validation"
+      },
+      {
+        "negotiated_wire_encrypt": 5,
+        "recovered_source_label": null,
+        "product_policy": "explicitly unsupported; no verified branch"
+      },
+      {
+        "negotiated_wire_encrypt": 6,
+        "recovered_source_label": null,
+        "product_policy": "TLCP unsupported"
+      }
+    ],
+    "observed_local_configuration_to_wire_mapping": {
+      "scope": "Owned local DM 8.1.4.6 test mirror only",
+      "evidence_ref": "docs/implementation/T07-protocol-security.md:11-20; .local/t07/runs/20260929T153725Z-11169-23464/matrix-result.json",
+      "mapping": [
+        {
+          "server_enable_encrypt": 1,
+          "observed_negotiated_wire_encrypt": 1
+        },
+        {
+          "server_enable_encrypt": 2,
+          "observed_negotiated_wire_encrypt": 2
+        },
+        {
+          "server_enable_encrypt": 4,
+          "observed_negotiated_wire_encrypt": 4
+        },
+        {
+          "server_enable_encrypt": 5,
+          "observed_negotiated_wire_encrypt": 4
+        }
+      ],
+      "wire_5_observed": false,
+      "generalization": "environment_observation_not_a_generic_protocol_guarantee"
+    },
+    "current_client_guard": {
+      "dispatch_field": "negotiated_wire_encrypt",
+      "source_ref": "src/W.DmProvider/Internal/Legacy/A/DmHandshakeSecurityGuard.cs:20-28",
+      "full_tls_wire_modes": [
+        1,
+        4
+      ],
+      "rejected_wire_modes": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "wire_5_rejection": "NotSupportedException before TLS handshake or LOGIN"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "tls01_valid_dns_san",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "target_host": "db.example.test",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_issuer": "fixture_ca_trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_cert_eku": "serverAuth",
+        "server_cert_chain_result": "trusted",
+        "client_certificate_present": false,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": true,
+        "full_tls": true,
+        "server_chain_validated": true,
+        "target_host_validated": true,
+        "client_certificate_required": false,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls01_valid_ip_san",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "target_host": "192.0.2.44",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_ip_san": "192.0.2.44",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_cert_eku": "serverAuth",
+        "server_cert_chain_result": "trusted",
+        "client_certificate_present": false,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": true,
+        "full_tls": true,
+        "server_chain_validated": true,
+        "target_ip_validated": true,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls01_wrong_hostname",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "target_host": "db.example.test",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_dns_san": "other.example.test",
+        "server_cert_chain_result": "trusted",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "target_host_mismatch",
+        "server_chain_validated": true,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls01_unknown_ca",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "target_host": "db.example.test",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_chain_result": "unknown_ca",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "untrusted_chain",
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls01_expired",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "target_host": "db.example.test",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_chain_result": "trusted",
+        "server_cert_not_before_delta_seconds": -3600,
+        "server_cert_not_after_delta_seconds": -60,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "certificate_expired",
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls02_require_plaintext_no_login",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "login_payload_configured": true,
+        "server_enable_encrypt": 0,
+        "negotiated_wire_encrypt": 0
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "plaintext_rejected",
+        "plaintext_fallback_attempted": false,
+        "connection_closed": true,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls02_auth_only_no_login",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "login_payload_configured": true,
+        "server_enable_encrypt": 2,
+        "negotiated_wire_encrypt": 2
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "auth_only_rejected",
+        "plaintext_fallback_attempted": false,
+        "connection_closed": true,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls02_no_downgrade_after_tls_failure",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "tls_handshake_result": "failure",
+        "plaintext_retry_offered_by_harness": true,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "tls_handshake_failed",
+        "plaintext_fallback_attempted": false,
+        "second_tcp_session_created": false,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls03_plaintext_allowed_mode0",
+      "contract": "TLS-03",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "PlaintextAllowed",
+        "server_enable_encrypt": 0,
+        "negotiated_wire_encrypt": 0
+      },
+      "expected": {
+        "accepted": true,
+        "full_tls": false,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls03_plaintext_tls_badcert",
+      "contract": "TLS-03",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "PlaintextAllowed",
+        "target_host": "db.example.test",
+        "server_certificate_source": "harness_ephemeral",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_chain_result": "unknown_ca",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "untrusted_chain",
+        "full_tls": true,
+        "certificate_validation_bypassed": false,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls03_default_revocation_online",
+      "contract": "TLS-03",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "revocation_mode_configured": false,
+        "harness_revocation_result": "revoked",
+        "server_cert_chain_result": "trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "effective_revocation_mode": "Online",
+        "accepted": false,
+        "failure_kind": "certificate_revoked",
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls03_explicit_nocheck",
+      "contract": "TLS-03",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "revocation_mode_configured": true,
+        "revocation_mode": "NoCheck",
+        "harness_revocation_result": "unavailable",
+        "server_cert_chain_result": "trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "effective_revocation_mode": "NoCheck",
+        "accepted": true,
+        "server_chain_validation_still_enabled": true,
+        "target_host_validation_still_enabled": true,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls_mtls_missing_client",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_requests_client_certificate": true,
+        "client_certificate_present": false,
+        "server_cert_chain_result": "trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_enable_encrypt": 1,
+        "negotiated_wire_encrypt": 1
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "client_certificate_required",
+        "connection_closed": true,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls_mtls_valid_client",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_requests_client_certificate": true,
+        "client_certificate_present": true,
+        "client_certificate_source": "harness_ephemeral",
+        "client_cert_eku": "clientAuth",
+        "client_cert_chain_result": "trusted",
+        "server_cert_chain_result": "trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_enable_encrypt": 1,
+        "negotiated_wire_encrypt": 1
+      },
+      "expected": {
+        "accepted": true,
+        "full_tls": true,
+        "server_chain_validated": true,
+        "client_certificate_presented": true,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls_mode4_server_not_authenticating_client_still_validates_server",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_requests_client_certificate": false,
+        "client_certificate_present": false,
+        "server_cert_chain_result": "trusted",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_not_before_delta_seconds": -60,
+        "server_cert_not_after_delta_seconds": 3600,
+        "server_enable_encrypt": 4,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": true,
+        "full_tls": true,
+        "client_certificate_required": false,
+        "server_chain_validated": true,
+        "target_host_validated": true,
+        "login_expected": true
+      }
+    },
+    {
+      "case_id": "tls_mode4_invalid_server_certificate_rejected",
+      "contract": "TLS-01",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "PlaintextAllowed",
+        "server_requests_client_certificate": false,
+        "target_host": "db.example.test",
+        "server_cert_dns_san": "db.example.test",
+        "server_cert_chain_result": "unknown_ca",
+        "server_enable_encrypt": 4,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "untrusted_chain",
+        "certificate_validation_bypassed": false,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls_mode3_gmssl_unsupported",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_enable_encrypt": null,
+        "negotiated_wire_encrypt": 3
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "unsupported_gmssl",
+        "fallback_attempted": false,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls_mode6_tlcp_unsupported",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_enable_encrypt": null,
+        "negotiated_wire_encrypt": 6
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "unsupported_tlcp",
+        "fallback_attempted": false,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls_connect_deadline",
+      "contract": "NET-04",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "connect_deadline_ms": 1000,
+        "dns_complete_ms": 100,
+        "tcp_complete_ms": 300,
+        "tls_handshake_complete_ms": 1001,
+        "login_would_start_ms": 1002,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "outcome": "timeout",
+        "deadline_reset_count": 0,
+        "socket_release_count": 1,
+        "connection_state": "Closed",
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "tls_close_pending",
+      "contract": "NET-04",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "handshake_state": "pending",
+        "close_requested": true,
+        "server_enable_encrypt": 5,
+        "negotiated_wire_encrypt": 4
+      },
+      "expected": {
+        "connection_state": "Closed",
+        "socket_release_count": 1,
+        "tls_stream_release_count": 1,
+        "login_expected": false
+      }
+    },
+    {
+      "case_id": "nat01_unsupported_rid",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "runtime_identifier": "unsupported-fixture-rid",
+        "native_asset_present": true,
+        "native_asset_path": "/fixture/native/libfixture.so"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "unsupported_runtime_identifier",
+        "native_load_attempts": 0,
+        "native_handle_release_count": 0
+      }
+    },
+    {
+      "case_id": "nat01_relative_path",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "native_library_path": "./native/libfixture.so",
+        "path_is_absolute": false
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "native_path_must_be_absolute",
+        "native_load_attempts": 0,
+        "native_handle_release_count": 0
+      }
+    },
+    {
+      "case_id": "nat01_missing_library",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "native_library_path": "/fixture/native/missing-library.so",
+        "path_is_absolute": true,
+        "native_asset_exists": false
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "native_library_not_found",
+        "native_load_attempts": 1,
+        "native_handle_acquire_count": 0,
+        "native_handle_release_count": 0
+      }
+    },
+    {
+      "case_id": "nat01_missing_export",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "native_library_path": "/fixture/native/libfixture.so",
+        "path_is_absolute": true,
+        "native_asset_exists": true,
+        "required_export_present": false
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "native_export_missing",
+        "native_handle_acquire_count": 1,
+        "native_handle_release_count": 1
+      }
+    },
+    {
+      "case_id": "nat01_initialization_failure_releases_once",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "native_library_path": "/fixture/native/libfixture.so",
+        "path_is_absolute": true,
+        "native_asset_exists": true,
+        "required_export_present": true,
+        "initialization_result": "synthetic_failure"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "native_initialization_failed",
+        "native_handle_acquire_count": 1,
+        "native_handle_release_count": 1,
+        "connection_state": "Closed"
+      }
+    },
+    {
+      "case_id": "nat01_exactly_once_release",
+      "contract": "NAT-01",
+      "execution_status": "not_run",
+      "input": {
+        "native_library_path": "/fixture/native/libfixture.so",
+        "path_is_absolute": true,
+        "native_asset_exists": true,
+        "required_export_present": true,
+        "initialization_result": "success",
+        "dispose_calls": 2
+      },
+      "expected": {
+        "native_handle_acquire_count": 1,
+        "native_handle_release_count": 1,
+        "dispose_idempotent": true
+      }
+    },
+    {
+      "case_id": "tls_wire5_unsupported",
+      "contract": "TLS-02",
+      "execution_status": "not_run",
+      "input": {
+        "transport_security": "RequireTls",
+        "server_enable_encrypt": null,
+        "negotiated_wire_encrypt": 5,
+        "login_payload_configured": true
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "unsupported_wire_mode_5",
+        "exception_family": "NotSupportedException",
+        "tls_handshake_attempted": false,
+        "login_expected": false,
+        "fallback_attempted": false
+      }
+    }
+  ]
+}

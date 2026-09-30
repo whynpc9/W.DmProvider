@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using W.Dm.Internal.Types;
 
 namespace W.Dm.util;
 
@@ -1290,15 +1290,12 @@ internal class N2DB
 
 	public static byte[] toDecimal(string val, int prec, int scale, bool direct)
 	{
-		if (val.Trim().Length > 19)
-		{
-			return new DmXDec().StrToDec(val, prec, scale, direct);
-		}
-		if (val.Trim().Length > 0)
-		{
-			return new DmXDec().StrToDec(decimal.Parse(val, NumberStyles.Any, DmConst.invariantCulture).ToString(), prec, scale, direct);
-		}
-		return new byte[0];
+		if (string.IsNullOrWhiteSpace(val)) return Array.Empty<byte>();
+		// SQLProcessor's C2P literal path reaches this method with (0,0): no
+		// declared scale. Parse the original invariant text once, without a CLR
+		// decimal intermediary that could round a 38-digit server value.
+		int targetScale = prec == 0 && scale == 0 ? -1 : scale;
+		return DmNumericCodec.EncodeDecimal(global::W.Dm.DmDecimal.Parse(val), prec, targetScale);
 	}
 
 	public static byte[] toVarchar(string val, string serverEncoding)

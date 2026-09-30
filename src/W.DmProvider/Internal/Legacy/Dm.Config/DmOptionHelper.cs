@@ -25,11 +25,11 @@ internal class DmOptionHelper
 		return text;
 	};
 
-	internal static string serverDef = "localhost";
+	internal static string serverDef = "";
 
-	internal static string userDef = "SYSDBA";
+	internal static string userDef = "";
 
-	internal static string passwordDef = "SYSDBA";
+	internal static string passwordDef = "";
 
 	internal static int portDef = 5236;
 
@@ -39,13 +39,13 @@ internal class DmOptionHelper
 
 	internal static int connectionTimeoutDef = 5000;
 
-	internal static int commandTimeoutDef = 0;
+	internal static int commandTimeoutDef = 30;
 
 	internal static int poolSizeDef = 100;
 
 	internal static bool connPoolingDef = false;
 
-	internal static bool stmtPoolingDef = true;
+	internal static bool stmtPoolingDef = false;
 
 	internal static bool preparePoolingDef = false;
 
@@ -107,11 +107,11 @@ internal class DmOptionHelper
 
 	internal static int timezonedef = (short)localtimezone();
 
-	internal static string dm_svc_confdef = defaultsvc_conf().ToString();
+	internal static string dm_svc_confdef = "";
 
 	internal static LogLevel logleveldef = LogLevel.OFF;
 
-	internal static string logdirdef = DriverUtil.FormatDir(Environment.CurrentDirectory);
+	internal static string logdirdef = "";
 
 	internal static int logSizedef = 104857600;
 
@@ -195,7 +195,7 @@ internal class DmOptionHelper
 
 	internal static IntervalMode intervalModeDef = IntervalMode.OFF;
 
-	internal static string sslKeyPass = "changeit";
+	internal static string sslKeyPass = "";
 
 	internal static string sslFilePath = "";
 

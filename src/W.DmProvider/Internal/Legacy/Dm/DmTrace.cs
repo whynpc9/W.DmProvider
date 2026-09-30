@@ -1,186 +1,34 @@
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Threading;
 
 namespace W.Dm;
 
+/// <summary>Compatibility facade. Legacy process-wide tracing is disabled.</summary>
 public class DmTrace
 {
-	private static readonly string ClassName = "DmTrace";
+    private DmTrace() { }
 
-	private static TraceLevel level = TraceLevel.None;
+    public static bool To_file
+    {
+        get => false;
+        set { /* The legacy output destination is inactive. */ }
+    }
 
-	private static bool to_file = true;
+    public static TraceLevel Level
+    {
+        get => TraceLevel.None;
+        set
+        {
+            if (value != TraceLevel.None)
+                throw new NotSupportedException("Legacy tracing is unsupported.");
+        }
+    }
 
-	private static string path = "ProviderTrace.txt";
-
-	private static string pathBase = "ProviderTrace";
-
-	private static object fileused = new object();
-
-	public static bool To_file
-	{
-		get
-		{
-			return to_file;
-		}
-		set
-		{
-			to_file = value;
-		}
-	}
-
-	public static TraceLevel Level
-	{
-		get
-		{
-			TracePropertyGet(TraceLevel.Debug, ClassName, "Level");
-			return level;
-		}
-		set
-		{
-			TracePropertySet(TraceLevel.Debug, ClassName, "Level");
-			level = value;
-		}
-	}
-
-	private DmTrace()
-	{
-	}
-
-	protected static void WriteIntoFile(byte[] info)
-	{
-		lock (fileused)
-		{
-			if (!File.Exists(path))
-			{
-				using (File.Create(path))
-				{
-				}
-			}
-			using FileStream fileStream = File.Open(path, FileMode.Append);
-			fileStream.Write(info, 0, info.Length);
-		}
-	}
-
-	protected static void WriteIntoFile(byte[] info, int thd)
-	{
-		string text = pathBase + thd + ".txt";
-		lock (fileused)
-		{
-			if (!File.Exists(text))
-			{
-				using (File.Create(text))
-				{
-				}
-			}
-			using FileStream fileStream = File.Open(text, FileMode.Append);
-			fileStream.Write(info, 0, info.Length);
-		}
-	}
-
-	internal static void TracePropertySet(TraceLevel lev, string ClassName, string PropertyName)
-	{
-		if (lev <= level)
-		{
-			string text = ClassName + ":" + PropertyName + "\tproperty set. " + DateTime.Now.ToLocalTime().ToString() + "\n";
-			if (to_file)
-			{
-				WriteIntoFile(DmConvertion.GetBytes(text, null));
-			}
-			else
-			{
-				Console.WriteLine(text);
-			}
-		}
-	}
-
-	internal static void TracePropertyGet(TraceLevel lev, string ClassName, string PropertyName)
-	{
-		if (lev <= level)
-		{
-			string text = ClassName + ":" + PropertyName + "\tproperty get. " + DateTime.Now.ToLocalTime().ToString() + "\n";
-			if (to_file)
-			{
-				WriteIntoFile(DmConvertion.GetBytes(text, null));
-			}
-			else
-			{
-				Console.WriteLine(text);
-			}
-		}
-	}
-
-	internal static void TraceMethodEnter(TraceLevel lev, string ClassName, string MethodName)
-	{
-		if (lev <= level)
-		{
-			string text = ClassName + ":" + MethodName + "\tmethod enter. " + DateTime.Now.ToLocalTime().ToString() + "\n";
-			if (to_file)
-			{
-				WriteIntoFile(DmConvertion.GetBytes(text, null));
-			}
-			else
-			{
-				Console.WriteLine(text);
-			}
-		}
-	}
-
-	public static void TracePrint(string str)
-	{
-		if (level >= TraceLevel.Trace)
-		{
-			int hashCode = Thread.CurrentThread.GetHashCode();
-			byte[] bytes = DmConvertion.GetBytes("[" + hashCode + "] " + DateTime.Now.ToLocalTime().ToString() + " " + str + "\n", null);
-			if (level == TraceLevel.Thread)
-			{
-				WriteIntoFile(bytes, hashCode);
-			}
-			else
-			{
-				WriteIntoFile(bytes);
-			}
-		}
-	}
-
-	public static void TracePrintStack(string usrString)
-	{
-		if (level < TraceLevel.Trace)
-		{
-			return;
-		}
-		StackFrame[] frames = new StackTrace().GetFrames();
-		string text = "[" + Thread.CurrentThread.GetHashCode() + "]";
-		if (usrString != null)
-		{
-			usrString = "[" + usrString + "]";
-		}
-		for (int i = 0; i < frames.Length; i++)
-		{
-			MethodBase method = frames[i].GetMethod();
-			global::_003C_003Ey__InlineArray5<object> buffer = default(global::_003C_003Ey__InlineArray5<object>);
-			buffer[0] = i;
-			buffer[1] = ((method.DeclaringType == null || method.DeclaringType.Name == null) ? "null" : method.DeclaringType.FullName);
-			buffer[2] = method.Name;
-			buffer[3] = text;
-			buffer[4] = usrString;
-			string text2 = string.Format("{3}{4}[CALL STACK][{0}]: {1}.{2}\n", (ReadOnlySpan<object?>)buffer);
-			if (to_file)
-			{
-				WriteIntoFile(DmConvertion.GetBytes(text2, null));
-			}
-			else
-			{
-				Console.WriteLine(text2);
-			}
-		}
-	}
-
-	public static void TracePrintStack()
-	{
-		TracePrintStack(null);
-	}
+    protected static void WriteIntoFile(byte[] info) { }
+    protected static void WriteIntoFile(byte[] info, int thd) { }
+    internal static void TracePropertySet(TraceLevel lev, string className, string propertyName) { }
+    internal static void TracePropertyGet(TraceLevel lev, string className, string propertyName) { }
+    internal static void TraceMethodEnter(TraceLevel lev, string className, string methodName) { }
+    public static void TracePrint(string str) { }
+    public static void TracePrintStack(string usrString) { }
+    public static void TracePrintStack() { }
 }

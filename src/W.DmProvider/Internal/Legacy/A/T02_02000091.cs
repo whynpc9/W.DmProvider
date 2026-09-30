@@ -7,11 +7,64 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using W.Dm;
+using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Protocol;
+using W.Dm.Internal.Transport;
 using W.Dm.filter.log;
 using W.Dm.parser;
 using W.Dm.util;
 
 namespace W.Dm.Internal.Legacy.A;
+
+// T08 observation points. Only fixed header and decoded result metadata may leave
+// the codec; callbacks run inside the owned exchange so failures break the session.
+internal static class DmResultProtocolTrace
+{
+	[ThreadStatic] private static short currentRequestOpcode;
+	internal static Action<short, short, int, int> AfterFrame;
+	internal static Action<short, int, long, long, int, bool, bool> AfterStatementDecode;
+	internal static short CurrentRequestOpcode => currentRequestOpcode;
+	internal static void RecordFrame(short requestOpcode, b response)
+	{
+		currentRequestOpcode = requestOpcode;
+		Volatile.Read(ref AfterFrame)?.Invoke(requestOpcode, response.I(), response.L(), response.k());
+	}
+	internal static void RecordStatement(DmInfo info)
+	{
+		Volatile.Read(ref AfterStatementDecode)?.Invoke(currentRequestOpcode,
+			info.GetRetStmtType(), info.GetRowCount(), info.GetRecordsAffected(),
+			info.GetColumnCount(), info.GetHasResultSet(), info.IsTerminal);
+	}
+}
+
+// Transaction diagnostics expose only numeric structure, never diagnostic text
+// or frame bytes. Observation does not establish an ACK or change frame policy.
+internal static class DmTransactionProtocolTrace
+{
+	internal static Action<OperationIdentity, short, short, int, int, int[], int, bool> AfterDiagnosticBody;
+	internal static void RecordDiagnosticBody(short requestOpcode, b response)
+	{
+		var callback = Volatile.Read(ref AfterDiagnosticBody);
+		if (callback == null) return;
+		int bodyLength = response.k();
+		int[] lengths = { -1, -1, -1, -1 };
+		int offset = DmFrameReader.HeaderSize;
+		long end = (long)offset + bodyLength;
+		bool valid = bodyLength >= 0 && end == response.B();
+		for (int index = 0; valid && index < lengths.Length; index++)
+		{
+			if (end - offset < sizeof(int)) { valid = false; break; }
+			int length = response.d(offset);
+			lengths[index] = length;
+			offset += sizeof(int);
+			if (length < 0 || length > end - offset) { valid = false; break; }
+			offset += length;
+		}
+		int remaining = end >= offset && end - offset <= int.MaxValue ? (int)(end - offset) : -1;
+		callback(DmInvocation.Current?.Identity ?? default, requestOpcode, response.I(), response.L(),
+			bodyLength, lengths, remaining, valid && remaining == 0);
+	}
+}
 
 internal class B
 {
@@ -27,15 +80,89 @@ internal class B
 
 	private volatile bool __t02_field_04000ABD;
 
-	private object __t02_field_04000ABE = new object();
-
-	private bool __t02_field_04000ABF;
-
 	private DmConnProperty __t02_field_04000AC0;
 
 	private D __t02_field_04000AC1;
+	private readonly b handshakeSend;
+	private readonly b handshakeReceive;
 
 	private List<LobData> __t02_field_04000AC2;
+	internal static int MessageIdleTimeout(DmOperationPurpose purpose, int socketTimeout)
+	{
+		if (socketTimeout < 0) throw new ArgumentOutOfRangeException(nameof(socketTimeout));
+		return purpose == DmOperationPurpose.Handshake ? 0 : socketTimeout;
+	}
+
+	private int CurrentMessageIdleTimeout() => MessageIdleTimeout(
+		DmInvocation.Current?.Lease.Purpose ?? throw new InvalidOperationException("Message has no invocation."),
+		a().SocketTimeout);
+	[ThreadStatic] private static B decodeOwner;
+	[ThreadStatic] private static B parameterUploadOwner;
+
+	private void EncodeWithParameterUploads(Action encode)
+	{
+		B prior = parameterUploadOwner;
+		parameterUploadOwner = this;
+		try { encode(); }
+		finally { parameterUploadOwner = prior; }
+	}
+
+	private static void BreakNestedExchange(DmSession session)
+	{
+		DmInvocation invocation = DmInvocation.Current;
+		var captured = session.Detach(invocation.Identity);
+		try { captured?.AbortTransport(); } catch { }
+	}
+
+	private T Wire<T>(Func<T> operation)
+	{
+		DmSession session = __t02_field_04000ABA.Session;
+		if (DmWireExchange.Current != null)
+		{
+			session.RequireActiveWireExchange();
+			if (!ReferenceEquals(decodeOwner, this) && !ReferenceEquals(parameterUploadOwner, this))
+				throw new InvalidOperationException("Nested wire operation has no protocol continuation owner.");
+			B priorNestedDecodeOwner = decodeOwner;
+			try { return operation(); }
+			catch { BreakNestedExchange(session); throw; }
+			finally { decodeOwner = priorNestedDecodeOwner; }
+		}
+		B priorDecodeOwner = decodeOwner;
+		using var exchange = session.BeginWireExchange();
+		try
+		{
+			DmWireTestHooks.ExchangeEntered();
+			T result = operation();
+			exchange.Complete();
+			return result;
+		}
+		finally { decodeOwner = priorDecodeOwner; }
+	}
+
+	private void Wire(Action operation)
+	{
+		DmSession session = __t02_field_04000ABA.Session;
+		if (DmWireExchange.Current != null)
+		{
+			session.RequireActiveWireExchange();
+			if (!ReferenceEquals(decodeOwner, this) && !ReferenceEquals(parameterUploadOwner, this))
+				throw new InvalidOperationException("Nested wire operation has no protocol continuation owner.");
+			B priorNestedDecodeOwner = decodeOwner;
+			try { operation(); }
+			catch { BreakNestedExchange(session); throw; }
+			finally { decodeOwner = priorNestedDecodeOwner; }
+			return;
+		}
+		B priorDecodeOwner = decodeOwner;
+		using var exchange = session.BeginWireExchange();
+		try
+		{
+			DmWireTestHooks.ExchangeEntered();
+			operation();
+			exchange.Complete();
+		}
+		finally { decodeOwner = priorDecodeOwner; }
+	}
 
 	[SpecialName]
 	public D A()
@@ -92,87 +219,66 @@ internal class B
 
 	internal B(b P_0, b P_1, DmConnInstance P_2)
 	{
+		handshakeSend = P_0;
+		handshakeReceive = P_1;
+		__t02_field_04000ABA = P_2;
+		A(P_2.ConnProperty);
+		A(new D(a().Server, a().Port, a().ConnectionTimeout, P_2));
+	}
+
+	internal void Open(DmDeadline deadline)
+	{
 		try
 		{
 			__t02_field_04000ABD = true;
-			__t02_field_04000ABA = P_2;
-			A(P_2.ConnProperty);
-			A(a().Server);
-			A(new D(a().Server, a().Port, a().ConnectionTimeout));
-			A(P_0, P_1);
-			if (a().Compress > 0)
-			{
-				__t02_field_04000ABF = DriverUtil.isLocalHost(a().Server);
-			}
-			if (a().encryptMsg || a().encryptPwd)
-			{
-				byte[] array = MsgSecurity.ComputeSessionKey(A().b(), a().serverPubKey);
-				int num = ((a().hashType == -1) ? 4352 : a().hashType);
-				if (a().encryptPwd)
-				{
-					int num2 = ((a().msgVersion >= 15 && a().msgVersion < 17) ? ((a().encryptType == -1) ? 2052 : a().encryptType) : ((a().msgVersion < 17) ? ((a().encryptType == -1) ? 132 : a().encryptType) : ((a().algorithm == 0) ? 132 : 2052)));
-					A().A(num2, array, a().CipherPath, num, false);
-				}
-				if (a().encryptMsg)
-				{
-					A().A((a().encryptType == -1) ? 132 : a().encryptType, array, a().CipherPath, num, true);
-				}
-			}
-			c();
-			a(P_0, P_1);
+			if (a().Compress != 0) throw new NotSupportedException("Protocol compression is not supported.");
+			A().Open(deadline);
+			A(handshakeSend, handshakeReceive);
+			DmWireTestHooks.StartupNegotiatedEncryptMode(a().Encrypt);
+			UpgradeNegotiatedSecurity(deadline);
+			a(handshakeSend, handshakeReceive);
 			__t02_field_04000ABD = false;
-			__t02_field_04000ABC = P_2.ConnProperty.SocketTimeout;
-			if (P_2.ConnProperty.msgVersion < 10)
+			__t02_field_04000ABC = __t02_field_04000ABA.ConnProperty.SocketTimeout;
+			if (__t02_field_04000ABA.ConnProperty.msgVersion < 10)
 			{
-				P_2.ConnProperty.lobOffRowLen = 2048;
+				__t02_field_04000ABA.ConnProperty.lobOffRowLen = 2048;
 			}
 		}
-		catch (Exception ex)
+		catch
 		{
 			__t02_field_04000AC1?.C();
-			throw ex;
+			throw;
 		}
 	}
 
-	private void c()
+	private void UpgradeNegotiatedSecurity(DmDeadline deadline)
 	{
-		if (a().property.TryGetValue(DmConst.PROP_KEY_SSL_KEY_PASS, out var value))
-		{
-			__t02_field_04000AC1.A(Convert.ToString(value));
-		}
-		if (a().property.TryGetValue(DmConst.PROP_KEY_SSL_FILE_PATH, out value))
-		{
-			__t02_field_04000AC1.a(Convert.ToString(value));
-		}
-		if (a().Encrypt == 2)
-		{
-			__t02_field_04000AC1.A(a().User, true);
-		}
-		else if (a().Encrypt == 1 || a().Encrypt == 4)
-		{
-			__t02_field_04000AC1.A(a().User, false);
-		}
-		else if (a().Encrypt == 3)
-		{
-			DmError.ThrowUnsupportedException();
-		}
+		DmConnectionSettings settings = __t02_field_04000ABA.Conn.Settings;
+		bool requiresTls = DmHandshakeSecurityGuard.RequiresFullTls(a().Encrypt, settings.TransportSecurity);
+		DmHandshakeSecurityGuard.ValidateMessageSecurity(a());
+		if (requiresTls)
+			A().UpgradeTls(DmTlsOptions.FromSettings(settings), deadline);
 	}
 
 	protected A A<A>(MSG<A> P_0)
 	{
+		return Wire(() =>
+		{
 		try
 		{
 			P_0.encode();
 			a(P_0);
 			P_0.setCRC();
-			if (__t02_field_04000AB9.B() > 536870912)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_MSG_LEN_TOO_LONG);
-			}
+			DmFrameWriter.Validate(__t02_field_04000AB9);
+			DmWireTestHooks.HandshakeFrameEncoded(P_0.cmd);
 			__t02_method_06000A73(P_0);
+			DmWireTestHooks.Sent();
 			b(P_0);
 			P_0.checkCRC();
+			DmResultProtocolTrace.RecordFrame(P_0.cmd, __t02_field_04000AB9);
 			C(P_0);
+			DmWireTestHooks.ResponseReady();
+			decodeOwner = this;
 			return P_0.decode();
 		}
 		catch (IOException)
@@ -181,6 +287,7 @@ internal class B
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMUNITION_ERROR);
 			return default(A);
 		}
+			});
 	}
 
 	protected void a<A>(MSG<A> P_0)
@@ -199,37 +306,17 @@ internal class B
 	protected void __t02_method_06000A73<A>(MSG<A> P_0)
 	{
 		byte[] array = P_0.access.__t02_field_04000AB9.A();
-		int connectionTimeout = a().ConnectionTimeout;
-		int num = P_0.getLength() + 64;
-		this.A().A(array, connectionTimeout, num);
+		int total = DmFrameWriter.Validate(P_0.access.__t02_field_04000AB9);
+		this.A().SendAll(array, 0, total, CurrentMessageIdleTimeout());
 	}
 
 	protected void b<A>(MSG<A> P_0)
 	{
-		int num = 0;
-		this.A().__t02_field_04000AAC.Blocking = true;
-		this.A().__t02_field_04000AAC.ReceiveTimeout = a().ConnectionTimeout;
-		int num2;
-		do
-		{
-			P_0.access.__t02_field_04000AB9.a(0);
-			P_0.access.__t02_field_04000AB9.f(64);
-			num2 = this.A().a(P_0.access.__t02_field_04000AB9.A(), 0, 32640);
-			num = P_0.access.__t02_field_04000AB9.K();
-		}
-		while (269 == num);
-		if (num2 == 0)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NO_SOCKET_DATA, "DmCommTcpip.Recv");
-		}
-		P_0.access.__t02_field_04000AB9.g(num2);
-		int num3 = P_0.access.__t02_field_04000AB9.k();
-		num3 += 64;
-		if (num2 < num3 && num2 != -1)
-		{
-			P_0.access.__t02_field_04000AB9.g(num3 - num2);
-			this.A().B(P_0.access.__t02_field_04000AB9.A(), num2, num3 - num2);
-		}
+		this.A().ConfigureReadTimeout(CurrentMessageIdleTimeout());
+		DmFrameReader.Read(this.A().ReceiveExactly, P_0.access.__t02_field_04000AB9,
+			(frame, total) => DmFrameReader.ValidateChecksum(frame, total, a().crcBody),
+			DmInvocation.Current?.Deadline ?? DmDeadline.FromMilliseconds(a().ConnectionTimeout),
+			header => (a().crcBody && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header));
 	}
 
 	protected void C<A>(MSG<A> P_0)
@@ -248,34 +335,32 @@ internal class B
 
 	private b A(b P_0, b P_1, int P_2)
 	{
-		lock (__t02_field_04000ABE)
+		try
 		{
-			try
+			C();
+			LogRecord logRecord = null;
+			if (__t02_field_04000AB8.InfoEnabled)
+				logRecord = new LogRecord(this, a().RWStandby ? ("accessStandby Cmd:" + P_0.I()) : ("access Cmd:" + P_0.I()));
+			DmWireTestHooks.HandshakeFrameEncoded(P_0.I());
+			A().A(P_0, P_2, a().crcBody, a().encryptMsg);
+			DmWireTestHooks.Sent();
+			A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg);
+			DmResultProtocolTrace.RecordFrame(P_0.I(), P_1);
+			DmWireTestHooks.ResponseReady();
+			decodeOwner = this;
+			if (__t02_field_04000AB8.InfoEnabled)
+				__t02_field_04000AB8.Info(logRecord.ToString());
+		}
+		catch (SocketException ex)
+		{
+			E();
+			if (ex.ErrorCode == 10060)
 			{
-				C();
-				LogRecord logRecord = null;
-				if (__t02_field_04000AB8.InfoEnabled)
-				{
-					logRecord = new LogRecord(this, a().RWStandby ? ("accessStandby Cmd:" + P_0.I()) : ("access Cmd:" + P_0.I()));
-				}
-				A().A(P_0, P_2, a().crcBody, a().encryptMsg);
-				A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg);
-				if (__t02_field_04000AB8.InfoEnabled)
-				{
-					__t02_field_04000AB8.Info(logRecord.ToString());
-				}
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMAND_TIME_OUT);
 			}
-			catch (SocketException ex)
+			else
 			{
-				E();
-				if (ex.ErrorCode == 10060)
-				{
-					DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMAND_TIME_OUT);
-				}
-				else
-				{
-					DmError.ThrowDmException(ex);
-				}
+				DmError.ThrowDmException(ex);
 			}
 		}
 		return P_1;
@@ -283,17 +368,23 @@ internal class B
 
 	internal void A(b P_0, b P_1)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, a(), A());
 		A(P_0, P_1, a().ConnectionTimeout);
 		global::W.Dm.Internal.Legacy.A.c.a(P_1, a());
+			});
 	}
 
 	public b a(b P_0, b P_1)
 	{
+		return Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.a(P_0, a(), A());
 		A(P_0, P_1, a().ConnectionTimeout);
 		global::W.Dm.Internal.Legacy.A.c.B(P_1, a());
 		return P_1;
+			});
 	}
 
 	internal void A(string P_0)
@@ -322,28 +413,38 @@ internal class B
 
 	public void A(A P_0, b P_1, b P_2, ref bool P_3)
 	{
+		bool updated = P_3;
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_1, (short)3, 0);
 		A(P_1, P_2, __t02_field_04000ABC);
-		P_0.__t02_method_06000884(global::W.Dm.Internal.Legacy.A.c.A(P_2, a(), ref P_3));
+		P_0.__t02_method_06000884(global::W.Dm.Internal.Legacy.A.c.A(P_2, a(), ref updated));
+			});
+		P_3 = updated;
 	}
 
 	public void A(b P_0, b P_1, A P_2)
 	{
+		Wire(() =>
+		{
 		if (!__t02_field_04000ABD)
 		{
 			global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2.__t02_method_06000883());
 			A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
 			global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
 		}
+			});
 	}
 
 	public void A(b P_0, b P_1, A P_2, string P_3, bool P_4, int P_5)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2.g(), a(), P_3, P_4, P_5, P_2.D(), P_2.I());
 		A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
 		if (P_4)
 		{
-			global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a());
+			global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a(), P_0.I(), executionVsPrepare: true);
 			P_2.d(false);
 		}
 		else
@@ -352,15 +453,18 @@ internal class B
 			P_2.d(true);
 			P_2.__t02_method_0600088A(true);
 		}
+			});
 	}
 
 	public void A(b P_0, b P_1, A P_2, string P_3, bool P_4, int P_5, bool P_6)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2.g(), a(), P_3, P_4, P_5, P_2.D(), P_2.I());
 		A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
 		if (P_4)
 		{
-			global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a());
+			global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a(), P_0.I(), executionVsPrepare: true);
 			P_2.d(false);
 		}
 		else
@@ -369,19 +473,23 @@ internal class B
 			P_2.d(true);
 			P_2.__t02_method_0600088A(true);
 		}
+			});
 	}
 
 	public void A(A P_0, DmInfo P_1)
 	{
+		Wire(() =>
+		{
 		b _t02_field_ = P_0.__t02_field_04000925;
 		b _t02_field_2 = P_0.__t02_field_04000926;
 		if (a().msgVersion >= 26 || !A(_t02_field_, _t02_field_2, P_0, P_1))
 		{
-			global::W.Dm.Internal.Legacy.A.C.A(_t02_field_, P_0, P_1, a());
+			EncodeWithParameterUploads(() => global::W.Dm.Internal.Legacy.A.C.A(_t02_field_, P_0, P_1, a()));
 			A(_t02_field_, _t02_field_2, P_0.G().ConnProperty.SocketTimeout);
-			global::W.Dm.Internal.Legacy.A.c.A(_t02_field_2, P_0, a());
+			global::W.Dm.Internal.Legacy.A.c.A(_t02_field_2, P_0, a(), _t02_field_.I(), executionVsPrepare: true);
 			P_0.d(false);
 		}
+			});
 	}
 
 	private bool A(b P_0, b P_1, A P_2, DmInfo P_3)
@@ -416,9 +524,9 @@ internal class B
 		{
 			for (int k = 0; k < ParamsInfo[0].GetParamValue().Count; k++)
 			{
-				global::W.Dm.Internal.Legacy.A.C.A(k, P_0, P_2, P_3, a());
+				EncodeWithParameterUploads(() => global::W.Dm.Internal.Legacy.A.C.A(k, P_0, P_2, P_3, a()));
 				A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
-				global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a());
+				global::W.Dm.Internal.Legacy.A.c.A(P_1, P_2, a(), P_0.I(), executionVsPrepare: true);
 			}
 			P_2.d(false);
 			return true;
@@ -428,62 +536,111 @@ internal class B
 
 	public void A(int P_0, A P_1, DmParameterInternal[] P_2)
 	{
+		Wire(() =>
+		{
 		b b2 = new b();
 		b b3 = new b();
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, b2, P_1.g(), P_2);
 		A(b2, b3, P_1.G().ConnProperty.SocketTimeout);
 		global::W.Dm.Internal.Legacy.A.c.A(b3, a());
+			});
 	}
 
 	public bool A(A P_0, DmResultSetCache P_1, short P_2, long P_3, long P_4)
 	{
+		return Wire(() =>
+		{
 		b _t02_field_ = P_0.__t02_field_04000925;
 		b _t02_field_2 = P_0.__t02_field_04000926;
 		global::W.Dm.Internal.Legacy.A.C.A(_t02_field_, P_0.g(), P_3, P_2, P_4, P_0.G().ConnProperty.BufPrefetch);
 		A(_t02_field_, _t02_field_2, P_0.G().ConnProperty.SocketTimeout);
 		return global::W.Dm.Internal.Legacy.A.c.A(_t02_field_2, P_3, P_1);
+			});
 	}
 
 	public void __t02_method_06000A82(b P_0, b P_1)
 	{
-		global::W.Dm.Internal.Legacy.A.C.a(P_0, 8, 0);
-		A(P_0, P_1, __t02_field_04000ABC);
-		global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+		Wire(() =>
+		{
+			global::W.Dm.Internal.Legacy.A.C.a(P_0, 8, 0);
+			A(P_0, P_1, __t02_field_04000ABC);
+			global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+			ConfirmLocalTransactionResponse(P_1, DmTransactionControlKind.Commit, 8);
+			});
 	}
 
 	public void b(b P_0, b P_1)
 	{
-		global::W.Dm.Internal.Legacy.A.C.a(P_0, 9, 0);
-		A(P_0, P_1, __t02_field_04000ABC);
-		global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+		Wire(() =>
+		{
+			global::W.Dm.Internal.Legacy.A.C.a(P_0, 9, 0);
+			A(P_0, P_1, __t02_field_04000ABC);
+			global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+			ConfirmLocalTransactionResponse(P_1, DmTransactionControlKind.Rollback, 9);
+			});
+	}
+
+	private void ConfirmLocalTransactionResponse(b response, DmTransactionControlKind kind, short requestOpcode)
+	{
+		DmInvocation invocation = DmInvocation.Current;
+		// Close can clear this protocol object's connection field after a complete
+		// response arrives. The invocation retains the exact old session/control;
+		// confirming that ACK must never consult a cleared or reopened connection.
+		DmSession capturedSession = invocation?.Lease.Session;
+		if (capturedSession == null || !capturedSession.IsCurrentTransactionControl(invocation, out var currentKind) ||
+			currentKind != kind)
+			throw new InvalidOperationException("Local transaction response has no matching operation.");
+		short responseOpcode = response.I();
+		int sqlCode = response.L();
+		DmTransactionProtocolTrace.RecordDiagnosticBody(requestOpcode, response);
+		Volatile.Read(ref DmTransportTestHooks.AfterControlFrameValidated)?.Invoke(
+			invocation.Identity, kind, requestOpcode, responseOpcode, sqlCode);
+		// The TEST profile observed a validated opcode-0 success frame for both
+		// request opcodes 8 and 9. Other profiles must be admitted explicitly.
+		if (responseOpcode != 0 || sqlCode != 0)
+			throw new InvalidDataException("Unrecognized local transaction response.");
+		Volatile.Read(ref DmTransportTestHooks.BeforeControlAck)?.Invoke(invocation.Identity, kind);
+		capturedSession.ConfirmTransactionAck(invocation, kind);
 	}
 
 	public void A(A P_0)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.a(P_0.__t02_field_04000925, P_0.__t02_method_06000883());
 		A(P_0.__t02_field_04000925, P_0.__t02_field_04000926, P_0.G().ConnProperty.SocketTimeout);
 		global::W.Dm.Internal.Legacy.A.c.A(P_0.__t02_field_04000926, a());
+			});
 	}
 
 	public void A(b P_0, b P_1, A P_2, string P_3)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2, P_3, a());
 		A(P_2.__t02_field_04000925, P_2.__t02_field_04000926, P_2.G().ConnProperty.SocketTimeout);
 		global::W.Dm.Internal.Legacy.A.c.A(P_2.__t02_field_04000926, a());
+			});
 	}
 
 	public void A(b P_0, b P_1, A P_2, short P_3, byte[] P_4, int P_5, int P_6)
 	{
+		Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2.g(), P_3, P_4, P_5, a(), P_6);
 		A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
 		global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+			});
 	}
 
 	public byte[] A(b P_0, b P_1, A P_2, int P_3, byte[] P_4, int P_5, byte[] P_6)
 	{
+		return Wire(() =>
+		{
 		global::W.Dm.Internal.Legacy.A.C.A(P_0, P_2.g(), P_3, P_4, P_5, a(), P_6);
 		A(P_0, P_1, P_2.G().ConnProperty.SocketTimeout);
 		return global::W.Dm.Internal.Legacy.A.c.A(P_1);
+			});
 	}
 
 	public long A(AbstractLob P_0)
@@ -654,24 +811,32 @@ internal class B
 
 	public void A(A P_0, short P_1)
 	{
+		Wire(() =>
+		{
 		b b2 = new b();
 		b b3 = new b();
 		global::W.Dm.Internal.Legacy.A.C.A(b2, P_0.g(), P_1);
 		A(b2, b3, P_0.G().ConnProperty.SocketTimeout);
 		global::W.Dm.Internal.Legacy.A.c.a(b3, P_0, a());
+			});
 	}
 
 	public long[] A(DmResultSetCache P_0)
 	{
+		return Wire(() =>
+		{
 		b b2 = new b();
 		b b3 = new b();
 		global::W.Dm.Internal.Legacy.A.C.A(b2, P_0.ids);
 		A(b2, b3, __t02_field_04000ABC);
 		return global::W.Dm.Internal.Legacy.A.c.b(b3, a());
+			});
 	}
 
 	public long a(DmResultSetCache P_0)
 	{
+		return Wire(() =>
+		{
 		A statement = P_0.statement;
 		long num = long.MaxValue;
 		int num2 = 1;
@@ -680,6 +845,7 @@ internal class B
 		global::W.Dm.Internal.Legacy.A.C.A(_t02_field_, statement.g(), num, 0, num2, statement.G().ConnProperty.BufPrefetch);
 		A(_t02_field_, _t02_field_2, statement.G().ConnProperty.SocketTimeout);
 		return global::W.Dm.Internal.Legacy.A.c.a(_t02_field_2, num, P_0);
+			});
 	}
 
 	private void A(b P_0, A P_1, b P_2, int P_3, long P_4, int P_5)
@@ -736,12 +902,15 @@ internal class B
 
 	public DmInfo A(A P_0, DmInfo P_1, short P_2)
 	{
+		return Wire(() =>
+		{
 		b b2 = new b();
 		b b3 = new b();
 		global::W.Dm.Internal.Legacy.A.C.A(b2, P_0.g(), P_2);
 		A(b2, b3, P_0.G().ConnProperty.SocketTimeout);
-		global::W.Dm.Internal.Legacy.A.c.A(b3, P_0, a());
+			global::W.Dm.Internal.Legacy.A.c.A(b3, P_0, a(), b2.I(), executionVsPrepare: true);
 		return P_0.F();
+			});
 	}
 
 	public bool D()
@@ -768,12 +937,11 @@ internal class B
 		{
 			return;
 		}
-		lock (__t02_field_04000ABE)
+		// Session detachment has already selected this physical transport. Do not
+		// wait for an in-flight exchange to release its protocol lock.
+		if (A() != null)
 		{
-			if (A() != null)
-			{
-				A().C();
-			}
+			A().C();
 		}
 		__t02_field_04000ABA = null;
 		__t02_field_04000ABD = true;
@@ -919,16 +1087,21 @@ internal class B
 
 	public void A(A P_0, List<SQLProcessor.Parameter> P_1)
 	{
+		Wire(() =>
+		{
 		b _t02_field_ = P_0.__t02_field_04000925;
 		b _t02_field_2 = P_0.__t02_field_04000926;
 		global::W.Dm.Internal.Legacy.A.C.A(_t02_field_, P_0, P_1, a());
 		A(_t02_field_, _t02_field_2, P_0.G().ConnProperty.SocketTimeout);
-		global::W.Dm.Internal.Legacy.A.c.A(_t02_field_2, P_0, a());
+			global::W.Dm.Internal.Legacy.A.c.A(_t02_field_2, P_0, a(), _t02_field_.I(), executionVsPrepare: false);
 		P_0.d(false);
+			});
 	}
 
 	public void a(b P_0, b P_1, int P_2)
 	{
+		Wire(() =>
+		{
 		if (P_2 == 3)
 		{
 			A(true);
@@ -936,6 +1109,7 @@ internal class B
 		global::W.Dm.Internal.Legacy.A.C.B(P_0, P_2);
 		A(P_0, P_1, __t02_field_04000ABC);
 		global::W.Dm.Internal.Legacy.A.c.A(P_1, a());
+			});
 	}
 
 	public void e()

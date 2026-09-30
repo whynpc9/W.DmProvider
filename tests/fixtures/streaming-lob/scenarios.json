@@ -1,0 +1,795 @@
+{
+  "schema_version": 1,
+  "fixture": "T17 streaming BLOB/CLOB/NCLOB scenarios",
+  "deterministic_generators": {
+    "byte_cycle_v1": {
+      "definition": "byte_at_index_i = (seed + stride * i) mod 256",
+      "default_seed": 17,
+      "default_stride": 131,
+      "period_bytes": 256,
+      "sha256_rule": "SHA-256 of exactly length_bytes generated in order; update incrementally using bounded chunks."
+    },
+    "text_patterns": {
+      "utf8_pattern": "A雪🚀é",
+      "utf8_repeat_count": 16,
+      "utf8_expected_utf16_char_units": 96,
+      "utf8_expected_encoded_bytes": 176,
+      "utf8_expected_sha256_hex": "72e49faa8d5ec828dc5fcf52a24c2c28f5b92bca9a6f6778c334f6609eccd028",
+      "gb18030_pattern": "达梦数据库",
+      "gb18030_repeat_count": 16,
+      "gb18030_expected_utf16_char_units": 80,
+      "gb18030_expected_encoded_bytes": 160,
+      "gb18030_expected_sha256_hex": "d1f64f641ebf479ef1aeeac9f1cf8794281ff319dbc2716bd021bcb42aa0803e"
+    },
+    "chunk_sizes": {
+      "synthetic_binary_chunk_bytes": 4096,
+      "note": "Harness test parameter only; not a Dameng packet or protocol maximum."
+    }
+  },
+  "evidence_boundary": {
+    "synthetic_cases": "Every case is a deterministic generator/range/state input with execution_status not_run.",
+    "real_database_probes": "Every real_database_probes entry is a procedure only and is planned_not_run.",
+    "payloads": "No large binary or CLOB payload is stored. Hashes are derived from deterministic generators.",
+    "wire": "No DM packet bytes, locator values, opcodes, or fabricated server responses are included.",
+    "large_object_safety": "Real large-object probes require a read-only capacity preflight, unique WDM_PROVIDER_TEST objects, and no tablespace changes."
+  },
+  "cases": [
+    {
+      "case_id": "lob_null_vs_empty_values",
+      "contract": "LOB-04",
+      "execution_status": "not_run",
+      "input": {
+        "synthetic_fields": [
+          {
+            "type": "BLOB",
+            "value_kind": "SQL_NULL"
+          },
+          {
+            "type": "BLOB",
+            "value_kind": "EMPTY"
+          },
+          {
+            "type": "CLOB",
+            "value_kind": "SQL_NULL"
+          },
+          {
+            "type": "CLOB",
+            "value_kind": "EMPTY_STRING"
+          },
+          {
+            "type": "NCLOB",
+            "value_kind": "SQL_NULL"
+          },
+          {
+            "type": "NCLOB",
+            "value_kind": "EMPTY_STRING"
+          }
+        ]
+      },
+      "expected": {
+        "null_and_empty_remain_distinct": true,
+        "api_specific_null_getter_behavior": "characterize_without_coalescing",
+        "server_rows_claimed": false
+      }
+    },
+    {
+      "case_id": "lob_blob_stream_open_is_lazy",
+      "contract": "LOB-01",
+      "execution_status": "not_run",
+      "input": {
+        "blob_generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131,
+          "length_bytes": 65537
+        },
+        "synthetic_chunk_bytes": 4096,
+        "operation": "GetStream"
+      },
+      "expected": {
+        "bytes_read_at_stream_open": 0,
+        "complete_lob_materialized_at_open": false,
+        "first_read_requests_at_most_one_chunk": true
+      }
+    },
+    {
+      "case_id": "lob_blob_hash_at_chunk_boundaries",
+      "contract": "LOB-01/06",
+      "execution_status": "not_run",
+      "input": {
+        "generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131,
+          "period_bytes": 256
+        },
+        "synthetic_chunk_bytes": 4096,
+        "vectors": [
+          {
+            "length_bytes": 0,
+            "expected_sha256_hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "expected_chunk_count": 0
+          },
+          {
+            "length_bytes": 1,
+            "expected_sha256_hex": "4a64a107f0cb32536e5bce6c98c393db21cca7f4ea187ba8c4dca8b51d4ea80a",
+            "expected_chunk_count": 1
+          },
+          {
+            "length_bytes": 4095,
+            "expected_sha256_hex": "2ef02ebdb78dc5c7af2a6e09ce3296cc75a57ca4c880ddededf4cb356e5fea82",
+            "expected_chunk_count": 1
+          },
+          {
+            "length_bytes": 4096,
+            "expected_sha256_hex": "2ef02ebdb78dc5c7af2a6e09ce3296cc75a57ca4c880ddededf4cb356e5fea82",
+            "expected_chunk_count": 1
+          },
+          {
+            "length_bytes": 4097,
+            "expected_sha256_hex": "f2a4a4f8145239356da9466c8be0ef3f65ce6113473f4f55d014048089bd5405",
+            "expected_chunk_count": 2
+          },
+          {
+            "length_bytes": 8191,
+            "expected_sha256_hex": "575383deff0775797e1ff4c82da069141937c843a81cbe50959a96bcfa88140e",
+            "expected_chunk_count": 2
+          },
+          {
+            "length_bytes": 8192,
+            "expected_sha256_hex": "575383deff0775797e1ff4c82da069141937c843a81cbe50959a96bcfa88140e",
+            "expected_chunk_count": 2
+          },
+          {
+            "length_bytes": 8193,
+            "expected_sha256_hex": "b49a266849885c837e4295d53d91dc873fbd77f76fd0c06b12ff4da04fe3e3c9",
+            "expected_chunk_count": 3
+          }
+        ]
+      },
+      "expected": {
+        "sha256_scope": "exact_generated_bytes_in_order",
+        "hash_is_computed_incrementally": true,
+        "no_large_fixture_binary_required": true
+      }
+    },
+    {
+      "case_id": "lob_large_generator_over_one_gib_no_preallocation",
+      "contract": "LOB-01",
+      "execution_status": "not_run",
+      "input": {
+        "generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131,
+          "length_bytes": 1073741825
+        },
+        "synthetic_chunk_bytes": 4096,
+        "preallocate_total_length": false,
+        "expected_sha256_rule": "incremental SHA-256 over byte_cycle_v1(seed,stride,length); compute in test, do not store payload"
+      },
+      "expected": {
+        "full_value_materialized": false,
+        "generated_total_length_bytes": 1073741825,
+        "expected_digest_method": "incremental_only",
+        "test_payload_allocated_as_single_array": false
+      }
+    },
+    {
+      "case_id": "lob_input_nonseek_stream_unknown_length",
+      "contract": "LOB-02",
+      "execution_status": "not_run",
+      "input": {
+        "input_type": "Stream",
+        "lob_type": "BLOB",
+        "can_seek": false,
+        "length_known": false,
+        "generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131,
+          "length_bytes": 10003
+        },
+        "synthetic_chunk_bytes": 4096,
+        "caller_owns_stream": true
+      },
+      "expected": {
+        "stream_length_or_position_required": false,
+        "copy_to_memory_stream_used": false,
+        "input_sent_incrementally": true,
+        "caller_stream_disposed_by_provider": false,
+        "automatic_rewind_or_replay": false
+      }
+    },
+    {
+      "case_id": "lob_utf8_multibyte_and_surrogate_chunk_splits",
+      "contract": "LOB-03",
+      "execution_status": "not_run",
+      "input": {
+        "encoding": "UTF-8",
+        "text_pattern": "A雪🚀é",
+        "repeat_count": 16,
+        "code_points_per_pattern": [
+          "U+0041",
+          "U+96EA",
+          "U+1F680",
+          "U+0065",
+          "U+0301"
+        ],
+        "expected_utf16_char_units": 96,
+        "expected_encoded_byte_length": 176,
+        "expected_utf8_sha256_hex": "72e49faa8d5ec828dc5fcf52a24c2c28f5b92bca9a6f6778c334f6609eccd028",
+        "synthetic_byte_chunk_size": 7,
+        "synthetic_char_chunk_size_utf16_units": 3,
+        "split_strategy": "exercise_each_interior_split_of_multibyte_sequences_and_surrogate_pairs"
+      },
+      "expected": {
+        "decoded_text_exact": true,
+        "combining_sequence_normalized": false,
+        "supplementary_character_preserved_across_chunks": true,
+        "decoder_keeps_only_required_boundary_state": true
+      }
+    },
+    {
+      "case_id": "lob_gb18030_multibyte_chunk_splits",
+      "contract": "LOB-03",
+      "execution_status": "not_run",
+      "input": {
+        "encoding": "GB18030",
+        "text_pattern": "达梦数据库",
+        "repeat_count": 16,
+        "code_points_per_pattern": [
+          "U+8FBE",
+          "U+68A6",
+          "U+6570",
+          "U+636E",
+          "U+5E93"
+        ],
+        "expected_utf16_char_units": 80,
+        "expected_encoded_byte_length": 160,
+        "expected_gb18030_sha256_hex": "d1f64f641ebf479ef1aeeac9f1cf8794281ff319dbc2716bd021bcb42aa0803e",
+        "synthetic_byte_chunk_size": 3,
+        "split_strategy": "exercise_each_interior_split_of_two_byte_characters"
+      },
+      "expected": {
+        "decoded_text_exact": true,
+        "replacement_question_marks_inserted": false,
+        "decoder_state_preserved_across_chunks": true
+      }
+    },
+    {
+      "case_id": "lob_incomplete_text_tail_rejected",
+      "contract": "LOB-03",
+      "execution_status": "not_run",
+      "input": {
+        "encoding": "UTF-8",
+        "tail_state": "incomplete_multibyte_sequence_at_final_flush",
+        "synthetic_input_kind": "text_decoder_fragment_not_protocol_packet"
+      },
+      "expected": {
+        "final_flush_detects_incomplete_sequence": true,
+        "failure_family": "DecoderFallbackException",
+        "replacement_or_silent_drop": false
+      }
+    },
+    {
+      "case_id": "lob_getbytes_offsets_and_destination_bounds",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "blob_generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131,
+          "length_bytes": 8193
+        },
+        "operations": [
+          {
+            "data_offset_bytes": 0,
+            "buffer_offset": 2,
+            "requested_length": 4,
+            "destination_capacity": 8
+          },
+          {
+            "data_offset_bytes": 4095,
+            "buffer_offset": 0,
+            "requested_length": 3,
+            "destination_capacity": 3
+          },
+          {
+            "data_offset_bytes": 8192,
+            "buffer_offset": 0,
+            "requested_length": 1,
+            "destination_capacity": 1
+          }
+        ]
+      },
+      "expected": {
+        "data_offset_unit": "byte",
+        "only_requested_range_copied": true,
+        "destination_buffer_offsets_respected": true,
+        "whole_lob_materialized_for_range_read": false
+      }
+    },
+    {
+      "case_id": "lob_getchars_offsets_use_clr_char_units",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "text_pattern": "A雪🚀é",
+        "repeat_count": 4,
+        "operation": "GetChars",
+        "requests": [
+          {
+            "data_offset_char_units": 0,
+            "buffer_offset": 1,
+            "length_char_units": 3,
+            "capacity_char_units": 8
+          },
+          {
+            "data_offset_char_units": 2,
+            "buffer_offset": 0,
+            "length_char_units": 2,
+            "capacity_char_units": 2
+          },
+          {
+            "data_offset_char_units": 4,
+            "buffer_offset": 0,
+            "length_char_units": 2,
+            "capacity_char_units": 2
+          }
+        ]
+      },
+      "expected": {
+        "data_offset_unit": "UTF16_CLR_char_units",
+        "not_utf8_bytes": true,
+        "surrogate_pair_units_preserved": true,
+        "only_requested_range_copied": true
+      }
+    },
+    {
+      "case_id": "lob_zero_length_eof_short_read_and_truncation",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "cases": [
+          {
+            "requested_length": 0,
+            "source_state": "data_available"
+          },
+          {
+            "requested_length": 8,
+            "source_chunk_lengths": [
+              3,
+              2,
+              3
+            ],
+            "source_state": "complete"
+          },
+          {
+            "requested_length": 8,
+            "source_chunk_lengths": [
+              3,
+              2
+            ],
+            "source_state": "clean_eof"
+          },
+          {
+            "declared_total_length": 8,
+            "received_length_before_eof": 5,
+            "source_state": "unexpected_truncation"
+          }
+        ]
+      },
+      "expected": {
+        "zero_length_read_message_count": 0,
+        "short_reads_are_accumulated_until_requested_or_eof": true,
+        "clean_eof_returns_zero_only_after_no_more_data": true,
+        "declared_length_truncation_throws_protocol_error": true
+      }
+    },
+    {
+      "case_id": "lob_getbytes_getchars_preflight_invalid_ranges",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "operations": [
+          {
+            "api": "GetBytes",
+            "data_offset_bytes": -1,
+            "length": 1
+          },
+          {
+            "api": "GetBytes",
+            "data_offset_bytes": 9223372036854775807,
+            "length": 1
+          },
+          {
+            "api": "GetBytes",
+            "data_offset_bytes": 0,
+            "buffer_offset": 4,
+            "length": 5,
+            "buffer_capacity": 8
+          },
+          {
+            "api": "GetChars",
+            "data_offset_char_units": -1,
+            "length": 1
+          },
+          {
+            "api": "GetChars",
+            "data_offset_char_units": 0,
+            "buffer_offset": 2,
+            "length": 3,
+            "buffer_capacity": 4
+          }
+        ]
+      },
+      "expected": {
+        "all_invalid_ranges_rejected_before_network": true,
+        "destination_buffer_bounds_checked_before_network": true
+      }
+    },
+    {
+      "case_id": "lob_null_buffer_length_query_is_bounded",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "queries": [
+          {
+            "lob_type": "BLOB",
+            "buffer_is_null": true,
+            "length_metadata_available": true
+          },
+          {
+            "lob_type": "CLOB",
+            "buffer_is_null": true,
+            "clr_char_length_metadata_available": false,
+            "independent_locator_available": true
+          },
+          {
+            "lob_type": "CLOB",
+            "buffer_is_null": true,
+            "clr_char_length_metadata_available": false,
+            "independent_locator_available": false
+          }
+        ]
+      },
+      "expected": {
+        "BLOB_length_uses_verified_length_source_without_materialization": true,
+        "CLOB_uses_bounded_independent_scan_or_explicit_not_supported": true,
+        "byte_length_returned_as_char_length": false,
+        "caller_logical_cursor_changed_by_length_scan": false
+      }
+    },
+    {
+      "case_id": "lob_materialized_limit_known_and_unknown",
+      "contract": "LOB-07",
+      "execution_status": "not_run",
+      "input": {
+        "synthetic_max_materialized_lob_size_bytes": 1024,
+        "cases": [
+          {
+            "length_known": true,
+            "declared_size_bytes": 1025
+          },
+          {
+            "length_known": false,
+            "generated_bytes_before_cap": 1024,
+            "next_chunk_bytes": 1
+          }
+        ]
+      },
+      "expected": {
+        "known_oversize_rejected_before_full_read": true,
+        "unknown_length_rejected_when_accumulated_size_exceeds_test_limit": true,
+        "silent_truncation": false,
+        "limit_is_test_input_not_server_max": true
+      }
+    },
+    {
+      "case_id": "lob_ef_getstring_existing_materialization_path",
+      "contract": "LOB-08",
+      "execution_status": "not_run",
+      "input": {
+        "consumer": "EF_existing_GetString_path",
+        "lob_type": "CLOB",
+        "text_generator": {
+          "pattern": "EF-lob-compat-",
+          "repeat_count": 2731
+        },
+        "generated_text_length_characters": 40965,
+        "materialization_mode": "string"
+      },
+      "expected": {
+        "GetString_remains_materializing_api": true,
+        "streaming_claimed_for_string_return": false,
+        "compatibility_result_must_be_compared_with_existing_consumer_contract": true
+      }
+    },
+    {
+      "case_id": "lob_single_active_stream_two_columns",
+      "contract": "LOB-04",
+      "execution_status": "not_run",
+      "input": {
+        "reader_row_version": 5,
+        "lob_columns": [
+          "BLOB_A",
+          "CLOB_B"
+        ],
+        "operations": [
+          {
+            "action": "OpenStream",
+            "ordinal": 0
+          },
+          {
+            "action": "ReadStream",
+            "ordinal": 0
+          },
+          {
+            "action": "CloseStream",
+            "ordinal": 0
+          },
+          {
+            "action": "OpenTextReader",
+            "ordinal": 1
+          },
+          {
+            "action": "ReadTextReader",
+            "ordinal": 1
+          }
+        ]
+      },
+      "expected": {
+        "active_field_streams_at_any_time_max": 1,
+        "sequential_order_enforced": true,
+        "second_lob_uses_same_reader_session": true,
+        "cross_connection_locator_transfer": false
+      }
+    },
+    {
+      "case_id": "lob_stream_invalidated_by_nextresult_and_reader_close",
+      "contract": "LOB-04",
+      "execution_status": "not_run",
+      "input": {
+        "stream_identity": {
+          "session_id": 201,
+          "session_generation": 8,
+          "execution_id": 51,
+          "row_version": 5
+        },
+        "operations": [
+          {
+            "action": "OpenStream"
+          },
+          {
+            "action": "NextResult"
+          },
+          {
+            "action": "ReadOldStream"
+          },
+          {
+            "action": "OpenNewStream"
+          },
+          {
+            "action": "CloseReader"
+          },
+          {
+            "action": "ReadNewStream"
+          }
+        ]
+      },
+      "expected": {
+        "next_result_invalidates_old_stream": true,
+        "reader_close_invalidates_stream": true,
+        "old_stream_network_access_after_invalidation": false
+      }
+    },
+    {
+      "case_id": "lob_stream_bound_to_transaction_and_session_generation",
+      "contract": "LOB-04",
+      "execution_status": "not_run",
+      "input": {
+        "stream_identity": {
+          "session_id": 202,
+          "session_generation": 4,
+          "execution_id": 52,
+          "row_version": 9
+        },
+        "terminal_events": [
+          "transaction_commit",
+          "transaction_rollback",
+          "connection_close_reopen_generation_change"
+        ]
+      },
+      "expected": {
+        "old_stream_access_after_any_terminal_event_rejected": true,
+        "new_session_locator_reuse": false,
+        "network_access_after_invalidation": false
+      }
+    },
+    {
+      "case_id": "lob_forward_stream_seek_operations_unsupported",
+      "contract": "LOB-01",
+      "execution_status": "not_run",
+      "input": {
+        "stream_kind": "GetStream_base_forward_only",
+        "requested_operations": [
+          "Seek",
+          "SetPosition",
+          "SetLength",
+          "Write"
+        ]
+      },
+      "expected": {
+        "can_seek": false,
+        "each_unsupported_operation_fails_explicitly": true,
+        "invalid_position_state_exposed": false
+      }
+    },
+    {
+      "case_id": "lob_midstream_cancel_aborts_no_replay",
+      "contract": "LOB-05",
+      "execution_status": "not_run",
+      "input": {
+        "stream_identity": {
+          "session_id": 203,
+          "session_generation": 5,
+          "execution_id": 53,
+          "row_version": 10
+        },
+        "operation": "ReadAsync",
+        "chunks_completed_before_cancel": 2,
+        "cancellation_source": "user_token",
+        "acknowledged_cancel_protocol": "none"
+      },
+      "expected": {
+        "session_state": "Broken",
+        "stream_replay_attempted": false,
+        "connection_returned_to_pool": false,
+        "server_execution_stopped_claimed": false
+      }
+    },
+    {
+      "case_id": "lob_input_reader_exception_stops_upload_and_preserves_ownership",
+      "contract": "LOB-05",
+      "execution_status": "not_run",
+      "input": {
+        "input_kind": "TextReader",
+        "caller_owns_input": true,
+        "read_sequence": [
+          "chunk_a",
+          "chunk_b",
+          "synthetic_exception"
+        ],
+        "upload_already_started": true
+      },
+      "expected": {
+        "later_chunks_requested": false,
+        "input_reader_disposed_by_provider": false,
+        "operation_replayed": false,
+        "session_disposition": "S08_abort_or_unknown_outcome_policy"
+      }
+    },
+    {
+      "case_id": "lob_stream_memory_bound_independent_of_total_size",
+      "contract": "LOB-01",
+      "execution_status": "not_run",
+      "input": {
+        "total_length_bytes": 1073741825,
+        "generator": {
+          "algorithm": "byte_cycle_v1",
+          "seed": 17,
+          "stride": 131
+        },
+        "synthetic_chunk_bytes": 4096,
+        "inline_row_frame_bytes": 128,
+        "measurement": "peak_additional_live_buffer_bytes"
+      },
+      "expected": {
+        "expected_complexity": "O(frame_buffer + chunk_buffer + decoder_state)",
+        "bound_depends_on_total_lob_length": false,
+        "zero_allocation_claim": false,
+        "inline_row_frame_memory_accounted_separately": true
+      }
+    },
+    {
+      "case_id": "lob_locator_length_query_does_not_move_logical_cursor",
+      "contract": "LOB-06",
+      "execution_status": "not_run",
+      "input": {
+        "lob_type": "CLOB",
+        "caller_cursor_char_offset_before_query": 4,
+        "clr_length_metadata_available": false,
+        "independent_locator_available": true
+      },
+      "expected": {
+        "length_scan_uses_independent_locator": true,
+        "caller_cursor_char_offset_after_query": 4,
+        "length_reported_in_utf16_character_units_or_explicitly_unsupported": true
+      }
+    }
+  ],
+  "real_database_probes": [
+    {
+      "probe_id": "real_ef_existing_40k_lob_regression",
+      "verification_status": "planned_not_run",
+      "purpose": "Check the existing EF consumer path for a moderate CLOB/BLOB value without asserting streaming for GetString.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use unique test-owned objects and clean only those objects."
+      ],
+      "steps": [
+        "Create the smallest required test-owned LOB object.",
+        "Run existing EF 40KiB LOB regression.",
+        "Compare returned value and cleanup state independently."
+      ],
+      "evidence_limit": "This is a compatibility regression, not proof that GetString is streaming."
+    },
+    {
+      "probe_id": "real_large_blob_capacity_gated",
+      "verification_status": "planned_not_run",
+      "purpose": "Measure streamed BLOB read/write only if the existing test environment has sufficient safe capacity.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Perform a read-only capacity preflight before object creation.",
+        "Choose object size from an explicit test parameter after preflight; do not assume hundreds of MiB are available.",
+        "Do not change tablespace settings."
+      ],
+      "steps": [
+        "If capacity is insufficient, leave the probe not run and report integration_pending.",
+        "Otherwise create one unique test-owned object, stream generated data, verify incremental hash, and clean it.",
+        "Confirm final object absence from an independent connection."
+      ],
+      "evidence_limit": "No target size or server capacity result is asserted here."
+    },
+    {
+      "probe_id": "real_multibyte_clob_capacity_gated",
+      "verification_status": "planned_not_run",
+      "purpose": "Verify UTF-8/GB18030 CLOB or NCLOB character-boundary behavior on an explicitly configured target charset.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Record the actual charset.",
+        "Read-only preflight available capacity; create only a unique object if safe.",
+        "Do not alter tablespace settings."
+      ],
+      "steps": [
+        "Stream a deterministic multibyte pattern across chunk boundaries.",
+        "Verify character count, text, and incremental encoded-byte hash.",
+        "Clean only probe-owned objects."
+      ],
+      "evidence_limit": "Unsupported charset/profile is a separate outcome, not a pass."
+    },
+    {
+      "probe_id": "real_stream_cancellation_and_cleanup",
+      "verification_status": "planned_not_run",
+      "purpose": "Observe physical-session disposition when a supported LOB read is cancelled midstream.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use a unique test-owned LOB object.",
+        "No native cancel protocol is assumed."
+      ],
+      "steps": [
+        "Read a bounded prefix through the stream API.",
+        "Cancel through a controlled token/barrier.",
+        "Record connection state and independently verify cleanup."
+      ],
+      "evidence_limit": "The procedure does not assert that server-side work stopped immediately."
+    },
+    {
+      "probe_id": "real_getbytes_getchars_and_length",
+      "verification_status": "planned_not_run",
+      "purpose": "Compare GetBytes/GetChars range and length-query behavior against small test-owned LOB values.",
+      "preconditions": [
+        "Use WDM_PROVIDER_TEST through scripts/with-dameng-test.sh.",
+        "Use small unique test-owned BLOB/CLOB values and clean them."
+      ],
+      "steps": [
+        "Exercise offset, bufferOffset, length, zero-length, and EOF cases.",
+        "Check CLOB length uses CLR character units or an explicit unsupported result.",
+        "Verify length query does not move the caller’s logical cursor."
+      ],
+      "evidence_limit": "No LOB locator units or metadata behavior are presumed by the fixture."
+    }
+  ]
+}

@@ -74,6 +74,8 @@ internal class EPGroup
 			}
 			catch (Exception ex2)
 			{
+				if (ex2 is NotSupportedException)
+					throw;
 				ex = ex2;
 				if (i != num - 1)
 				{
@@ -136,6 +138,8 @@ internal class EPGroup
 			}
 			catch (Exception ex2)
 			{
+				if (ex2 is NotSupportedException)
+					throw;
 				if (ex2 is DmException && ((DmException)ex2).Number == DmErrorDefinition.ECNET_INVALID_SERVER_MODE)
 				{
 					ex = ex2;

@@ -1,4 +1,5 @@
 using System;
+using W.Dm.Internal.Types;
 
 namespace W.Dm;
 
@@ -199,23 +200,7 @@ internal static class DmConvertion
 
 	public static byte[] GetBytes(string str, string charsetName)
 	{
-		byte[] array = null;
-		if (str == null)
-		{
-			return null;
-		}
-		if (charsetName != null)
-		{
-			try
-			{
-				return DmConnProperty.encodingMap[charsetName].GetBytes(str);
-			}
-			catch (Exception)
-			{
-				throw new ArgumentOutOfRangeException("charsetName is not support!");
-			}
-		}
-		return DmConnProperty.encodingMap["default"].GetBytes(str);
+		return DmTextCodec.EncodeStrict(str, charsetName);
 	}
 
 	public static byte[] GetBytesWithNTS(string str, string charsetName)
@@ -231,23 +216,7 @@ internal static class DmConvertion
 
 	public static string GetString(byte[] buffer, int offset, int byteLen, string charsetName)
 	{
-		string result = null;
-		if (buffer == null)
-		{
-			return result;
-		}
-		if (charsetName == null)
-		{
-			return DmConnProperty.encodingMap["default"].GetString(buffer, offset, byteLen);
-		}
-		try
-		{
-			return DmConnProperty.encodingMap[charsetName].GetString(buffer, offset, byteLen);
-		}
-		catch (Exception)
-		{
-			throw new ArgumentOutOfRangeException("charsetName is not support!");
-		}
+		return DmTextCodec.DecodeStrict(buffer, offset, byteLen, charsetName);
 	}
 
 	internal static byte[] GetBytes(byte[] buffer, int offset, int len)
@@ -308,27 +277,10 @@ internal static class DmConvertion
 
 	public static byte[] GetBytes(string str, int offset, int len, string charsetName, string destCharsetName)
 	{
-		byte[] result = null;
-		if (str == null)
-		{
-			return null;
-		}
-		if (destCharsetName != null)
-		{
-			try
-			{
-				result = DmConnProperty.encodingMap[destCharsetName].GetBytes(str);
-			}
-			catch (Exception)
-			{
-				Console.WriteLine("encoding methods not supported!");
-			}
-		}
-		else
-		{
-			result = DmConnProperty.encodingMap["default"].GetBytes(str);
-		}
-		return result;
+		if (str == null) return null;
+		if (offset < 0 || len < 0 || offset > str.Length || len > str.Length - offset)
+			throw new ArgumentOutOfRangeException(nameof(len));
+		return DmTextCodec.EncodeStrict(str.Substring(offset, len), destCharsetName ?? charsetName);
 	}
 
 	public static string BytesToHexString(byte[] bs)

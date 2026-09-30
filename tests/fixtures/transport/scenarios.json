@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "fixture": "T06 transport and frame boundary synthetic scenarios",
+  "evidence_boundary": {
+    "synthetic_inputs": "Deterministic client-side parser and transport inputs with contract expectations; they are not execution results.",
+    "wire_validity": "Hex frames are parser-only synthetic byte sequences. Zero-filled unmodeled header bytes and short bodies do not claim a valid DM peer message or server capture.",
+    "server_results": "None. No server response, database result, or successful interoperability claim is recorded.",
+    "execution": "Every case is marked not_run; expected values describe the contract only."
+  },
+  "product_policy": {
+    "default_max_total_frame_bytes": 67108864,
+    "classification": "product_policy_not_protocol_max",
+    "allocation_note": "Oversized vectors contain only a 64-byte header declaration and expect rejection before body allocation."
+  },
+  "crc32_vector_provenance": {
+    "source_path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008D.cs",
+    "algorithm_method_lines": "348-367",
+    "table_lines": "385-622",
+    "input_frame_prefix": "64-byte zero-initialized header, opcode 6, body length 8, then body A1B2C3D4",
+    "checksum_scope": "byte offsets 0 through 67 inclusive",
+    "computed_crc32_hex": "66675948",
+    "received_trailer_mutation": "Correct little-endian trailer 48596766 with its first byte XOR 0x01, yielding 49596766"
+  },
+  "cases": [
+    {
+      "case_id": "net01_header_one_byte_reads",
+      "contract": "NET-01",
+      "execution_status": "not_run",
+      "input": {
+        "header_length_bytes": 64,
+        "read_chunk_bytes": 1
+      },
+      "expected": {
+        "read_calls": 64,
+        "header_complete": true,
+        "failure_kind": null
+      }
+    },
+    {
+      "case_id": "net01_body_fragmented_reads",
+      "contract": "NET-01",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 6,
+        "crc_body_negotiated": false,
+        "header_hex": "00000000060004000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "body_hex": "A1B2C3D4",
+        "body_fragment_sizes_bytes": [
+          1,
+          2,
+          1
+        ]
+      },
+      "expected": {
+        "body_hex": "A1B2C3D4",
+        "body_complete": true,
+        "failure_kind": null
+      }
+    },
+    {
+      "case_id": "net01_send_short_progress_completes",
+      "contract": "NET-01",
+      "execution_status": "not_run",
+      "input": {
+        "payload_hex": "1020304050",
+        "send_return_sizes_bytes": [
+          2,
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "send_calls": 3,
+        "sent_bytes": 5,
+        "write_complete": true,
+        "failure_kind": null
+      }
+    },
+    {
+      "case_id": "net01_send_zero_progress_fails",
+      "contract": "NET-01",
+      "execution_status": "not_run",
+      "input": {
+        "payload_hex": "1020304050",
+        "send_return_sizes_bytes": [
+          2,
+          0
+        ]
+      },
+      "expected": {
+        "sent_bytes_before_failure": 2,
+        "write_complete": false,
+        "failure_kind": "zero_progress",
+        "infinite_retry": false
+      }
+    },
+    {
+      "case_id": "net02_header_eof_after_partial_header",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "header_length_bytes": 64,
+        "received_header_bytes_before_eof": 63,
+        "repeated_byte_hex": "00"
+      },
+      "expected": {
+        "frame_complete": false,
+        "failure_kind": "truncated_header",
+        "body_allocation_bytes": 0
+      }
+    },
+    {
+      "case_id": "net02_body_eof_after_partial_body",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 200,
+        "header_hex": "00000000C80004000000000000000000000000CC0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "declared_body_length_bytes": 4,
+        "received_body_prefix_hex": "A1B2",
+        "received_body_bytes_before_eof": 2
+      },
+      "expected": {
+        "frame_complete": false,
+        "failure_kind": "truncated_body",
+        "decode_started": false
+      }
+    },
+    {
+      "case_id": "net02_negative_body_length_rejected",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 200,
+        "crc_body_negotiated": false,
+        "header_hex": "00000000C800FFFFFFFF000000000000000000C80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "declared_body_length_decimal": "-1"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "negative_body_length",
+        "body_allocation_bytes": 0
+      }
+    },
+    {
+      "case_id": "net02_total_length_addition_overflow_rejected",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 200,
+        "crc_body_negotiated": false,
+        "header_hex": "00000000C800FFFFFF7F000000000000000000480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "header_length_decimal": "64",
+        "declared_body_length_decimal": "2147483647",
+        "checked_total_type": "Int32"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "checked_total_length_overflow",
+        "body_allocation_bytes": 0
+      }
+    },
+    {
+      "case_id": "net02_total_frame_product_limit_rejected_without_large_allocation",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 200,
+        "crc_body_negotiated": false,
+        "header_hex": "00000000C800C1FFFF030000000000000000000A0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "header_length_decimal": "64",
+        "declared_body_length_decimal": "67108801",
+        "declared_total_frame_length_decimal": "67108865",
+        "default_max_total_frame_bytes": 67108864
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "product_frame_limit_exceeded",
+        "body_allocation_bytes": 0
+      }
+    },
+    {
+      "case_id": "net02_long_decimal_checked_arithmetic_overflow",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "operation": "checked_add",
+        "left_decimal": "9223372036854775807",
+        "right_decimal": "1",
+        "integer_type": "Int64"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "checked_arithmetic_overflow",
+        "allocation_bytes": 0
+      }
+    },
+    {
+      "case_id": "net02_body_crc32_mismatch_rejected",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 6,
+        "crc_body_negotiated": true,
+        "header_hex": "00000000060008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "declared_body_length_bytes_including_crc": 8,
+        "body_hex": "A1B2C3D4",
+        "received_crc_trailer_hex": "49596766",
+        "correct_crc32_decimal": "1718049096",
+        "correct_crc_trailer_hex": "48596766",
+        "crc_scope_start_offset": 0,
+        "crc_scope_end_offset_exclusive": 68,
+        "crc32_source_algorithm": "MSG.calcCRC32"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "body_crc32_mismatch",
+        "decode_started": false
+      }
+    },
+    {
+      "case_id": "net02_startup_xor_checksum_mismatch_rejected",
+      "contract": "NET-02",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 200,
+        "crc_body_negotiated": true,
+        "header_hex": "00000000C80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "body_length_bytes": 0,
+        "actual_checksum_byte_hex": "00",
+        "expected_xor_checksum_byte_hex": "C8"
+      },
+      "expected": {
+        "accepted": false,
+        "failure_kind": "header_xor_checksum_mismatch",
+        "decode_started": false
+      }
+    },
+    {
+      "case_id": "net01_coalesced_two_frames_are_separated",
+      "contract": "NET-01",
+      "execution_status": "not_run",
+      "input": {
+        "crc_body_negotiated": false,
+        "frame_1_header_hex": "00000000060002000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "frame_1_body_hex": "A1B2",
+        "frame_2_header_hex": "00000000060001000000000000000000000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "frame_2_body_hex": "C3",
+        "read_chunk_bytes": 131
+      },
+      "expected": {
+        "frame_count": 2,
+        "frame_1_body_hex": "A1B2",
+        "frame_2_body_hex": "C3",
+        "unconsumed_bytes": 0
+      }
+    },
+    {
+      "case_id": "net03_heartbeat_consumes_body_without_resetting_deadline",
+      "contract": "NET-03",
+      "execution_status": "not_run",
+      "input": {
+        "opcode": 269,
+        "crc_body_negotiated": false,
+        "heartbeat_header_hex": "000000000D01030000000000000000000000000F0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "heartbeat_body_hex": "A1B2C3",
+        "heartbeat_header_arrival_ms": 90,
+        "heartbeat_body_complete_ms": 99,
+        "command_deadline_ms": 100,
+        "business_response_arrival_ms": 101
+      },
+      "expected": {
+        "heartbeat_frame_consumed_bytes": 67,
+        "heartbeat_body_consumed_bytes": 3,
+        "command_deadline_reset": false,
+        "business_response_accepted": false,
+        "outcome": "timeout"
+      }
+    },
+    {
+      "case_id": "net04_connect_stages_share_one_deadline",
+      "contract": "NET-04",
+      "execution_status": "not_run",
+      "input": {
+        "connect_deadline_ms": 1000,
+        "dns_complete_ms": 150,
+        "tcp_complete_ms": 700,
+        "tls_complete_ms": 950,
+        "login_complete_ms": 1001
+      },
+      "expected": {
+        "outcome": "timeout",
+        "deadline_reset_count": 0,
+        "final_connection_state": "Closed",
+        "intermediate_resources_released": true
+      }
+    }
+  ]
+}

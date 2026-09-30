@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Transactions;
+using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Transport;
 using W.Dm.Config;
 using W.Dm.filter;
 using W.Dm.util;
@@ -35,7 +37,53 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	private bool forEFCore;
 
-	private ConnectionState connectionState;
+	private volatile ConnectionState connectionState;
+
+	private readonly object settingsGate = new object();
+	private volatile DmConnectionSettings settings;
+	private volatile bool redactCredentials;
+	private bool hasExplicitSettings;
+	private volatile bool openingInProgress;
+	private DmSession session;
+	internal TimeProvider TransactionClock { get; set; } = TimeProvider.System;
+	private DmInvocation handshakeInvocation;
+	internal DmSession Session => Volatile.Read(ref session);
+	private void OnSessionBroken(DmSession broken)
+	{
+		ConnectionState prior;
+		lock (settingsGate)
+		{
+			if (!ReferenceEquals(session, broken) || connectionState is ConnectionState.Broken or ConnectionState.Closed) return;
+			prior = connectionState;
+			connectionState = ConnectionState.Broken;
+		}
+		try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
+		catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
+	}
+	internal DmExecutionLease BeginExecution(DmOperationPurpose purpose)
+		=> BeginExecution(purpose, default, 0);
+	internal DmExecutionLease BeginExecution(DmOperationPurpose purpose, DmDeadline deadline, int timeoutSeconds)
+	{
+		DmSession current = Session;
+		if (current == null || do_State != ConnectionState.Open)
+			throw new InvalidOperationException("Connection is not open.");
+		return current.BeginExecution(purpose, deadline, timeoutSeconds);
+	}
+	internal DmExecutionLease BeginInternalExecution(DmOperationPurpose purpose)
+	{
+		if (purpose != DmOperationPurpose.Query || !openingInProgress || Session == null)
+			throw new InvalidOperationException("Internal handshake execution is unavailable.");
+		return Session.BorrowHandshakeExecution();
+	}
+
+	internal DmConnectionSettings Settings => settings;
+
+	private void EnsureConfigurationMutable()
+	{
+		if (connectionState != ConnectionState.Closed || openingInProgress || m_AlreadyDisposed)
+			throw new InvalidOperationException("Connection settings can only be changed while closed.");
+	}
+
 
 	internal static RsLRUCache rsLRUCache;
 
@@ -57,7 +105,15 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
 	public LogInfo LogInfo { get; set; }
 
@@ -106,28 +162,24 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 	}
 
-	internal int do_ConnectionTimeout => ConnProperty.ConnectionTimeout;
+	internal int do_ConnectionTimeout => settings == null ? 5 :
+		settings.ConnectTimeout == TimeSpan.Zero ? 0 :
+		checked((int)Math.Ceiling(settings.ConnectTimeout.TotalSeconds));
 
 	internal string do_ConnectionString
 	{
-		get
-		{
-			return ConnProperty.ConnectionString;
-		}
+		get => !hasExplicitSettings ? string.Empty : settings.ToConnectionString(includeSecrets: !redactCredentials || settings.PersistSecurityInfo);
 		set
 		{
-			ConnProperty.ConnectionString = value;
-			if (rsLRUCache == null && ConnProperty.EnRsCache)
+			lock (settingsGate)
 			{
-				lock (obj)
-				{
-					if (rsLRUCache == null)
-					{
-						rsLRUCache = new RsLRUCache(ConnProperty.RsCacheSize * 1024 * 1024);
-					}
-				}
+				EnsureConfigurationMutable();
+				DmConnectionSettings replacement = DmConnectionSettings.Parse(value);
+				ConnProperty.BindSettings(replacement);
+				settings = replacement;
+				hasExplicitSettings = !string.IsNullOrEmpty(value);
+				redactCredentials = false;
 			}
-			BaseFilter.CreateFilterChain(this, ConnProperty);
 		}
 	}
 
@@ -139,9 +191,14 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		set
 		{
-			ConnectionState originalState = connectionState;
-			connectionState = value;
-			OnStateChange(new StateChangeEventArgs(originalState, connectionState));
+			ConnectionState originalState;
+			lock (settingsGate)
+			{
+				originalState = connectionState;
+				if (originalState == value) return;
+				connectionState = value;
+			}
+			OnStateChange(new StateChangeEventArgs(originalState, value));
 		}
 	}
 
@@ -247,17 +304,9 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		set
 		{
-			if (value == DmMppType.LOGIN_MPP_LOCAL)
-			{
-				ConnProperty.MppType = 1;
-				return;
-			}
-			if (DmMppType.LOGIN_MPP_GLOBAL == value)
-			{
-				ConnProperty.MppType = 0;
-				return;
-			}
-			throw new InvalidOperationException("invalid mpp status");
+			lock (settingsGate) EnsureConfigurationMutable();
+			throw new NotSupportedException("MPP routing is unsupported.");
+
 		}
 	}
 
@@ -273,38 +322,23 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 	}
 
-	public string Password
-	{
-		get
-		{
-			if (ConnProperty == null)
-			{
-				return null;
-			}
-			return ConnProperty.Pwd;
-		}
-	}
+	public string Password => redactCredentials && settings?.PersistSecurityInfo != true ? null : settings?.Password;
 
 	internal DmConnProperty ConnProperty { get; set; }
 
 	public string Schema
 	{
-		get
-		{
-			if (do_State == ConnectionState.Closed)
-			{
-				return "";
-			}
-			string schema = GetConnInstance().ConnProperty.Schema;
-			if (schema.isEmpty())
-			{
-				return "SYSDBA";
-			}
-			return schema;
-		}
+		get => do_State == ConnectionState.Open ? GetConnInstance().ConnProperty.Schema : settings?.Schema ?? string.Empty;
 		set
 		{
-			ConnProperty.Schema = value;
+			lock (settingsGate)
+			{
+				EnsureConfigurationMutable();
+				var replacement = (settings ?? DmConnectionSettings.Parse(string.Empty)).WithSchema(value);
+				ConnProperty.BindSettings(replacement);
+				settings = replacement;
+				hasExplicitSettings = true;
+			}
 		}
 	}
 
@@ -316,24 +350,30 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		set
 		{
-			forEFCore = value;
+			lock (settingsGate)
+			{
+				EnsureConfigurationMutable();
+				forEFCore = value;
+			}
 		}
 	}
 
 	public string getConnPoolKey()
 	{
-		return ConnProperty.ServName + "/" + ConnProperty.User + "/" + ConnProperty.PropertyHashCode;
+		throw new NotSupportedException("Connection pooling is unsupported.");
 	}
 
 	public DmConnection()
 	{
+		settings = DmConnectionSettings.Parse(string.Empty);
 		ConnProperty = new DmConnProperty();
+		ConnProperty.BindSettings(settings);
 	}
 
 	public DmConnection(bool forEF)
 		: this()
 	{
-		ForEFCore = true;
+		ForEFCore = forEF;
 	}
 
 	public DmConnection(string connectionString)
@@ -349,16 +389,93 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	}
 
 	internal DmTransaction do_BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
+		=> BeginLocalTransactionCore(isolationLevel, profileProbe: false);
+
+	// One explicitly requested validation call, with no persistent capability
+	// switch. Public BeginTransaction remains gated by the validated contract.
+	internal DmTransaction BeginProfileProbeTransaction(System.Data.IsolationLevel isolationLevel)
+		=> BeginLocalTransactionCore(isolationLevel, profileProbe: true);
+
+	internal static bool IsPublicTransactionIsolationSupported(System.Data.IsolationLevel isolationLevel,
+		string serverVersion)
+		=> (isolationLevel is System.Data.IsolationLevel.Unspecified or System.Data.IsolationLevel.ReadCommitted) ||
+			((isolationLevel is System.Data.IsolationLevel.ReadUncommitted or System.Data.IsolationLevel.Serializable) &&
+			 string.Equals(serverVersion, "8.1.5.60", StringComparison.Ordinal));
+
+	private DmTransaction BeginLocalTransactionCore(System.Data.IsolationLevel isolationLevel, bool profileProbe)
 	{
+		int timeoutSeconds = Settings.CommandTimeout;
+		TimeSpan cleanupTimeout = Settings.CleanupTimeout;
+		using var lease = BeginExecution(DmOperationPurpose.TransactionControl,
+			DmDeadline.FromSeconds(timeoutSeconds, TransactionClock), timeoutSeconds);
+		DmConnInstance instance;
+		lock (settingsGate)
+		{
+			if (!ReferenceEquals(session, lease.Session) || m_ConnInst == null)
+				throw new InvalidOperationException("Connection changed during transaction start.");
+			instance = m_ConnInst;
+		}
 		if (isolationLevel == System.Data.IsolationLevel.Unspecified)
+			isolationLevel = System.Data.IsolationLevel.ReadCommitted;
+		if (profileProbe)
 		{
-			isolationLevel = GetConnInstance().ConnProperty.IsolationLevel;
+			if (isolationLevel is not (System.Data.IsolationLevel.ReadCommitted or
+				System.Data.IsolationLevel.ReadUncommitted or System.Data.IsolationLevel.Serializable) ||
+				!string.Equals(instance.ConnProperty.ServerVersion, "8.1.5.60", StringComparison.Ordinal))
+				throw new NotSupportedException("Isolation profile validation is unavailable for this level or server profile.");
 		}
-		if (do_State == ConnectionState.Closed)
+		else if (!IsPublicTransactionIsolationSupported(isolationLevel, instance.ConnProperty.ServerVersion))
+			throw new NotSupportedException("Local isolation level is unavailable for this server profile.");
+		if (instance.Transaction?.Valid == true)
+			throw new InvalidOperationException("A local transaction is already active.");
+		lease.Session.SetTransactionState(DmLocalTransactionState.Starting);
+		DmCommand isolationOwner = null;
+		DmTransaction transaction = null;
+		try
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_CONNCTION_NOT_OPENED, "do_BeginDbTransaction:" + do_State);
+			using (var configuration = lease.BeginInvocation())
+			{
+				transaction = instance.BeginTrx(isolationLevel, out isolationOwner, out bool isolationConfirmed);
+				if (!isolationConfirmed || instance.GetAutoCommit())
+					throw new InvalidOperationException("Transaction configuration was not confirmed.");
+			}
+			if (isolationOwner?.Statement is { } controlStatement)
+			{
+				// The configuration child has ended. Close the isolated handle under
+				// one finite cleanup child of the same root execution, with no new lease.
+				using var cleanup = lease.BeginCleanupInvocation(
+					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
+				controlStatement.p();
+			}
+			// Cleanup has its own budget so resources can be released after timeout;
+			// it must not renew Begin's budget or permit a late Active result.
+			lease.Deadline.ThrowIfExpired();
+			using var activation = lease.BeginInvocation();
+			lease.Session.ActivateTransaction(transaction, activation.Identity);
+			return transaction;
 		}
-		return m_ConnInst.BeginTrx(isolationLevel);
+		catch
+		{
+			(transaction ?? instance.Transaction)?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
+			(transaction ?? instance.Transaction)?.RecordFailure("begin_configuration_unconfirmed");
+			try { CloseExpectedSession(lease.Session); } catch { }
+			throw;
+		}
+		finally
+		{
+			// Success already closed the handle; on failure the captured session was
+			// aborted. Clear any remaining local owner before Dispose, which must not
+			// acquire another lease or send a second statement-close request.
+			try
+			{
+				if (isolationOwner?.Statement is { } abandoned)
+				{
+					instance.RemoveStmt(abandoned);
+					abandoned.o();
+				}
+			}
+			finally { isolationOwner?.Dispose(); }
+		}
 	}
 
 	internal void do_ChangeDatabase(string databaseName)
@@ -366,20 +483,41 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		DmError.ThrowDmException(DmErrorDefinition.ECNET_DO_NOT_SUPPORT_CATALOG);
 	}
 
-	internal void do_Close()
+	internal void do_Close() => CloseExpectedSession(null);
+
+	internal void CloseExpectedSession(DmSession expected)
 	{
-		StringBuilder stringBuilder = new StringBuilder("{do_Close}");
+		DmDetachedTransport captured;
+		DmConnInstance orphan;
+		DmSession oldSession;
+		ConnectionState prior;
+		lock (settingsGate)
+		{
+			if (expected != null && !ReferenceEquals(session, expected)) return;
+			prior = connectionState;
+			oldSession = session;
+			captured = oldSession?.Detach();
+			orphan = oldSession == null ? m_ConnInst : null;
+			m_ConnInst = null;
+			session = null;
+			connectionState = ConnectionState.Closed;
+		}
 		try
 		{
-			stringBuilder.Append("->{ReleaseUnmanagedResource(false)}");
-			ReleaseUnmanagedResource(pooled: false, stringBuilder);
-			stringBuilder.Append("->{do_State = ConnectionState.Closed;}");
-			do_State = ConnectionState.Closed;
-			stringBuilder.Append("->{end}");
+			try
+			{
+				if (captured != null) DmSessionTestHooks.BeforeConnectionTransportAbort?.Invoke(oldSession.SessionId);
+			}
+			finally
+			{
+				try { captured?.AbortTransport(); }
+				finally { orphan?.AbortTransport(); }
+			}
 		}
-		catch (Exception ex)
+		finally
 		{
-			throw new Exception(ex.Message + "\n" + ex.StackTrace + "\n[extraInfo]:" + stringBuilder.ToString());
+			oldSession?.MarkClosed();
+			if (prior != ConnectionState.Closed) OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
 		}
 	}
 
@@ -393,69 +531,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		return new DmCommand("", this);
 	}
 
-	internal void Reconnect()
-	{
-		do_Close();
-		lock (this)
-		{
-			Connect();
-		}
-	}
+	internal void Reconnect() => throw new NotSupportedException("Automatic reconnect is unsupported.");
 
-	internal void do_EnlistTransaction(Transaction transaction)
-	{
-		StringBuilder stringBuilder = new StringBuilder("{do_EnlistTransaction(" + transaction?.ToString() + ")}");
-		try
-		{
-			if (transaction == null)
-			{
-				stringBuilder.Append("->{transaction == null}");
-				return;
-			}
-			if (m_ConnInst == null)
-			{
-				stringBuilder.Append("->{m_ConnInst == null}");
-				throw new InvalidOperationException("connInstance is null");
-			}
-			if (m_ConnInst.CurrentDmPromotableTransaction != null)
-			{
-				if (m_ConnInst.CurrentDmPromotableTransaction.BaseTransaction == transaction)
-				{
-					stringBuilder.Append("->{m_ConnInst.CurrentDmPromotableTransaction.BaseTransaction == " + transaction?.ToString() + "}");
-					return;
-				}
-				stringBuilder.Append("->{m_ConnInst.CurrentDmPromotableTransaction.BaseTransaction != " + transaction?.ToString() + "}");
-				throw new InvalidOperationException("Already enlisted by a different transaction");
-			}
-			stringBuilder.Append("->{GetDmPromotableTransactionInTransaction(" + transaction?.ToString() + ")}");
-			DmPromotableTransaction dmPromotableTransaction = DmPromotableTransactionTransactionManager.GetDmPromotableTransactionInTransaction(transaction);
-			if (dmPromotableTransaction == null)
-			{
-				stringBuilder.Append("->{new DmPromotableTransaction(" + transaction?.ToString() + ")");
-				dmPromotableTransaction = new DmPromotableTransaction(transaction, stringBuilder);
-				stringBuilder.Append("->{SetDmPromotableTransactionInTransaction(" + dmPromotableTransaction?.ToString() + ")}");
-				DmPromotableTransactionTransactionManager.SetDmPromotableTransactionInTransaction(dmPromotableTransaction);
-				if (!transaction.EnlistPromotableSinglePhase(dmPromotableTransaction))
-				{
-					stringBuilder.Append("->{!transaction.EnlistPromotableSinglePhase(" + dmPromotableTransaction?.ToString() + ")}");
-					throw new InvalidOperationException("transaction.EnlistPromotableSinglePhase failed");
-				}
-			}
-			stringBuilder.Append("->{FindExistingEnlistedConnInstance(" + dmPromotableTransaction?.ToString() + ")}");
-			if (!FindExistingEnlistedConnInstance(dmPromotableTransaction))
-			{
-				stringBuilder.Append("->{Enqueue(" + this?.ToString() + ")}");
-				dmPromotableTransaction.Enqueue(this, stringBuilder);
-				stringBuilder.Append("->{m_ConnInst.CurrentDmPromotableTransaction = dmPromotableTransaction}");
-				m_ConnInst.CurrentDmPromotableTransaction = dmPromotableTransaction;
-			}
-			stringBuilder.Append("->{end}");
-		}
-		catch (Exception ex)
-		{
-			throw new Exception(ex.Message + "\n" + ex.StackTrace + "\n[extraInfo]:" + stringBuilder.ToString());
-		}
-	}
+	internal void do_EnlistTransaction(Transaction transaction) =>
+		throw new NotSupportedException("Transaction enlistment is unsupported.");
 
 	internal bool FindExistingEnlistedConnInstance(DmPromotableTransaction dmPromotableTransaction)
 	{
@@ -491,60 +570,65 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	internal DataTable do_GetSchema(string collectionName, string[] restrictionValues)
 	{
-		if (m_Schema == null)
-		{
-			m_Schema = new DmSchema(this);
-		}
+		using var lease = BeginExecution(DmOperationPurpose.Metadata);
 		if (collectionName == null || collectionName.Equals(""))
 		{
 			collectionName = "METADATACOLLECTIONS";
 		}
-		return m_Schema.GetSchema(collectionName, restrictionValues);
+		return new DmSchema(this, lease).GetSchema(collectionName, restrictionValues);
 	}
 
 	internal void do_Open()
 	{
-		if (do_State == ConnectionState.Open)
-		{
-			return;
-		}
-		if (do_State == ConnectionState.Broken)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMUNITION_ERROR);
-		}
+		DmSession openingSession = Session;
+		if (do_State != ConnectionState.Connecting || openingSession == null)
+			throw new InvalidOperationException("Connection must be connecting.");
+		CheckProperty();
 		ConnProperty.encryptPwd = false;
 		ConnProperty.encryptMsg = false;
 		ConnProperty.msgVersion = 21;
 		CheckProperty();
-		m_ConnInst = new DmConnInstance(this);
-		try
+		DmConnInstance opened = new DmConnInstance(this);
+		DmDeadline handshakeDeadline = DmInvocation.Current?.Deadline ??
+			throw new InvalidOperationException("Handshake invocation is missing.");
+		opened.Open(handshakeDeadline);
+		handshakeDeadline.ThrowIfExpired();
+		bool rejected;
+		lock (settingsGate)
 		{
-			do_State = ConnectionState.Open;
-			DriverUtil.executeSetSchema(this);
+			rejected = !ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Connecting;
+			if (!rejected)
+			{
+				m_ConnInst = opened;
+				redactCredentials = true;
+				connectionState = ConnectionState.Open;
+			}
 		}
-		catch (Exception)
+		if (rejected)
 		{
-			do_State = ConnectionState.Closed;
-			throw;
+			opened.AbortTransport();
+			throw new InvalidOperationException("Connection was closed during handshake.");
 		}
+		openingSession.BeginAuthenticating();
+		// Schema setup is part of the handshake ownership interval.
+		handshakeInvocation?.Dispose();
+		handshakeInvocation = null;
+		DriverUtil.executeSetSchema(this);
 	}
 
 	internal DmStruct do_CreateStruct(string typeName, object[] attributes)
 	{
-		checkClosed();
-		return new DmStruct(new ComplexTypeDesc(typeName, this), this, attributes);
+		throw new NotSupportedException("Complex type metadata is not supported by the owned session path.");
 	}
 
 	internal DmArray do_CreateArray(string typeName, object[] elements)
 	{
-		checkClosed();
-		return new DmArray(new ComplexTypeDesc(typeName, this), this, elements);
+		throw new NotSupportedException("Complex type metadata is not supported by the owned session path.");
 	}
 
 	internal DmStruct do_CreateIndexTable(string typeName, Dictionary<string, object> dictionary)
 	{
-		checkClosed();
-		return new DmStruct(new ComplexTypeDesc(typeName, this), this, dictionary);
+		throw new NotSupportedException("Complex type metadata is not supported by the owned session path.");
 	}
 
 	protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
@@ -570,40 +654,12 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	public override void Close()
 	{
-		if (ExistDmPromotableTransaction())
-		{
-			StatusInTransactionScope = ConnectionStatusInTransactionScope.Closed;
-		}
-		else if (m_ConnInst?.Conn == this)
-		{
-			if (filterHead == null)
-			{
-				do_Close();
-			}
-			else
-			{
-				filterHead.Close(this);
-			}
-		}
+		do_Close();
 	}
 
 	public void ForceClose()
 	{
-		if (ExistDmPromotableTransaction())
-		{
-			StatusInTransactionScope = ConnectionStatusInTransactionScope.Closed;
-		}
-		else if (m_ConnInst?.Conn == this)
-		{
-			if (filterHead == null)
-			{
-				do_Close();
-			}
-			else
-			{
-				filterHead.ForceClose(this);
-			}
-		}
+		do_Close();
 	}
 
 	protected override DbCommand CreateDbCommand()
@@ -622,17 +678,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		return dmCommand;
 	}
 
-	public override void EnlistTransaction(Transaction transaction)
-	{
-		if (filterHead == null)
-		{
-			do_EnlistTransaction(transaction);
-		}
-		else
-		{
-			filterHead.EnlistTransaction(this, transaction);
-		}
-	}
+	public override void EnlistTransaction(Transaction transaction) =>
+		throw new NotSupportedException("Transaction enlistment is unsupported.");
 
 	public override DataTable GetSchema()
 	{
@@ -664,33 +711,84 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	public override void Open()
 	{
 		if (m_AlreadyDisposed)
-		{
 			throw new ObjectDisposedException("DmConnection");
-		}
-		if (ExistDmPromotableTransaction())
-		{
-			StatusInTransactionScope = ConnectionStatusInTransactionScope.Open;
-			return;
-		}
-		if (filterHead == null)
-		{
-			Connect();
-		}
-		else
-		{
-			filterHead.Open(this);
-		}
-		if (ConnProperty.Enlist && Transaction.Current != null)
-		{
-			do_EnlistTransaction(Transaction.Current);
-		}
+		Connect();
 	}
 
 	internal void Connect()
 	{
-		if (do_State != ConnectionState.Open)
+		DmSession openingSession = null;
+		DmExecutionLease lease = null;
+		DmInvocation invocation = null;
+		bool connectingNotified = false;
+		DmDeadline connectDeadline = default;
+		try
 		{
+			lock (settingsGate)
+			{
+				if (openingInProgress)
+					throw new InvalidOperationException("Connection is opening.");
+				if (connectionState == ConnectionState.Open)
+					return;
+				EnsureConfigurationMutable();
+				CheckProperty();
+				openingSession = new DmSession(OnSessionBroken);
+				openingSession.BeginConnecting();
+				openingInProgress = true;
+				session = openingSession;
+				connectionState = ConnectionState.Connecting;
+			}
+			connectingNotified = true;
+			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
+			connectDeadline = DmDeadline.Start(settings.ConnectTimeout);
+			lease = openingSession.BeginExecution(DmOperationPurpose.Handshake, connectDeadline);
+			invocation = lease.BeginInvocation();
+			handshakeInvocation = invocation;
 			ConnProperty.EPGroup.connect(this);
+			connectDeadline.ThrowIfExpired();
+			if (!ReferenceEquals(Session, openingSession) || do_State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection did not open.");
+			openingSession.CompleteHandshake();
+			invocation.Dispose();
+			lease.Dispose();
+			lock (settingsGate)
+			{
+				if (!ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Open)
+					throw new InvalidOperationException("Connection was closed during opening.");
+				handshakeInvocation = null;
+			}
+			try { OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open)); }
+			finally { lock (settingsGate) openingInProgress = false; }
+		}
+		catch
+		{
+			if (openingSession != null)
+			{
+				try { invocation?.Dispose(); } catch { }
+				try { lease?.Dispose(); } catch { }
+				DmDetachedTransport captured = null;
+				DmConnInstance orphan = null;
+				ConnectionState prior = ConnectionState.Closed;
+				lock (settingsGate)
+				{
+					if (ReferenceEquals(session, openingSession))
+					{
+						captured = openingSession.Detach();
+						orphan = m_ConnInst;
+						m_ConnInst = null;
+						session = null;
+						prior = connectionState;
+						connectionState = ConnectionState.Closed;
+					}
+					openingInProgress = false;
+					handshakeInvocation = null;
+				}
+				try { captured?.AbortTransport(); orphan?.AbortTransport(); } catch { }
+				openingSession.MarkClosed();
+				if (prior != ConnectionState.Closed && connectingNotified)
+					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
+			}
+			throw;
 		}
 	}
 
@@ -717,79 +815,25 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		return ConnProperty.ConnPooling;
 	}
 
-	~DmConnection()
-	{
-		try
-		{
-			try
-			{
-				ForceDispose();
-			}
-			catch (Exception)
-			{
-			}
-		}
-		finally
-		{
-			GC.SuppressFinalize(this);
-		}
-	}
-
-	public void ClearAllPools(bool pooled)
-	{
-		ReleaseUnmanagedResource(pooled);
-	}
+	public void ClearAllPools(bool pooled) =>
+		throw new NotSupportedException("Connection pooling is unsupported.");
 
 	internal void ReleaseUnmanagedResource(bool pooled)
 	{
-		if (do_State != ConnectionState.Closed && m_ConnInst != null)
-		{
-			if (m_ConnInst.Transaction != null)
-			{
-				m_ConnInst.Transaction.Dispose();
-				m_ConnInst.Transaction = null;
-			}
-			m_ConnInst.Close(pooled);
-			m_ConnInst = null;
-			do_State = ConnectionState.Closed;
-		}
+		do_Close();
 	}
 
 	internal void ReleaseUnmanagedResource(bool pooled, StringBuilder msg)
 	{
-		if (do_State == ConnectionState.Closed)
-		{
-			msg.Append("->{do_State == ConnectionState.Closed}");
-			return;
-		}
-		if (m_ConnInst == null)
-		{
-			msg.Append("->{m_ConnInst == null}");
-			return;
-		}
-		if (m_ConnInst.Transaction != null)
-		{
-			msg.Append("->{m_ConnInst.Transaction.Dispose();}");
-			m_ConnInst.Transaction.Dispose(msg);
-			m_ConnInst.Transaction = null;
-		}
-		msg.Append("->{m_ConnInst.Close(" + pooled + ")}");
-		m_ConnInst.Close(pooled, msg);
-		msg.Append("->{m_ConnInst = null;do_State = ConnectionState.Closed;}");
-		m_ConnInst = null;
-		do_State = ConnectionState.Closed;
+		do_Close();
 	}
 
 	protected override void Dispose(bool disposing)
 	{
-		if (m_AlreadyDisposed)
+		lock (settingsGate)
 		{
-			return;
-		}
-		if (ExistDmPromotableTransaction())
-		{
-			StatusInTransactionScope = ConnectionStatusInTransactionScope.Disposed;
-			return;
+			if (m_AlreadyDisposed) return;
+			m_AlreadyDisposed = true;
 		}
 		try
 		{
@@ -797,21 +841,16 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		finally
 		{
-			m_AlreadyDisposed = true;
 			base.Dispose(disposing);
 		}
 	}
 
 	protected void ForceDispose()
 	{
-		if (m_AlreadyDisposed)
+		lock (settingsGate)
 		{
-			return;
-		}
-		if (ExistDmPromotableTransaction())
-		{
-			StatusInTransactionScope = ConnectionStatusInTransactionScope.Disposed;
-			return;
+			if (m_AlreadyDisposed) return;
+			m_AlreadyDisposed = true;
 		}
 		try
 		{
@@ -819,15 +858,12 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		finally
 		{
-			m_AlreadyDisposed = true;
 			base.Dispose(disposing: false);
 		}
 	}
 
-	public void SetDatabase(string db)
-	{
-		ConnProperty.Database = db;
-	}
+	public void SetDatabase(string db) =>
+		throw new NotSupportedException("Physical database switching is unsupported.");
 
 	public DmTransaction BeginTransaction(System.Data.IsolationLevel il, bool for_ef)
 	{
@@ -836,7 +872,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_CONNCTION_NOT_OPENED);
 		}
-		return m_ConnInst.BeginTrx(il);
+		return do_BeginDbTransaction(il);
 	}
 
 	internal DmConnInstance GetConnInstance()
@@ -846,14 +882,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	internal void CheckProperty()
 	{
-		if (ConnProperty.Server == null)
-		{
-			throw new InvalidOperationException("Cannot open a connection without specifying a data source or server.");
-		}
-		if (string.IsNullOrEmpty(do_ConnectionString))
-		{
-			throw new InvalidOperationException("There is no connectionString.");
-		}
+		if (settings == null || string.IsNullOrWhiteSpace(settings.Host))
+			throw new InvalidOperationException("A server is required.");
+		if (string.IsNullOrWhiteSpace(settings.User) || string.IsNullOrEmpty(settings.Password))
+			throw new InvalidOperationException("User and password are required.");
 	}
 
 	object ICloneable.Clone()
@@ -864,7 +896,11 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	public DmConnection Clone()
 	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Clone()");
-		return new DmConnection(do_ConnectionString);
+		var clone = hasExplicitSettings ?
+			new DmConnection(settings.ToConnectionString(includeSecrets: true), forEFCore) :
+			new DmConnection(forEFCore);
+		clone.redactCredentials = redactCredentials;
+		return clone;
 	}
 
 	public bool compatibleOracle()
@@ -966,29 +1002,14 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		return ConnProperty.LobMode == 2;
 	}
 
-	internal Fldr getFldrInstance()
-	{
-		return new Fldr(m_ConnInst.GetCsi() ?? throw new Exception("请初始化Connection!"));
-	}
+	internal Fldr getFldrInstance() => throw new NotSupportedException("FLDR is unsupported.");
 
-	public FldrStatement fldrStatement(FldrConfig config)
-	{
-		if (filterHead == null)
-		{
-			return do_fldrStatement(config);
-		}
-		return filterHead.Connection_fldrStatement(this, config);
-	}
+	public FldrStatement fldrStatement(FldrConfig config) =>
+		throw new NotSupportedException("FLDR is unsupported.");
 
-	public FldrStatement do_fldrStatement(FldrConfig config)
-	{
-		checkClosed();
-		if (config == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_PARAMETER_VALUE);
-		}
-		return new FldrStatement(this, config);
-	}
+
+	public FldrStatement do_fldrStatement(FldrConfig config) =>
+		throw new NotSupportedException("FLDR is unsupported.");
 
 	public bool ExistDmPromotableTransaction()
 	{

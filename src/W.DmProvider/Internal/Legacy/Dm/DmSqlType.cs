@@ -414,17 +414,9 @@ internal class DmSqlType
 		{
 		case 0:
 		case 1:
-			if (prec == 36)
-			{
-				return typeof(Guid);
-			}
 			return typeof(string);
 		case 2:
 		case 54:
-			if (connProperty.Varchar36ToGuid && prec == 36)
-			{
-				return typeof(Guid);
-			}
 			return typeof(string);
 		case 3:
 			return typeof(bool);
@@ -466,9 +458,9 @@ internal class DmSqlType
 		case 22:
 			return typeof(DateTimeOffset);
 		case 23:
-			return typeof(DateTime);
-		case 26:
 		case 27:
+			return typeof(DateTimeOffset);
+		case 26:
 			return typeof(DateTime);
 		default:
 			return typeof(object);
@@ -481,17 +473,9 @@ internal class DmSqlType
 		{
 		case 0:
 		case 1:
-			if (prec == 36)
-			{
-				return typeof(Guid);
-			}
 			return typeof(string);
 		case 2:
 		case 54:
-			if (connProperty.Varchar36ToGuid && prec == 36)
-			{
-				return typeof(Guid);
-			}
 			return typeof(string);
 		case 3:
 			return typeof(bool);
@@ -541,9 +525,9 @@ internal class DmSqlType
 		case 22:
 			return typeof(DateTimeOffset);
 		case 23:
-			return typeof(DateTime);
-		case 26:
 		case 27:
+			return typeof(DateTimeOffset);
+		case 26:
 			return typeof(DateTime);
 		default:
 			return typeof(object);

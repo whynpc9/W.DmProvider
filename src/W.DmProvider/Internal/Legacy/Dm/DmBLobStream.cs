@@ -33,7 +33,7 @@ public class DmBLobStream : Stream
 
 	public override bool CanWrite => m_CanWrite;
 
-	public override long Length => m_BLob.do_length();
+	public override long Length => m_BLob.Length();
 
 	public override long Position
 	{
@@ -133,7 +133,7 @@ public class DmBLobStream : Stream
 		{
 			return -1L;
 		}
-		long num = m_BLob.do_length();
+		long num = m_BLob.Length();
 		long num2 = 0L;
 		switch (origin)
 		{

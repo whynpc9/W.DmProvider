@@ -12,7 +12,7 @@
 
 达梦在单个现有实例上以用户和 Schema 隔离对象；创建用户会建立同名默认 Schema。这里的两个“项目测试库”是独立的逻辑工作空间，并非两个新的物理数据库实例或表空间。[达梦用户与模式说明](https://eco.dameng.com/document/dm/zh-cn/pm/management-pattern.html)
 
-两个项目用户只授予 `CREATE SESSION`、`CREATE TABLE`、`CREATE INDEX`、`CREATE VIEW`、`CREATE SEQUENCE`、`CREATE PROCEDURE`、`CREATE TRIGGER`，不授予 DBA、`ANY` 权限或对其他项目 Schema 的对象授权。需要扩展到 FLDR、HA、分布式事务等高级测试时先核对其单独权限要求，不静默提升账号权限。
+两个项目用户的直接系统权限为 `CREATE SESSION`、`CREATE TABLE`、`CREATE INDEX`、`CREATE VIEW`、`CREATE SEQUENCE`、`CREATE PROCEDURE`、`CREATE TRIGGER`。2026-09-30 经用户单独批准，仅 TEST 增加 `SOI` 角色，用于 EF 迁移所需的非审计/安全系统目录读取；TEST 新连接确认 `ADMIN_OPTION=N`、目录查询及迁移锁可用。DEV 未变。不授予 DBA、`ANY` 权限或其他业务 Schema 的对象权限。限定维护与原失败后置检查记录见 [T12 catalog access](maintenance/T12-test-catalog-access.md)。需要扩展到 FLDR、HA、分布式事务等高级测试时先核对其单独权限要求，不静默提升账号权限。
 
 ## 加载连接
 
@@ -25,6 +25,8 @@ scripts/with-dameng-test.sh <测试命令及参数>
 脚本加载本机 secret 后执行命令，不输出连接串。测试项目尚未建立时，可先用它执行独立的探测程序；不要把连接串作为命令行参数、写入项目配置或提交到 Git。手工开发探测需要在受控 shell 中显式 `source .local/secrets/dameng-dev.env`，其变量名为 `DAMENG_DEV_CONNECTION_STRING`。SA secret 不应由普通开发命令加载。
 
 本机 `.local/` 已加入 `.gitignore`。secret 目录权限为 `0700`，三个 env 文件为 `0600`。切换主机或用户时，由环境所有者以安全渠道重新提供凭据，不从 Git 恢复。CI 应使用自己的受保护 secret 和专用测试实例。
+
+从 T04 起，新 W 的默认 `RequireTls` 会在已验证 TLS 传输完成前拒绝连接。已授权的本地真实库检查使用 `eng/t04.sh real`，由探针读取原 secret 后通过 typed W Builder 显式选择 `PlaintextAllowed` 并设置测试 Schema；不改共用 secret，不影响官方 O / 恢复 R 的解析。该选择不允许跳过证书校验；服务器要求未实现的 TLS 或原生加密模式时仍拒绝。此测试不证明 TLS 模式可用。
 
 ## 已完成的实例验证
 

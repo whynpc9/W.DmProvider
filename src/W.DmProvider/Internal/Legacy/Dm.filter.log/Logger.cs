@@ -8,11 +8,11 @@ namespace W.Dm.filter.log;
 
 internal class Logger : ILogger
 {
-	public bool ErrorEnabled => DmSvcConfig.logLevel >= LogLevel.ERROR;
+	public bool ErrorEnabled => false;
 
-	public bool InfoEnabled => DmSvcConfig.logLevel >= LogLevel.INFO;
+	public bool InfoEnabled => false;
 
-	public bool SqlEnabled => DmSvcConfig.logLevel >= LogLevel.SQL;
+	public bool SqlEnabled => false;
 
 	public Logger(string name)
 	{
@@ -100,7 +100,7 @@ internal class Logger : ILogger
 
 	private void Println(string msg)
 	{
-		LogWriter.Instance.WriteLine(StringUtil.trimToEmpty(msg));
+		// Legacy process-wide logging is disabled.
 	}
 
 	internal static string GetStackTrace(Exception t)

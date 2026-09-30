@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>TemporalPrecisionProbe.Candidate</AssemblyName><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><NuGetAudit>false</NuGetAudit>
+    <OutputPath>bin/Candidate/</OutputPath><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreSources>$(MSBuildThisFileDirectory)../../.local/t12/packages/20260930T051717Z</RestoreSources>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="Program.cs" /><PackageReference Include="W.DmProvider" Version="[0.1.0-r1.20260930051717]" /></ItemGroup>
+</Project>

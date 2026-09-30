@@ -125,6 +125,7 @@ public class DmBulkCopy2 : IDisposable
 
 	public DmBulkCopy2(DmConnection conn)
 	{
+		throw new NotSupportedException("Native bulk loading is unsupported.");
 		if (conn == null)
 		{
 			throw new InvalidOperationException();

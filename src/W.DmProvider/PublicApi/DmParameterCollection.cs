@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using W.Dm.filter;
+using W.Dm.Internal.Execution;
 
 namespace W.Dm;
 
@@ -18,6 +19,27 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 	private List<DmParameter> InternalList = new List<DmParameter>();
 
 	private Dictionary<string, int> parameterNameDictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+	private DmCommandPlanGate planGate;
+
+	internal DmCommandPlanGate PlanGate => planGate;
+
+	internal void AttachPlanGate(DmCommandPlanGate gate)
+	{
+		if (gate == null) throw new ArgumentNullException(nameof(gate));
+		if (planGate != null && !ReferenceEquals(planGate, gate))
+			throw new InvalidOperationException("Parameter collection already has a command owner.");
+		planGate = gate;
+	}
+
+	private IDisposable BeginMutation() => planGate?.BeginMutation();
+
+	internal DmParameterCollection CloneDetached(bool forPlan = false)
+	{
+		var copy = new DmParameterCollection();
+		foreach (DmParameter parameter in InternalList)
+			copy.do_Add(forPlan ? parameter.CloneForPlan() : parameter.Clone());
+		return copy;
+	}
 
 	public long ID
 	{
@@ -31,7 +53,15 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
 	public LogInfo LogInfo { get; set; }
 
@@ -142,7 +172,10 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 
 	internal int do_Add(object value)
 	{
+		using var mutation = BeginMutation();
 		DmParameter dmParameter = ConvertType(value);
+		if (dmParameter.parameterCollection != null && !ReferenceEquals(dmParameter.parameterCollection, this))
+			throw new InvalidOperationException("Parameter already belongs to another collection.");
 		if (string.IsNullOrEmpty(dmParameter.do_ParameterName) || dmParameter.do_ParameterName.Equals("?") || dmParameter.do_ParameterName.Equals(":?") || dmParameter.do_ParameterName.Equals("@?"))
 		{
 			dmParameter.do_ParameterName = $"Parameter{GetNextIndex()}";
@@ -150,20 +183,18 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 		int num = do_IndexOf(dmParameter.do_ParameterName);
 		if (num >= 0)
 		{
-			do_SetParameter(do_IndexOf(dmParameter.do_ParameterName), dmParameter);
+			throw new ArgumentException("A parameter with the normalized name already exists.", nameof(value));
 		}
-		else
-		{
-			InternalList.Add(dmParameter);
-			num = InternalList.Count - 1;
-			parameterNameDictionary.Add(GetBasename(dmParameter.do_ParameterName), num);
-			dmParameter.parameterCollection = this;
-		}
+		dmParameter.AttachCollection(this);
+		InternalList.Add(dmParameter);
+		num = InternalList.Count - 1;
+		parameterNameDictionary.Add(GetBasename(dmParameter.do_ParameterName), num);
 		return num;
 	}
 
 	internal void do_AddRange(Array values)
 	{
+		using var mutation = BeginMutation();
 		if (values == null)
 		{
 			return;
@@ -176,9 +207,10 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 
 	internal void do_Clear()
 	{
+		using var mutation = BeginMutation();
 		foreach (DmParameter @internal in InternalList)
 		{
-			@internal.parameterCollection = null;
+			@internal.DetachCollection(this);
 		}
 		InternalList.Clear();
 		parameterNameDictionary.Clear();
@@ -224,51 +256,40 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 
 	internal void do_Insert(int index, object value)
 	{
-		if (index != do_Count)
-		{
-			CheckIndex(index);
-		}
+		using var mutation = BeginMutation();
+		if (index < 0 || index > do_Count) throw new ArgumentOutOfRangeException(nameof(index));
 		DmParameter dmParameter = ConvertType(value);
+		if (dmParameter.parameterCollection != null)
+			throw new InvalidOperationException("Parameter already belongs to a collection.");
 		if (string.IsNullOrEmpty(dmParameter.do_ParameterName))
 		{
 			dmParameter.do_ParameterName = $"Parameter{GetNextIndex()}";
 		}
-		int num = index;
-		for (int i = 0; i < do_Count; i++)
-		{
-			if (i >= index)
-			{
-				num = (parameterNameDictionary[GetBasename(do_GetParameter(i).do_ParameterName)] = num + 1);
-			}
-		}
-		dmParameter.parameterCollection = this;
-		parameterNameDictionary[GetBasename(dmParameter.do_ParameterName)] = index;
+		if (do_IndexOf(dmParameter.do_ParameterName) >= 0)
+			throw new ArgumentException("Parameter name already exists.", nameof(value));
+		dmParameter.AttachCollection(this);
 		InternalList.Insert(index, dmParameter);
+		RebuildNameIndex();
 	}
 
 	internal void do_RemoveAt(int index)
 	{
+		using var mutation = BeginMutation();
 		DmParameter dmParameter = do_GetParameter(CheckIndex(index));
-		int num = index;
-		for (int i = 0; i < do_Count; i++)
-		{
-			if (i > index)
-			{
-				parameterNameDictionary[GetBasename(do_GetParameter(i).do_ParameterName)] = num++;
-			}
-		}
-		dmParameter.parameterCollection = null;
-		parameterNameDictionary.Remove(GetBasename(dmParameter.do_ParameterName));
+		dmParameter.DetachCollection(this);
 		InternalList.RemoveAt(index);
+		RebuildNameIndex();
 	}
 
 	internal void do_Remove(object value)
 	{
+		using var mutation = BeginMutation();
 		do_RemoveAt(do_IndexOf(value));
 	}
 
 	internal void do_RemoveAt(string parameterName)
 	{
+		using var mutation = BeginMutation();
 		do_RemoveAt(do_IndexOf(parameterName));
 	}
 
@@ -290,21 +311,29 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 
 	internal void do_SetParameter(int index, DmParameter value)
 	{
+		using var mutation = BeginMutation();
 		CheckIndex(index);
 		DmParameter dmParameter = ConvertType(value);
+		if (dmParameter.parameterCollection != null && !ReferenceEquals(dmParameter.parameterCollection, this))
+			throw new InvalidOperationException("Parameter already belongs to another collection.");
 		if (string.IsNullOrEmpty(dmParameter.do_ParameterName))
 		{
 			dmParameter.do_ParameterName = $"Parameter{GetNextIndex()}";
 		}
 		DmParameter dmParameter2 = do_GetParameter(index);
+		if (ReferenceEquals(dmParameter2, dmParameter)) return;
+		int existing = do_IndexOf(dmParameter.do_ParameterName);
+		if (dmParameter.parameterCollection != null || (existing >= 0 && existing != index))
+			throw new InvalidOperationException("Parameter already belongs to this collection or its name exists.");
+		dmParameter.AttachCollection(this);
 		InternalList[index] = dmParameter;
-		parameterNameDictionary.Remove(GetBasename(dmParameter2.do_ParameterName));
-		parameterNameDictionary.Add(GetBasename(dmParameter.do_ParameterName), index);
-		dmParameter.parameterCollection = this;
+		dmParameter2.DetachCollection(this);
+		RebuildNameIndex();
 	}
 
 	internal void do_SetParameter(string parameterName, DmParameter value)
 	{
+		using var mutation = BeginMutation();
 		do_SetParameter(do_IndexOf(parameterName), value);
 	}
 
@@ -542,10 +571,36 @@ public sealed class DmParameterCollection : DbParameterCollection, IFilterInfo
 
 	public void ChangeName(DmParameter parameter, string oldname, string newname)
 	{
+		using var mutation = BeginMutation();
+		if (parameter == null || !ReferenceEquals(parameter.parameterCollection, this))
+			throw new InvalidOperationException("Parameter does not belong to this collection.");
+		if (!string.Equals(parameter.do_ParameterName, oldname, StringComparison.Ordinal))
+			throw new ArgumentException("The old parameter name does not match the current name.", nameof(oldname));
+		parameter.ParameterName = newname;
+	}
+
+	internal void ChangeNameIndex(DmParameter parameter, string oldname, string newname)
+	{
+		using var mutation = BeginMutation();
 		CheckArgument(oldname);
 		CheckArgument(newname);
+		if (!ReferenceEquals(parameter.parameterCollection, this))
+			throw new InvalidOperationException("Parameter does not belong to this collection.");
+		if (!string.Equals(parameter.do_ParameterName, oldname, StringComparison.Ordinal))
+			throw new InvalidOperationException("Parameter name changed during rename.");
+		int existing = do_IndexOf(newname);
+		int current = do_IndexOf(parameter);
+		if (existing >= 0 && existing != current)
+			throw new ArgumentException("Parameter name already exists.", nameof(newname));
 		parameterNameDictionary.Remove(GetBasename(oldname));
-		parameterNameDictionary.Add(GetBasename(newname), do_IndexOf(parameter));
+		parameterNameDictionary[GetBasename(newname)] = current;
+	}
+
+	private void RebuildNameIndex()
+	{
+		parameterNameDictionary.Clear();
+		for (int index = 0; index < InternalList.Count; index++)
+			parameterNameDictionary.Add(GetBasename(InternalList[index].do_ParameterName), index);
 	}
 
 	private void CheckDmDbType(DmDbType dbtype)

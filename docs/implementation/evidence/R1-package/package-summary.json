@@ -1,0 +1,12 @@
+{
+  "status": "candidate_package_audited",
+  "id": "W.DmProvider",
+  "version": "0.1.0-r1.20260930064454",
+  "package_sha256": "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8",
+  "dll_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+  "source_sha256": "a2f637dd96d37ad89bf480b0ec742b40c0c0fe01929aa90de75d00c3fa587f8b",
+  "current_surface_sha256": "f914653da6908a767a3760e6b7470cefeffdbfc62b539e48c7689a2b30cb4bbd",
+  "integration": "not_executed",
+  "release_accepted": false,
+  "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12-offline/runs/20260930T064647Z-a8bc91803428"
+}

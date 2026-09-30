@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm;
 
@@ -300,6 +302,8 @@ internal abstract class MSG<T>
 		if (access.a().crcBody && cmd != 200)
 		{
 			int length = getLength();
+			DmFrameReader.ValidateLength(length);
+			DmFrameReader.ValidateLength(checked(length + 4));
 			setLength(length + 4);
 			int num = calcCRC32(access.__t02_field_04000AB9, 0, 64 + length);
 			access.__t02_field_04000AB9.H(num);
@@ -314,6 +318,7 @@ internal abstract class MSG<T>
 	{
 		if (access.a().crcBody && cmd != 200)
 		{
+			if (getLength() < 4) throw new InvalidDataException("CRC trailer is missing.");
 			int num = getLength() - 4;
 			int num2 = 64 + num;
 			int num3 = access.__t02_field_04000AB9.d(num2);
@@ -323,6 +328,7 @@ internal abstract class MSG<T>
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_CRC_CHECK_FAIL_);
 			}
 			setLength(num);
+			access.__t02_field_04000AB9.A(num2);
 		}
 		else
 		{

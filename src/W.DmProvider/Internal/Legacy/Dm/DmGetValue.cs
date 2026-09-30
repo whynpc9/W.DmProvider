@@ -1,8 +1,10 @@
 using System;
 using System.Text;
+using System.Numerics;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
 using W.Dm.util;
+using W.Dm.Internal.Types;
 
 namespace W.Dm;
 
@@ -221,321 +223,53 @@ internal class DmGetValue
 		}
 	}
 
+	private DmDecimal ReadExactDecimal(byte[] value, int cType, int precision, int scale) => cType switch
+	{
+		9 => DmNumericCodec.DecodeDecimal(value, precision > 0 && scale >= 0 ? scale : null),
+		24 => DmNumericCodec.DecodeScaledInt64(value, scale),
+		_ => throw new InvalidCastException("Column is not a supported exact DECIMAL wire type.")
+	};
+
+	private object ReadIntegerSource(int i, byte[] value, int cType, int precision, int scale)
+	{
+		if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		return cType switch
+		{
+			3 or 5 => DmConvertion.OneByteToSByte(value),
+			6 => DmConvertion.TwoByteToShort(value),
+			7 => DmConvertion.FourByteToInt(value),
+			8 => DmConvertion.EightByteToLong(value),
+			9 or 24 => ReadExactDecimal(value, cType, precision, scale),
+			10 => DmConvertion.GetSingle(value),
+			11 => DmConvertion.GetDouble(value),
+			0 or 1 or 2 or 19 or 54 => GetString(i, value, cType, precision, scale).Trim(),
+			28 => new DmRowId(value).longValue(m_Statement.G().Conn),
+			_ => throw new InvalidCastException("Column cannot be read as an integer.")
+		};
+	}
+
+	private BigInteger ReadIntegerExact(int i, byte[] value, int cType, int precision, int scale,
+		BigInteger minimum, BigInteger maximum) =>
+		DmNumericInput.ToIntegerExact(ReadIntegerSource(i, value, cType, precision, scale), minimum, maximum);
+
 	internal int GetInt(int i, byte[] val, int CType, int prec, int scale)
 	{
-		int result = 0;
-		object obj = null;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 7:
-			result = DmConvertion.FourByteToInt(val);
-			break;
-		case 3:
-		case 5:
-			result = GetSByte(i, val, CType, prec, scale);
-			break;
-		case 6:
-			result = GetShort(i, val, CType, prec, scale);
-			break;
-		case 8:
-			obj = GetLong(i, val, CType, prec, scale);
-			CheckRangeInt32((long)obj);
-			result = Convert.ToInt32(obj);
-			break;
-		case 10:
-			obj = GetFloat(i, val, CType, prec, scale);
-			CheckRangeInt32((float)obj);
-			result = Convert.ToInt32(obj);
-			break;
-		case 11:
-			obj = GetDouble(i, val, CType, prec, scale);
-			CheckRangeInt32((double)obj);
-			result = Convert.ToInt32(obj);
-			break;
-		case 9:
-		case 24:
-			obj = GetBigDecimal(i, val, CType, prec, scale);
-			CheckRangeInt32((decimal)obj);
-			result = decimal.ToInt32((decimal)obj);
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			try
-			{
-				obj = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-				CheckRangeInt32(obj);
-				result = Convert.ToInt32(obj);
-			}
-			catch (Exception)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			break;
-		case 25:
-			result = 0;
-			break;
-		case 28:
-			obj = new DmRowId(val).longValue(m_Statement.G().Conn);
-			CheckRangeInt32((long)obj);
-			result = Convert.ToInt32(obj);
-			break;
-		case 20:
-		{
-			DmIntervalYM dmIntervalYM = new DmIntervalYM(val);
-			result = dmIntervalYM.getYear() * 12 + dmIntervalYM.getMonth();
-			break;
-		}
-		case 21:
-		{
-			DmIntervalDT dmIntervalDT = new DmIntervalDT(val);
-			result = (dmIntervalDT.getDay() * 86400 + dmIntervalDT.getHour() * 3600 + dmIntervalDT.getMinute() * 60 + dmIntervalDT.getSecond()) * 1000 + dmIntervalDT.getMsec() / 1000;
-			break;
-		}
-		default:
-			throw new InvalidCastException();
-		}
-		return result;
+		return checked((int)ReadIntegerExact(i, val, CType, prec, scale, int.MinValue, int.MaxValue));
 	}
 
 	internal byte GetByte(int i, byte[] val, int CType, int prec, int scale)
 	{
-		byte result = 0;
-		object obj = null;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 3:
-		case 5:
-			if (DmConvertion.OneByteToSByte(val) < 0)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			else
-			{
-				result = val[0];
-			}
-			break;
-		case 6:
-			obj = GetShort(i, val, CType, prec, scale);
-			CheckRangeSByte((short)obj);
-			result = Convert.ToByte(obj);
-			break;
-		case 7:
-			obj = GetInt(i, val, CType, prec, scale);
-			CheckRangeSByte((int)obj);
-			result = Convert.ToByte(obj);
-			break;
-		case 8:
-			obj = GetLong(i, val, CType, prec, scale);
-			CheckRangeSByte((long)obj);
-			result = Convert.ToByte(obj);
-			break;
-		case 10:
-			obj = GetFloat(i, val, CType, prec, scale);
-			CheckRangeSByte((float)obj);
-			result = Convert.ToByte(obj);
-			break;
-		case 11:
-			obj = GetDate(i, val, CType, prec, scale);
-			CheckRangeSByte((double)obj);
-			result = Convert.ToByte(obj);
-			break;
-		case 9:
-		case 24:
-			obj = GetBigDecimal(i, val, CType, prec, scale);
-			CheckRangeSByte((decimal)obj);
-			result = decimal.ToByte((decimal)obj);
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			try
-			{
-				obj = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-				CheckRangeSByte(obj);
-				result = Convert.ToByte(obj);
-			}
-			catch (Exception)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			break;
-		case 25:
-			result = 0;
-			break;
-		case 28:
-			obj = new DmRowId(val).longValue(m_Statement.G().Conn);
-			CheckRangeSByte((long)obj);
-			result = Convert.ToByte(obj);
-			break;
-		default:
-			throw new InvalidCastException();
-		}
-		return result;
+		return checked((byte)ReadIntegerExact(i, val, CType, prec, scale, byte.MinValue, byte.MaxValue));
 	}
 
 	internal short GetShort(int i, byte[] val, int CType, int prec, int scale)
 	{
-		short result = 0;
-		object obj = null;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 6:
-			result = DmConvertion.TwoByteToShort(val);
-			break;
-		case 3:
-		case 5:
-			result = GetSByte(i, val, CType, prec, scale);
-			break;
-		case 7:
-			obj = GetInt(i, val, CType, prec, scale);
-			CheckRangeInt16((int)obj);
-			result = Convert.ToInt16(obj);
-			break;
-		case 8:
-			obj = GetLong(i, val, CType, prec, scale);
-			CheckRangeInt16((long)obj);
-			result = Convert.ToInt16(obj);
-			break;
-		case 10:
-			obj = GetFloat(i, val, CType, prec, scale);
-			CheckRangeInt16((float)obj);
-			result = Convert.ToInt16(obj);
-			break;
-		case 11:
-			obj = GetDouble(i, val, CType, prec, scale);
-			CheckRangeInt16((double)obj);
-			result = Convert.ToInt16(obj);
-			break;
-		case 9:
-		case 24:
-			obj = GetBigDecimal(i, val, CType, prec, scale);
-			CheckRangeInt16((decimal)obj);
-			result = decimal.ToInt16((decimal)obj);
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			try
-			{
-				obj = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-				CheckRangeInt16(obj);
-				result = Convert.ToInt16(obj);
-			}
-			catch (Exception)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			break;
-		case 25:
-			result = 0;
-			break;
-		case 28:
-			obj = new DmRowId(val).longValue(m_Statement.G().Conn);
-			CheckRangeInt16((long)obj);
-			result = Convert.ToInt16(obj);
-			break;
-		default:
-			throw new InvalidCastException();
-		}
-		return result;
+		return checked((short)ReadIntegerExact(i, val, CType, prec, scale, short.MinValue, short.MaxValue));
 	}
 
 	internal long GetLong(int i, byte[] val, int CType, int prec, int scale)
 	{
-		long result = 0L;
-		object obj = null;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 8:
-			result = DmConvertion.EightByteToLong(val);
-			break;
-		case 3:
-		case 5:
-			result = GetSByte(i, val, CType, prec, scale);
-			break;
-		case 6:
-			result = GetShort(i, val, CType, prec, scale);
-			break;
-		case 7:
-			result = GetInt(i, val, CType, prec, scale);
-			break;
-		case 10:
-			obj = GetFloat(i, val, CType, prec, scale);
-			CheckRangeSingle((float)obj);
-			result = Convert.ToInt64(obj);
-			break;
-		case 11:
-			obj = GetDouble(i, val, CType, prec, scale);
-			CheckRangeSingle((double)obj);
-			result = Convert.ToInt64(obj);
-			break;
-		case 9:
-		case 24:
-			obj = GetBigDecimal(i, val, CType, prec, scale);
-			CheckRangeDecimal((decimal)obj);
-			result = Convert.ToInt64(obj);
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			try
-			{
-				obj = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-				CheckRangeInt64(obj);
-				result = Convert.ToInt64(obj);
-			}
-			catch (Exception)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			break;
-		case 25:
-			result = 0L;
-			break;
-		case 28:
-			result = new DmRowId(val).longValue(m_Statement.G().Conn);
-			break;
-		case 20:
-		{
-			DmIntervalYM dmIntervalYM = new DmIntervalYM(val);
-			result = dmIntervalYM.getYear() * 12 + dmIntervalYM.getMonth();
-			break;
-		}
-		case 21:
-		{
-			DmIntervalDT dmIntervalDT = new DmIntervalDT(val);
-			result = ((long)dmIntervalDT.getDay() * 86400L + (long)dmIntervalDT.getHour() * 3600L + (long)dmIntervalDT.getMinute() * 60L + dmIntervalDT.getSecond()) * 1000 + (long)dmIntervalDT.getMsec() / 1000L;
-			break;
-		}
-		default:
-			throw new InvalidCastException();
-		}
-		return result;
+		return checked((long)ReadIntegerExact(i, val, CType, prec, scale, long.MinValue, long.MaxValue));
 	}
 
 	internal float GetFloat(int i, byte[] val, int CType, int prec, int scale)
@@ -568,7 +302,7 @@ internal class DmGetValue
 			break;
 		case 9:
 		case 24:
-			result = ((prec <= 29) ? decimal.ToSingle(GetBigDecimal(i, val, CType, prec, scale)) : Convert.ToSingle(GetDmDecimal(i, val, CType, prec, scale).ToString()));
+			result = float.Parse(ReadExactDecimal(val, CType, prec, scale).ToString(), DmConst.invariantCulture);
 			break;
 		case 0:
 		case 1:
@@ -577,58 +311,39 @@ internal class DmGetValue
 		case 54:
 			try
 			{
-				CheckRangeSingle(double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture));
-				result = (float)double.Parse(GetString(i, val, CType, prec, scale).Trim());
+				double parsed = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
+				CheckRangeSingle(parsed);
+				result = (float)parsed;
 			}
 			catch (Exception)
 			{
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
 			}
 			break;
-		case 25:
-			result = 0f;
-			break;
 		default:
 			throw new InvalidCastException();
 		}
+		if (!float.IsFinite(result)) throw new OverflowException("Non-finite floating values are unsupported.");
 		return result;
 	}
 
 	internal double GetDouble(int i, byte[] val, int CType, int prec, int scale)
 	{
-		double num = 0.0;
-		if (val == null)
+		if (val == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		double result = CType switch
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 11:
-			return DmConvertion.GetDouble(val);
-		case 3:
-		case 5:
-			return GetSByte(i, val, CType, prec, scale);
-		case 6:
-			return GetShort(i, val, CType, prec, scale);
-		case 7:
-			return GetInt(i, val, CType, prec, scale);
-		case 8:
-			return GetLong(i, val, CType, prec, scale);
-		case 10:
-			return GetFloat(i, val, CType, prec, scale);
-		case 0:
-		case 1:
-		case 2:
-		case 9:
-		case 19:
-		case 24:
-		case 54:
-			return double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-		case 25:
-			return 0.0;
-		default:
-			throw new InvalidCastException();
-		}
+			11 => DmConvertion.GetDouble(val),
+			10 => DmConvertion.GetSingle(val),
+			3 or 5 => DmConvertion.OneByteToSByte(val),
+			6 => DmConvertion.TwoByteToShort(val),
+			7 => DmConvertion.FourByteToInt(val),
+			8 => DmConvertion.EightByteToLong(val),
+			9 or 24 => double.Parse(ReadExactDecimal(val, CType, prec, scale).ToString(), DmConst.invariantCulture),
+			0 or 1 or 2 or 19 or 54 => double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture),
+			_ => throw new InvalidCastException("Column cannot be read as double.")
+		};
+		if (!double.IsFinite(result)) throw new OverflowException("Non-finite floating values are unsupported.");
+		return result;
 	}
 
 	internal string GetString(int i, byte[] val, int CType, int prec, int scale)
@@ -656,14 +371,14 @@ internal class DmGetValue
 		case 8:
 			return GetLong(i, val, CType, prec, scale).ToString();
 		case 10:
-			text = GetFloat(i, val, CType, prec, scale).ToString();
+			text = GetFloat(i, val, CType, prec, scale).ToString("R", DmConst.invariantCulture);
 			return ReplaceNumPoint(text);
 		case 11:
-			text = GetDouble(i, val, CType, prec, scale).ToString();
+			text = GetDouble(i, val, CType, prec, scale).ToString("R", DmConst.invariantCulture);
 			return ReplaceNumPoint(text);
 		case 9:
 		case 24:
-			text = ((prec <= 29) ? GetBigDecimal(i, val, CType, prec, scale).ToString() : GetDmDecimal(i, val, CType, prec, scale).ToString());
+			text = ReadExactDecimal(val, CType, prec, scale).ToString();
 			return ReplaceNumPoint(text);
 		case 3:
 			return GetBoolean(i, val, CType, prec, scale).ToString();
@@ -793,300 +508,58 @@ internal class DmGetValue
 
 	internal DmXDec GetDmDecimal(int i, byte[] val, int CType, int prec, int scale)
 	{
-		_ = val?.Length;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 9:
-			return new DmXDec(val);
-		case 24:
-		{
-			string text = DmConvertion.EightByteToLong(val).ToString() ?? "";
-			int length = text.Length;
-			if (length > scale)
-			{
-				string text2 = text.Substring(0, length - scale);
-				string text3 = text.Substring(length - scale);
-				text = text2 + "." + text3;
-			}
-			else
-			{
-				for (int j = 0; j < scale - length; j++)
-				{
-					text = "0" + text;
-				}
-				text = "0." + text;
-			}
-			return new DmXDec().Parse(text);
-		}
-		case 3:
-		case 5:
-			return new DmXDec().Parse(GetSByte(i, val, CType, prec, scale).ToString());
-		case 6:
-			return new DmXDec().Parse(GetShort(i, val, CType, prec, scale).ToString());
-		case 7:
-			return new DmXDec().Parse(GetInt(i, val, CType, prec, scale).ToString());
-		case 8:
-			return new DmXDec().Parse(GetLong(i, val, CType, prec, scale).ToString());
-		case 10:
-			return new DmXDec().Parse(GetFloat(i, val, CType, prec, scale).ToString());
-		case 11:
-			return new DmXDec().Parse(GetDouble(i, val, CType, prec, scale).ToString());
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			return new DmXDec().Parse(GetString(i, val, CType, prec, scale).Trim());
-		case 25:
-			return new DmXDec().Parse("0.0");
-		default:
-			throw new InvalidCastException();
-		}
+		throw new NotSupportedException("XDEC is not supported; use GetProviderSpecificValue for exact DECIMAL values.");
 	}
 
 	internal decimal GetBigDecimal(int i, byte[] val, int CType, int prec, int scale)
 	{
-		decimal num = default(decimal);
-		string text = "";
-		_ = val?.Length;
-		if (val == null)
+		if (val == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		return CType switch
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 9:
-			text = new DmXDec().decToString(val);
-			num = decimal.Parse(text, DmConst.invariantCulture);
-			break;
-		case 24:
-		{
-			text = DmConvertion.EightByteToLong(val).ToString() ?? "";
-			int length = text.Length;
-			if (length > scale)
-			{
-				string text2 = text.Substring(0, length - scale);
-				string text3 = text.Substring(length - scale);
-				text = text2 + "." + text3;
-			}
-			else
-			{
-				for (int j = 0; j < scale - length; j++)
-				{
-					text = "0" + text;
-				}
-				text = "0." + text;
-			}
-			num = decimal.Parse(text, DmConst.invariantCulture);
-			break;
-		}
-		case 3:
-		case 5:
-			num = new decimal(GetSByte(i, val, CType, prec, scale));
-			break;
-		case 6:
-			num = new decimal(GetShort(i, val, CType, prec, scale));
-			break;
-		case 7:
-			num = new decimal(GetInt(i, val, CType, prec, scale));
-			break;
-		case 8:
-			num = new decimal(GetLong(i, val, CType, prec, scale));
-			break;
-		case 10:
-			num = new decimal(GetFloat(i, val, CType, prec, scale));
-			break;
-		case 11:
-			num = new decimal(GetDouble(i, val, CType, prec, scale));
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			text = GetString(i, val, CType, prec, scale).Trim();
-			num = decimal.Parse(text, DmConst.invariantCulture);
-			break;
-		case 25:
-			num = default(decimal);
-			break;
-		default:
-			throw new InvalidCastException();
-		}
-		if (scale > 0 && connProperty.CompatibleMode == CompatibleMode.SQLSERVER)
-		{
-			num = num.setScale(scale, MidpointRounding.AwayFromZero);
-		}
-		return num;
+			9 or 24 => ReadExactDecimal(val, CType, prec, scale).ToDecimalExact(),
+			3 or 5 => new decimal(DmConvertion.OneByteToSByte(val)),
+			6 => new decimal(DmConvertion.TwoByteToShort(val)),
+			7 => new decimal(DmConvertion.FourByteToInt(val)),
+			8 => new decimal(DmConvertion.EightByteToLong(val)),
+			0 or 1 or 2 or 19 or 54 => DmDecimal.Parse(GetString(i, val, CType, prec, scale).Trim()).ToDecimalExact(),
+			_ => throw new InvalidCastException("Column cannot be read as an exact decimal.")
+		};
 	}
 
 	internal sbyte GetSByte(int i, byte[] val, int CType, int prec, int scale)
 	{
-		sbyte result = 0;
-		object obj = null;
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		switch (CType)
-		{
-		case 3:
-		case 5:
-			result = DmConvertion.OneByteToSByte(val);
-			break;
-		case 6:
-			obj = GetShort(i, val, CType, prec, scale);
-			CheckRangeSByte((short)obj);
-			result = Convert.ToSByte(obj);
-			break;
-		case 7:
-			obj = GetInt(i, val, CType, prec, scale);
-			CheckRangeSByte((int)obj);
-			result = Convert.ToSByte(obj);
-			break;
-		case 8:
-			obj = GetLong(i, val, CType, prec, scale);
-			CheckRangeSByte((long)obj);
-			result = Convert.ToSByte(obj);
-			break;
-		case 10:
-			obj = GetFloat(i, val, CType, prec, scale);
-			CheckRangeSByte((float)obj);
-			result = Convert.ToSByte(obj);
-			break;
-		case 11:
-			obj = GetDate(i, val, CType, prec, scale);
-			CheckRangeSByte((double)obj);
-			result = Convert.ToSByte(obj);
-			break;
-		case 9:
-		case 24:
-			obj = GetBigDecimal(i, val, CType, prec, scale);
-			CheckRangeSByte((decimal)obj);
-			result = decimal.ToSByte((decimal)obj);
-			break;
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			try
-			{
-				obj = double.Parse(GetString(i, val, CType, prec, scale).Trim(), DmConst.invariantCulture);
-				CheckRangeSByte(obj);
-				result = Convert.ToSByte(obj);
-			}
-			catch (Exception)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-			}
-			break;
-		case 25:
-			result = 0;
-			break;
-		default:
-			throw new InvalidCastException();
-		}
-		return result;
+		return checked((sbyte)ReadIntegerExact(i, val, CType, prec, scale, sbyte.MinValue, sbyte.MaxValue));
 	}
 
 	internal ushort GetUshort(int i, byte[] val, int CType, int prec, int scale)
 	{
-		short num = GetShort(i, val, CType, prec, scale);
-		if (num < 0)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-		}
-		return (ushort)num;
+		return checked((ushort)ReadIntegerExact(i, val, CType, prec, scale, ushort.MinValue, ushort.MaxValue));
 	}
 
 	internal uint GetUint(int i, byte[] val, int CType, int prec, int scale)
 	{
-		int num = GetInt(i, val, CType, prec, scale);
-		if (num < 0)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-		}
-		return (uint)num;
+		return checked((uint)ReadIntegerExact(i, val, CType, prec, scale, uint.MinValue, uint.MaxValue));
 	}
 
 	internal ulong GetUlong(int i, byte[] val, int CType, int prec, int scale)
 	{
-		long num = GetLong(i, val, CType, prec, scale);
-		if (num < 0)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_DATA_CONVERTION_ERROR);
-		}
-		return (ulong)num;
+		return checked((ulong)ReadIntegerExact(i, val, CType, prec, scale, ulong.MinValue, ulong.MaxValue));
 	}
 
 	public DateTimeOffset GetTimeTZ(int i, byte[] val, int CType, int prec, int scale)
 	{
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		DmDateTime dmDateTime = new DmDateTime(DmDateTime.DmTimeFromRec4(val, CType), prec);
-		switch (CType)
-		{
-		case 15:
-			return new DateTimeOffset(dmDateTime.GetTime());
-		case 22:
-		case 23:
-			return dmDateTime.GetTimeTZ();
-		case 16:
-			return new DateTimeOffset(dmDateTime.GetTimestamp());
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 25:
-		case 54:
-			return new DateTimeOffset(DateTime.MinValue);
-		default:
-			throw new InvalidCastException();
-		}
+		if (val == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		if (CType != 22) throw new InvalidCastException("Column has no TIME WITH TIME ZONE offset.");
+		return new DmDateTime(DmDateTime.DmTimeFromRec4(val, CType), prec).GetTimeTZ();
 	}
 
 	public DateTimeOffset GetTimestampTZ(int i, byte[] val, int CType, int prec, int scale)
 	{
-		if (val == null)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-		}
-		DmDateTime dmDateTime = new DmDateTime(DmDateTime.DmTimeFromRec4(val, CType), prec);
-		switch (CType)
-		{
-		case 16:
-		case 26:
-		{
-			DateTime dateTime = ((!DmDateTime.NTYPE_IS_LOCAL_TIME_ZONE(CType, scale)) ? dmDateTime.GetTimestamp() : DmDateTime.DmtimeAddByFmt(prec, dmDateTime, 5, m_Statement.G().ConnProperty.TimeZone - m_Statement.G().ConnProperty.DbTimeZone));
-			return new DateTimeOffset(dateTime);
-		}
-		case 23:
-		case 27:
-			return dmDateTime.GetTimestampTZ();
-		case 14:
-			return new DateTimeOffset(dmDateTime.GetDate());
-		case 15:
-			return new DateTimeOffset(dmDateTime.GetTime());
-		case 22:
-			return dmDateTime.GetTimeTZ();
-		case 0:
-		case 1:
-		case 2:
-		case 19:
-		case 54:
-			return new DateTimeOffset(DmDateTime.GetTimestampByString(GetString(i, val, CType, prec, scale).Trim()));
-		case 25:
-			return new DateTimeOffset(DateTime.MinValue);
-		default:
-			throw new InvalidCastException();
-		}
+		if (val == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		if (CType == 22) return GetTimeTZ(i, val, CType, prec, scale);
+		if (CType is not (23 or 27))
+			throw new InvalidCastException("Column has no TIMESTAMP WITH TIME ZONE offset.");
+		return new DmDateTime(DmDateTime.DmTimeFromRec4(val, CType), prec).GetTimestampTZ();
 	}
 
 	public DateTime GetTimestamp(int i, byte[] val, int CType, int prec, int scale)
@@ -1215,7 +688,7 @@ internal class DmGetValue
 		DmIntervalDT iNTERVALDT = GetINTERVALDT(i, val, CType, prec, scale);
 		if (connProperty.IntervalMode == IntervalMode.DT || connProperty.IntervalMode == IntervalMode.ALL || scale == 1574)
 		{
-			return TimeSpan.ParseExact(iNTERVALDT.GetTimeSpanFormatString(), "c", null);
+			return iNTERVALDT.ToTimeSpanExact();
 		}
 		return iNTERVALDT;
 	}
@@ -1263,50 +736,13 @@ internal class DmGetValue
 			return GetDouble(i, val, CType, prec, scale);
 		case 9:
 		case 24:
-			if (prec > 29)
-			{
-				decimal num = decimal.Parse(GetDmDecimal(i, val, CType, prec, scale).ToString(), DmConst.invariantCulture);
-				if (scale > 0 && connProperty.CompatibleMode == CompatibleMode.SQLSERVER)
-				{
-					num = num.setScale(scale, MidpointRounding.AwayFromZero);
-				}
-				return num;
-			}
-			return GetBigDecimal(i, val, CType, prec, scale);
+			return ReadExactDecimal(val, CType, prec, scale).ToDecimalExact();
 		case 0:
 		case 1:
-		{
-			string text2 = GetString(i, val, CType, prec, scale);
-			if (prec == 36)
-			{
-				try
-				{
-					return new Guid(text2);
-				}
-				catch (Exception)
-				{
-					return text2;
-				}
-			}
-			return text2;
-		}
+			return GetString(i, val, CType, prec, scale);
 		case 2:
 		case 54:
-		{
-			string text = GetString(i, val, CType, prec, scale);
-			if (connProperty.Varchar36ToGuid && prec == 36)
-			{
-				try
-				{
-					return new Guid(text);
-				}
-				catch (Exception)
-				{
-					return text;
-				}
-			}
-			return text;
-		}
+			return GetString(i, val, CType, prec, scale);
 		case 14:
 			return GetDate(i, val, CType, prec, scale);
 		case 15:
@@ -1322,11 +758,7 @@ internal class DmGetValue
 			return GetTimestamp(i, val, CType, prec, scale);
 		case 23:
 		case 27:
-			if (connProperty.ConvertToTz)
-			{
-				return GetTimestampTZ(i, val, CType, prec, scale);
-			}
-			return GetTimestamp(i, val, CType, prec, scale);
+			return GetTimestampTZ(i, val, CType, prec, scale);
 		case 12:
 			return GetBytes(i, val, CType, prec, scale);
 		case 19:

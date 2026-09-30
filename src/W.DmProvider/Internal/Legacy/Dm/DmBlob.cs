@@ -19,7 +19,7 @@ public class DmBlob : AbstractLob
 		}
 		else if (fetchAll)
 		{
-			loadAllData();
+			LoadAllDataOwned();
 		}
 	}
 
@@ -42,11 +42,13 @@ public class DmBlob : AbstractLob
 
 	public byte[] GetBytes(long pos, int len)
 	{
+		using var invocation = BeginPublicOperation();
 		return do_getBytes(pos + 1, len);
 	}
 
 	internal byte[] do_getBytes(long pos, int len)
 	{
+		using var invocation = BeginInternalOperation();
 		if (pos < 1 || len < 0)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -69,6 +71,7 @@ public class DmBlob : AbstractLob
 
 	public int SetBytes(long pos, byte[] bytes)
 	{
+		using var invocation = BeginPublicOperation();
 		if (bytes == null)
 		{
 			return do_setBytes(pos + 1, new byte[0], 0, 0);
@@ -78,11 +81,13 @@ public class DmBlob : AbstractLob
 
 	public int SetBytes(long pos, ref byte[] bytes, int offset, int len)
 	{
+		using var invocation = BeginPublicOperation();
 		return do_setBytes(pos + 1, bytes, offset, len);
 	}
 
 	internal int do_setBytes(long pos, byte[] bytes, int offset, int len)
 	{
+		using var invocation = BeginInternalOperation();
 		if (pos < 1 || len < 0 || offset < 0)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -113,11 +118,19 @@ public class DmBlob : AbstractLob
 
 	public void Truncate(long len)
 	{
-		do_truncate(len);
+		using var invocation = BeginPublicOperation();
+		TruncateOwned(len);
 	}
 
 	public void do_truncate(long len)
 	{
+		using var invocation = BeginPublicOperation();
+		TruncateOwned(len);
+	}
+
+	private void TruncateOwned(long len)
+	{
+		using var invocation = BeginInternalOperation();
 		if (len < 0)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
@@ -150,6 +163,13 @@ public class DmBlob : AbstractLob
 
 	public void loadAllData()
 	{
+		using var invocation = BeginPublicOperation();
+		LoadAllDataOwned();
+	}
+
+	private void LoadAllDataOwned()
+	{
+		using var invocation = BeginInternalOperation();
 		if (!local && storageType != 1 && !fetchAll)
 		{
 			data = do_getBytes(1L, (int)do_length());
@@ -180,6 +200,7 @@ public class DmBlob : AbstractLob
 
 	public long Length()
 	{
+		using var invocation = BeginPublicOperation();
 		return do_length();
 	}
 }

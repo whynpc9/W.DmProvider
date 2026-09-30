@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Transport;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
 using W.Dm.filter;
@@ -16,6 +19,8 @@ internal class DmConnInstance
 	private DmTransaction m_Tran;
 
 	private B m_Csi;
+
+	internal DmSession Session { get; }
 
 	private DmConnection m_Conn;
 
@@ -120,6 +125,7 @@ internal class DmConnInstance
 	{
 		try
 		{
+			Session = conn.Session ?? throw new InvalidOperationException("Physical session is missing.");
 			SetDmConnection(conn);
 			m_ConnPro = conn.ConnProperty.Clone();
 			if (m_ConnPro.PreparePooling)
@@ -127,18 +133,24 @@ internal class DmConnInstance
 				pstmtCache = new LRUCache<string, global::W.Dm.Internal.Legacy.A.A>(m_ConnPro.PreparePoolSize);
 			}
 			m_Csi = new B(m_SendMsg, m_RecvMsg, this);
-			DBAliveCheckThread.CheckThread.AddConnInstance(this);
+			Session.AttachTransport(this);
+			// Legacy process-wide alive checks are disabled in T04.
 		}
-		catch (Exception ex)
+		catch
 		{
-			conn.do_State = ConnectionState.Closed;
-			throw ex;
+			try { AbortTransport(); } catch { }
+			throw;
 		}
 	}
 
 	internal B GetCsi()
 	{
 		return m_Csi;
+	}
+
+	internal void Open(DmDeadline deadline)
+	{
+		m_Csi.Open(deadline);
 	}
 
 	public bool GetAutoCommit()
@@ -186,7 +198,7 @@ internal class DmConnInstance
 	{
 		if (Transaction != null)
 		{
-			Transaction.Valid = false;
+			Transaction.InvalidateForSessionLoss();
 			Transaction = null;
 		}
 		foreach (global::W.Dm.Internal.Legacy.A.A stmt in m_Stmts)
@@ -220,63 +232,34 @@ internal class DmConnInstance
 		}
 	}
 
-	public void Close(bool keep_tcp)
+	// No protocol cleanup is safe after an interrupted exchange. Close only the captured
+	// physical transport; never invoke transaction Dispose or statement close here.
+	internal void AbortTransport()
 	{
-		if (m_Csi == null)
-		{
-			return;
-		}
-		try
-		{
-			if (!keep_tcp)
-			{
-				m_Csi.E();
-				AliveCheck = false;
-			}
-		}
+		B captured = Interlocked.Exchange(ref m_Csi, null);
+		if (captured == null) return;
+		try { captured.E(); }
 		finally
 		{
-			Cleanup(keep_tcp);
-			if (Conn != null)
-			{
-				Conn.do_State = ConnectionState.Closed;
-			}
+			AliveCheck = false;
+			Transaction?.InvalidateForSessionLoss();
+			Transaction = null;
 		}
+	}
+
+	public void Close(bool keep_tcp)
+	{
+		AbortTransport();
 	}
 
 	public void Close(bool keep_tcp, StringBuilder msg)
 	{
-		if (m_Csi == null)
-		{
-			msg.Append("->{m_Csi == null}");
-			return;
-		}
-		try
-		{
-			if (keep_tcp)
-			{
-				msg.Append("->{keep_tcp = " + keep_tcp + "}");
-				return;
-			}
-			msg.Append("->{m_Csi.Close()}");
-			m_Csi.E();
-			msg.Append("->{AliveCheck = false;}");
-			AliveCheck = false;
-		}
-		finally
-		{
-			msg.Append("->{Cleanup(" + keep_tcp + ")}");
-			Cleanup(keep_tcp);
-			if (Conn != null)
-			{
-				msg.Append("->{Conn.do_State = ConnectionState.Closed;}");
-				Conn.do_State = ConnectionState.Closed;
-			}
-		}
+		AbortTransport();
 	}
 
-	private void SetTransactionIsolation(DmTransaction dmTransaction, IsolationLevel level)
+	private bool SetTransactionIsolation(IsolationLevel level, out DmCommand isolationOwner)
 	{
+		isolationOwner = null;
 		int num = 1;
 		switch (level)
 		{
@@ -314,9 +297,21 @@ internal class DmConnInstance
 				1 => text + "READ COMMITTED;", 
 				_ => text + "SERIALIZABLE;", 
 			};
-			dmTransaction.Stmt = GetStmtFromPool((DmCommand)Conn.CreateCommand());
-			m_Csi.A(dmTransaction.Stmt.__t02_field_04000925, dmTransaction.Stmt.__t02_field_04000926, dmTransaction.Stmt, text, true, 0);
+			// This owner belongs only to the configuration exchange. Its explicit
+			// SQL and handle must never become a user command's transaction statement.
+			isolationOwner = Conn.CreateCommand(text);
+			var controlStatement = GetStmtFromPool(isolationOwner);
+			isolationOwner.Statement = controlStatement;
+			controlStatement.B(text);
+			m_Csi.A(controlStatement.__t02_field_04000925, controlStatement.__t02_field_04000926,
+				controlStatement, text, true, 0);
+			var invocation = DmInvocation.Current ??
+				throw new InvalidOperationException("Isolation configuration has no invocation owner.");
+			controlStatement.F().RequireTransactionIsolationReceipt((short)num, invocation.Identity);
 		}
+		// With no SET, the complete LOGIN/SET SESSION response already established
+		// the default value. A transaction SET is confirmed by its own receipt above.
+		return true;
 	}
 
 	public void SetTrxISO(IsolationLevel level)
@@ -324,8 +319,10 @@ internal class DmConnInstance
 		ConnProperty.IsolationLevel = level;
 	}
 
-	public DmTransaction BeginTrx(IsolationLevel il)
+	public DmTransaction BeginTrx(IsolationLevel il, out DmCommand isolationOwner, out bool isolationConfirmed)
 	{
+		isolationOwner = null;
+		isolationConfirmed = false;
 		if (Transaction != null && Transaction.Valid)
 		{
 			if (ConnProperty.Enlist)
@@ -335,7 +332,7 @@ internal class DmConnInstance
 			throw new InvalidOperationException("不支持并行事务");
 		}
 		Transaction = new DmTransaction(this, il);
-		SetTransactionIsolation(Transaction, il);
+		isolationConfirmed = SetTransactionIsolation(il, out isolationOwner);
 		SetAutoCommit(autoCommit: false);
 		return Transaction;
 	}
@@ -352,10 +349,10 @@ internal class DmConnInstance
 		}
 		else
 		{
-			ClearTrx();
 			m_Csi.__t02_method_06000A82(m_SendMsg, m_RecvMsg);
 			do_setTrxFinish(trxFinish: true);
 			ConnProperty.ClearAutoCommit();
+			ClearTrx();
 		}
 	}
 
@@ -371,10 +368,10 @@ internal class DmConnInstance
 		}
 		else
 		{
-			ClearTrx();
 			m_Csi.b(m_SendMsg, m_RecvMsg);
 			do_setTrxFinish(trxFinish: true);
 			ConnProperty.ClearAutoCommit();
+			ClearTrx();
 		}
 	}
 
@@ -397,37 +394,20 @@ internal class DmConnInstance
 
 	public DmSavePoint Save(string savepointName)
 	{
-		CheckClosed();
-		if (GetAutoCommit())
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_SAVEPOINT_IN_AUTOCOMMIT_MODE);
-		}
-		return new DmSavePoint(Conn, savepointName);
+		return Transaction?.do_Save(savepointName) ??
+			throw new InvalidOperationException("Savepoint requires an active transaction.");
 	}
 
 	public void Rollback(string savepointName)
 	{
-		CheckClosed();
-		if (GetAutoCommit() && !ConnProperty.AlwaysAllowAutoCommit)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_ROLLBACK_TO_SAVEPOINT_IN_AUTOCOMMIT_MODE);
-		}
-		string sql = "ROLLBACK TO SAVEPOINT \"" + StringUtil.processDoubleQuoteOfName(savepointName) + "\"";
-		DriverUtil.executeNonQuery(Conn, sql, null);
+		if (Transaction == null) throw new InvalidOperationException("Savepoint requires an active transaction.");
+		Transaction.do_Rollback(savepointName);
 	}
 
 	public void Release(string savepointName)
 	{
-		CheckClosed();
-		if (GetAutoCommit() && !ConnProperty.AlwaysAllowAutoCommit)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_RELEASE_SAVEPOINT_IN_AUTOCOMMIT_MODE);
-		}
-		lock (Conn)
-		{
-			string sql = "RELEASE_SAVEPOINT('" + StringUtil.processSingleQuoteOfName(savepointName) + "')";
-			DriverUtil.executeNonQuery(Conn, sql, null);
-		}
+		if (Transaction == null) throw new InvalidOperationException("Savepoint requires an active transaction.");
+		Transaction.do_Release(savepointName);
 	}
 
 	internal void ClearTrx()
@@ -542,15 +522,6 @@ internal class DmConnInstance
 
 	public bool IsSocketConnected()
 	{
-		Socket _t02_field_04000AAC = m_Csi.A().__t02_field_04000AAC;
-		if (_t02_field_04000AAC.Poll(0, SelectMode.SelectRead))
-		{
-			byte[] buffer = new byte[1];
-			if (_t02_field_04000AAC.Receive(buffer, SocketFlags.Peek) == 0)
-			{
-				return false;
-			}
-		}
-		return true;
+		throw new NotSupportedException("Legacy socket health checks are unsupported without an owned exchange.");
 	}
 }

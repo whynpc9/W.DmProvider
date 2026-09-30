@@ -2,6 +2,8 @@ using System;
 using System.Data;
 using W.Dm;
 using W.Dm.Config;
+using W.Dm.Internal.Protocol;
+using W.Dm.Internal.Sessions;
 using W.Dm.util;
 
 namespace W.Dm.Internal.Legacy.A;
@@ -284,6 +286,8 @@ internal class c
 	private static void A(b P_0, int P_1, ref DmInfo P_2)
 	{
 		P_2.GetParamsInfo(out var ParamsInfo);
+		if (ParamsInfo == null || P_1 > ParamsInfo.Length) throw new System.IO.InvalidDataException("Parameter count exceeds allocated metadata.");
+		DmFrameReader.ValidateCount(P_1, 32, P_0.a(false));
 		for (int i = 0; i < P_1; i++)
 		{
 			ParamsInfo[i].SetCType(P_0.d());
@@ -333,6 +337,7 @@ internal class c
 			return;
 		}
 		int num = P_0.a();
+		DmFrameReader.ValidateCount(P_1, 32, P_0.a(false));
 		DmColumn[] array = new DmColumn[P_1];
 		for (int i = 0; i < P_1; i++)
 		{
@@ -457,6 +462,7 @@ internal class c
 			A(P_0, num3, dmInfo, P_1.G(), P_1.c());
 		}
 		P_1.__t02_method_06000898(dmInfo);
+		DmResultProtocolTrace.RecordStatement(dmInfo);
 	}
 
 	private static void a(b P_0, A P_1)
@@ -648,13 +654,33 @@ internal class c
 		return P_0.F(P_0.k());
 	}
 
-	public static void A(b P_0, A P_1, DmConnProperty P_2)
+	public static void A(b P_0, A P_1, DmConnProperty P_2, short requestOpcode = 0, bool executionVsPrepare = false)
 	{
 		int num = P_0.L();
 		if (num < 0)
 		{
 			string text = A(P_1);
-			A(P_0, P_2.ServerEncoding, P_2.RWStandby, text);
+			DmInvocation invocation = DmInvocation.Current;
+			DmSession session = P_1.G().Session;
+			bool recoverableStatementError = num == -2106 &&
+				string.Equals(P_2.ServerVersion, "8.1.5.60", StringComparison.Ordinal) &&
+				invocation != null && ReferenceEquals(invocation.Lease.Session, session) &&
+				invocation.Lease.Purpose is DmOperationPurpose.Query or DmOperationPurpose.Reader &&
+				ReferenceEquals(session.ActiveTransaction, P_1.G().Transaction) &&
+				session.ActiveTransaction?.Outcome == DmTransactionOutcome.Active;
+			if (recoverableStatementError)
+			{
+				DmTransactionProtocolTrace.RecordDiagnosticBody(requestOpcode, P_0);
+				A(P_0, P_2.ServerEncoding, P_2.RWStandby, text, error =>
+				{
+					DmException verified = new DmException(error);
+					(DmWireExchange.Current ?? throw new InvalidOperationException("Server error has no wire owner."))
+						.CompleteValidatedServerError(invocation.Identity);
+					verified.MarkVerifiedServerResponse(invocation.Identity);
+					return verified;
+				});
+			}
+			else A(P_0, P_2.ServerEncoding, P_2.RWStandby, text);
 		}
 		DmInfo dmInfo = new DmInfo(P_1.G());
 		dmInfo.SetParaNum(P_1.F().GetParameterCount());
@@ -671,6 +697,7 @@ internal class c
 		DmRowId rowId = null;
 		dmInfo.Execid = P_0.aH();
 		int num10 = P_0.ah();
+		if (num4 < 0 || num8 < 0 || num9 < 0 || num10 < 0) throw new System.IO.InvalidDataException("Negative result metadata length or count.");
 		DmConnInstance dmConnInstance = P_1.G();
 		dmConnInstance.trxStatus = P_0.aI();
 		dmConnInstance.do_setTrxFinish(dmConnInstance.trxStatus);
@@ -755,6 +782,10 @@ internal class c
 			}
 			else
 			{
+				// This is a receipt for one transaction's SET, not the connection's
+				// default isolation. The caller validates its expected value and owner.
+				dmInfo.RecordTransactionIsolationReceipt(num13, requestOpcode, num,
+					DmInvocation.Current?.Identity ?? default);
 				if (P_1.f() != null)
 				{
 					P_1.f().SetStmtSerial(num13);
@@ -865,6 +896,7 @@ internal class c
 			}
 			if (num8 > 0)
 			{
+				DmFrameReader.ValidateRows(num8, num11, P_0.a(false));
 				P_1.l().FillRows(0L, num8, P_0, dmInfo.rsBdta, rsBdtaRowidCol);
 				if (P_1.G().ConnProperty.EnRsCache && num10 > 0 && dmInfo.GetRowCount() == num8)
 				{
@@ -876,6 +908,7 @@ internal class c
 			{
 				P_0.f(num10 - P_0.a());
 				short num12 = P_0.C();
+				DmFrameReader.ValidateCount(num12, 12, P_0.a(false));
 				int[] array = new int[num12];
 				long[] array2 = new long[num12];
 				for (int i = 0; i < num12; i++)
@@ -889,7 +922,19 @@ internal class c
 			}
 			break;
 		}
+		if (requestOpcode == 44 && P_0.I() == 0 && P_0.L() == DmErrorDefinition.EC_RESULT_SET_EMPTY &&
+			dmInfo.GetRetStmtType() == 0 && dmInfo.GetColumnCount() == 0 &&
+			!dmInfo.GetHasResultSet() && dmInfo.GetRowCount() == -1)
+			dmInfo.MarkTerminal();
 		P_1.__t02_method_06000898(dmInfo);
+		if (dmConnInstance.Session.ObserveTransactionResponse(
+			DmInvocation.Current?.Identity ?? default, requestOpcode, dmInfo.GetRetStmtType(),
+			dmConnInstance.trxStatus, dmInfo.IsTerminal, executionVsPrepare, P_2.ServerVersion))
+		{
+			dmConnInstance.ClearTrx();
+			dmConnInstance.ConnProperty.ClearAutoCommit();
+		}
+		DmResultProtocolTrace.RecordStatement(dmInfo);
 	}
 
 	public static bool A(b P_0, long P_1, DmResultSetCache P_2)
@@ -901,6 +946,7 @@ internal class c
 		}
 		P_2.totalRowCount = P_0.ai();
 		int num2 = P_0.aJ();
+		DmFrameReader.ValidateRows(num2, P_2.colNum, P_0.a(false));
 		P_2.FillRows(P_1, num2, P_0, P_2.isRsBdta, P_2.rsBdtaRowidCol);
 		if (num2 > 0)
 		{
@@ -944,6 +990,7 @@ internal class c
 		{
 			return null;
 		}
+		DmFrameReader.ValidateCount(num, 8, P_0.a(false));
 		long[] array = new long[num];
 		for (int i = 0; i < num; i++)
 		{
@@ -1069,17 +1116,52 @@ internal class c
 		DmError.ThrowDmException(dmError);
 	}
 
-	private static void A(b P_0, string P_1, bool P_2, string P_3)
+	private static void A(b P_0, string P_1, bool P_2, string P_3,
+		Func<DmError, DmException> verifiedException = null)
 	{
-		DmError dmError = new DmError();
-		dmError.State = P_0.L();
-		P_0.A(dmError, P_1);
+		DmError dmError;
+		if (verifiedException != null)
+		{
+			// A recoverable error is a synchronization claim. The negotiated frame
+			// checksum was validated by the receive path; require all four bounded
+			// diagnostic strings as well, including complete body consumption.
+			dmError = ReadCompleteErrorBody(P_0, P_1);
+		}
+		else
+		{
+			dmError = new DmError();
+			dmError.State = P_0.L();
+			P_0.A(dmError, P_1);
+		}
 		dmError.Message += P_3;
 		if (P_2)
 		{
 			dmError.Message = "[S]" + dmError.Message;
 		}
+		if (verifiedException != null) throw verifiedException(dmError);
 		DmError.ThrowDmException(dmError);
+	}
+
+	internal static DmError ReadCompleteErrorBody(b response, string serverEncoding)
+	{
+		if (response.a() != DmFrameReader.HeaderSize || response.a(false) != response.k())
+			throw new System.IO.InvalidDataException("Server error body has an inconsistent boundary.");
+		var error = new DmError { State = response.L() };
+		error.Schema = ReadErrorString(response, serverEncoding);
+		error.Table = ReadErrorString(response, serverEncoding);
+		error.Col = ReadErrorString(response, serverEncoding);
+		error.Message = ReadErrorString(response, serverEncoding);
+		if (response.a(false) != 0)
+			throw new System.IO.InvalidDataException("Server error body has trailing data.");
+		return error;
+	}
+
+	private static string ReadErrorString(b response, string serverEncoding)
+	{
+		int length = response.d();
+		if (length < 0 || length > response.a(false))
+			throw new System.IO.InvalidDataException("Server error diagnostic length is invalid.");
+		return length == 0 ? string.Empty : response.A(length, serverEncoding);
 	}
 
 	private static string A(A P_0)

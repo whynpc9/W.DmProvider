@@ -7,7 +7,9 @@ public class DmClientFactory : DbProviderFactory, IServiceProvider
 {
 	public static readonly DmClientFactory Instance = new DmClientFactory();
 
-	public override bool CanCreateDataSourceEnumerator => true;
+	public override bool CanCreateDataSourceEnumerator => false;
+
+	public override bool CanCreateBatch => false;
 
 	private DmClientFactory()
 	{

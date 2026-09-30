@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using W.Dm.filter;
 using W.Dm.util;
@@ -36,7 +37,15 @@ internal class DmdbResultSetMetaData : IFilterInfo
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
 	public LogInfo LogInfo { get; set; }
 

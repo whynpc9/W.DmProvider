@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm;
 
@@ -275,6 +277,7 @@ internal class DmResultSetCache
 
 	public void FillRows(long rowPos, int fetchedRows, b msg, bool isRsBdta, short rsBdtaRowidCol)
 	{
+		if (fetchedRows < 0 || colNum < 0) throw new InvalidDataException("Negative result dimensions.");
 		datasStartPos = rowPos;
 		this.isRsBdta = isRsBdta;
 		this.rsBdtaRowidCol = rsBdtaRowidCol;
@@ -285,6 +288,12 @@ internal class DmResultSetCache
 		long num = msg.A(false);
 		long num2 = msg.g();
 		BytesCount = (int)(num2 - num);
+		DmFrameReader.ValidateRows(fetchedRows, colNum, msg.a(false));
+		if (!isRsBdta)
+		{
+			int minimumRow = checked(2 + ((connInstance.ConnProperty.msgVersion < 9) ? 8 : 12) + checked(4 * colNum));
+			DmFrameReader.ValidateCount(fetchedRows, minimumRow, msg.a(false));
+		}
 		datas = new byte[fetchedRows][][];
 		for (int i = 0; i < fetchedRows; i++)
 		{
@@ -294,15 +303,19 @@ internal class DmResultSetCache
 		{
 			int num3 = 0;
 			long num4 = num;
+			long decodedValueBytes = 0;
 			while (num4 < num2)
 			{
 				int num5 = (int)msg.E();
 				int nflds = msg.D();
 				int num6 = (int)msg.E();
-				Bdta.decode(datas, colNum, num3, num5, nflds, msg, rsBdtaRowidCol);
+				if (num5 <= 0 || num5 > fetchedRows - num3 || num6 <= 0 || num6 > num2 - num4)
+					throw new InvalidDataException("Invalid BDTA package dimensions.");
+				Bdta.decode(datas, colNum, num3, num5, nflds, msg, rsBdtaRowidCol, ref decodedValueBytes);
 				num4 += num6;
 				num3 += num5;
 			}
+			if (num3 != fetchedRows) throw new InvalidDataException("BDTA row count mismatch.");
 			return;
 		}
 		for (int j = 0; j < fetchedRows; j++)

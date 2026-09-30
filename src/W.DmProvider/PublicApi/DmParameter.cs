@@ -1,9 +1,12 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Numerics;
 using System.Threading;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.filter;
+using W.Dm.Internal.Types;
 
 namespace W.Dm;
 
@@ -26,6 +29,16 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 	private DbType m_DbType = DbType.String;
 
 	private DmDbType m_DmSqlType = DmDbType.VarChar;
+	private bool explicitDbType;
+	private DbType explicitDbTypeValue;
+	private bool explicitDmSqlType;
+	private DmDbType explicitDmSqlTypeValue;
+	private bool inferredTypeKnown;
+	internal DmParameterTypeSource TypeSource => explicitDmSqlType ? DmParameterTypeSource.ExplicitDmSqlType :
+		explicitDbType ? DmParameterTypeSource.ExplicitDbType :
+		inferredTypeKnown ? DmParameterTypeSource.ClrValue : DmParameterTypeSource.Unresolved;
+	internal bool HasExplicitDbType => explicitDbType;
+	internal bool HasExplicitDmSqlType => explicitDmSqlType;
 
 	private string m_DmSqlTypeName = string.Empty;
 
@@ -42,6 +55,62 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 	private ParameterDirection m_Direct = ParameterDirection.Input;
 
 	private bool m_SourceColumnNullMapping;
+	private readonly object ownershipGate = new();
+	private DmParameterCollection ownerCollection;
+	private int activeMutations;
+
+	internal DmParameterCollection parameterCollection
+	{
+		get { lock (ownershipGate) return ownerCollection; }
+	}
+
+	internal void AttachCollection(DmParameterCollection collection)
+	{
+		lock (ownershipGate)
+		{
+			if (activeMutations != 0 || ownerCollection != null)
+				throw new InvalidOperationException("Parameter already belongs to a collection or is being modified.");
+			ownerCollection = collection;
+		}
+	}
+
+	internal void DetachCollection(DmParameterCollection collection)
+	{
+		lock (ownershipGate)
+		{
+			if (!ReferenceEquals(ownerCollection, collection) || activeMutations != 0)
+				throw new InvalidOperationException("Parameter collection ownership changed.");
+			ownerCollection = null;
+		}
+	}
+
+	private IDisposable BeginMutation()
+	{
+		lock (ownershipGate)
+		{
+			IDisposable commandMutation = ownerCollection?.PlanGate?.BeginMutation();
+			activeMutations++;
+			return new ParameterMutation(this, commandMutation);
+		}
+	}
+
+	private sealed class ParameterMutation : IDisposable
+	{
+		private DmParameter owner;
+		private readonly IDisposable commandMutation;
+		internal ParameterMutation(DmParameter owner, IDisposable commandMutation)
+		{
+			this.owner = owner;
+			this.commandMutation = commandMutation;
+		}
+		public void Dispose()
+		{
+			DmParameter captured = Interlocked.Exchange(ref owner, null);
+			if (captured == null) return;
+			try { commandMutation?.Dispose(); }
+			finally { lock (captured.ownershipGate) captured.activeMutations--; }
+		}
+	}
 
 	private global::W.Dm.Internal.Legacy.A.A m_refCursorStmt;
 
@@ -67,13 +136,22 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 	}
 
-	public BaseFilter filterHead { get; set; }
+	public BaseFilter filterHead
+	{
+		get => null;
+		set
+		{
+			if (value != null)
+				throw new NotSupportedException("Legacy filter injection is unsupported.");
+		}
+	}
 
-	public LogInfo LogInfo { get; set; }
-
-	public RWInfo RWInfo { get; set; }
-
-	public RecoverInfo RecoverInfo { get; set; }
+	private LogInfo logInfo;
+	private RWInfo rwInfo;
+	private RecoverInfo recoverInfo;
+	public LogInfo LogInfo { get => logInfo; set { using var mutation = BeginMutation(); logInfo = value; } }
+	public RWInfo RWInfo { get => rwInfo; set { using var mutation = BeginMutation(); rwInfo = value; } }
+	public RecoverInfo RecoverInfo { get => recoverInfo; set { using var mutation = BeginMutation(); recoverInfo = value; } }
 
 	internal DbType do_DbType
 	{
@@ -83,8 +161,12 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
+			if (!Enum.IsDefined(value)) throw new ArgumentOutOfRangeException(nameof(value));
+			explicitDbType = true;
+			explicitDbTypeValue = value;
 			m_DbType = value;
-			m_DmSqlType = W.Dm.DmSqlType.DbTypeToDmSqlType(m_DbType);
+			if (!explicitDmSqlType) m_DmSqlType = DefaultProviderType(value);
 			m_SetDbTypeFlag = true;
 		}
 	}
@@ -98,6 +180,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "Direction");
 			CheckParameterDirection(value);
 			m_Direct = value;
@@ -113,6 +196,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "IsNullable");
 			m_IsNullable = value;
 		}
@@ -127,12 +211,13 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "ParameterName");
 			string name = m_Name;
 			GetParameterName(value);
 			if (parameterCollection != null)
 			{
-				parameterCollection.ChangeName(this, name, value);
+				parameterCollection.ChangeNameIndex(this, name, value);
 			}
 			m_Name = value;
 		}
@@ -147,6 +232,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "Size");
 			m_Size = value;
 			m_SetSizeFlag = true;
@@ -162,6 +248,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "SourceColumn");
 			m_SourceCol = value;
 		}
@@ -175,6 +262,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_SourceColumnNullMapping = value;
 		}
 	}
@@ -188,6 +276,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "SourceVersion");
 			CheckSourceVersion(value);
 			m_DataRowVer = value;
@@ -203,6 +292,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "Value");
 			m_value = value;
 			byte[] array = value as byte[];
@@ -218,27 +308,11 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 					m_Size = text.Length;
 				}
 			}
-			if (m_SetDbTypeFlag || value == null)
+			if (explicitDbType || explicitDmSqlType)
 			{
 				return;
 			}
-			if (value is Array && !(value is byte[]))
-			{
-				object obj = null;
-				for (int i = 0; i < ((Array)value).Length; i++)
-				{
-					obj = ((Array)value).GetValue(i);
-					if (obj != null)
-					{
-						SetDbTypeFromValue(obj);
-						break;
-					}
-				}
-			}
-			else
-			{
-				SetDbTypeFromValue(value);
-			}
+			InferFromValue(value);
 		}
 	}
 
@@ -250,6 +324,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_Prec = value;
 			m_SetPrecFlag = true;
 		}
@@ -263,6 +338,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_Scale = value;
 			m_SetScaleFlag = true;
 		}
@@ -521,8 +597,6 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 	}
 
-	internal DmParameterCollection parameterCollection { get; set; }
-
 	internal string Pre
 	{
 		get
@@ -531,6 +605,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_pre = value;
 		}
 	}
@@ -555,6 +630,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_EFParaKind = value;
 		}
 	}
@@ -568,10 +644,13 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			DmTrace.TracePropertySet(TraceLevel.Debug, ClassName, "DmSqlType");
 			CheckParameterDbType(value);
+			explicitDmSqlType = true;
+			explicitDmSqlTypeValue = value;
 			m_DmSqlType = value;
-			m_DbType = W.Dm.DmSqlType.DmSqlTypeToDbType(m_DmSqlType);
+			if (!explicitDbType) m_DbType = W.Dm.DmSqlType.DmSqlTypeToDbType(value);
 			m_SetDbTypeFlag = true;
 		}
 	}
@@ -584,6 +663,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 		set
 		{
+			using var mutation = BeginMutation();
 			m_DmSqlTypeName = value;
 		}
 	}
@@ -706,11 +786,16 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		m_SetSizeFlag = false;
 		m_SetPrecFlag = false;
 		m_SetScaleFlag = false;
+		InferFromValue(m_value);
 	}
 
 	internal void do_ResetDbType()
 	{
-		DbType = DbType.String;
+		using var mutation = BeginMutation();
+		explicitDbType = false;
+		explicitDmSqlType = false;
+		m_SetDbTypeFlag = false;
+		InferFromValue(m_value);
 	}
 
 	public override void ResetDbType()
@@ -725,71 +810,137 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		}
 	}
 
-	private void SetDbTypeFromValue(object value)
+	private void InferFromValue(object value)
 	{
-		if (value is Enum)
+		m_SetDbTypeFlag = false;
+		if (value is null or DBNull)
 		{
-			do_DbType = DbType.Int32;
+			inferredTypeKnown = false;
+			m_DbType = DbType.String;
+			m_DmSqlType = DmDbType.VarChar;
 			return;
 		}
-		switch (value.GetType().Name)
+		if (value is Enum) value = Enum.GetUnderlyingType(value.GetType()) switch
 		{
-		case "SByte":
-			do_DbType = DbType.SByte;
-			break;
-		case "Byte":
-			do_DbType = DbType.Byte;
-			break;
-		case "Int16":
-			do_DbType = DbType.Int16;
-			break;
-		case "UInt16":
-			do_DbType = DbType.UInt16;
-			break;
-		case "Int32":
-			do_DbType = DbType.Int32;
-			break;
-		case "UInt32":
-			do_DbType = DbType.UInt32;
-			break;
-		case "Int64":
-			do_DbType = DbType.Int64;
-			break;
-		case "UInt64":
-			do_DbType = DbType.UInt64;
-			break;
-		case "DateTime":
-			do_DbType = DbType.DateTime;
-			break;
-		case "String":
-			do_DbType = DbType.String;
-			break;
-		case "Single":
-			do_DbType = DbType.Single;
-			break;
-		case "Double":
-			do_DbType = DbType.Double;
-			break;
-		case "Decimal":
-			do_DbType = DbType.Decimal;
-			break;
-		case "TimeSpan":
-			DmSqlType = DmDbType.IntervalDayToSecond;
-			break;
-		case "Guid":
-			do_DbType = DbType.Guid;
-			break;
-		case "Boolean":
-			do_DbType = DbType.Boolean;
-			break;
-		case "DateTimeOffset":
-			do_DbType = DbType.DateTimeOffset;
-			break;
-		default:
-			do_DbType = DbType.Object;
-			break;
+			Type type when type == typeof(byte) => (byte)0,
+			Type type when type == typeof(sbyte) => (sbyte)0,
+			Type type when type == typeof(ushort) => (ushort)0,
+			Type type when type == typeof(short) => (short)0,
+			Type type when type == typeof(uint) => (uint)0,
+			Type type when type == typeof(int) => 0,
+			Type type when type == typeof(ulong) => (ulong)0,
+			_ => (long)0
+		};
+		DmDbType special = DmDbType.VarChar;
+		m_DbType = value switch
+		{
+			sbyte => DbType.SByte,
+			byte or short => DbType.Int16,
+			ushort or int => DbType.Int32,
+			uint or long => DbType.Int64,
+			ulong or decimal or BigInteger or DmDecimal => DbType.Decimal,
+			float => DbType.Single,
+			double => DbType.Double,
+			bool => DbType.Boolean,
+			string or char[] => DbType.String,
+			byte[] => DbType.Binary,
+			Guid => DbType.Guid,
+			DateOnly => DbType.Date,
+			TimeOnly => DbType.Time,
+			DateTime => DbType.DateTime,
+			DateTimeOffset => DbType.DateTimeOffset,
+			TimeSpan => DbType.Object,
+			_ => DbType.Object
+		};
+		inferredTypeKnown = m_DbType != DbType.Object || value is TimeSpan;
+		if (value is TimeSpan) special = DmDbType.IntervalDayToSecond;
+		m_DmSqlType = value is TimeSpan ? special : DefaultProviderType(m_DbType);
+	}
+
+	internal void ValidateTypeConfiguration()
+	{
+		if (explicitDmSqlType && (explicitDmSqlTypeValue is DmDbType.ARRAY or DmDbType.Class or DmDbType.XDEC))
+			throw new NotSupportedException("Complex and XDEC input types are not supported by this provider version.");
+		if (!explicitDbType || !explicitDmSqlType) return;
+		DmDbType expected = DefaultProviderType(explicitDbTypeValue);
+		bool compatible = WidenUnsigned(expected) == WidenUnsigned(explicitDmSqlTypeValue) ||
+			(explicitDbTypeValue == DbType.Binary && explicitDmSqlTypeValue is DmDbType.Binary or DmDbType.Blob or DmDbType.VarBinary) ||
+			(explicitDbTypeValue == DbType.String && explicitDmSqlTypeValue is DmDbType.Clob or DmDbType.Text) ||
+			(explicitDbTypeValue == DbType.Int32 && explicitDmSqlTypeValue == DmDbType.Int64) ||
+			(explicitDbTypeValue == DbType.UInt16 && explicitDmSqlTypeValue is DmDbType.Int32 or DmDbType.Int64 or DmDbType.Decimal) ||
+			(explicitDbTypeValue == DbType.UInt32 && explicitDmSqlTypeValue is DmDbType.Int64 or DmDbType.Decimal) ||
+			(explicitDbTypeValue == DbType.UInt64 && explicitDmSqlTypeValue == DmDbType.Decimal);
+		if (!compatible) throw new InvalidOperationException("Explicit DbType and DmSqlType conflict.");
+	}
+
+	internal void ValidateInputSourceRange(object value)
+	{
+		if (value is null or DBNull) return;
+		if (explicitDbType) ValidateIntegerSourceRange(value, explicitDbTypeValue);
+		if (explicitDmSqlType)
+		{
+			DbType? logicalType = explicitDmSqlTypeValue switch
+			{
+				DmDbType.Byte => DbType.Byte,
+				DmDbType.UInt16 => DbType.UInt16,
+				DmDbType.UInt32 => DbType.UInt32,
+				DmDbType.UInt64 => DbType.UInt64,
+				_ => null
+			};
+			if (logicalType is { } declared) ValidateIntegerSourceRange(value, declared);
 		}
 	}
+
+	private static void ValidateIntegerSourceRange(object value, DbType declared)
+	{
+		if (value is bool boolean) value = boolean ? 1 : 0;
+		switch (declared)
+		{
+		case DbType.Byte: DmNumericInput.ToIntegerExact(value, byte.MinValue, byte.MaxValue); break;
+		case DbType.SByte: DmNumericInput.ToIntegerExact(value, sbyte.MinValue, sbyte.MaxValue); break;
+		case DbType.Int16: DmNumericInput.ToIntegerExact(value, short.MinValue, short.MaxValue); break;
+		case DbType.UInt16: DmNumericInput.ToIntegerExact(value, ushort.MinValue, ushort.MaxValue); break;
+		case DbType.Int32: DmNumericInput.ToIntegerExact(value, int.MinValue, int.MaxValue); break;
+		case DbType.UInt32: DmNumericInput.ToIntegerExact(value, uint.MinValue, uint.MaxValue); break;
+		case DbType.Int64: DmNumericInput.ToIntegerExact(value, long.MinValue, long.MaxValue); break;
+		case DbType.UInt64: DmNumericInput.ToIntegerExact(value, ulong.MinValue, ulong.MaxValue); break;
+		}
+	}
+
+	internal (DmDbType Type, DmParameterTypeSource Source) ResolveType(DmParameterInternal described)
+	{
+		ValidateTypeConfiguration();
+		if (explicitDmSqlType) return (WidenUnsigned(explicitDmSqlTypeValue), DmParameterTypeSource.ExplicitDmSqlType);
+		if (explicitDbType) return (DefaultProviderType(explicitDbTypeValue), DmParameterTypeSource.ExplicitDbType);
+		if (described != null && described.GetTypeFlag() == 1 &&
+			DmParameterBinding.IsReliableDescribe(described.GetCType()))
+		{
+			DmDbType serverType = described.GetCType() switch
+			{
+				22 => DmDbType.Time,
+				23 or 27 => DmDbType.DateTimeOffset,
+				26 => DmDbType.DateTime,
+				_ => W.Dm.DmSqlType.CTypeToDmDbType(described.GetCType())
+			};
+			return (serverType, DmParameterTypeSource.ServerDescribe);
+		}
+		if (inferredTypeKnown) return (m_DmSqlType, DmParameterTypeSource.ClrValue);
+		throw new InvalidOperationException("Parameter type is unresolved; set DbType or DmSqlType.");
+	}
+
+	// DbType.Binary expresses bytes without a fixed-width contract. The provider's
+	// explicit Binary type remains available when the caller supplies that contract.
+	private static DmDbType DefaultProviderType(DbType type) => type == DbType.Binary
+		? DmDbType.VarBinary : WidenUnsigned(W.Dm.DmSqlType.DbTypeToDmSqlType(type));
+
+	private static DmDbType WidenUnsigned(DmDbType type) => type switch
+	{
+		DmDbType.Byte => DmDbType.Int16,
+		DmDbType.UInt16 => DmDbType.Int32,
+		DmDbType.UInt32 => DmDbType.Int64,
+		DmDbType.UInt64 => DmDbType.Decimal,
+		_ => type
+	};
 
 	internal string GetParameterName(string name)
 	{
@@ -831,29 +982,58 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 
 	public DmParameter Clone()
 	{
-		return new DmParameter
+		return CloneCore(strictSnapshot: false);
+	}
+
+	internal DmParameter CloneForPlan() => CloneCore(strictSnapshot: true);
+
+	private DmParameter CloneCore(bool strictSnapshot)
+	{
+		var clone = new DmParameter
 		{
 			m_Prec = m_Prec,
 			m_Scale = m_Scale,
 			m_Size = m_Size,
 			m_DbType = m_DbType,
 			m_DmSqlType = m_DmSqlType,
+			explicitDbType = explicitDbType,
+			explicitDbTypeValue = explicitDbTypeValue,
+			explicitDmSqlType = explicitDmSqlType,
+			explicitDmSqlTypeValue = explicitDmSqlTypeValue,
+			inferredTypeKnown = inferredTypeKnown,
 			m_Direct = m_Direct,
 			m_IsNullable = m_IsNullable,
 			m_Name = m_Name,
-			Pre = Pre,
+			m_pre = m_pre,
 			m_SourceCol = m_SourceCol,
 			m_DataRowVer = m_DataRowVer,
-			m_value = m_value,
+			m_value = CopyMutableValue(m_value, strictSnapshot),
 			m_SourceColumnNullMapping = m_SourceColumnNullMapping,
-			m_refCursorStmt = m_refCursorStmt,
-			DmSqlTypeName = DmSqlTypeName,
-			m_pre = m_pre,
-			EFParaKind = m_EFParaKind,
+			m_refCursorStmt = null,
+			m_DmSqlTypeName = m_DmSqlTypeName,
+			m_EFParaKind = m_EFParaKind,
 			m_SetDbTypeFlag = m_SetDbTypeFlag,
 			m_SetSizeFlag = m_SetSizeFlag,
 			m_SetPrecFlag = m_SetPrecFlag,
 			m_SetScaleFlag = m_SetScaleFlag
 		};
+		if (strictSnapshot && !clone.explicitDbType && !clone.explicitDmSqlType)
+			clone.InferFromValue(clone.m_value);
+		return clone;
+	}
+
+	private static object CopyMutableValue(object value, bool strictSnapshot)
+	{
+		if (value is null or DBNull) return value;
+		if (value is byte[] bytes) return (byte[])bytes.Clone();
+		if (value is char[] chars) return (char[])chars.Clone();
+		if (strictSnapshot && value is DmXDec) return DmNumericInput.ToExactDecimal(value);
+		if (!strictSnapshot) return value;
+		if (value is Stream) throw new NotSupportedException("Streaming parameter snapshots are not supported.");
+		if (value is Array) throw new NotSupportedException("Array parameter snapshots require an explicitly supported element type.");
+		if (value is string or bool or byte or sbyte or short or ushort or int or uint or long or ulong or
+			float or double or decimal or BigInteger or DmDecimal or char or Guid or DateTime or DateTimeOffset or TimeSpan or DateOnly or TimeOnly or Enum)
+			return value;
+		throw new NotSupportedException("This parameter value type cannot be snapshotted safely.");
 	}
 }

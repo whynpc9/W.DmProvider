@@ -1,4 +1,5 @@
 using System.Threading;
+using W.Dm.Internal.Sessions;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -19,23 +20,41 @@ public class DmSavePoint
 
 	private DmConnection conn;
 
+	private readonly DmTransaction transaction;
+
+	private readonly DmSession boundSession;
+
 	public DmSavePoint(DmConnection conn, string name)
 	{
-		lock (conn)
+		this.conn = conn ?? throw new System.ArgumentNullException(nameof(conn));
+		transaction = conn.m_ConnInst?.Transaction ?? throw new System.InvalidOperationException("Savepoint requires an active transaction.");
+		boundSession = conn.Session;
+		InitializeName(name);
+		transaction.do_Save(this.name);
+	}
+
+	private DmSavePoint(DmConnection conn, DmTransaction transaction, string name)
+	{
+		this.conn = conn;
+		this.transaction = transaction;
+		boundSession = conn.Session;
+		InitializeName(name);
+	}
+
+	internal static DmSavePoint CreateHandle(DmConnection conn, DmTransaction transaction, string name) =>
+		new DmSavePoint(conn, transaction, name);
+
+	private void InitializeName(string value)
+	{
+		if (StringUtil.isEmpty(value))
 		{
-			this.conn = conn;
-			if (StringUtil.isEmpty(name))
-			{
-				id = Interlocked.Increment(ref SEED);
-				this.name = "DMDB_SVPT_" + id;
-			}
-			else
-			{
-				id = -1;
-				this.name = name;
-			}
-			string sql = "SAVEPOINT \"" + StringUtil.processDoubleQuoteOfName(this.name) + "\"";
-			DriverUtil.executeNonQuery(this.conn, sql, null);
+			id = Interlocked.Increment(ref SEED);
+			name = NAME_PREFIX_DEFAULT + id;
+		}
+		else
+		{
+			id = -1;
+			name = value;
 		}
 	}
 
@@ -59,14 +78,11 @@ public class DmSavePoint
 
 	public void release()
 	{
-		lock (conn)
-		{
-			if (!released)
-			{
-				string sql = "RELEASE_SAVEPOINT('" + StringUtil.processSingleQuoteOfName(name) + "')";
-				DriverUtil.executeNonQuery(conn, sql, null);
-				released = true;
-			}
-		}
+		if (released) return;
+		transaction.CheckBoundSession();
+		if (!object.ReferenceEquals(conn.Session, boundSession))
+			throw new System.InvalidOperationException("Savepoint belongs to a closed or replaced session.");
+		transaction.do_Release(name);
+		released = true;
 	}
 }

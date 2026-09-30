@@ -262,24 +262,7 @@ public class ComplexTypeDesc
 
 	internal void Unpack(b msg)
 	{
-		column.SetCType(msg.d());
-		switch (column.GetCType())
-		{
-		case 117:
-		case 122:
-			UnpackArray(msg);
-			break;
-		case 119:
-			UnpackClass(msg);
-			break;
-		case 121:
-			UnpackRecord(msg);
-			break;
-		default:
-			column.SetPrecision(msg.d());
-			column.SetScale(msg.d());
-			break;
-		}
+		throw new System.NotSupportedException("Complex type descriptor decoding is not supported by this provider version.");
 	}
 
 	private void UnpackArray(b msg)

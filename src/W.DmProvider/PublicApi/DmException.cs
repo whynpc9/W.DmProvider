@@ -2,24 +2,38 @@ using System;
 using System.Data.Common;
 using System.Runtime.Serialization;
 using W.Dm.util;
+using W.Dm.Internal.Sessions;
 
 namespace W.Dm;
 
 [Serializable]
-public sealed class DmException : DbException
+public class DmException : DbException
 {
 	private DmErrorCollection m_ErrorCollection = new DmErrorCollection();
+	internal bool HasVerifiedServerResponse { get; private set; }
+	internal OperationIdentity VerifiedResponseIdentity { get; private set; }
 
-	public int Number => m_ErrorCollection[0].State;
+	internal void MarkVerifiedServerResponse(OperationIdentity identity)
+	{
+		VerifiedResponseIdentity = identity;
+		HasVerifiedServerResponse = true;
+	}
 
-	public string Schema => m_ErrorCollection[0].Schema;
+	public int Number => m_ErrorCollection.Count == 0 ? 0 : m_ErrorCollection[0].State;
 
-	public string Table => m_ErrorCollection[0].Table;
+	public string Schema => m_ErrorCollection.Count == 0 ? string.Empty : m_ErrorCollection[0].Schema;
 
-	public string Col => m_ErrorCollection[0].Col;
+	public string Table => m_ErrorCollection.Count == 0 ? string.Empty : m_ErrorCollection[0].Table;
+
+	public string Col => m_ErrorCollection.Count == 0 ? string.Empty : m_ErrorCollection[0].Col;
 
 	internal DmException(string message)
 		: base(message)
+	{
+	}
+
+	protected DmException(string message, Exception innerException)
+		: base(message, innerException)
 	{
 	}
 

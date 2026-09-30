@@ -1,5 +1,8 @@
+using System;
+using System.IO;
 using System.Text;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm;
 
@@ -21,8 +24,12 @@ public class Bdta
 
 	public const int VAR_DATA_LEN_DEC = -3;
 
-	internal static void decode(byte[][][] datas, int colNum, int rownum_offset, int cur_rownum, int nflds, b buffer, int rowidCol)
+	internal static void decode(byte[][][] datas, int colNum, int rownum_offset, int cur_rownum, int nflds, b buffer, int rowidCol, ref long decodedValueBytes)
 	{
+		if (datas == null || colNum < 0 || rownum_offset < 0 || cur_rownum < 0 || cur_rownum > datas.Length - rownum_offset || nflds < 0 || nflds > checked(colNum + 1))
+			throw new InvalidDataException("Invalid BDTA dimensions.");
+		DmFrameReader.ValidateCount(nflds, 6, buffer.a(false) - 5);
+		if (rowidCol < -1 || rowidCol > colNum) throw new InvalidDataException("Invalid BDTA row ID column.");
 		bool flag = rowidCol >= 0 && nflds == colNum + 1;
 		buffer.A(4, false, true);
 		buffer.A(1, false, true);
@@ -51,6 +58,7 @@ public class Bdta
 			bool[] array3 = null;
 			if (!flag2)
 			{
+				DmFrameReader.ValidateCount(cur_rownum, 1, buffer.a(false));
 				array3 = new bool[cur_rownum];
 				for (int l = 0; l < cur_rownum; l++)
 				{
@@ -61,7 +69,7 @@ public class Bdta
 			{
 				if (flag2 || !array3[m])
 				{
-					datas[rownum_offset + m][num] = dataBytes(array[k], buffer);
+					datas[rownum_offset + m][num] = dataBytes(array[k], buffer, ref decodedValueBytes);
 				}
 			}
 		}
@@ -129,7 +137,7 @@ public class Bdta
 		return result;
 	}
 
-	private static byte[] dataBytes(int dataType, b buffer)
+	private static byte[] dataBytes(int dataType, b buffer, ref long decodedValueBytes)
 	{
 		int num = dataLength(dataType);
 		int num2 = 0;
@@ -143,7 +151,14 @@ public class Bdta
 			num = buffer.d();
 			break;
 		}
-		byte[] array = new byte[num + num2];
+		if (num < 0 || num2 < 0) throw new InvalidDataException("Negative BDTA value length.");
+		int allocation;
+		try { allocation = checked(num + num2); }
+		catch (OverflowException ex) { throw new InvalidDataException("BDTA value length overflow.", ex); }
+		if (num > buffer.a(false) || allocation > DmFrameReader.MaxFrameSize)
+			throw new InvalidDataException("BDTA value exceeds frame data.");
+		DmFrameReader.ReserveDecodedValueBytes(ref decodedValueBytes, allocation);
+		byte[] array = new byte[allocation];
 		buffer.A(array, 0, num);
 		if (num2 == 0)
 		{

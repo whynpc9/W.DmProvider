@@ -1,3 +1,6 @@
+using System.IO;
+using W.Dm.Internal.Sessions;
+
 namespace W.Dm;
 
 internal class DmInfo
@@ -19,12 +22,42 @@ internal class DmInfo
 	private int m_RefHandle;
 
 	private int m_RetStmtType = -1;
+	private short? transactionIsolationResponseLevel;
+	private short transactionIsolationRequestOpcode;
+	private int transactionIsolationSqlCode;
+	private OperationIdentity transactionIsolationResponseIdentity;
+
+	internal void RecordTransactionIsolationReceipt(short level, short requestOpcode, int sqlCode,
+		OperationIdentity identity)
+	{
+		transactionIsolationResponseLevel = level;
+		transactionIsolationRequestOpcode = requestOpcode;
+		transactionIsolationSqlCode = sqlCode;
+		transactionIsolationResponseIdentity = identity;
+	}
+
+	internal void RequireTransactionIsolationReceipt(short expectedLevel, OperationIdentity identity)
+	{
+		if (expectedLevel is not (0 or 1 or 3) || m_RetStmtType != 150 ||
+			transactionIsolationRequestOpcode != 5 || transactionIsolationSqlCode != 0 ||
+			transactionIsolationResponseLevel != expectedLevel ||
+			transactionIsolationResponseIdentity != identity ||
+			identity.SessionId <= 0 || identity.LeaseGeneration <= 0 ||
+			identity.ExecutionId <= 0 || identity.InvocationId <= 0)
+			throw new InvalidDataException("Transaction isolation response was not confirmed for this operation.");
+	}
 
 	private int m_OutParamNum;
 
 	private int m_Execid = -1;
 
 	private long m_RecordsAffected;
+
+	private bool m_IsTerminal;
+
+	internal bool IsTerminal => m_IsTerminal;
+
+	internal void MarkTerminal() => m_IsTerminal = true;
 
 	private int m_ParamNum = 20;
 

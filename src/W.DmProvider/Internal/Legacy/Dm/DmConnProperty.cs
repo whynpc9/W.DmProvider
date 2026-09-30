@@ -131,9 +131,9 @@ internal class DmConnProperty
 
 	internal int algorithm;
 
-	private DmSvcConfig config;
 
-	private DmConnectionStringBuilder builder;
+
+	internal DmConnectionSettings Settings { get; private set; }
 
 	internal Dictionary<string, object> property;
 
@@ -141,88 +141,18 @@ internal class DmConnProperty
 
 	internal string ConnectionString
 	{
-		get
-		{
-			return builder.ConnectionString;
-		}
-		set
-		{
-			builder.ConnectionString = value;
-			property.Clear();
-			foreach (string key in builder.setProperty.Keys)
-			{
-				property[key] = builder.setProperty[key];
-			}
-			IOrderedEnumerable<KeyValuePair<string, object>> orderedEnumerable = property.OrderBy((KeyValuePair<string, object> kvp) => kvp.Key);
-			StringBuilder stringBuilder = new StringBuilder();
-			foreach (KeyValuePair<string, object> item in orderedEnumerable)
-			{
-				stringBuilder.Append(item.Key).Append('=').Append(item.Value)
-					.Append(';');
-			}
-			PropertyHashCode = stringBuilder.ToString().GetHashCode();
-			config = new DmSvcConfig(builder.property[DmConst.PROP_KEY_DM_SVC_PATH].ToString());
-			string text = builder.property[DmConst.PROP_KEY_SERVER].ToString();
-			string[] array = DmSvcConfig.Parse(text);
-			if (array != null)
-			{
-				property[DmConst.PROP_KEY_EP_GROUP] = DmOption.ParseEPGroup(array);
-			}
-			if (!config.propertyDictionary.ContainsKey(text))
-			{
-				text = "defaultproperty";
-			}
-			foreach (string key2 in config.propertyDictionary[text].Keys)
-			{
-				if (!property.ContainsKey(key2))
-				{
-					property[key2] = config.propertyDictionary[text][key2];
-				}
-			}
-			ServName = Server + ":" + Port;
-			string[] array2 = AddressRemap.Split(new char[1] { '&' }, StringSplitOptions.RemoveEmptyEntries);
-			string[] array3 = null;
-			string[] array4;
-			if (array2 != null && array2.Length != 0)
-			{
-				array4 = array2;
-				for (int num = 0; num < array4.Length; num++)
-				{
-					array3 = array4[num].Split(new char[1] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-					if (array3 != null && array3.Length == 2 && array3[0].Equals(Server + ":" + Port))
-					{
-						if (!array3[1].Contains(":"))
-						{
-							throw new ArgumentException("format: address_remap=192.168.1.24:5236,192.168.1.23:5236&192.168.1.22:5236,192.168.1.20:5236");
-						}
-						string[] array5 = array3[1].Split(new char[1] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-						if (!int.TryParse(array5[1], out var result))
-						{
-							throw new ArgumentException("format: address_remap=192.168.1.24:5236,192.168.1.23:5236&192.168.1.22:5236,192.168.1.20:5236");
-						}
-						Server = array5[0];
-						Port = result;
-						break;
-					}
-				}
-			}
-			array2 = UserRemap.Split(new char[1] { '&' }, StringSplitOptions.RemoveEmptyEntries);
-			if (array2 == null || array2.Length == 0)
-			{
-				return;
-			}
-			array4 = array2;
-			for (int num = 0; num < array4.Length; num++)
-			{
-				array3 = array4[num].Split(new char[1] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-				if (array3 != null && array3.Length == 2 && array3[0].Equals(User))
-				{
-					User = array3[1];
-					break;
-				}
-			}
-			AdjustProperty();
-		}
+		get => Settings?.ToConnectionString(includeSecrets: true) ?? string.Empty;
+		set => BindSettings(DmConnectionSettings.Parse(value));
+	}
+
+	internal void BindSettings(DmConnectionSettings settings)
+	{
+		if (settings == null) throw new ArgumentNullException(nameof(settings));
+		var values = settings.ToLegacyProperties();
+		property = values;
+		Settings = settings;
+		ServName = Server + ":" + Port;
+		PropertyHashCode = 0; // No password-derived pool key or process hash.
 	}
 
 	internal EPGroup EPGroup
@@ -253,7 +183,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_SERVER] = value;
-			builder.Server = value;
 		}
 	}
 
@@ -266,7 +195,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_USER] = value;
-			builder.User = value;
 		}
 	}
 
@@ -279,7 +207,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_PASSWORD] = value;
-			builder.Password = value;
 		}
 	}
 
@@ -292,7 +219,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_PORT] = value;
-			builder.Port = value;
 		}
 	}
 
@@ -349,7 +275,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOLING] = value;
-			builder.ConnPooling = value;
 		}
 	}
 
@@ -362,7 +287,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOL_SIZE] = value;
-			builder.ConnPoolSize = value;
 		}
 	}
 
@@ -375,7 +299,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOL_CHECK] = value;
-			builder.ConnPoolCheck = value;
 		}
 	}
 
@@ -388,7 +311,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOL_TIMEOUT] = value;
-			builder.ConnPoolTimeout = value;
 		}
 	}
 
@@ -401,7 +323,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOL_IDLE_EXPIRED_TIME] = value;
-			builder.ConnPoolIdleExpiredTime = value;
 		}
 	}
 
@@ -414,7 +335,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_CONN_POOL_IDLE_CLEAR_INTERVAL] = value;
-			builder.ConnPoolIdleClearInterval = value;
 		}
 	}
 
@@ -427,7 +347,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_ESCAPE_PROCESS] = value;
-			builder.EscapeProcess = value;
 		}
 	}
 
@@ -440,7 +359,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_TIMEZONE] = value;
-			builder.Time_Zone = value;
 		}
 	}
 
@@ -467,7 +385,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_LOGIN_MODE] = value;
-			builder.LoginMode = value;
 		}
 	}
 
@@ -480,7 +397,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_SCHEMA] = value;
-			builder.Schema = value;
 		}
 	}
 
@@ -493,7 +409,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_SCHEMA_SENSITIVE] = value;
-			builder.SchemaSensitive = value;
 		}
 	}
 
@@ -512,7 +427,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_DATABASE] = value;
-			builder.Database = value;
 		}
 	}
 
@@ -525,7 +439,6 @@ internal class DmConnProperty
 		set
 		{
 			property[DmConst.PROP_KEY_HOST] = value;
-			builder.Host = value;
 		}
 	}
 
@@ -551,7 +464,6 @@ internal class DmConnProperty
 			if (Convert.ToInt32(property[DmConst.PROP_KEY_RW_SEPARATE]) > 0)
 			{
 				property[DmConst.PROP_KEY_LOGIN_MODE] = LoginModeFlag.onlyprimary;
-				builder.LoginMode = LoginModeFlag.onlyprimary;
 			}
 		}
 	}
@@ -1239,8 +1151,7 @@ internal class DmConnProperty
 
 	internal DmConnProperty()
 	{
-		builder = new DmConnectionStringBuilder();
-		property = new Dictionary<string, object>(builder.setProperty, StringComparer.OrdinalIgnoreCase);
+		property = new Dictionary<string, object>(new DmConnectionStringBuilder().property, StringComparer.OrdinalIgnoreCase);
 	}
 
 	internal void ClearAutoCommit()
@@ -1309,7 +1220,8 @@ internal class DmConnProperty
 		dmConnProperty.hashType = hashType;
 		dmConnProperty.encryptPwd = encryptPwd;
 		dmConnProperty.encryptMsg = encryptMsg;
-		dmConnProperty.ConnectionString = ConnectionString;
+		if (Settings != null)
+			dmConnProperty.BindSettings(Settings);
 		dmConnProperty.algorithm = algorithm;
 		return dmConnProperty;
 	}

@@ -1,28 +1,40 @@
 using System;
-using System.IO;
-using System.Net;
 using System.Net.Security;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using W.Dm;
+using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Transport;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm.Internal.Legacy.A;
 
 internal class D : a
 {
-	internal Socket __t02_field_04000AAC;
+	private DmSession wireSession;
 
-	private volatile bool __t02_field_04000AAD;
+	internal void BindSession(DmSession session)
+	{
+		wireSession = session ?? throw new ArgumentNullException(nameof(session));
+	}
 
-	private TcpClient __t02_field_04000AAE;
+	private void RequireWireExchange()
+	{
+		if (wireSession == null) throw new InvalidOperationException("Transport has no session owner.");
+		wireSession.RequireActiveWireExchange();
+	}
 
-	private SslStream __t02_field_04000AAF;
+	private void RequireConnectOwnership()
+	{
+		// The separate legacy heartbeat constructor has no session and sends no bytes.
+		wireSession?.RequireWireOwnership(DmInvocation.Current);
+	}
+	private volatile bool __t02_field_04000AAD = true;
+	private readonly DmTransport transport;
+	private int readTimeout;
 
 	[CompilerGenerated]
-	private string __t02_field_04000AB0 = "changeit";
+	private string __t02_field_04000AB0 = string.Empty;
 
 	[CompilerGenerated]
 	private string __t02_field_04000AB1;
@@ -32,8 +44,6 @@ internal class D : a
 	internal Cipher __t02_field_04000AB3;
 
 	internal Cipher __t02_field_04000AB4;
-
-	private static ManualResetEvent __t02_field_04000AB5 = new ManualResetEvent(initialState: false);
 
 	public long[][] __t02_field_04000AB6 = new long[8][]
 	{
@@ -301,109 +311,10 @@ internal class D : a
 		return __t02_field_04000AB1;
 	}
 
-	private void A(string P_0, int P_1, int P_2)
-	{
-		SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-		try
-		{
-			IPAddress iPAddress = IPAddress.Parse(P_0);
-			IPEndPoint remoteEndPoint = new IPEndPoint(iPAddress, P_1);
-			__t02_field_04000AAE = new TcpClient();
-			__t02_field_04000AAC = new Socket(iPAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-			__t02_field_04000AAC.Blocking = true;
-			e.RemoteEndPoint = remoteEndPoint;
-			e.UserToken = __t02_field_04000AAC;
-			e.Completed += A;
-			__t02_field_04000AB5.Reset();
-			IAsyncResult asyncResult = __t02_field_04000AAC.BeginConnect(P_0, P_1, A, __t02_field_04000AAC);
-			if (asyncResult.AsyncWaitHandle.WaitOne(P_2))
-			{
-				__t02_field_04000AAC.EndConnect(asyncResult);
-			}
-			if (__t02_field_04000AAC.Connected)
-			{
-				__t02_field_04000AAC.Close();
-				__t02_field_04000AAC = new Socket(iPAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				__t02_field_04000AAC.Blocking = true;
-				__t02_field_04000AAC.Connect(P_0, P_1);
-			}
-		}
-		catch (SocketException)
-		{
-			throw;
-		}
-	}
+	public void A(string P_0, bool P_1) =>
+		throw new NotSupportedException("Legacy TLS transport is unsupported.");
 
-	public void A(string P_0, bool P_1)
-	{
-		__t02_field_04000AAE.Client = __t02_field_04000AAC;
-		__t02_field_04000AAF = new SslStream(__t02_field_04000AAE.GetStream(), leaveInnerStreamOpen: false, A, null);
-		X509Certificate2Collection x509Certificate2Collection = new X509Certificate2Collection();
-		if (string.IsNullOrEmpty(a()))
-		{
-			a(Environment.GetEnvironmentVariable("DM_HOME", EnvironmentVariableTarget.Process) + Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar + "client_ssl" + Path.DirectorySeparatorChar + P_0 + Path.DirectorySeparatorChar + "client-cert.pem");
-		}
-		if (!File.Exists(a()))
-		{
-			if (!Directory.Exists(a()))
-			{
-				throw new Exception("Invalid SSL path: " + a());
-			}
-			a(a() + Path.DirectorySeparatorChar + "client-cert.pem");
-		}
-		X509Certificate2 certificate = new X509Certificate2(a(), A());
-		x509Certificate2Collection.Add(certificate);
-		try
-		{
-			__t02_field_04000AAF.AuthenticateAsClient("DmProvider", x509Certificate2Collection, SslProtocols.Default | SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation: false);
-		}
-		catch (AuthenticationException value)
-		{
-			Console.WriteLine(value);
-			__t02_field_04000AAE.Close();
-			return;
-		}
-		if (P_1)
-		{
-			__t02_field_04000AAE.Client = null;
-		}
-	}
-
-	private static bool A(object P_0, X509Certificate P_1, X509Chain P_2, SslPolicyErrors P_3)
-	{
-		return true;
-	}
-
-	private void A(IAsyncResult P_0)
-	{
-		__t02_field_04000AB5.Set();
-	}
-
-	private void A(object P_0, SocketAsyncEventArgs P_1)
-	{
-		if (!((Socket)P_0).Connected)
-		{
-			try
-			{
-				((Socket)P_0).Connect(P_1.RemoteEndPoint);
-				if (((Socket)P_0).Connected)
-				{
-					P_1.SocketError = SocketError.Success;
-				}
-				return;
-			}
-			catch (SocketException ex)
-			{
-				P_1.SocketError = (SocketError)ex.ErrorCode;
-				return;
-			}
-			finally
-			{
-				__t02_field_04000AB5.Set();
-			}
-		}
-		__t02_field_04000AB5.Set();
-	}
+	private static bool A(object P_0, X509Certificate P_1, X509Chain P_2, SslPolicyErrors P_3) => false;
 
 	public D(string P_0, int P_1)
 		: this(P_0, P_1, 0)
@@ -412,36 +323,29 @@ internal class D : a
 
 	public D(string P_0, int P_1, int P_2)
 	{
-		try
-		{
-			IPAddress iPAddress = null;
-			try
-			{
-				A(P_0, P_1, P_2);
-			}
-			catch (Exception)
-			{
-				IPAddress[] addressList = Dns.GetHostEntry(P_0).AddressList;
-				for (int i = 0; i < addressList.Length; i++)
-				{
-					iPAddress = addressList[i];
-					A(iPAddress.ToString(), P_1, P_2);
-					if (__t02_field_04000AAC.Connected)
-					{
-						break;
-					}
-				}
-			}
-			if (!__t02_field_04000AAC.Connected)
-			{
-				throw new SocketException(-1);
-			}
-			__t02_field_04000AAD = false;
-		}
-		catch (Exception)
-		{
-			throw;
-		}
+		transport = new DmTransport(P_0, P_1);
+	}
+
+	internal D(string P_0, int P_1, int P_2, DmConnInstance owner) : this(P_0, P_1, P_2)
+	{
+		if (owner == null) throw new ArgumentNullException(nameof(owner));
+		BindSession(owner.Session);
+		owner.Session.RegisterPendingTransport(this);
+	}
+
+	internal void Open(DmDeadline deadline)
+	{
+		RequireConnectOwnership();
+		transport.Open(deadline);
+		RequireConnectOwnership();
+		__t02_field_04000AAD = false;
+	}
+
+	internal void UpgradeTls(DmTlsOptions options, DmDeadline deadline)
+	{
+		RequireConnectOwnership();
+		transport.UpgradeTls(options, deadline);
+		RequireConnectOwnership();
 	}
 
 	internal byte[] B()
@@ -499,66 +403,49 @@ internal class D : a
 			P_0.i();
 			num = P_0.J() + 64;
 		}
-		if (num > 536870912)
+		if (P_2 && P_0.I() != 200)
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_MSG_LEN_TOO_LONG);
-		}
-		if (P_2)
-		{
+			P_0.n(checked(P_0.J() + 4));
 			int num2 = A(P_0, 0, num);
 			P_0.H(num2);
-			P_0.i();
 		}
 		else
 		{
+			P_0.i();
 			P_0.a(P_0.H());
 		}
 		byte[] array2 = P_0.A();
-		A(array2, P_1, num);
+		A(array2, P_1, DmFrameWriter.Validate(P_0));
 	}
 
 	internal void A(byte[] P_0, int P_1, int P_2)
 	{
-		__t02_field_04000AAC.Blocking = true;
-		__t02_field_04000AAC.SendTimeout = P_1;
-		if (__t02_field_04000AAE.Connected)
-		{
-			__t02_field_04000AAF.Write(P_0, 0, P_2);
-			__t02_field_04000AAF.Flush();
-		}
-		else
-		{
-			__t02_field_04000AAC.Send(P_0, P_2, SocketFlags.None);
-		}
+		SendAll(P_0, 0, P_2, P_1);
+	}
+
+	internal void SendAll(byte[] buffer, int offset, int count, int timeout = 0)
+	{
+		RequireWireExchange();
+		transport.SendAll(buffer, offset, count, ActiveDeadline(timeout), timeout, DmWireTestHooks.RecordSentBytes);
+	}
+
+	private static DmDeadline ActiveDeadline(int timeout) =>
+		DmInvocation.Current?.Deadline ?? DmDeadline.FromMilliseconds(Math.Max(0, timeout));
+
+	internal void ReceiveExactly(byte[] buffer, int offset, int count)
+	{
+		RequireWireExchange();
+		transport.ReadExactly(buffer, offset, count, ActiveDeadline(readTimeout), readTimeout);
 	}
 
 	internal override b __t02_method_06000A4D(b P_0, int P_1, bool P_2, bool P_3)
 	{
-		int num = 0;
-		__t02_field_04000AAC.Blocking = true;
-		__t02_field_04000AAC.ReceiveTimeout = P_1;
-		int num2;
-		do
-		{
-			P_0.a(0);
-			P_0.f(64);
-			num2 = a(P_0.A(), 0, 32640);
-			num = P_0.K();
-		}
-		while (269 == num);
-		if (num2 == 0)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_NO_SOCKET_DATA, "DmCommTcpip.Recv");
-		}
-		P_0.g(num2);
-		int num3 = P_0.k();
-		num3 += 64;
-		if (num2 < num3 && num2 != -1)
-		{
-			P_0.g(num3 - num2);
-			B(P_0.A(), num2, num3 - num2);
-		}
-		if (P_2)
+		RequireWireExchange();
+		readTimeout = P_1;
+		int num3 = DmFrameReader.Read(ReceiveExactly, P_0,
+			(frame, total) => DmFrameReader.ValidateChecksum(frame, total, P_2), ActiveDeadline(P_1),
+			header => (P_2 && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header));
+		if (P_2 && P_0.I() != 200)
 		{
 			int num4 = num3 - 4;
 			int num5 = P_0.d(num4);
@@ -568,6 +455,7 @@ internal class D : a
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_CRC_CHECK_FAIL_);
 			}
 			P_0.n(num4 - 64);
+			P_0.A(num4);
 		}
 		else
 		{
@@ -591,36 +479,26 @@ internal class D : a
 
 	internal int a(byte[] P_0, int P_1, int P_2)
 	{
-		if (__t02_field_04000AAE.Connected)
-		{
-			return __t02_field_04000AAF.Read(P_0, P_1, P_2);
-		}
-		return __t02_field_04000AAC.Receive(P_0, P_1, P_2, SocketFlags.None);
+		RequireWireExchange();
+		return transport.ReadSome(P_0, P_1, P_2, ActiveDeadline(readTimeout), readTimeout);
+	}
+
+	internal void ConfigureReadTimeout(int timeout)
+	{
+		RequireWireExchange();
+		readTimeout = timeout;
 	}
 
 	internal int B(byte[] P_0, int P_1, int P_2)
 	{
-		int i;
-		int num;
-		for (i = 0; i < P_2; i += num)
-		{
-			num = __t02_field_04000AAC.Receive(P_0, P_1 + i, P_2 - i, SocketFlags.None);
-			if (num <= 0)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_NO_SOCKET_DATA, "DmCommTcpip.ReadFully");
-			}
-		}
-		return i;
+		ReceiveExactly(P_0, P_1, P_2);
+		return P_2;
 	}
 
 	public void C()
 	{
-		if (__t02_field_04000AAC != null)
-		{
-			__t02_field_04000AAC.Close();
-		}
-		__t02_field_04000AAC = null;
 		__t02_field_04000AAD = true;
+		transport.Close();
 	}
 
 	public bool c()
@@ -630,24 +508,15 @@ internal class D : a
 
 	public bool __t02_method_06000A63()
 	{
-		byte[] buffer = new byte[10];
+		RequireWireExchange();
 		try
 		{
-			if (__t02_field_04000AAC.Poll(100, SelectMode.SelectRead) && __t02_field_04000AAC.Receive(buffer) == 0)
-			{
-				return true;
-			}
+			return transport.IsPeerClosed();
 		}
 		catch (Exception)
 		{
 			return true;
 		}
-		return false;
-	}
-
-	~D()
-	{
-		C();
 	}
 
 	public int A(b P_0, int P_1, int P_2)

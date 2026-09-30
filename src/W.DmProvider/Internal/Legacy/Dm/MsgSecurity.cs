@@ -76,13 +76,7 @@ internal sealed class MsgSecurity
 
 	internal static byte[] ComputeSessionKey(DHKey clientPrivKey, byte[] serverPubKey)
 	{
-		byte[] array = new byte[128];
-		if (SymmCipher2.cyt_load_ssl_lib() == 0)
-		{
-			throw new Exception("初始化openssl环境失败，请检查是否缺少dll或so依赖");
-		}
-		SymmCipher2.dm_dh_gen_common_key(Bn2Bytes(clientPrivKey.Y, 64), Bn2Bytes(clientPrivKey.X, 64), serverPubKey, array);
-		return array;
+		throw new NotSupportedException("Native message key exchange is not enabled by this provider version.");
 	}
 
 	internal static BigInteger bytes2Bn(byte[] src)

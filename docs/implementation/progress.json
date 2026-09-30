@@ -23,57 +23,57 @@
     },
     {
       "id": "T04",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T04.md"
     },
     {
       "id": "T05",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T05.md"
     },
     {
       "id": "T06",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T06.md"
     },
     {
       "id": "T07",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T07.md"
     },
     {
       "id": "T08",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T08.md"
     },
     {
       "id": "T09",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T09.md"
     },
     {
       "id": "T10",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T10.md"
     },
     {
       "id": "T11",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T11.md"
     },
     {
       "id": "T12",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T12.md"
     },
     {
       "id": "T13",

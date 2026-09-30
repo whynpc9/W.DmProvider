@@ -1,0 +1,93 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "library",
+      "name": "W.DmProvider",
+      "version": "0.1.0-r1.20260930064454",
+      "purl": "pkg:nuget/W.DmProvider@0.1.0-r1.20260930064454",
+      "bom-ref": "pkg:nuget/W.DmProvider@0.1.0-r1.20260930064454",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "file",
+      "name": "lib/net10.0/W.DmProvider.dll",
+      "bom-ref": "sha256:d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "lib/net10.0/en/W.DmProvider.resources.dll",
+      "bom-ref": "sha256:da2d9742c64bcee9172118339a2b7d40dc32c0fd43b47983975b92b640690709",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "da2d9742c64bcee9172118339a2b7d40dc32c0fd43b47983975b92b640690709"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "lib/net10.0/zh-CN/W.DmProvider.resources.dll",
+      "bom-ref": "sha256:eccbc34d23cd4c9f3aab908d25c03dd89c98215675f05850def0fbec7152f2d8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eccbc34d23cd4c9f3aab908d25c03dd89c98215675f05850def0fbec7152f2d8"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "lib/net10.0/zh-HK/W.DmProvider.resources.dll",
+      "bom-ref": "sha256:90aac6f228e8a727828ca4ee52e88fe0b76452da183cd231bb52420c2c17a7a8",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "90aac6f228e8a727828ca4ee52e88fe0b76452da183cd231bb52420c2c17a7a8"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "lib/net10.0/zh-TW/W.DmProvider.resources.dll",
+      "bom-ref": "sha256:3bd1cf487bd221f54a4cea047c2927cbf57837badde7d4b5498cc758bdb0031d",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3bd1cf487bd221f54a4cea047c2927cbf57837badde7d4b5498cc758bdb0031d"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/W.DmProvider@0.1.0-r1.20260930064454",
+      "dependsOn": []
+    }
+  ],
+  "properties": [
+    {
+      "name": "source-materials",
+      "value": "source-materials.json"
+    },
+    {
+      "name": "runtime-dependencies",
+      "value": "empty nuspec/net10.0 dependency group; actual consumer references separately audited"
+    }
+  ]
+}

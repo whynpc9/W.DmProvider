@@ -4,12 +4,14 @@ using System.Data.Common;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using W.Dm.Internal.Sessions;
 
 namespace W.Dm;
 
 internal class DmSchema
 {
 	private DmConnection m_Conn;
+	private readonly DmExecutionLease lease;
 
 	public const string MetaCollection = "METADATACOLLECTIONS";
 
@@ -17,9 +19,10 @@ internal class DmSchema
 
 	public const string Databases = "DATABASES";
 
-	public DmSchema(DmConnection conn)
+	public DmSchema(DmConnection conn, DmExecutionLease lease)
 	{
 		m_Conn = conn;
+		this.lease = lease ?? throw new ArgumentNullException(nameof(lease));
 	}
 
 	public DataTable GetSchema(string collection, string[] restrictionValues)
@@ -45,79 +48,41 @@ internal class DmSchema
 
 	public virtual DataTable GetTables(string[] restrictions)
 	{
-		DataTable dataTable = new DataTable("Tables");
-		dataTable.Columns.Add("TABLE_CATALOG", typeof(string));
-		dataTable.Columns.Add("TABLE_SCHEMA", typeof(string));
-		dataTable.Columns.Add("TABLE_NAME", typeof(string));
-		dataTable.Columns.Add("TABLE_TYPE", typeof(string));
-		dataTable.Columns.Add("FILLFACTOR", typeof(int));
-		dataTable.Columns.Add("SPACE_LIMIT", typeof(int));
-		dataTable.Columns.Add("ROW_COUNT", typeof(ulong));
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.AppendFormat(DmConst.invariantCulture, "/*DMPROVIDER*/ SELECT SF_GET_SCHEMA_NAME_BY_ID(SCHID), NAME, CASE SUBTYPE$ WHEN 'UTAB' THEN 'UTAB' WHEN 'VIEW' THEN 'VIEW' WHEN 'STAB' THEN 'STAB' WHEN 'SYNOM' THEN 'SYNONYM' END AS TABLE_TYPE, INFO1, INFO2, INFO3, INFO4 FROM SYS.SYSOBJECTS WHERE SUBTYPE$ IN ('UTAB','STAB','VIEW') ", default(ReadOnlySpan<object>));
-		if (restrictions != null && restrictions.Length >= 1 && restrictions[0] != null)
+		DataTable table = new DataTable("Tables");
+		table.Columns.Add("TABLE_CATALOG", typeof(string));
+		table.Columns.Add("TABLE_SCHEMA", typeof(string));
+		table.Columns.Add("TABLE_NAME", typeof(string));
+		table.Columns.Add("TABLE_TYPE", typeof(string));
+		table.Columns.Add("FILLFACTOR", typeof(int));
+		table.Columns.Add("SPACE_LIMIT", typeof(int));
+		table.Columns.Add("ROW_COUNT", typeof(ulong));
+		// SYS.SYSOBJECTS is unavailable to the dedicated test account. The ALL_OBJECTS
+		// dictionary view exposes the visible tables and views without elevated grants.
+		StringBuilder sql = new StringBuilder("SELECT OWNER, OBJECT_NAME, OBJECT_TYPE FROM ALL_OBJECTS WHERE OBJECT_TYPE IN ('TABLE','VIEW')");
+		if (restrictions != null && restrictions.Length > 0 && restrictions[0] != null)
+			sql.Append(" AND OWNER LIKE '").Append(dup_chr_QUOTATION_MARK(restrictions[0])).Append("'");
+		if (restrictions != null && restrictions.Length > 1 && restrictions[1] != null)
+			sql.Append(" AND OBJECT_NAME LIKE '").Append(dup_chr_QUOTATION_MARK(restrictions[1])).Append("'");
+		if (restrictions != null && restrictions.Length > 2 && restrictions[2] != null)
 		{
-			string value = $" AND SF_GET_SCHEMA_NAME_BY_ID(SCHID) LIKE '{dup_chr_QUOTATION_MARK(restrictions[0])}'";
-			stringBuilder.Append(value);
+			string type = restrictions[2] == "UTAB" ? "TABLE" : restrictions[2];
+			sql.Append(" AND OBJECT_TYPE = '").Append(dup_chr_QUOTATION_MARK(type)).Append("'");
 		}
-		if (restrictions != null && restrictions.Length >= 2 && restrictions[1] != null)
+		using DmCommand command = m_Conn.CreateCommand(sql.ToString());
+		using DmDataReader reader = command.ExecuteInternalReader(lease, CommandBehavior.Default);
+		while (reader.do_Read())
 		{
-			string value2 = $" AND NAME LIKE '{dup_chr_QUOTATION_MARK(restrictions[1])}'";
-			stringBuilder.Append(value2);
+			DataRow row = table.NewRow();
+			row["TABLE_CATALOG"] = DBNull.Value;
+			row["TABLE_SCHEMA"] = reader.do_GetString(0);
+			row["TABLE_NAME"] = reader.do_GetString(1);
+			row["TABLE_TYPE"] = reader.do_GetString(2) == "TABLE" ? "UTAB" : "VIEW";
+			row["FILLFACTOR"] = DBNull.Value;
+			row["SPACE_LIMIT"] = DBNull.Value;
+			row["ROW_COUNT"] = DBNull.Value;
+			table.Rows.Add(row);
 		}
-		if (restrictions != null && restrictions.Length >= 3 && restrictions[2] != null)
-		{
-			string value3 = $" AND SUBTYPE$ = '{dup_chr_QUOTATION_MARK(restrictions[2])}'";
-			stringBuilder.Append(value3);
-			if (restrictions[2].Equals("UTAB"))
-			{
-				string value4 = string.Format(" AND INFO3&0x100000!=0x100000 AND INFO3&0x200000!=0x200000 AND INFO3 & 0x003F not in (0x0A, 0x20) AND NAME not like 'CTI$%$_'  AND NAME not like '%$AUX' AND PID = -1", default(ReadOnlySpan<object>));
-				stringBuilder.Append(value4);
-			}
-		}
-		DmCommand dmCommand = m_Conn.CreateCommand(stringBuilder.ToString());
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
-		{
-			object obj = null;
-			while (dmDataReader.do_Read())
-			{
-				DataRow dataRow = dataTable.NewRow();
-				dataRow["TABLE_CATALOG"] = null;
-				dataRow["TABLE_SCHEMA"] = dmDataReader.do_GetString(0);
-				dataRow["TABLE_NAME"] = dmDataReader.do_GetString(1);
-				dataRow["TABLE_TYPE"] = dmDataReader.do_GetString(2);
-				obj = dmDataReader.do_GetInt32(3);
-				if (obj == DBNull.Value)
-				{
-					dataRow["FILLFACTOR"] = DBNull.Value;
-				}
-				else
-				{
-					dataRow["FILLFACTOR"] = Convert.ToInt32(obj);
-				}
-				obj = dmDataReader.do_GetValue(4);
-				if (obj == null || obj == DBNull.Value)
-				{
-					dataRow["SPACE_LIMIT"] = DBNull.Value;
-				}
-				else
-				{
-					dataRow["SPACE_LIMIT"] = Convert.ToInt32(obj);
-				}
-				obj = dmDataReader.do_GetValue(5);
-				if (obj == null || obj == DBNull.Value)
-				{
-					dataRow["ROW_COUNT"] = DBNull.Value;
-				}
-				else
-				{
-					dataRow["ROW_COUNT"] = Convert.ToInt64(obj);
-				}
-				dataTable.Rows.Add(dataRow);
-			}
-		}
-		dmCommand.Dispose();
-		return dataTable;
+		return table;
 	}
 
 	public virtual DataTable GetProcedures(string[] restrictions)
@@ -152,7 +117,7 @@ internal class DmSchema
 			}
 		}
 		DmCommand dmCommand = m_Conn.CreateCommand(stringBuilder.ToString());
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
@@ -202,7 +167,7 @@ internal class DmSchema
 			text += text2;
 		}
 		DmCommand dmCommand = m_Conn.CreateCommand(text);
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
@@ -493,7 +458,7 @@ internal class DmSchema
 		manifestResourceStream.Close();
 		string cmdText = "SELECT KEYWORD FROM V$RESERVED_WORDS";
 		DmCommand dmCommand = m_Conn.CreateCommand(cmdText);
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
@@ -550,7 +515,7 @@ internal class DmSchema
 		}
 		stringBuilder.AppendFormat(")CONS,SYS.SYSCOLUMNS COLS,(SELECT NAME, ID, SCHID FROM SYS.SYSOBJECTS WHERE SUBTYPE$= 'UTAB' AND NAME = '{0}')TAB,(SELECT ID, NAME FROM SYS.SYSOBJECTS WHERE NAME = '{1}' AND TYPE$= 'SCH')SCH,(SELECT ID, NAME FROM SYS.SYSOBJECTS WHERE SUBTYPE$ = 'INDEX')OBJ_INDS WHERE TAB.SCHID = SCH.ID AND CONS.TYPE$= 'F' AND CONS.INDEXID = INDS.ID AND INDS.ID = OBJ_INDS.ID AND TAB.ID = COLS.ID AND CONS.TABLEID = TAB.ID AND SF_COL_IS_IDX_KEY(INDS.KEYNUM, INDS.KEYINFO, COLS.COLID)= 1", dup_chr_QUOTATION_MARK(tabname), dup_chr_QUOTATION_MARK(schname));
 		DmCommand dmCommand = m_Conn.CreateCommand(stringBuilder.ToString());
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
@@ -610,34 +575,30 @@ internal class DmSchema
 
 	private void LoadTableColumns(DataTable dt, string schema, string tableName, string columnRestriction)
 	{
-		string text = $"/*DMPROVIDER*/ SELECT NAME, COLID,  CASE INSTR(TYPE$,'CLASS',1,1) WHEN 0 THEN TYPE$ ELSE SF_GET_CLASS_NAME(TYPE$) END AS COLUMN_TYPE, CASE SF_GET_COLUMN_SIZE(TYPE$, CAST (LENGTH$ AS INT), CAST (SCALE AS INT)) WHEN -2 THEN NULL ELSE SF_GET_COLUMN_SIZE(TYPE$, CAST (LENGTH$ AS INT), CAST (SCALE AS INT)) END AS COLUMN_SIZE, SCALE, NULLABLE$, DEFVAL FROM SYS.SYSCOLUMNS WHERE  ID = (SELECT ID FROM SYS.SYSOBJECTS WHERE NAME = '{tableName}' AND SUBTYPE$ IN ('UTAB','STAB','VIEW') AND SCHID = (SELECT ID FROM SYS.SYSOBJECTS WHERE NAME = '{schema}' AND TYPE$='SCH'))";
+		StringBuilder sql = new StringBuilder("SELECT COLUMN_NAME, COLUMN_ID, DATA_TYPE, DATA_SCALE, NULLABLE, DATA_DEFAULT FROM ALL_TAB_COLUMNS WHERE OWNER = '");
+		sql.Append(dup_chr_QUOTATION_MARK(schema)).Append("' AND TABLE_NAME = '")
+			.Append(dup_chr_QUOTATION_MARK(tableName)).Append("'");
 		if (columnRestriction != null)
+			sql.Append(" AND COLUMN_NAME LIKE '").Append(dup_chr_QUOTATION_MARK(columnRestriction)).Append("'");
+		using DmCommand command = m_Conn.CreateCommand(sql.ToString());
+		using DmDataReader reader = command.ExecuteInternalReader(lease, CommandBehavior.Default);
+		while (reader.do_Read())
 		{
-			string text2 = $" AND NAME LIKE '{columnRestriction}'";
-			text += text2;
-		}
-		DmCommand dmCommand = m_Conn.CreateCommand(text);
-		try
-		{
-			using DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default);
-			while (dmDataReader.do_Read())
-			{
-				DataRow dataRow = dt.NewRow();
-				dataRow["TABLE_SCHEMA"] = schema;
-				dataRow["TABLE_NAME"] = tableName;
-				dataRow["COLUMN_NAME"] = dmDataReader.do_GetString(0);
-				dataRow["COLUMN_ID"] = dmDataReader.do_GetInt16(1);
-				dataRow["COLUMN_TYPE"] = dmDataReader.do_GetString(2);
-				dataRow["COLUMN_SIZE"] = dmDataReader.do_GetInt32(3);
-				dataRow["COLUMN_SCALE"] = dmDataReader.do_GetInt16(4);
-				dataRow["NULLABLE"] = dmDataReader.do_GetString(5);
-				dataRow["DEFAULT_VALUE"] = dmDataReader.do_GetString(6);
-				dt.Rows.Add(dataRow);
-			}
-		}
-		finally
-		{
-			dmCommand?.Dispose();
+			DataRow row = dt.NewRow();
+			row["TABLE_SCHEMA"] = schema;
+			row["TABLE_NAME"] = tableName;
+			row["COLUMN_NAME"] = reader.do_GetString(0);
+			row["COLUMN_ID"] = reader.do_GetInt32(1);
+			row["COLUMN_TYPE"] = reader.do_GetString(2);
+			// DATA_LENGTH is storage bytes and does not preserve the legacy logical
+			// SF_GET_COLUMN_SIZE result for every type. Leave it unknown for T05.
+			row["COLUMN_SIZE"] = DBNull.Value;
+			object scale = reader.do_GetValue(3);
+			row["COLUMN_SCALE"] = scale == null || scale == DBNull.Value ? DBNull.Value : Convert.ToInt32(scale);
+			row["NULLABLE"] = reader.do_GetString(4);
+			object defaultValue = reader.do_GetValue(5);
+			row["DEFAULT_VALUE"] = defaultValue ?? DBNull.Value;
+			dt.Rows.Add(row);
 		}
 	}
 
@@ -661,7 +622,7 @@ internal class DmSchema
 				text += text2;
 			}
 			DmCommand dmCommand = m_Conn.CreateCommand(text);
-			using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+			using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 			{
 				while (dmDataReader.do_Read())
 				{
@@ -701,7 +662,7 @@ internal class DmSchema
 		dataTable.Columns.Add("PK_NAME", typeof(string));
 		string cmdText = $"/*DMPROVIDER*/ SELECT COLS.NAME AS COLUMN_NAME, SF_GET_INDEX_KEY_SEQ(INDS.KEYNUM, INDS.KEYINFO, COLS.COLID) AS KEY_SEQ, CONS.NAME AS PK_NAME  FROM SYS.SYSINDEXES INDS,  (SELECT OBJ.NAME, CON.ID, CON.TYPE$, CON.TABLEID, CON.COLID, CON.INDEXID FROM SYS.SYSCONS AS CON, SYS.SYSOBJECTS AS OBJ WHERE OBJ.SUBTYPE$='CONS' AND OBJ.ID=CON.ID) CONS,  SYS.SYSCOLUMNS COLS,  (SELECT NAME, ID FROM SYS.SYSOBJECTS WHERE SUBTYPE$='UTAB' AND NAME = '{dup_chr_QUOTATION_MARK(restrictions[1])}' AND SCHID = (SELECT ID FROM SYS.SYSOBJECTS WHERE NAME = '{dup_chr_QUOTATION_MARK(restrictions[0])}' AND TYPE$='SCH')) TAB,  (SELECT ID, NAME FROM SYS.SYSOBJECTS WHERE SUBTYPE$ = 'INDEX') OBJ_INDS  WHERE CONS.TYPE$='P' AND CONS.INDEXID=INDS.ID AND INDS.ID=OBJ_INDS.ID AND TAB.ID=COLS.ID AND CONS.TABLEID=TAB.ID  AND SF_COL_IS_IDX_KEY(INDS.KEYNUM, INDS.KEYINFO,COLS.COLID)=1 ";
 		DmCommand dmCommand = m_Conn.CreateCommand(cmdText);
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
@@ -737,7 +698,7 @@ internal class DmSchema
 		dataTable.Columns.Add("SORT_ORDER", typeof(string));
 		string cmdText = string.Format("DECLARE KI      VARBINARY(816); CURR_P  INT; KEYNUM  INT; TABLEID BIGINT; COLID   SMALLINT; SORT    VARCHAR(10); COLNAME VARCHAR(128); CUR2     CURSOR; CUR_STR2 VARCHAR(8188); CUR     CURSOR; CUR_STR VARCHAR(8188); BEGIN CUR_STR = 'SELECT INDS.KEYNUM, INDS.KEYINFO, OBJ_INDS.PID FROM SYS.SYSINDEXES INDS, (SELECT ID, NAME, PID FROM SYS.SYSOBJECTS WHERE SUBTYPE$=''INDEX'') OBJ_INDS  WHERE INDS.ID=OBJ_INDS.ID AND OBJ_INDS.PID = (SELECT ID FROM SYS.SYSOBJECTS WHERE SUBTYPE$ = ''UTAB'' AND NAME = ''{1}'' AND SCHID = (SELECT ID FROM SYS.SYSOBJECTS WHERE TYPE$=''SCH'' AND NAME = ''{0}'')) AND OBJ_INDS.NAME = ''{2}'';'; OPEN CUR FOR CUR_STR; FETCH CUR INTO KEYNUM, KI, TABLEID; CURR_P = 0; PRINT CURR_P; EXECUTE IMMEDIATE 'CREATE TABLE ##DMGET_INDEXCOLUMNS_3169(COLNAME VARCHAR(128), SORTORDER CHAR(1));'; FOR I IN 1..KEYNUM LOOP \tCOLID = SF_BIN_GET_SMALLINT(KI, CURR_P);    CURR_P =  CURR_P + 2;        SORT = SF_BIN_GET_CHAR(KI, CURR_P);    CURR_P =  CURR_P + 1;        CUR_STR2 = 'SELECT NAME FROM SYS.SYSCOLUMNS WHERE ID = '||TABLEID||' AND COLID = '||COLID||';';        OPEN CUR2 FOR CUR_STR2;    FETCH CUR2 INTO COLNAME;    CLOSE CUR2;        EXECUTE IMMEDIATE 'INSERT INTO ##DMGET_INDEXCOLUMNS_3169 VALUES('''||COLNAME||''', '''||SORT||''');';    END LOOP; CLOSE CUR; EXECUTE IMMEDIATE 'SELECT * FROM ##DMGET_INDEXCOLUMNS_3169;'; EXECUTE IMMEDIATE 'DROP TABLE ##DMGET_INDEXCOLUMNS_3169;'; END;", dup_chr_QUOTATION_MARK(restrictions[0]), dup_chr_QUOTATION_MARK(restrictions[1]), dup_chr_QUOTATION_MARK(restrictions[2]));
 		DmCommand dmCommand = m_Conn.CreateCommand(cmdText);
-		using (DmDataReader dmDataReader = dmCommand.do_ExecuteDbDataReader(CommandBehavior.Default))
+		using (DmDataReader dmDataReader = dmCommand.ExecuteInternalReader(lease, CommandBehavior.Default))
 		{
 			while (dmDataReader.do_Read())
 			{
