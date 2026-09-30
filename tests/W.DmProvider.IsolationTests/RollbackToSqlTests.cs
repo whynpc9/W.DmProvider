@@ -14,6 +14,8 @@ public sealed class RollbackToSqlTests
     [InlineData("/*lead*/ rollback/**/to/**/savepoint /*mid*/ \"sp\" /*tail*/; --end")]
     [InlineData("ROLLBACK TO sp -- COMMIT is a comment")]
     [InlineData("ROLLBACK TO \"sp; COMMIT\"")]
+    [InlineData("ROLLBACK TO sp /* /* */")]
+    [InlineData("ROLLBACK TO \"sp /* /* */\" /*tail*/;")]
     public void ExactlyOneSavepointRollbackAcceptsQuotedAndUnquotedNames(string sql)
         => Assert.True(DmParameterBinding.IsStrictRollbackToSavepoint(sql));
 
@@ -26,6 +28,8 @@ public sealed class RollbackToSqlTests
     [InlineData("ROLLBACK TO \"\"")]
     [InlineData("ROLLBACK TO sp extra")]
     [InlineData("ROLLBACK TO sp; COMMIT")]
+    [InlineData("ROLLBACK TO sp /* /* */ ; COMMIT -- */")]
+    [InlineData("ROLLBACK TO sp /* /* */ COMMIT -- */")]
     [InlineData("ROLLBACK TO SAVEPOINT \"sp\"; COMMIT")]
     [InlineData("ROLLBACK TO sp --comment\n COMMIT")]
     [InlineData("ROLLBACK TO :p0")]

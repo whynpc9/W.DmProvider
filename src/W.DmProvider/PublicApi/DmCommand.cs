@@ -244,10 +244,23 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		set
 		{
 			using var mutation = BeginMutation();
-			if (value != null)
+			if (ReferenceEquals(value, m_Conn)) return;
+			if (m_Trx?.Valid == true)
+				throw new InvalidOperationException("Clear the active command transaction before changing its connection.");
+			ReleaseStatementForConnectionChange();
+			m_Conn = value;
+			m_Trx = null;
+			m_StmtSerial = false;
+			m_SetValue = null;
+			rd = null;
+			RetCmdType = 0;
+			CurResultSetCache = null;
+			m_refCursorStmt_arr.Clear();
+			m_refCursorStmtArr_cur = 0;
+			m_RetRefCursorStmt = null;
+			executeId = -1L;
+			if (m_Conn != null)
 			{
-				if (!ReferenceEquals(value, m_Conn)) ReleaseUnmanagedResource();
-				m_Conn = value;
 				BaseFilter.CreateFilterChain(this, m_Conn.ConnProperty);
 				BaseFilter.CreateFilterChain(m_Paras, m_Conn.ConnProperty);
 			}
@@ -266,10 +279,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var mutation = BeginMutation();
 			m_Trx = value;
-			if (m_Trx != null)
-			{
-				m_StmtSerial = m_Trx.GetStmtSerial();
-			}
+			m_StmtSerial = m_Trx?.GetStmtSerial() ?? false;
 		}
 	}
 
@@ -1061,6 +1071,26 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			ownerConnection?.CloseExpectedSession(owner);
 			statement.o();
 		}
+	}
+
+	private void ReleaseStatementForConnectionChange()
+	{
+		if (rd != null && !rd.do_IsClosed)
+			throw new InvalidOperationException("Close the command reader before changing its connection.");
+		ValidateStatementOwnership();
+		var owner = statementSession;
+		if (m_Stmt == null || m_Stmt.P() || owner == null ||
+			owner.State is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed)
+		{
+			CleanupCurrentStatement(suppressFailure: false);
+			return;
+		}
+		// Acquire before clearing the handle. Another command's reader must keep its
+		// session and statement when this connection change cannot obtain ownership.
+		TimeSpan cleanupTimeout = statementConnection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5);
+		using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout));
+		using var invocation = lease.BeginInvocation();
+		CleanupCurrentStatement(suppressFailure: false);
 	}
 
 	protected override void Dispose(bool disposing)

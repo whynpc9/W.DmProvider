@@ -511,8 +511,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		string text = null;
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetChars(int i,long fieldoffset,char[] buffer,int bufferoffset,int length)");
 		checkClosed();
+		CheckIndex(i);
 		skipCol = false;
-		if (m_SequentialSeq == i && fieldoffset < m_StreamPos)
+		if (is_SequentialAccess && m_SequentialSeq > i)
+		{
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+		}
+		if ((buffer != null || m_ColInfo[i].GetCType() != 19) && m_SequentialSeq == i && fieldoffset < m_StreamPos)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
 		}
@@ -522,6 +527,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		if (m_ColInfo[i].GetCType() == 19)
 		{
+			if (buffer != null)
+			{
+				if (bufferoffset < 0 || bufferoffset > buffer.Length)
+					throw new IndexOutOfRangeException("Buffer index must be a valid index in buffer");
+				if (length < 0 || length > buffer.Length - bufferoffset)
+					throw new ArgumentException("Buffer is not large enough to hold the requested data");
+			}
 			DmClob dmClob = (DmClob)m_Clobs[i];
 			if (dmClob == null)
 			{
@@ -531,9 +543,23 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				BindLob(dmClob);
 				m_Clobs[i] = dmClob;
 			}
+			if (buffer == null)
+			{
+				// Count decoded UTF-16 characters, not the locator's encoded byte length.
+				// This follows the existing materializing CLOB path; it is not a streaming API.
+				if (dmClob.do_length() > int.MaxValue)
+					throw new NotSupportedException("CLOB exceeds the supported CLR string materialization range.");
+				text = dmClob.GetSubStringUnderOwner(0L, int.MaxValue);
+				return text.Length;
+			}
 			text = dmClob.GetSubStringUnderOwner(fieldoffset, length);
 			length = Math.Min(length, text.Length);
 			Array.Copy(text.ToCharArray(), 0, buffer, bufferoffset, length);
+			if (is_SequentialAccess)
+			{
+				m_StreamPos = fieldoffset + length;
+				skipCol = true;
+			}
 			return length;
 		}
 		byte[] value2 = null;
@@ -695,10 +721,6 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetInt32(int i)");
 		checkClosed();
 		GetByteArrayValue(i, ref value);
-		if (value == null)
-		{
-			return 0;
-		}
 		int cType = m_ColInfo[i].GetCType();
 		int precision = m_ColInfo[i].GetPrecision();
 		int scale = m_ColInfo[i].GetScale();

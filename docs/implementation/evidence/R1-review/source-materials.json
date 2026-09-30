@@ -1,0 +1,18 @@
+{
+  "source_sha256": "c7ab53176d5170786b91883b22d29ee7ebc37da4007f8bb6e6ea0763525dbdd7",
+  "materials": [
+    {
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "6864d962e91211dc22e71c11a6b4eb52a5beb5dcc700e80ea348090fef1da847"
+    },
+    {
+      "path": "docs/compatibility/t03-source-map.json",
+      "sha256": "408fc6464d6b2afe9cf60a471de093914795614b96363246cd7265b2e87edfda"
+    },
+    {
+      "path": "upstream/DM.DmProvider/8.3.1.47463/manifest.json",
+      "sha256": "c730de1ed8f1ed7a579f67a294eb04fc1e5e098f03f596c23f0e4daae659f83a"
+    }
+  ],
+  "ancestry_only": "DM.DmProvider 8.3.1.47463 source provenance, not a runtime dependency"
+}

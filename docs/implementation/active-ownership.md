@@ -26,3 +26,18 @@ T01–T12 已验收；T11 最终 443 项输入与二进制已保存 `.local/t11/
 ## R1 收口
 
 最终 CLI 已独立通过，所有运行输入冻结；root 仅完成证据/文档和 Git/PR 收口。没有新的编码任务，T13 不启动。后续实施必须由用户再次指示。
+
+## 2026-09-30：PR #1 review 修复窗口
+
+用户要求处理 review；范围限定 R1 既有行为，T13 仍未启动。旧 T12 源码/包/证据已按哈希保存在 `.local/verification/r1-review/historical-baseline/`，不会回写。
+
+| agent | 唯一写入范围 |
+| --- | --- |
+| review_lexer（Sol High） | DmParameterBinding.cs、RollbackToSqlTests.cs、新 SqlCommentReviewTests.cs |
+| review_reader（Sol High） | DmDataReader.cs、新 ReaderReviewTests.cs、tools/R1ReviewProbe/ |
+| review_detach（Sol High） | DmCommand.cs、新 ConnectionDetachReviewTests.cs |
+| review_data（Luna Max） | tests/fixtures/r1-review/ 合成逻辑输入 |
+| review_verify（Sol Low） | ignored 验证输出；唯一 build/test/DB 窗口 |
+| root | 设计、review、公共证据/文档、产品 README 和 Git/PR 收口 |
+
+各编码者冻结后才由 Low 验证；失败回交对应 owner。只有当前 TEST 身份、唯一对象和精确清理；无 SA 或实例设置变更。新候选使用唯一版本，旧候选的缺陷复现与新候选的正确性结果分开。

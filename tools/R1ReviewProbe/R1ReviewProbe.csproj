@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="W.DmProvider" Version="[$(R1ReviewPackageVersion)]" />
+    <AssemblyMetadata Include="R1ReviewPackageVersion" Value="$(R1ReviewPackageVersion)" />
+  </ItemGroup>
+  <Target Name="RequireExactPackageVersion" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error Condition="'$(R1ReviewPackageVersion)' == ''" Text="R1ReviewPackageVersion must identify the exact candidate package." />
+  </Target>
+</Project>

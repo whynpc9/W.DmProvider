@@ -24,6 +24,7 @@
 
 - [T11 实施报告](docs/implementation/reports/T11.md)：隔离级别 SaveChanges 根因修复与实际包公开入口验收；[兼容性变化](docs/compatibility/T11-isolation.md)。
 
+- [R1 review 修复](docs/implementation/reports/R1-review.md)：SQL 注释词法、NULL 整数、CLOB 长度探测及命令解绑的独立回归。
 - [T12 / R1 实施报告](docs/implementation/reports/T12.md)：298 项驱动离线、307 项 EF 单元、76 项功能、4 项脚本、4 项规范切片和 1 项 CLI 均通过；[离线 CI 与包审计](eng/T12.md)、[下游接入工具](tools/DownstreamAcceptance/README.md)。
 
 `packages/` 和 `decompiled/` 是来源样本及反编译参考，不是产品源码。新驱动应有独立的程序集身份和命名空间。规范是待实施设计，不表示相关能力已经完成。

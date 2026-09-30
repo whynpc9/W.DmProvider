@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "implementation": "W",
+  "package_sha256": "f640946324d2ee5e6c5f9929049c534132bac87023ffbe447f5f1cefbdecee46",
+  "loaded_assembly_sha256": "ddd54affb9e13d2c18acb2cbc213ba6a48a223cd5082760833f99881be098e86",
+  "assembly_name": "W.DmProvider",
+  "informational_version": "0.1.0-r1.20260930151754",
+  "actual_references": [
+    "System.Collections",
+    "System.Collections.Concurrent",
+    "System.Collections.NonGeneric",
+    "System.ComponentModel",
+    "System.ComponentModel.Primitives",
+    "System.Console",
+    "System.Data.Common",
+    "System.Diagnostics.StackTrace",
+    "System.Linq",
+    "System.Memory",
+    "System.Net.NameResolution",
+    "System.Net.Primitives",
+    "System.Net.Security",
+    "System.Net.Sockets",
+    "System.Runtime",
+    "System.Runtime.InteropServices",
+    "System.Runtime.Numerics",
+    "System.Security.Cryptography",
+    "System.Text.Encoding.CodePages",
+    "System.Text.RegularExpressions",
+    "System.Threading",
+    "System.Threading.Thread",
+    "System.Transactions.Local",
+    "System.Xml.ReaderWriter"
+  ],
+  "core_types": [
+    "W.Dm.DmConnection",
+    "W.Dm.DmCommand",
+    "W.Dm.DmDataReader",
+    "W.Dm.DmParameter",
+    "W.Dm.DmParameterCollection",
+    "W.Dm.DmTransaction",
+    "W.Dm.DmConnectionStringBuilder",
+    "W.Dm.DmClientFactory",
+    "W.Dm.DmException",
+    "W.Dm.DmDbType"
+  ],
+  "factory_registration": "W.DmProvider",
+  "factory_cases": [
+    {
+      "method": "CreateConnection",
+      "type": "W.Dm.DmConnection"
+    },
+    {
+      "method": "CreateCommand",
+      "type": "W.Dm.DmCommand"
+    },
+    {
+      "method": "CreateParameter",
+      "type": "W.Dm.DmParameter"
+    },
+    {
+      "method": "CreateConnectionStringBuilder",
+      "type": "W.Dm.DmConnectionStringBuilder"
+    }
+  ],
+  "can_create_batch": false,
+  "resources": [
+    {
+      "culture": "neutral",
+      "satellite_sha256": null,
+      "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+    },
+    {
+      "culture": "en",
+      "satellite_sha256": "6ec5be9a75c56d3d5b2feb7275e4fdab2a33f476725123cecfa173ae4cfc6dd0",
+      "value_sha256": "589e57b4087c6a07ef43d5ca2ab0b7ee5da8e869cec271047a33f957473a1556"
+    },
+    {
+      "culture": "zh-CN",
+      "satellite_sha256": "46a3b3e7f4fba7c1c8f1e8178a66759c7acc3da53c11c079f10d14161325b5a3",
+      "value_sha256": "4193e7b500bf4b687e648b722a909603a5a222b5e607e2d04750c749f0a85204"
+    },
+    {
+      "culture": "zh-HK",
+      "satellite_sha256": "28ead675b91494c91115620222badb8b3b97f2ac65a0afcd8eabcd067349ed32",
+      "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+    },
+    {
+      "culture": "zh-TW",
+      "satellite_sha256": "67ac66738e9c51d167cc022c26707da7d208c4cd407dbe88e22905a0213d03eb",
+      "value_sha256": "0d371373c3602bcdc914f7c61976541a0abcf7ee23a57ae648c9576a4e2a626d"
+    }
+  ],
+  "fixture_rows": 3,
+  "status": "offline_verified",
+  "integration": "integration_pending"
+}

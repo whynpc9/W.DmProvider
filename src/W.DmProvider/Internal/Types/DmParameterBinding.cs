@@ -170,19 +170,20 @@ internal sealed class DmParameterBinding
             }
             if (sql[index] == '/' && index + 1 < sql.Length && sql[index + 1] == '*')
             {
-                index += 2;
-                int depth = 1;
-                while (index < sql.Length && depth != 0)
-                {
-                    if (index + 1 < sql.Length && sql[index] == '/' && sql[index + 1] == '*') { depth++; index += 2; }
-                    else if (index + 1 < sql.Length && sql[index] == '*' && sql[index + 1] == '/') { depth--; index += 2; }
-                    else index++;
-                }
-                if (depth != 0) return false;
+                if (!TrySkipBlockComment(sql, ref index)) return false;
                 continue;
             }
             break;
         }
+        return true;
+    }
+
+    private static bool TrySkipBlockComment(string sql, ref int index)
+    {
+        // R1 supports non-nested block comments, ending at the first closing delimiter.
+        int end = sql.IndexOf("*/", index + 2, StringComparison.Ordinal);
+        if (end < 0) return false;
+        index = end + 2;
         return true;
     }
 
@@ -210,15 +211,8 @@ internal sealed class DmParameterBinding
             }
             if (current == '/' && index + 1 < sql.Length && sql[index + 1] == '*')
             {
-                index += 2;
-                int depth = 1;
-                while (index < sql.Length && depth != 0)
-                {
-                    if (index + 1 < sql.Length && sql[index] == '/' && sql[index + 1] == '*') { depth++; index += 2; }
-                    else if (index + 1 < sql.Length && sql[index] == '*' && sql[index + 1] == '/') { depth--; index += 2; }
-                    else index++;
-                }
-                if (depth != 0) throw new InvalidDataException("Unterminated SQL comment.");
+                if (!TrySkipBlockComment(sql, ref index))
+                    throw new InvalidDataException("Unterminated SQL comment.");
                 continue;
             }
             if ((current is 'q' or 'Q') && index + 2 < sql.Length && sql[index + 1] == '\'')
