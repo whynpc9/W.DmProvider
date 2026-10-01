@@ -258,7 +258,7 @@ internal sealed class DmTransport : IDisposable
         }
         catch (Exception ex) when (ex is AuthenticationException or IOException)
         {
-            throw new AuthenticationException("TLS authentication failed.");
+            throw new AuthenticationException("TLS authentication failed.", ex);
         }
         finally
         {

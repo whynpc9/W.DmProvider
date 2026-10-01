@@ -1,0 +1,193 @@
+{
+  "mode": "fixed",
+  "accepted": true,
+  "status": "review_contracts_verified",
+  "cases": {
+    "null_int32": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "typed_null_6081": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "sequential_generic_single_read": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "small_lob_materialization": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "lob_payload_boundaries": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "real_zero": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "clob_length_and_copy": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "sequential_clob_length_and_copy": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "sequential_clob_forward_gap": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "empty_clob": {
+      "Pass": true,
+      "Status": "non_null_empty_clob_observed",
+      "Error": {
+        "utf16_length": 0
+      },
+      "Details": null
+    },
+    "server_comment_terminator": {
+      "Pass": true,
+      "Status": "first_close_42",
+      "Error": null,
+      "Details": null
+    },
+    "prepared_detach_and_rebind": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "active_explicit_transaction_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "own_active_reader_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "other_active_reader_detach": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "api_savepoint_stack_and_raw_sql_rejection": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": null
+    },
+    "mixed_api_raw_savepoint_stack": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": {
+        "mixed_positive_flows_pass": true
+      }
+    },
+    "unknown_savepoint_error_fail_closed": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": {
+        "mixed_positive_flows_pass": true,
+        "isolated_negative_connection": true,
+        "absent_rollback_capture": {
+          "type": "W.Dm.DmException",
+          "kind": null,
+          "number": -2121
+        },
+        "absent_rollback_is_transient": false,
+        "connection_state_after_absent_rollback": "Closed",
+        "transaction_outcome_after_absent_rollback": "OutcomeUnknown",
+        "rows_query_after_absent_rollback_capture": {
+          "type": "System.InvalidOperationException",
+          "kind": null,
+          "number": null
+        },
+        "rows_after_absent_rollback": null,
+        "connection_state_after_rows_query": "Closed",
+        "transaction_outcome_after_rows_query": "OutcomeUnknown",
+        "api_rollback_capture": {
+          "type": "System.InvalidOperationException",
+          "kind": null,
+          "number": null
+        },
+        "connection_state_after_api_rollback": "Closed",
+        "transaction_outcome_after_api_rollback": "OutcomeUnknown",
+        "rows_query_after_api_rollback_capture": {
+          "type": "System.InvalidOperationException",
+          "kind": null,
+          "number": null
+        },
+        "rows_after_api_rollback": null,
+        "connection_state_after_api_rows_query": "Closed",
+        "transaction_outcome_after_api_rows_query": "OutcomeUnknown",
+        "full_rollback_capture": {
+          "type": "System.InvalidOperationException",
+          "kind": null,
+          "number": null
+        },
+        "connection_state_after_full_rollback": "Closed",
+        "transaction_outcome_after_full_rollback": "OutcomeUnknown",
+        "transaction_dispose_capture": null,
+        "connection_dispose_capture": null,
+        "fresh_connection_rows_capture": null,
+        "fresh_connection_final_rows": 0
+      }
+    },
+    "transaction_guard": {
+      "Pass": true,
+      "Status": "contract_verified",
+      "Error": null,
+      "Details": {
+        "client_rejection": {
+          "type": "System.NotSupportedException",
+          "kind": null,
+          "number": null
+        },
+        "active_after_rejection": true,
+        "rows_before_rollback": 1,
+        "final_outcome": "RolledBack",
+        "independent_connection_final_rows": 0
+      }
+    }
+  },
+  "table": "R1RV_DA13B3D9579B4A87837A8B3B",
+  "nonce": "DA13B3D9579B4A87837A8B3BC79AD7BD",
+  "transport": "PlaintextAllowed",
+  "persist_security_info": false,
+  "raw_guard_payload_attempted": true,
+  "package_version": "0.1.0-r1.20261001064256",
+  "assembly_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+  "assembly_mvid": "fb09ad56-9958-4a36-a9bc-f605bdb03497",
+  "server_identity_verified": true,
+  "server_version": "8.1.5.60",
+  "server_comment_value": 42,
+  "final_table_count": 0,
+  "all_required_contracts_pass": true
+}

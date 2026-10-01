@@ -1,6 +1,6 @@
 # R1 PR #1 review 修复
 
-状态：integration_verified；当前批次修复已独立验收，PR 复审与合并另行跟进。基线提交 `ce1ded35347491793fc84cac51541955f0219f6c`，用户要求处理当前 review；本轮只修 R1 既有行为，T13 未启动。旧 T12 包、源码及证据已按哈希保存于 `.local/verification/r1-review/historical-baseline/`，历史结果不回写。
+状态：integration_verified；该批修复已独立验收，PR #1 已于 2026-09-30 合并至 main `95a71bc`。本报告候选及结果为该轮历史记录，后续修复见 [main review 跟进](R1-review-followup.md)。基线提交 `ce1ded35347491793fc84cac51541955f0219f6c`，用户要求处理当前 review；本轮只修 R1 既有行为，T13 未启动。旧 T12 包、源码及证据已按哈希保存于 `.local/verification/r1-review/historical-baseline/`，历史结果不回写。
 
 ## 评论与行为
 

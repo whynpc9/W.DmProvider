@@ -153,5 +153,16 @@
       "completed": false,
       "report": null
     }
-  ]
+  ],
+  "r1_review_followup": {
+    "baseline": "95a71bcfd7c31c292f5aaaf255d20d24c5056cbf",
+    "status": "integration_verified",
+    "completed": true,
+    "report": "reports/R1-review-followup.md",
+    "rejected_candidate_version": "0.1.0-r1.20261001055007",
+    "candidate_version": "0.1.0-r1.20261001064256",
+    "evidence": "evidence/R1-review-followup/validation-summary.json",
+    "source_state": "working_tree",
+    "production_release_accepted": false
+  }
 }

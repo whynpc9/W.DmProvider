@@ -28,7 +28,14 @@ public sealed class TlsTransportTests
         using var certificates = new CertificateMaterial();
         using var stranger = new CertificateMaterial();
         using var server = certificates.Server();
-        var result = await TlsLoopbackHarness.ConnectAsync(certificates, server, "localhost", stranger.AuthorityPath);
+        bool observedFailure = false;
+        var result = await TlsLoopbackHarness.ConnectAsync(certificates, server, "localhost", stranger.AuthorityPath,
+            onClientFailure: (error, transport) =>
+            {
+                AssertDiagnosticFailureClosesBeforeLogin(error, transport);
+                observedFailure = true;
+            });
+        Assert.True(observedFailure);
         Assert.False(result.ClientAuthenticated);
         Assert.Equal(0, result.SuccessfulUpgrades);
         Assert.Equal(1, result.FailedUpgrades);
@@ -51,7 +58,14 @@ public sealed class TlsTransportTests
     {
         using var certificates = new CertificateMaterial();
         using var server = certificates.Server();
-        var result = await TlsLoopbackHarness.ConnectAsync(certificates, server, "wrong.local", certificates.AuthorityPath);
+        bool observedFailure = false;
+        var result = await TlsLoopbackHarness.ConnectAsync(certificates, server, "wrong.local", certificates.AuthorityPath,
+            onClientFailure: (error, transport) =>
+            {
+                AssertDiagnosticFailureClosesBeforeLogin(error, transport);
+                observedFailure = true;
+            });
+        Assert.True(observedFailure);
         Assert.False(result.ClientAuthenticated);
         Assert.Equal(1, result.FailedUpgrades);
         Assert.Equal(result.CreatedSockets, result.DisposedSockets);
@@ -117,5 +131,25 @@ public sealed class TlsTransportTests
         Assert.False(result.ServerAuthenticated);
         Assert.False(result.ClientCertificateAccepted);
         Assert.Equal(result.CreatedSockets, result.DisposedSockets);
+    }
+
+    private static void AssertDiagnosticFailureClosesBeforeLogin(Exception error, DmTransport transport)
+    {
+        var failure = Assert.IsType<AuthenticationException>(error);
+        Assert.Equal("TLS authentication failed.", failure.Message);
+        Assert.NotNull(failure.InnerException);
+        Assert.True(failure.InnerException is AuthenticationException or IOException);
+        // Observe cleanup before the harness's outer using statement disposes the transport.
+        Assert.True(transport.IsClosed);
+        Assert.Equal(1, DmTransportTestHooks.CreatedTcpSockets);
+        Assert.Equal(1, DmTransportTestHooks.DisposedTcpSockets);
+
+        // Synthetic LOGIN marker only: a failed handshake must reject all subsequent raw writes.
+        byte[] loginProbe = "LOGIN"u8.ToArray();
+        int bytesSent = 0;
+        Assert.Throws<ObjectDisposedException>(() => transport.SendAll(loginProbe, 0, loginProbe.Length,
+            DmDeadline.Start(TimeSpan.FromSeconds(1)), 0, sent => bytesSent += sent));
+        Assert.Equal(0, bytesSent);
+        Assert.Equal(1, DmTransportTestHooks.DisposedTcpSockets);
     }
 }

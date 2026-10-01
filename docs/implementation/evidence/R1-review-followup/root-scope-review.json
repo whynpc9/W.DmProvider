@@ -1,0 +1,8 @@
+{
+  "review": "root_independent_scope_check",
+  "frozen_inputs": 493,
+  "source_drift": [],
+  "historical_evidence_files": 48,
+  "historical_drift": [],
+  "diff_whitespace_pass": true
+}

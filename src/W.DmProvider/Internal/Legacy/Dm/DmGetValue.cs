@@ -389,22 +389,13 @@ internal class DmGetValue
 			return new DmRowId(val).toString();
 		case 12:
 		{
-			DmBlob dmBlob = new DmBlob(val, m_Statement.G(), m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
-			if (dmBlob.do_length() < int.MaxValue)
-			{
-				return DmConvertion.BytesToHexString(val);
-			}
-			return DmConvertion.BytesToHexString(dmBlob.GetBytes(0L, int.MaxValue));
+			// Hex returns two UTF-16 chars per input byte; guard before fetching.
+			DmBlob blob = new DmBlob(val, m_Statement.G(), m_ColInfo[i], false, hexPayload: true);
+			int length = DmLobMaterialization.HexInput(blob.do_length());
+			return Convert.ToHexString(blob.GetBytes(0L, length));
 		}
 		case 19:
-		{
-			DmClob dmClob = new DmClob(val, m_Statement.G(), m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
-			if (dmClob.do_length() < int.MaxValue)
-			{
-				return dmClob.getSubString(0L, (int)dmClob.do_length());
-			}
-			return dmClob.getSubString(0L, int.MaxValue);
-		}
+			return new DmClob(val, m_Statement.G(), m_ColInfo[i], false).MaterializeStringUnderOwner();
 		case 14:
 		case 15:
 		case 16:
@@ -762,7 +753,7 @@ internal class DmGetValue
 		case 12:
 			return GetBytes(i, val, CType, prec, scale);
 		case 19:
-			return new DmClob(val, m_Statement.G(), m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2).getSubString(0L, int.MaxValue);
+			return new DmClob(val, m_Statement.G(), m_ColInfo[i], false).MaterializeStringUnderOwner();
 		case 17:
 		case 18:
 			return GetBytes(i, val, CType, prec, scale);
@@ -788,11 +779,11 @@ internal class DmGetValue
 
 	internal byte[] GetBytes(int i, byte[] val, int CType, int prec, int scale)
 	{
-		int num = val.Length;
 		if (val == null)
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 		}
+		int num = val.Length;
 		switch (CType)
 		{
 		case 3:
@@ -802,37 +793,14 @@ internal class DmGetValue
 			return val;
 		case 12:
 		{
-			if (num < 13)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
-			}
-			if (IsRealData(val))
-			{
-				byte[] array = new byte[8];
-				Array.Copy(val, 9, array, 0, 4);
-				num = Math.Min(num - 13, DmConvertion.FourByteToInt(array));
-				byte[] array2 = new byte[num];
-				int num2 = 0;
-				num2 = ((!m_NewLobFlag) ? 13 : 43);
-				if (m_Statement.G().ConnProperty.msgVersion >= 9)
-				{
-					num2 += 4;
-				}
-				Array.Copy(val, num2, array2, 0, num);
-				return array2;
-			}
-			DmBlob dmBlob = new DmBlob(val, m_Statement.G(), m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
-			int len = (int)dmBlob.do_length();
-			return dmBlob.GetBytes(0L, len);
+			if (num < 13) DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			DmBlob blob = new DmBlob(val, m_Statement.G(), m_ColInfo[i], false);
+			return blob.GetBytes(0L, DmLobMaterialization.Bytes(blob.do_length()));
 		}
 		case 19:
 		{
-			if (num < 13)
-			{
-				DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
-			}
-			DmClob dmClob = new DmClob(val, m_Statement.G(), m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
-			return dmClob.GetBytes(0L, (int)dmClob.do_length());
+			if (num < 13) DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			return new DmClob(val, m_Statement.G(), m_ColInfo[i], false).MaterializeBytesUnderOwner();
 		}
 		case 25:
 			return null;

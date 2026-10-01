@@ -18,7 +18,8 @@ internal static class TlsLoopbackHarness
 
     internal static async Task<Outcome> ConnectAsync(CertificateMaterial certificates,
         X509Certificate2 serverCertificate, string targetHost, string trustRootPath,
-        bool requireClientCertificate = false, bool sendClientCertificate = false, bool usePfxClient = false)
+        bool requireClientCertificate = false, bool sendClientCertificate = false, bool usePfxClient = false,
+        Action<Exception, DmTransport>? onClientFailure = null)
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
@@ -105,6 +106,7 @@ internal static class TlsLoopbackHarness
                                        OperationCanceledException or ObjectDisposedException)
             {
                 clientAuthenticated = false;
+                onClientFailure?.Invoke(ex, transport);
             }
         }
         bool serverAuthenticated = await server.WaitAsync(TimeSpan.FromSeconds(5));

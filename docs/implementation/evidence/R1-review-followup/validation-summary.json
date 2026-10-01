@@ -1,0 +1,741 @@
+{
+  "schema_version": 1,
+  "status": "integration_verified",
+  "candidate": {
+    "version": "0.1.0-r1.20261001064256",
+    "package": ".local/verification/r1-review-followup/candidate-v4/W.DmProvider.0.1.0-r1.20261001064256.nupkg",
+    "package_sha256": "abfcf66245b3740657c009b95e5db1a9b78c467cc2a42a8035c0adda94de0002",
+    "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+    "source": {
+      "schema_version": 1,
+      "task": "R1",
+      "status": "R1_source_hashed",
+      "source_sha256": "b35a64b86a34fac7d6fc5b6dd7534e5084a911a453049004c52e825435b9025c",
+      "source_file_count": 279,
+      "excluded_non_source_count": 0,
+      "history_evidence_modified": false
+    }
+  },
+  "full_ignored_summary": {
+    "path": ".local/verification/r1-review-followup/verification-summary.json",
+    "sha256": "b0919be8da88c9af94f54708788d6d60c546caab4be3fe5a0c59d9694e40fc62"
+  },
+  "offline": {
+    "exit_code": 0,
+    "passed": 421,
+    "suites": [
+      {
+        "name": "Configuration",
+        "host": {
+          "stage": "Configuration_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 3.765
+        },
+        "counts": {
+          "total": 11,
+          "executed": 11,
+          "passed": 11,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Session",
+        "host": {
+          "stage": "Session_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.704
+        },
+        "counts": {
+          "total": 12,
+          "executed": 12,
+          "passed": 12,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Transport",
+        "host": {
+          "stage": "Transport_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.676
+        },
+        "counts": {
+          "total": 38,
+          "executed": 38,
+          "passed": 38,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Security",
+        "host": {
+          "stage": "Security_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 6.56
+        },
+        "counts": {
+          "total": 36,
+          "executed": 36,
+          "passed": 36,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Command",
+        "host": {
+          "stage": "Command_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.591
+        },
+        "counts": {
+          "total": 16,
+          "executed": 16,
+          "passed": 16,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Type",
+        "host": {
+          "stage": "Type_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.692
+        },
+        "counts": {
+          "total": 142,
+          "executed": 142,
+          "passed": 142,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Transaction",
+        "host": {
+          "stage": "Transaction_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.692
+        },
+        "counts": {
+          "total": 88,
+          "executed": 88,
+          "passed": 88,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      },
+      {
+        "name": "Isolation",
+        "host": {
+          "stage": "Isolation_test",
+          "host_exit_code": 0,
+          "timed_out": false,
+          "elapsed_seconds": 1.68
+        },
+        "counts": {
+          "total": 78,
+          "executed": 78,
+          "passed": 78,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29"
+      }
+    ]
+  },
+  "package_audit": {
+    "status": "candidate_package_audited",
+    "id": "W.DmProvider",
+    "version": "0.1.0-r1.20261001064256",
+    "package_sha256": "abfcf66245b3740657c009b95e5db1a9b78c467cc2a42a8035c0adda94de0002",
+    "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+    "source_sha256": "b35a64b86a34fac7d6fc5b6dd7534e5084a911a453049004c52e825435b9025c",
+    "current_surface_sha256": "f914653da6908a767a3760e6b7470cefeffdbfc62b539e48c7689a2b30cb4bbd",
+    "integration": "not_executed",
+    "release_accepted": false,
+    "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r1-review-followup/package-audit-v4/20261001T064420Z-0933fb761094"
+  },
+  "missing_environment_expected_exit": 66,
+  "fixed_probe": {
+    "report": "fixed-probe.json",
+    "cases": 19,
+    "accepted": true,
+    "package_reference": true
+  },
+  "lanes": {
+    "unit": {
+      "exit_code": 0,
+      "counts": {
+        "total": 307,
+        "executed": 307,
+        "passed": 307,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "accepted": true,
+      "command": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "test",
+        "test/W.EntityFrameworkCore.Dameng.Tests/W.EntityFrameworkCore.Dameng.Tests.csproj",
+        "--no-build",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers",
+        "--logger",
+        "trx;LogFileName=tests.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-unit-20261001T070013797060Z"
+      ],
+      "result_dir": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-unit-20261001T070013797060Z",
+      "summary_sha256": "5e0b9df68d5de26ff05811db01d7c991276435e963b72a4a102b5597a74aca2a",
+      "loaded_driver": {
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "loaded_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.Tests/bin/Debug/net10.0/W.DmProvider.dll",
+        "driver_assembly": "W.DmProvider",
+        "ef_assembly_version": "10.0.12.0",
+        "runtime": ".NET 10.0.12",
+        "process_id": 78995
+      },
+      "before": null,
+      "after": null
+    },
+    "functional": {
+      "exit_code": 0,
+      "counts": {
+        "total": 76,
+        "executed": 76,
+        "passed": 76,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "accepted": true,
+      "command": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "test",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--no-build",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers",
+        "--logger",
+        "trx;LogFileName=tests.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-functional-20261001T081422982334Z",
+        "--filter",
+        "FullyQualifiedName!~DamengMigrationScriptFunctionalTests&Category!~CapabilityProbe&FullyQualifiedName!~DamengDotNetEfCliFunctionalTests&FullyQualifiedName!~DamengCurrentSchemaScriptFunctionalTests&Category!~OfficialCharacterization"
+      ],
+      "result_dir": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-functional-20261001T081422982334Z",
+      "summary_sha256": "943fc03904debeb48df36eeceae65bbc2962b1d99aaf55d974efbc2788220bc4",
+      "loaded_driver": {
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "loaded_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.DmProvider.dll",
+        "driver_assembly": "W.DmProvider",
+        "ef_assembly_version": "10.0.12.0",
+        "runtime": ".NET 10.0.12",
+        "process_id": 55187
+      },
+      "before": {
+        "task": "T12",
+        "mode": "before",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "task": "T12",
+        "mode": "after",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "independent_final_inventory_matches": true,
+        "new_object_hash_count": 0,
+        "removed_object_hash_count": 0
+      }
+    },
+    "scripts": {
+      "exit_code": 0,
+      "counts": {
+        "total": 4,
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "accepted": true,
+      "command": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "test",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--no-build",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers",
+        "--logger",
+        "trx;LogFileName=tests.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-scripts-20261001T082929993043Z",
+        "--filter",
+        "FullyQualifiedName~DamengCurrentSchemaScriptFunctionalTests"
+      ],
+      "result_dir": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-scripts-20261001T082929993043Z",
+      "summary_sha256": "c86c61e94a6c30c26df313f1d987edf3f3d30d7029bff7490b6c16a95192c84a",
+      "loaded_driver": {
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "loaded_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.DmProvider.dll",
+        "driver_assembly": "W.DmProvider",
+        "ef_assembly_version": "10.0.12.0",
+        "runtime": ".NET 10.0.12",
+        "process_id": 69864
+      },
+      "before": {
+        "task": "T12",
+        "mode": "before",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "task": "T12",
+        "mode": "after",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "independent_final_inventory_matches": true,
+        "new_object_hash_count": 0,
+        "removed_object_hash_count": 0
+      }
+    },
+    "specification": {
+      "exit_code": 0,
+      "counts": {
+        "total": 4,
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "accepted": true,
+      "command": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "test",
+        "test/W.EntityFrameworkCore.Dameng.Specification.Tests/W.EntityFrameworkCore.Dameng.Specification.Tests.csproj",
+        "--no-build",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers",
+        "--logger",
+        "trx;LogFileName=tests.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-specification-20261001T083151928002Z"
+      ],
+      "result_dir": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-specification-20261001T083151928002Z",
+      "summary_sha256": "67505c7e3d416380367f0febbfaa60cc736b08445b53c0aaedfbd157d9969b0a",
+      "loaded_driver": {
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "loaded_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.Specification.Tests/bin/Debug/net10.0/W.DmProvider.dll",
+        "driver_assembly": "W.DmProvider",
+        "ef_assembly_version": "10.0.12.0",
+        "runtime": ".NET 10.0.12",
+        "process_id": 71892
+      },
+      "before": {
+        "task": "T12",
+        "mode": "before",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "task": "T12",
+        "mode": "after",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "independent_final_inventory_matches": true,
+        "new_object_hash_count": 0,
+        "removed_object_hash_count": 0
+      }
+    },
+    "cli": {
+      "exit_code": 0,
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "accepted": true,
+      "command": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "test",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--no-build",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers",
+        "--logger",
+        "trx;LogFileName=tests.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-cli-20261001T083209888749Z",
+        "--filter",
+        "FullyQualifiedName~DamengDotNetEfCliFunctionalTests"
+      ],
+      "result_dir": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-cli-20261001T083209888749Z",
+      "summary_sha256": "a87ae30117bbbd035174d433c18347808b5a1ab23a7ce938ce54d9cca41714f5",
+      "loaded_driver": {
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "loaded_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.DmProvider.dll",
+        "driver_assembly": "W.DmProvider",
+        "ef_assembly_version": "10.0.12.0",
+        "runtime": ".NET 10.0.12",
+        "process_id": 72252
+      },
+      "before": {
+        "task": "T12",
+        "mode": "before",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "after": {
+        "task": "T12",
+        "mode": "after",
+        "accepted": true,
+        "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "identity_verified": true,
+        "current_schema_verified": true,
+        "server_version": "8.1.5.60",
+        "inventory_count": 0,
+        "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "independent_final_inventory_matches": true,
+        "new_object_hash_count": 0,
+        "removed_object_hash_count": 0
+      }
+    }
+  },
+  "additional_binary_reference_runners": {
+    "TransactionProbe": {
+      "mode": "quoted-savepoint",
+      "exit_code": 0,
+      "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+      "account_verified": true,
+      "cleanup_verified": true,
+      "final_state": "random_objects_absent",
+      "scenario": {
+        "outcome": "completed",
+        "before_visible": true,
+        "after_absent": true,
+        "savepoint_entry": "mixed_driver_api_and_user_sql",
+        "raw_control_rejected_without_wire": true,
+        "mixed_api_raw_verified": true
+      }
+    },
+    "IsolationProbe": {
+      "mode": "public-matrix",
+      "exit_code": 0,
+      "cases": 36,
+      "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+      "account_verified": true,
+      "cleanup_verified": true,
+      "final_state": "unique_objects_absent"
+    },
+    "strict_validator": {
+      "task": "T11",
+      "mode": "matrix",
+      "status": "candidate_matrix_verified",
+      "entry": "public",
+      "assembly_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+      "scope": "observed_SERVER_8_1_5_60_ADO_and_statement_schedule_only;EF_and_public_capability_gate_pending",
+      "final_database_state": "unique_objects_absent"
+    }
+  },
+  "source_input_count": 493,
+  "source_match": true,
+  "approved_tool_overlay_sha256": "f287c53e6fe516af740fd5326301d909f604f63e712543aca9f3c60aef4a32bc",
+  "historical_evidence_count": 48,
+  "historical_evidence_unchanged": true,
+  "artifact_scan": {
+    "status": "safe_patterns_absent",
+    "scanned_file_count": 78,
+    "secret_files_loaded": false,
+    "scope": "reportableJSON/publicofflinepackageauditTRXEF;privatecachesnotincluded"
+  },
+  "final_independent_catalog": {
+    "mode": "fixed_plumbing_abort_fixture_cleanup",
+    "accepted": true,
+    "candidate_version": "0.1.0-r1.20261001064256",
+    "expected_inventory_sha256": "fca9603f59e39a57b51bd16335c47b376326fd48d122ec294a0ce7c466b6097b",
+    "ddl_attempted": false,
+    "business_rows_read": false,
+    "ddl_count": 0,
+    "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+    "configured_test_user_verified": true,
+    "server_identity_verified": true,
+    "current_schema_verified": true,
+    "server_version": "8.1.5.60",
+    "inventory_count": 0,
+    "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "objects": [],
+    "already_absent": true,
+    "final_independent_identity_verified": true,
+    "final_inventory_count": 0,
+    "final_inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "final_catalog_command": {
+    "command": [
+      "scripts/with-dameng-test.sh",
+      "/usr/local/share/dotnet/dotnet",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r1-review-followup/ef-diagnostic/bin/Release/net10.0/EfReadOnlyDiagnostic.dll",
+      "cleanup-plumbing-abort"
+    ],
+    "exit_code": 0,
+    "timeout_seconds": 180,
+    "started_utc": "2026-10-01T08:37:19.175781+00:00",
+    "ended_utc": "2026-10-01T08:37:22.188384+00:00"
+  },
+  "functional_outer_budget_evidence": {
+    "original_tool_sha256": "cbd89bfc0ee8d44f24acb0259035a6d8389c5752c69235d7cf85d7c9a296112f",
+    "wrapper_sha256": "0978a3bd0fa06870cf2963e650047b5fbf022644d85702d222164f75aa3aa8e2",
+    "started_utc": "2026-10-01T08:14:24.666651+00:00",
+    "overrides": [
+      {
+        "command": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/results-functional-20261001T081422982334Z",
+          "--filter",
+          "FullyQualifiedName!~DamengMigrationScriptFunctionalTests&Category!~CapabilityProbe&FullyQualifiedName!~DamengDotNetEfCliFunctionalTests&FullyQualifiedName!~DamengCurrentSchemaScriptFunctionalTests&Category!~OfficialCharacterization"
+        ],
+        "old_timeout": 900,
+        "new_timeout": 1800
+      }
+    ],
+    "scope": "ordinary functional dotnet test only; before/after/build/other lanes unchanged"
+  },
+  "prior_failures_retained": [
+    "v1Typefixture",
+    "v2EFrawsavepointguard",
+    "v4probeActiveexpectation",
+    "v5diagnostic-2121",
+    "v6original900timeout",
+    "v7parentroutingaborted"
+  ],
+  "window_released_utc": "2026-10-01T08:37:40.597308+00:00",
+  "production_release_accepted": false
+}

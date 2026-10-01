@@ -562,7 +562,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			{
 				try
 				{
-					reader = ExecuteReaderOwned(CommandBehavior.Default);
+					reader = ExecuteReaderOwned(CommandBehavior.Default, userExecution: true);
 					if (reader == null) throw new InvalidOperationException("Execution did not return a reader.");
 					reader.AttachExecutionLease(lease, ownsLease: false);
 					while (reader.NextResultForCommandOwned()) { }
@@ -682,7 +682,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			{
 				using (lease.BeginInvocation())
 				{
-					try { reader = ExecuteReaderOwned(CommandBehavior.Default); }
+					try { reader = ExecuteReaderOwned(CommandBehavior.Default, userExecution: true); }
 					catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
 					{
 						verifiedServerError = true;
@@ -748,7 +748,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Reader);
 			using (lease.BeginInvocation())
 			{
-				try { reader = ExecuteReaderOwned(behavior); }
+				try { reader = ExecuteReaderOwned(behavior, userExecution: true); }
 				catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
 				{
 					verifiedServerError = true;
@@ -813,8 +813,13 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		}
 	}
 
-	private DmDataReader ExecuteReaderOwned(CommandBehavior behavior)
+	private DmDataReader ExecuteReaderOwned(CommandBehavior behavior, bool userExecution = false)
 	{
+		DmCommandPlan plan = userExecution ? Volatile.Read(ref activePlan) : null;
+		DmSqlSavepointControl? rawSavepoint = null;
+		if (plan?.Transaction != null &&
+			ReferenceEquals(plan.Connection?.Session?.ActiveTransaction, plan.Transaction) &&
+			DmParameterBinding.TryParseSavepointControl(plan.Sql, out var control)) rawSavepoint = control;
 		BeforeExecute();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "ExecuteReader(CommandBehavior behavior)");
 		if (rd != null && !rd.do_IsClosed)
@@ -839,7 +844,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			statementConnection = m_Conn;
 		}
 		m_Stmt.__t02_field_04000931 = m_StmtSerial;
-		if (connInstance.ConnProperty.EnRsCache)
+		if (connInstance.ConnProperty.EnRsCache && !rawSavepoint.HasValue)
 		{
 			bool flag = false;
 			RsKey key = new RsKey(connInstance.ConnProperty.Guid, connInstance.ConnProperty.CurrentSchema, GetCommandText(), do_DbParameterCollection.Count, do_DbParameterCollection);
@@ -892,6 +897,16 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 				{
 					rd = ExecutePreparedQuery(behavior);
 				}
+			}
+			if (rawSavepoint.HasValue)
+			{
+				// The executing call has returned a verified response. Record its
+				// effects before result navigation/cleanup can fail after execution.
+				if (!ReferenceEquals(plan, Volatile.Read(ref activePlan)) || rd == null ||
+					m_Stmt.m() == null || m_Stmt.m().IsTerminal || m_Stmt.m().GetHasResultSet())
+					throw new InvalidOperationException("Savepoint execution did not return a current control response.");
+				plan.Transaction.ConfirmUserSavepointControl(plan.Connection, rawSavepoint.Value,
+					DmInvocation.Current?.Lease);
 			}
 		}
 		catch (DmException error) when (IsOwnedVerifiedServerError(error, DmInvocation.Current?.Lease))

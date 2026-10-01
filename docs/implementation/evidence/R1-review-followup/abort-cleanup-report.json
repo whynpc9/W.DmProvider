@@ -1,0 +1,101 @@
+{
+  "mode": "fixed_plumbing_abort_fixture_cleanup",
+  "accepted": true,
+  "candidate_version": "0.1.0-r1.20261001064256",
+  "expected_inventory_sha256": "fca9603f59e39a57b51bd16335c47b376326fd48d122ec294a0ce7c466b6097b",
+  "ddl_attempted": true,
+  "business_rows_read": false,
+  "ddl_count": 1,
+  "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+  "configured_test_user_verified": true,
+  "server_identity_verified": true,
+  "current_schema_verified": true,
+  "server_version": "8.1.5.60",
+  "inventory_count": 1,
+  "inventory_sha256": "fca9603f59e39a57b51bd16335c47b376326fd48d122ec294a0ce7c466b6097b",
+  "objects": [
+    {
+      "catalog": "USER_TABLES",
+      "name": "EF10_AGF_EF3B20249307",
+      "object_sha256": "472ed22e9db23ed9c55161a02406da0469c53ea85000d43862ad00875ff99462",
+      "fixture_prefix_candidates": [
+        {
+          "Prefix": "EF10_AGF_",
+          "Source": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengStringAggregateFunctionalTests.cs",
+          "Line": 350,
+          "Type": "AggregateStore",
+          "SourceSha256": "76e626ab37a5b9831a82e9980ad31ab5c58299e498122b92ca205ef6acb2ae25"
+        }
+      ]
+    }
+  ],
+  "exact_after_inventory_verified": true,
+  "table_columns": [
+    {
+      "ordinal": 1,
+      "column_name": "ID",
+      "data_type": "INT",
+      "data_length": 4,
+      "precision": null,
+      "scale": 0,
+      "nullable": "N"
+    },
+    {
+      "ordinal": 2,
+      "column_name": "GROUP_ID",
+      "data_type": "INT",
+      "data_length": 4,
+      "precision": null,
+      "scale": 0,
+      "nullable": "N"
+    },
+    {
+      "ordinal": 3,
+      "column_name": "ORDINAL",
+      "data_type": "INT",
+      "data_length": 4,
+      "precision": null,
+      "scale": 0,
+      "nullable": "N"
+    },
+    {
+      "ordinal": 4,
+      "column_name": "TEXT_VALUE",
+      "data_type": "NVARCHAR2",
+      "data_length": 800,
+      "precision": null,
+      "scale": 7,
+      "nullable": "Y"
+    },
+    {
+      "ordinal": 5,
+      "column_name": "LOB_VALUE",
+      "data_type": "TEXT",
+      "data_length": 2147483647,
+      "precision": null,
+      "scale": 0,
+      "nullable": "Y"
+    },
+    {
+      "ordinal": 6,
+      "column_name": "NULLABLE_SORT_KEY",
+      "data_type": "INT",
+      "data_length": 4,
+      "precision": null,
+      "scale": 0,
+      "nullable": "Y"
+    },
+    {
+      "ordinal": 7,
+      "column_name": "SECONDARY_SORT_KEY",
+      "data_type": "INT",
+      "data_length": 4,
+      "precision": null,
+      "scale": 0,
+      "nullable": "Y"
+    }
+  ],
+  "final_independent_identity_verified": true,
+  "final_inventory_count": 0,
+  "final_inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

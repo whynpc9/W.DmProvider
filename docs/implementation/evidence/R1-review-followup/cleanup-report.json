@@ -1,0 +1,65 @@
+{
+  "mode": "fixed_owned_fixture_cleanup",
+  "accepted": true,
+  "candidate_version": "0.1.0-r1.20261001064256",
+  "expected_inventory_sha256": "9817a4c2b5271af977076c41d3b98f302eb2d93129335ad713647a4dca322c29",
+  "ddl_attempted": true,
+  "business_rows_read": false,
+  "ddl_count": 1,
+  "driver_dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+  "configured_test_user_verified": true,
+  "server_identity_verified": true,
+  "current_schema_verified": true,
+  "server_version": "8.1.5.60",
+  "inventory_count": 1,
+  "inventory_sha256": "9817a4c2b5271af977076c41d3b98f302eb2d93129335ad713647a4dca322c29",
+  "objects": [
+    {
+      "catalog": "USER_TABLES",
+      "name": "EF10_DB_5892FFF511AD",
+      "object_sha256": "7f8bd09f96c38820b050e14c5ffb18c761e0d347baea00f5e5d2d47f9473cc75",
+      "fixture_prefix_candidates": [
+        {
+          "Prefix": "EF10_DB_",
+          "Source": ".local/t12/ef/r1-review-followup-0.1.0-r1.20261001064256/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/DamengDateBucketFunctionalTests.cs",
+          "Line": 241,
+          "Type": "BucketStore",
+          "SourceSha256": "949c373e25407336186e21b26934f8db2aca4577475f2a11365e09998cdcb995"
+        }
+      ]
+    }
+  ],
+  "exact_after_inventory_verified": true,
+  "table_columns": [
+    {
+      "ordinal": 1,
+      "column_name": "ID",
+      "data_type": "BIGINT",
+      "data_length": 8,
+      "precision": null,
+      "scale": 0,
+      "nullable": "N"
+    },
+    {
+      "ordinal": 2,
+      "column_name": "REQUIRED_AT",
+      "data_type": "TIMESTAMP",
+      "data_length": 9,
+      "precision": null,
+      "scale": 7,
+      "nullable": "N"
+    },
+    {
+      "ordinal": 3,
+      "column_name": "NULLABLE_AT",
+      "data_type": "TIMESTAMP",
+      "data_length": 9,
+      "precision": null,
+      "scale": 7,
+      "nullable": "Y"
+    }
+  ],
+  "final_independent_identity_verified": true,
+  "final_inventory_count": 0,
+  "final_inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

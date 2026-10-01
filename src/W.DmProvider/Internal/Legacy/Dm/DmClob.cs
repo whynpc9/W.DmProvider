@@ -1,4 +1,7 @@
+using System;
 using System.IO;
+using System.Text;
+using W.Dm.Internal.Types;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -16,7 +19,14 @@ public class DmClob : AbstractLob
 		if (storageType == 1)
 		{
 			int headSize = getHeadSize();
-			data = ByteUtil.getString(value, headSize, (int)bytesLength, serverEncoding);
+			// Inline lengths are encoded bytes. Counting decoded chars does not allocate
+			// a string and avoids rejecting valid multibyte text by its wire size.
+			if (bytesLength < 0 || bytesLength > value.LongLength - headSize)
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			int byteCount = checked((int)bytesLength);
+			var encoding = Encoding.GetEncoding(serverEncoding);
+			DmLobMaterialization.Characters(encoding.GetCharCount(value, headSize, byteCount));
+			data = ByteUtil.getString(value, headSize, byteCount, serverEncoding);
 			m_length = data.length();
 		}
 		else if (fetchAll)
@@ -68,19 +78,53 @@ public class DmClob : AbstractLob
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 		}
-		len = (int)((len > num) ? num : len);
+		len = DmLobMaterialization.Characters(Math.Min((long)len, num));
 		if (local || storageType == 1 || fetchAll)
 		{
 			if (pos > do_length())
 			{
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 			}
-			return data.substring((int)pos, (int)pos + len);
+			int offset = checked((int)pos);
+			return data.substring(offset, checked(offset + len));
 		}
-		return ConnInstance.GetCsi().A(this, pos, len);
+		// The server counts character positions (Data.len); supplementary characters
+		// can occupy two CLR chars. Check decoded UTF-16 size before each allocation.
+		var builder = new StringBuilder();
+		var encoding = Encoding.GetEncoding(serverEncoding);
+		long consumed = 0;
+		while (consumed < len)
+		{
+			int chunkLimit = Math.Min(DmConnectionSettings.DefaultLobChunkSize, ConnInstance.ConnProperty.MaxLobDataLenPerMsg);
+			if (chunkLimit <= 0) throw new InvalidOperationException("LOB chunk limit must be positive.");
+			int requested = (int)Math.Min(len - consumed, chunkLimit);
+			Data chunk = ConnInstance.GetCsi().A((AbstractLob)this, checked(pos + consumed), requested);
+			if (chunk.value == null || chunk.value.Length == 0) break;
+			int chars = encoding.GetCharCount(chunk.value);
+			DmLobMaterialization.Characters(checked((long)builder.Length + chars));
+			string decoded = encoding.GetString(chunk.value);
+			builder.Append(decoded);
+			long advanced = chunk.len == -1 ? decoded.Length : chunk.len;
+			if (advanced <= 0) throw new InvalidOperationException("LOB read did not advance.");
+			consumed = checked(consumed + advanced);
+			if (readOver) break;
+		}
+		return builder.ToString();
 	}
 
-	internal string GetSubStringUnderOwner(long pos, int len) => GetSubStringOwned(pos + 1, len);
+	internal string GetSubStringUnderOwner(long pos, int len) => GetSubStringOwned(checked(pos + 1), len);
+
+	internal string MaterializeStringUnderOwner()
+	{
+		// A locator may expose encoded bytes while GET_LOB_LEN uses server character
+		// units. Reject an oversized known locator before any length query or read.
+		if (!local && storageType != 1 && bytesLength >= 0)
+			DmLobMaterialization.Characters(bytesLength);
+		int length = DmLobMaterialization.Characters(do_length());
+		string result = GetSubStringOwned(1L, length);
+		DmLobMaterialization.Characters(result.Length);
+		return result;
+	}
 
 	public int SetString(long pos, string str)
 	{
@@ -187,7 +231,7 @@ public class DmClob : AbstractLob
 		using var invocation = BeginInternalOperation();
 		if (!local && storageType != 1 && !fetchAll)
 		{
-			data = GetSubStringOwned(1L, (int)do_length());
+			data = MaterializeStringUnderOwner();
 			m_length = data.length();
 			fetchAll = true;
 		}
@@ -209,17 +253,19 @@ public class DmClob : AbstractLob
 	public byte[] GetBytes(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return ByteUtil.fromString(GetSubStringOwned(pos + 1, len), serverEncoding);
+		return EncodeBounded(GetSubStringOwned(checked(pos + 1), len));
 	}
 
-	internal Stream GetStream()
+	internal byte[] MaterializeBytesUnderOwner() => EncodeBounded(MaterializeStringUnderOwner());
+
+	private byte[] EncodeBounded(string text)
 	{
-		int num = (int)m_length;
-		MemoryStream memoryStream = new MemoryStream(num);
-		memoryStream.Write(ByteUtil.fromString(GetSubStringOwned(1L, (int)do_length()), serverEncoding), 0, num);
-		memoryStream.Position = 0L;
-		return memoryStream;
+		var encoding = Encoding.GetEncoding(serverEncoding);
+		DmLobMaterialization.Bytes(encoding.GetByteCount(text));
+		return encoding.GetBytes(text);
 	}
+
+	internal Stream GetStream() => new MemoryStream(MaterializeBytesUnderOwner(), writable: false);
 
 	public string GetString(long pos, int length)
 	{

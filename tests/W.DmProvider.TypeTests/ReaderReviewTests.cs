@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using W.Dm;
 using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Types;
 using Xunit;
 using LegacyStatement = W.Dm.Internal.Legacy.A.A;
 
@@ -83,9 +84,63 @@ public sealed class ReaderReviewTests
         Assert.Throws<NotSupportedException>(() => fixture.Reader.GetChars(0, 0, null!, 0, 0));
     }
 
+    [Fact]
+    public void SequentialGenericIntegerReadsEachColumnOnceAndRejectsBackwardAccess()
+    {
+        using var fixture = new ReaderFixture(7, BitConverter.GetBytes(42), sequential: true);
+        Assert.Equal(42, fixture.Reader.GetFieldValue<int>(0));
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+        Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<int>(0)).Number);
+    }
+
+    [Fact]
+    public void SequentialGenericIntegerNullRaises6081AndAllowsTheNextColumn()
+    {
+        using var fixture = new ReaderFixture(7, null, sequential: true);
+        Assert.Equal(6081, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<int>(0)).Number);
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+        Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<int>(0)).Number);
+    }
+
+    [Fact]
+    public void SequentialGenericFallbackReadsStringThenFollowingInteger()
+    {
+        using var fixture = new ReaderFixture(2, System.Text.Encoding.UTF8.GetBytes("A中"), sequential: true);
+        Assert.Equal("A中", fixture.Reader.GetFieldValue<string>(0));
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+        Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<string>(0)).Number);
+    }
+
+    [Fact]
+    public void SequentialGenericFallbackNullRaises6081AndAllowsTheNextColumn()
+    {
+        using var fixture = new ReaderFixture(2, null, sequential: true);
+        Assert.Equal(6081, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<string>(0)).Number);
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+    }
+
+    [Fact]
+    public void SequentialGenericDmDecimalReadsExactValueAndFollowingColumn()
+    {
+        DmDecimal exact = DmDecimal.Parse("123.45");
+        using var fixture = new ReaderFixture(9, DmNumericCodec.EncodeDecimal(exact), sequential: true);
+        Assert.Equal(exact, fixture.Reader.GetFieldValue<DmDecimal>(0));
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+        Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<DmDecimal>(0)).Number);
+    }
+
+    [Fact]
+    public void SequentialGenericDmDecimalNullRaises6081AndAllowsTheNextColumn()
+    {
+        using var fixture = new ReaderFixture(9, null, sequential: true);
+        Assert.Equal(6081, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<DmDecimal>(0)).Number);
+        Assert.Equal(0, fixture.Reader.GetFieldValue<int>(1));
+        Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<DmDecimal>(0)).Number);
+    }
+
     // Synthetic row bytes and a local CLOB exercise the public getter path without a socket.
     // Only the lease is disposed: disposing the synthetic reader would close a fake server statement.
-    private sealed class ReaderFixture : IDisposable
+    internal sealed class ReaderFixture : IDisposable
     {
         private readonly DmExecutionLease lease;
         internal DmDataReader Reader { get; }
@@ -95,7 +150,14 @@ public sealed class ReaderReviewTests
             var session = new DmSession();
             session.CompleteHandshakeForTests();
             lease = session.BeginExecution(DmOperationPurpose.Reader);
+            var physical = Uninitialized<DmConnInstance>();
+            var property = new DmConnection().ConnProperty;
+            property.ServerEncoding = "UTF-8";
+            property.msgVersion = 21;
+            SetField(physical, "m_ConnPro", property);
+            SetField(physical, "<Session>k__BackingField", session);
             var statement = Uninitialized<LegacyStatement>();
+            SetField(statement, "__t02_field_04000923", physical);
             var column = Uninitialized<DmColumn>();
             column.SetCType(cType);
             var following = Uninitialized<DmColumn>();
@@ -111,12 +173,17 @@ public sealed class ReaderReviewTests
             Reader = Uninitialized<DmDataReader>();
             Reader.m_Statement = statement;
             Set("executionLease", lease);
+            Set("m_Conn", physical);
+            Set("m_Clobs", new ArrayList { null, null });
             Set("m_DbInfo", info);
             Set("m_ColInfo", columns);
             Set("m_RsCache", cache);
             Set("m_GetVal", new DmGetValue("UTF-8", statement, false, columns));
             Set("is_SequentialAccess", sequential);
-            Set("m_SequentialSeq", sequential ? 0 : -1);
+            // Match normal field initialization. A preloaded local CLOB represents a
+            // current column, while ordinary rows start before the first column.
+            Set("skipCol", true);
+            Set("m_SequentialSeq", sequential && clobText != null ? 0 : -1);
             if (clobText != null)
             {
                 var clob = Uninitialized<DmClob>();
@@ -127,8 +194,9 @@ public sealed class ReaderReviewTests
             }
         }
 
-        private void Set(string name, object value) => typeof(DmDataReader)
-            .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(Reader, value);
+        private void Set(string name, object value) => SetField(Reader, name, value);
+        private static void SetField(object target, string name, object value) => target.GetType()
+            .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
         private static T Uninitialized<T>() => (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
         public void Dispose() => lease.Dispose();
     }

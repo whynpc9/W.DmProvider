@@ -162,7 +162,13 @@ internal static partial class Program
                     int after = before + 1;
                     AuditNonQuery(connection, transaction, Update(table, id, parameterized, before),
                         parameterized ? before : null, causal, commands, results);
+#if CANDIDATE
+                    AuditSavepointApi(transaction, "save", commands, results);
                     AuditNonQuery(connection, transaction, "SAVEPOINT \"T11_SAVE\"", null, causal, commands, results);
+                    AuditRejectedSavepointSql(connection, transaction, causal, commands, results);
+#else
+                    AuditNonQuery(connection, transaction, "SAVEPOINT \"T11_SAVE\"", null, causal, commands, results);
+#endif
                     AuditReader(connection, transaction, Update(table, id, parameterized, after) + "; SELECT SQL%ROWCOUNT;",
                         parameterized ? after : null, causal, commands, results, prepare: false, repeat: 1);
                     AuditNonQuery(connection, transaction, shape == "savepoint_ef" ? "ROLLBACK TO \"T11_SAVE\"" :
@@ -170,7 +176,14 @@ internal static partial class Program
                     using var read = Command(connection, transaction, $"SELECT VAL FROM {table} WHERE ID={id}", null, causal, commands);
                     if (Convert.ToInt64(read.ExecuteScalar(), CultureInfo.InvariantCulture) != before)
                         throw new InvalidOperationException("savepoint_value_mismatch");
+#if CANDIDATE
                     AuditNonQuery(connection, transaction, "RELEASE SAVEPOINT \"T11_SAVE\"", null, causal, commands, results);
+                    AuditSavepointApi(transaction, "rollback_to", commands, results);
+                    AuditSavepointApi(transaction, "release", commands, results);
+                    AuditEarlyRawInvalidation(connection, transaction, repeat == 1, causal, commands, results);
+#else
+                    AuditNonQuery(connection, transaction, "RELEASE SAVEPOINT \"T11_SAVE\"", null, causal, commands, results);
+#endif
                 }
             }
             else
@@ -268,6 +281,69 @@ internal static partial class Program
         try { results.Add(new { affected = command.ExecuteNonQuery() }); }
         finally { observations.Add(new { phase = "after_execute", snapshot = ProbeSafety.Snapshot(command, transaction) }); }
     }
+
+#if CANDIDATE
+    private static void AuditSavepointApi(DbTransaction transaction, string operation,
+        List<object> observations, List<object> results)
+    {
+        switch (operation)
+        {
+            case "save": transaction.Save("T11_API_OUTER"); break;
+            case "rollback_to": transaction.Rollback("T11_API_OUTER"); break;
+            case "release": transaction.Release("T11_API_OUTER"); break;
+            default: throw new InvalidOperationException("unknown_savepoint_api");
+        }
+        results.Add(new { control_api = operation, completed = true });
+        observations.Add(new { phase = "after_savepoint_api", operation,
+            control_statement_retained = ProbeSafety.TransactionStatement(transaction) != null });
+    }
+
+    private static void AuditRejectedSavepointSql(DbConnection connection, DbTransaction transaction,
+        bool causal, List<object> observations, List<object> results)
+    {
+        long beforeSends = W.Dm.Internal.Legacy.A.DmWireTestHooks.SendCount;
+        long beforeBytes = W.Dm.Internal.Legacy.A.DmWireTestHooks.SentBytes;
+        foreach (string sql in new[]
+        {
+            "SAVEPOINT \"WSP_1\"", "SAVEPOINT wsp_2", "SAVEPOINT /*target*/ \"wSp_2\"",
+            "ROLLBACK", "ROLLBACK TO SAVEPOINT \"WSP_1\"", "RELEASE SAVEPOINT \"WSP_1\"",
+            "RELEASE SAVEPOINT /*target*/ \"wsp_2\"", "SAVEPOINT ordinary; COMMIT"
+        })
+        {
+            using var command = Command(connection, transaction, sql, null, causal, observations);
+            bool rejected = false;
+            try { command.ExecuteNonQuery(); }
+            catch (NotSupportedException) { rejected = true; }
+            if (!rejected) throw new InvalidOperationException("raw_savepoint_control_accepted");
+            observations.Add(new { phase = "after_rejected_raw_savepoint_sql", snapshot = ProbeSafety.Snapshot(command, transaction) });
+        }
+        bool zeroWire = W.Dm.Internal.Legacy.A.DmWireTestHooks.SendCount == beforeSends &&
+            W.Dm.Internal.Legacy.A.DmWireTestHooks.SentBytes == beforeBytes;
+        if (!zeroWire || ((W.Dm.DmTransaction)transaction).Outcome != W.Dm.DmTransactionOutcome.Active)
+            throw new InvalidOperationException("raw_savepoint_control_sent_or_changed_outcome");
+        results.Add(new { raw_control_rejected_without_wire = true });
+    }
+
+    private static void AuditEarlyRawInvalidation(DbConnection connection, DbTransaction transaction,
+        bool release, bool causal, List<object> observations, List<object> results)
+    {
+        AuditNonQuery(connection, transaction, "SAVEPOINT \"T11_RAW_EARLY\"", null, causal, observations, results);
+        transaction.Save("T11_API_LATER");
+        AuditNonQuery(connection, transaction, release ? "RELEASE SAVEPOINT \"T11_RAW_EARLY\"" :
+            "ROLLBACK TO SAVEPOINT \"T11_RAW_EARLY\"", null, causal, observations, results);
+        long sends = W.Dm.Internal.Legacy.A.DmWireTestHooks.SendCount;
+        long bytes = W.Dm.Internal.Legacy.A.DmWireTestHooks.SentBytes;
+        bool invalidated = false;
+        try { transaction.Release("T11_API_LATER"); }
+        catch (InvalidOperationException) { invalidated = true; }
+        if (!invalidated || W.Dm.Internal.Legacy.A.DmWireTestHooks.SendCount != sends ||
+            W.Dm.Internal.Legacy.A.DmWireTestHooks.SentBytes != bytes)
+            throw new InvalidOperationException("raw_early_control_left_stale_api_point");
+        if (!release)
+            AuditNonQuery(connection, transaction, "RELEASE SAVEPOINT \"T11_RAW_EARLY\"", null, causal, observations, results);
+        results.Add(new { raw_early_control = release ? "release" : "rollback_to", later_api_invalidated_without_wire = true });
+    }
+#endif
 
     private static void AuditReader(DbConnection connection, DbTransaction transaction, string sql, int? value,
         bool causal, List<object> observations, List<object> results, bool prepare, int repeat)

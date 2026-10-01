@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using W.Dm.util;
+using W.Dm.Internal.Types;
 
 namespace W.Dm;
 
@@ -7,14 +9,18 @@ public class DmBlob : AbstractLob
 {
 	private byte[] data;
 
-	internal DmBlob(byte[] value, DmConnInstance connInstance, DmField column, bool fetchAll)
+	internal DmBlob(byte[] value, DmConnInstance connInstance, DmField column, bool fetchAll, bool hexPayload = false)
 		: base(value, 0, connInstance, column)
 	{
 		m_length = bytesLength;
+		if (hexPayload && m_length != -1) DmLobMaterialization.HexInput(m_length);
 		if (storageType == 1)
 		{
 			int headSize = getHeadSize();
-			data = new byte[(int)m_length];
+			int length = DmLobMaterialization.Bytes(m_length);
+			if (m_length > value.LongLength - headSize)
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			data = new byte[length];
 			ByteUtil.setBytes(data, 0, value, headSize, data.Length);
 		}
 		else if (fetchAll)
@@ -59,11 +65,11 @@ public class DmBlob : AbstractLob
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 		}
-		len = (int)((len > num) ? num : len);
+		len = DmLobMaterialization.Bytes(Math.Min((long)len, num));
 		if (local || storageType == 1 || fetchAll)
 		{
 			byte[] array = new byte[len];
-			ByteUtil.setBytes(array, 0, data, (int)pos, array.Length);
+			ByteUtil.setBytes(array, 0, data, checked((int)pos), array.Length);
 			return array;
 		}
 		return ConnInstance.GetCsi().A(this, pos, len);
@@ -172,7 +178,7 @@ public class DmBlob : AbstractLob
 		using var invocation = BeginInternalOperation();
 		if (!local && storageType != 1 && !fetchAll)
 		{
-			data = do_getBytes(1L, (int)do_length());
+			data = do_getBytes(1L, DmLobMaterialization.Bytes(do_length()));
 			fetchAll = true;
 		}
 	}

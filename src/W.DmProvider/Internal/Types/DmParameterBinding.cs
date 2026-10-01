@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace W.Dm.Internal.Types;
 
 internal readonly record struct DmSqlStatementHead(string First, string Second, string Third);
+internal enum DmSqlSavepointKind { Save, Rollback, Release }
+internal readonly record struct DmSqlSavepointControl(DmSqlSavepointKind Kind, string Name, bool IsQuoted);
 
 /// <summary>Frozen binding order from SQL lexical markers; never rewrites the SQL.</summary>
 internal sealed class DmParameterBinding
@@ -88,6 +91,82 @@ internal sealed class DmParameterBinding
         16 or 17 or 18 or 19 or 20 or 21 or 22 or 23 or 24 or 26 or 27 or 28;
 
     internal static IReadOnlyList<DmSqlStatementHead> ScanTopLevelStatements(string sql) => Scan(sql).Heads;
+
+    // Parse only a complete single control statement. Keep the original SQL for
+    // execution; decoded identifiers are used solely for ownership and tracking.
+    internal static bool TryParseSavepointControl(string sql, out DmSqlSavepointControl control)
+    {
+        ArgumentNullException.ThrowIfNull(sql);
+        control = default;
+        if (sql.IndexOf('\0') >= 0) return false;
+        int index = 0;
+        DmSqlSavepointKind kind;
+        if (ReadRollbackKeyword(sql, ref index, "SAVEPOINT")) kind = DmSqlSavepointKind.Save;
+        else
+        {
+            index = 0;
+            if (ReadRollbackKeyword(sql, ref index, "ROLLBACK"))
+            {
+                if (!ReadRollbackKeyword(sql, ref index, "TO")) return false;
+                kind = DmSqlSavepointKind.Rollback;
+            }
+            else
+            {
+                index = 0;
+                if (!ReadRollbackKeyword(sql, ref index, "RELEASE")) return false;
+                if (!ReadRollbackKeyword(sql, ref index, "SAVEPOINT")) return false;
+                kind = DmSqlSavepointKind.Release;
+            }
+            if (kind == DmSqlSavepointKind.Rollback)
+            {
+                int optional = index;
+                if (ReadRollbackKeyword(sql, ref optional, "SAVEPOINT")) index = optional;
+            }
+        }
+        if (!SkipRollbackTrivia(sql, ref index) ||
+            !ReadSavepointIdentifier(sql, ref index, out string name, out bool quoted) ||
+            !SkipRollbackTrivia(sql, ref index)) return false;
+        if (index < sql.Length && sql[index] == ';')
+        {
+            index++;
+            if (!SkipRollbackTrivia(sql, ref index)) return false;
+        }
+        if (index != sql.Length) return false;
+        control = new DmSqlSavepointControl(kind, name, quoted);
+        return true;
+    }
+
+    private static bool ReadSavepointIdentifier(string sql, ref int index, out string name, out bool quoted)
+    {
+        name = null;
+        quoted = index < sql.Length && sql[index] == '"';
+        if (index == sql.Length) return false;
+        if (!quoted)
+        {
+            if (!IsWordStart(sql[index])) return false;
+            int start = index++;
+            while (index < sql.Length && IsWordPart(sql[index])) index++;
+            name = sql.Substring(start, index - start);
+            return true;
+        }
+        index++;
+        var decoded = new StringBuilder();
+        while (index < sql.Length)
+        {
+            char current = sql[index++];
+            if (current != '"') { decoded.Append(current); continue; }
+            if (index < sql.Length && sql[index] == '"')
+            {
+                decoded.Append('"');
+                index++;
+                continue;
+            }
+            if (decoded.Length == 0) return false;
+            name = decoded.ToString();
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>Recognizes one complete savepoint rollback without rewriting its SQL.</summary>
     internal static bool IsStrictRollbackToSavepoint(string sql)

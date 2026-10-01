@@ -127,6 +127,22 @@ string[] failures = [];
 #if CANDIDATE
 if (candidateVerified) failures = CandidateCases.Verify(scenarios);
 if (candidateAckCloseRace) failures = CandidateCases.VerifyAckCloseRace(scenarios);
+if (quotedSavepointOnly || (!candidateVerified && !candidateAckCloseRace && !ddlMarkersOnly && !ddlVariantsOnly))
+{
+    var savepointFailures = new List<string>(failures);
+    foreach (string name in quotedSavepointOnly ? new[] { "quoted_sql_savepoint" } : new[] { "sql_savepoint" })
+    {
+        var row = JsonSerializer.SerializeToElement(scenarios.GetValueOrDefault(name));
+        if (row.ValueKind != JsonValueKind.Object ||
+            !row.TryGetProperty("outcome", out var outcome) || outcome.GetString() != "completed" ||
+            !row.TryGetProperty("before_visible", out var before) || !before.GetBoolean() ||
+            !row.TryGetProperty("after_absent", out var after) || !after.GetBoolean() ||
+            !row.TryGetProperty("raw_control_rejected_without_wire", out var fenced) || !fenced.GetBoolean() ||
+            !row.TryGetProperty("mixed_api_raw_verified", out var mixed) || !mixed.GetBoolean())
+            savepointFailures.Add(name + ":driver_api_or_raw_control_fence");
+    }
+    failures = savepointFailures.ToArray();
+}
 #endif
 result["contract_failures"] = failures;
 bool passed = workError == null && cleanupError == null && accountVerified && cleanupVerified &&
@@ -232,17 +248,39 @@ static object SavepointSql(string raw, string table)
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         ExecInTransaction(connection, transaction, $"INSERT INTO {table} (ID, VAL) VALUES (5, 'before')");
         trace.Stage = "savepoint_sql";
+#if CANDIDATE
+        transaction.Save("T10_SQL_A");
+        bool fenced = RejectReservedSavepointControl(connection, transaction);
+        ExecInTransaction(connection, transaction, "SAVEPOINT \"T10_RAW_A\"");
+#else
         ExecInTransaction(connection, transaction, "SAVEPOINT T10_SQL_A");
+#endif
         ExecInTransaction(connection, transaction, $"INSERT INTO {table} (ID, VAL) VALUES (6, 'after')");
         trace.Stage = "rollback_to_sql";
+#if CANDIDATE
+        ExecInTransaction(connection, transaction, "ROLLBACK TO SAVEPOINT \"T10_RAW_A\"");
+        ExecInTransaction(connection, transaction, "RELEASE SAVEPOINT \"T10_RAW_A\"");
+        transaction.Rollback("T10_SQL_A");
+#else
         ExecInTransaction(connection, transaction, "ROLLBACK TO SAVEPOINT T10_SQL_A");
+#endif
         trace.Stage = "release_sql";
+#if CANDIDATE
+        transaction.Release("T10_SQL_A");
+        bool mixed = VerifyEarlyRawControlInvalidation(connection, transaction);
+#else
         ExecInTransaction(connection, transaction, "RELEASE SAVEPOINT T10_SQL_A");
+#endif
         trace.Stage = "commit";
         transaction.Commit();
         using var readback = OpenVerified(raw);
         return new { outcome = "completed", before_visible = Count(readback, table, 5) == 1,
-            after_absent = Count(readback, table, 6) == 0, trace = trace.Events };
+            after_absent = Count(readback, table, 6) == 0,
+#if CANDIDATE
+            savepoint_entry = "mixed_driver_api_and_user_sql", raw_control_rejected_without_wire = fenced,
+            mixed_api_raw_verified = mixed,
+#endif
+            trace = trace.Events };
     }
     catch (Exception ex) { return new { outcome = "error", error_kind = ErrorKind(ex), trace = trace.Events }; }
 }
@@ -256,20 +294,91 @@ static object QuotedSavepointSql(string raw, string table)
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
         ExecInTransaction(connection, transaction, $"INSERT INTO {table} (ID, VAL) VALUES (11, 'before')");
         trace.Stage = "save_quoted";
+#if CANDIDATE
+        transaction.Save("WSP_1");
+        bool fenced = RejectReservedSavepointControl(connection, transaction);
+        using (var rawSave = Command(connection, transaction, "SAVEPOINT \"T10_QUOTED_RAW\""))
+            rawSave.ExecuteScalar();
+#else
         ExecInTransaction(connection, transaction, "SAVEPOINT \"WSP_1\"");
+#endif
         ExecInTransaction(connection, transaction, $"INSERT INTO {table} (ID, VAL) VALUES (12, 'after')");
         trace.Stage = "rollback_to_quoted";
+#if CANDIDATE
+        using (var rawRollback = Command(connection, transaction, "ROLLBACK TO \"T10_QUOTED_RAW\""))
+        using (var reader = rawRollback.ExecuteReader()) { while (reader.Read()) { } }
+        ExecInTransaction(connection, transaction, "RELEASE SAVEPOINT \"T10_QUOTED_RAW\"");
+        transaction.Rollback("WSP_1");
+#else
         ExecInTransaction(connection, transaction, "ROLLBACK TO SAVEPOINT \"WSP_1\"");
+#endif
         trace.Stage = "release_quoted";
+#if CANDIDATE
+        transaction.Release("WSP_1");
+        bool mixed = VerifyEarlyRawControlInvalidation(connection, transaction);
+#else
         ExecInTransaction(connection, transaction, "RELEASE SAVEPOINT \"WSP_1\"");
+#endif
         trace.Stage = "commit";
         transaction.Commit();
         using var readback = OpenVerified(raw);
         return new { outcome = "completed", before_visible = Count(readback, table, 11) == 1,
-            after_absent = Count(readback, table, 12) == 0, trace = trace.Events };
+            after_absent = Count(readback, table, 12) == 0,
+#if CANDIDATE
+            savepoint_entry = "mixed_driver_api_and_user_sql", raw_control_rejected_without_wire = fenced,
+            mixed_api_raw_verified = mixed,
+#endif
+            trace = trace.Events };
     }
     catch (Exception ex) { return new { outcome = "error", error_kind = ErrorKind(ex), trace = trace.Events }; }
 }
+
+#if CANDIDATE
+static bool RejectReservedSavepointControl(DbConnection connection, DbTransaction transaction)
+{
+    var before = WireCounters();
+    foreach (string sql in new[]
+    {
+        "SAVEPOINT \"WSP_1\"", "SAVEPOINT wsp_2", "/*prefix*/ SAVEPOINT /*target*/ \"wSp_2\"",
+        "ROLLBACK", "ROLLBACK TO \"WSP_1\"", "ROLLBACK TO SAVEPOINT /*target*/ \"wsp_2\"",
+        "RELEASE SAVEPOINT \"WSP_1\"", "RELEASE SAVEPOINT /*target*/ \"wSp_2\"",
+        "SELECT 1 FROM DUAL; RELEASE SAVEPOINT user_owned"
+    })
+    {
+        bool rejected = false;
+        try { ExecInTransaction(connection, transaction, sql); }
+        catch (NotSupportedException) { rejected = true; }
+        if (!rejected) throw new ProbeFailure("raw_savepoint_control_accepted");
+    }
+    var after = WireCounters();
+    if (before.Count is null || before.Bytes is null || before != after ||
+        transaction.GetType().GetProperty("Outcome")?.GetValue(transaction)?.ToString() != "Active")
+        throw new ProbeFailure("raw_savepoint_control_sent_or_changed_outcome");
+    return true;
+}
+
+static bool VerifyEarlyRawControlInvalidation(DbConnection connection, DbTransaction transaction)
+{
+    foreach (bool release in new[] { false, true })
+    {
+        ExecInTransaction(connection, transaction, "SAVEPOINT \"T10_EARLY_RAW\"");
+        transaction.Save("T10_LATER_API");
+        ExecInTransaction(connection, transaction, release ? "RELEASE SAVEPOINT \"T10_EARLY_RAW\"" :
+            "ROLLBACK TO SAVEPOINT \"T10_EARLY_RAW\"");
+        var before = WireCounters();
+        bool invalidated = false;
+        try { transaction.Rollback("T10_LATER_API"); }
+        catch (InvalidOperationException) { invalidated = true; }
+        if (!invalidated || before != WireCounters())
+            throw new ProbeFailure("raw_early_control_left_stale_api_point");
+        if (!release) ExecInTransaction(connection, transaction, "RELEASE SAVEPOINT \"T10_EARLY_RAW\"");
+        // The local transaction remains usable after the invalidated handle.
+        transaction.Save("T10_CONTINUE_API");
+        transaction.Release("T10_CONTINUE_API");
+    }
+    return true;
+}
+#endif
 
 static object IsolationProfile(string raw)
 {

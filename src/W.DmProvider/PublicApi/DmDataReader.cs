@@ -539,6 +539,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			{
 				byte[] value = null;
 				GetByteArrayValue(i, ref value);
+				if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 				dmClob = new DmClob(value, m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
 				BindLob(dmClob);
 				m_Clobs[i] = dmClob;
@@ -547,9 +548,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			{
 				// Count decoded UTF-16 characters, not the locator's encoded byte length.
 				// This follows the existing materializing CLOB path; it is not a streaming API.
-				if (dmClob.do_length() > int.MaxValue)
-					throw new NotSupportedException("CLOB exceeds the supported CLR string materialization range.");
-				text = dmClob.GetSubStringUnderOwner(0L, int.MaxValue);
+				text = dmClob.MaterializeStringUnderOwner();
 				return text.Length;
 			}
 			text = dmClob.GetSubStringUnderOwner(fieldoffset, length);
@@ -687,7 +686,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetGuid(int i)");
 		checkClosed();
 		GetByteArrayValue(i, ref value);
-		if (value == null) throw new InvalidCastException("SQL NULL cannot be read as Guid.");
+		if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 		int cType = m_ColInfo[i].GetCType();
 		if (cType is 0 or 1 or 2 or 54)
 		{
@@ -898,7 +897,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		int scale = m_ColInfo[i].GetScale();
 		if (value == null)
 		{
-			return null;
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 		}
 		return m_GetVal.GetString(i, value, cType, precision, scale);
 	}
@@ -1344,7 +1343,12 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	{
 		using var invocation = BeginReaderInvocation();
 		if (typeof(T) == typeof(Guid)) return (T)(object)do_GetGuid(ordinal);
-		if (typeof(T) == typeof(DmDecimal)) return (T)do_GetProviderSpecificValue(ordinal);
+		if (typeof(T) == typeof(DmDecimal))
+		{
+			object providerValue = do_GetProviderSpecificValue(ordinal);
+			if (providerValue is DBNull) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			return (T)providerValue;
+		}
 		if (typeof(T) == typeof(byte)) return (T)(object)do_GetByte(ordinal);
 		if (typeof(T) == typeof(short)) return (T)(object)do_GetInt16(ordinal);
 		if (typeof(T) == typeof(int)) return (T)(object)do_GetInt32(ordinal);
@@ -1357,7 +1361,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			return GetAdditionalInteger<T>(ordinal);
 		object value = do_GetValue(ordinal);
 		if (value is DBNull && typeof(T) != typeof(object) && typeof(T) != typeof(DBNull))
-			throw new InvalidCastException("A NULL column cannot be read as the requested CLR type.");
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 		if (typeof(T) == typeof(TimeSpan) && value is DmIntervalDT interval)
 		{
 			return (T)(object)interval.ToTimeSpanExact();

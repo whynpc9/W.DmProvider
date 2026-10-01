@@ -1,5 +1,5 @@
 {
-  "status": "all_pending",
+  "status": "partially_verified",
   "gates": [
     {
       "id": "R0",
@@ -10,6 +10,11 @@
       "requires": [
         "reproducible restored baseline",
         "O/R unexplained behavior differences resolved before claiming integration verification"
+      ],
+      "status": "integration_verified",
+      "reports": [
+        "../../reports/T01.md",
+        "../../reports/T02.md"
       ]
     },
     {
@@ -30,7 +35,29 @@
         "declared correctness/security scope integration-tested",
         "final candidate nupkg downstream-tested",
         "unsupported scopes explicit"
-      ]
+      ],
+      "status": "integration_verified",
+      "reports": [
+        "../../reports/T12.md",
+        "../../reports/R1-review.md",
+        "../../reports/R1-review-followup.md"
+      ],
+      "scope": "limited-profile correctness preview; not production release",
+      "merged_pr": {
+        "number": 1,
+        "commit": "95a71bcfd7c31c292f5aaaf255d20d24c5056cbf",
+        "merged_at": "2026-09-30T15:44:49Z"
+      },
+      "followup_status": "integration_verified",
+      "evidence": "../../evidence/R1-review-followup/validation-summary.json",
+      "latest_candidate": {
+        "version": "0.1.0-r1.20261001064256",
+        "package_sha256": "abfcf66245b3740657c009b95e5db1a9b78c467cc2a42a8035c0adda94de0002",
+        "dll_sha256": "9a0f9273ceac91dcb593f07467c71514e495eb9fb38c2d7f5829e0ac0f5fdb29",
+        "source_sha256": "b35a64b86a34fac7d6fc5b6dd7534e5084a911a453049004c52e825435b9025c",
+        "source_state": "working_tree",
+        "source_commit": null
+      }
     },
     {
       "id": "R2",
@@ -42,7 +69,8 @@
       "requires": [
         "async I/O chain verified",
         "cancellation/timeout/unknown outcomes validated"
-      ]
+      ],
+      "status": "not_started"
     },
     {
       "id": "R3",
@@ -61,7 +89,8 @@
         "deployment profiles tested",
         "independent boundary review",
         "final package downstream evidence"
-      ]
+      ],
+      "status": "not_started"
     },
     {
       "id": "R4.Arrays",
@@ -74,7 +103,8 @@
       "requires": [
         "array binding evidence",
         "same-semantics performance evidence"
-      ]
+      ],
+      "status": "not_started"
     },
     {
       "id": "R4.NativeBatch",
@@ -84,7 +114,11 @@
       ],
       "requires": [
         "native execution/result/atomicity evidence; no sequential emulation mislabeled"
-      ]
+      ],
+      "status": "not_started"
     }
-  ]
+  ],
+  "progress": "../../progress.json",
+  "compatibility": "../../../compatibility/R1.md",
+  "production_release_accepted": false
 }

@@ -1,0 +1,157 @@
+{
+  "evidence_kind": "readonly_trx_timing_comparison",
+  "runner_wall_deadline_seconds": 900,
+  "test_connection_command_timeout_seconds": 20,
+  "runs": [
+    {
+      "label": "previous_accepted_R1_review",
+      "trx_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-review-20260930151754/results-functional-20260930T152326343161Z/tests.trx",
+      "summary_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/20260930-r1-review-20260930151754/results-functional-20260930T152326343161Z/test-summary.json",
+      "accepted": true,
+      "exit_code": 0,
+      "counts": {
+        "total": 76,
+        "executed": 76,
+        "passed": 76,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Completed"
+      },
+      "start": "2026-09-30T23:23:33.4275620+08:00",
+      "finish": "2026-09-30T23:26:55.9168370+08:00",
+      "elapsed_seconds": 202.489275,
+      "sum_test_duration_seconds": 202.0886138,
+      "aggregate_cases": [
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.JoinAndConcatKeepClrElementFilterOrderAndEmptySemantics",
+          "outcome": "Passed",
+          "duration": "00:00:35.4756182",
+          "duration_seconds": 35.4756182,
+          "start": "2026-09-30T23:25:03.2468970+08:00",
+          "finish": "2026-09-30T23:25:38.8103270+08:00"
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.ListAggNullableOrderingMatchesClrInBothDirections",
+          "outcome": "Passed",
+          "duration": "00:00:34.3079445",
+          "duration_seconds": 34.3079445,
+          "start": "2026-09-30T23:25:38.8106500+08:00",
+          "finish": "2026-09-30T23:26:13.1186070+08:00"
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.OverflowFailsExplicitlyWithoutTruncating",
+          "outcome": "Passed",
+          "duration": "00:00:34.7210828",
+          "duration_seconds": 34.7210828,
+          "start": "2026-09-30T23:26:13.1188720+08:00",
+          "finish": "2026-09-30T23:26:47.8401380+08:00"
+        }
+      ],
+      "aggregate_total_seconds": 104.5046455,
+      "failed_cases": [],
+      "failed_total_seconds": 0
+    },
+    {
+      "label": "rejected_followup_v2",
+      "trx_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001055007/results-functional-20261001T055650419498Z/tests.trx",
+      "summary_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/t12/ef/r1-review-followup-0.1.0-r1.20261001055007/results-functional-20261001T055650419498Z/test-summary.json",
+      "accepted": false,
+      "exit_code": 1,
+      "counts": {
+        "total": 76,
+        "executed": 76,
+        "passed": 71,
+        "failed": 5,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0,
+        "outcome": "Failed"
+      },
+      "start": "2026-10-01T13:56:52.3925910+08:00",
+      "finish": "2026-10-01T14:11:45.3343670+08:00",
+      "elapsed_seconds": 892.941776,
+      "sum_test_duration_seconds": 892.5815126,
+      "aggregate_cases": [
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.JoinAndConcatKeepClrElementFilterOrderAndEmptySemantics",
+          "outcome": "Passed",
+          "duration": "00:02:55.3616063",
+          "duration_seconds": 175.3616063,
+          "start": "2026-10-01T14:02:55.6065280+08:00",
+          "finish": "2026-10-01T14:05:50.9693700+08:00"
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.ListAggNullableOrderingMatchesClrInBothDirections",
+          "outcome": "Passed",
+          "duration": "00:02:45.6781052",
+          "duration_seconds": 165.6781052,
+          "start": "2026-10-01T14:05:50.9793150+08:00",
+          "finish": "2026-10-01T14:08:36.6481930+08:00"
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengStringAggregateFunctionalTests.OverflowFailsExplicitlyWithoutTruncating",
+          "outcome": "Passed",
+          "duration": "00:02:46.1052770",
+          "duration_seconds": 166.105277,
+          "start": "2026-10-01T14:08:36.6484950+08:00",
+          "finish": "2026-10-01T14:11:22.7543530+08:00"
+        }
+      ],
+      "aggregate_total_seconds": 507.1449885,
+      "failed_cases": [
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengProviderFunctionalTests.TransactionRollbackDiscardsChanges",
+          "duration": "00:00:02.1230717",
+          "duration_seconds": 2.1230717
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengIsolationLevelFunctionalTests.SaveChangesSucceedsAfterBeginningReadUncommittedOrSerializable(isolationLevel: Serializable)",
+          "duration": "00:00:03.6911180",
+          "duration_seconds": 3.691118
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengIsolationLevelFunctionalTests.SaveChangesSucceedsAfterBeginningReadUncommittedOrSerializable(isolationLevel: ReadUncommitted)",
+          "duration": "00:00:04.6865480",
+          "duration_seconds": 4.686548
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengIsolationLevelFunctionalTests.ReadCommittedIsolationLevelBeginsCommitsAndRollsBack",
+          "duration": "00:00:02.1520818",
+          "duration_seconds": 2.1520818
+        },
+        {
+          "test_name": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengProviderFunctionalTests.SavepointRollbackPreservesEarlierWork",
+          "duration": "00:00:02.1219807",
+          "duration_seconds": 2.1219807
+        }
+      ],
+      "failed_total_seconds": 14.7748002
+    }
+  ],
+  "notes": [
+    "No runtime or database work performed by helper owner.",
+    "TRX timestamps and per-case durations are copied from existing immutable reports.",
+    "Whole-run wall deadline and per-command timeout are independent budgets.",
+    "Latest aborted run has no TRX and cannot be assigned pass counts or a product-hang cause."
+  ]
+}

@@ -13,6 +13,7 @@ internal static class Program
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     // Luna's decomposed BMP source; supplementary mapping is tested offline only.
     private const string ClobText = "A中e\u0301文";
+    private static readonly byte[] BlobBytes = [0x00, 0xAB, 0xFF, 0x42];
 
     public static int Main(string[] args)
     {
@@ -60,12 +61,16 @@ internal static class Program
             // Register before CREATE so a transport failure can still trigger exact-name cleanup.
             ownsTable = true;
             stage = "create_and_seed";
-            Exec(connection, null, $"CREATE TABLE {table} (ID INT PRIMARY KEY, INTVAL INT, TXT CLOB)");
-            Exec(connection, null, $"INSERT INTO {table}(ID,INTVAL,TXT) VALUES (1,NULL,:p0)", (ClobText, DmDbType.Clob));
+            Exec(connection, null, $"CREATE TABLE {table} (ID INT PRIMARY KEY, INTVAL INT, TXT CLOB, BIN BLOB)");
+            Exec(connection, null, $"INSERT INTO {table}(ID,INTVAL,TXT,BIN) VALUES (1,NULL,:p0,:p1)", (ClobText, DmDbType.Clob), (BlobBytes, DmDbType.Blob));
             Exec(connection, null, $"INSERT INTO {table}(ID,INTVAL,TXT) VALUES (2,0,:p0)", ("", DmDbType.Clob));
 
             stage = "review_cases";
             Case(cases, "null_int32", () => NullInt32(connection, table));
+            Case(cases, "typed_null_6081", () => TypedNull(connection, table));
+            Case(cases, "sequential_generic_single_read", () => SequentialGeneric(connection, table));
+            Case(cases, "small_lob_materialization", () => SmallLobs(connection, table));
+            Case(cases, "lob_payload_boundaries", PackageLobBoundaries);
             Case(cases, "real_zero", () => Zero(connection, table));
             Case(cases, "clob_length_and_copy", () => Clob(connection, table, sequential: false));
             Case(cases, "sequential_clob_length_and_copy", () => Clob(connection, table, sequential: true));
@@ -84,6 +89,10 @@ internal static class Program
                 cases["transaction_guard"] = new { status = "baseline_dangerous_payload_not_sent", required = false };
             else
             {
+                Case(cases, "api_savepoint_stack_and_raw_sql_rejection", () => SavepointStack(connection, table));
+                Case(cases, "mixed_api_raw_savepoint_stack", () => MixedSavepointStack(connection, table));
+                Case(cases, "unknown_savepoint_error_fail_closed", () => DiagnoseAbsentSavepoint(table,
+                    cases["mixed_api_raw_savepoint_stack"] is CaseResult { Pass: true }));
                 Require(commentValue == 42, "server_comment_profile_requires_design_review");
                 report["raw_guard_payload_attempted"] = true;
                 try { cases["transaction_guard"] = TransactionGuard(connection, table); }
@@ -135,6 +144,79 @@ internal static class Program
         var generic = Capture(() => reader.GetFieldValue<int>(0));
         return int64 is DmException first && int32 is DmException second && generic is DmException third
             && first.Number == second.Number && first.Number == third.Number;
+    }
+
+    private static bool TypedNull(DmConnection connection, string table)
+    {
+        using var command = Command(connection, null, $"SELECT INTVAL FROM {table} WHERE ID=1");
+        using var reader = command.ExecuteReader();
+        Require(reader.Read(), "typed_null_row_missing");
+        Action[] getters = [() => reader.GetGuid(0), () => reader.GetString(0),
+            () => reader.GetFieldValue<Guid>(0), () => reader.GetFieldValue<string>(0),
+            () => reader.GetFieldValue<byte[]>(0), () => reader.GetFieldValue<DmDecimal>(0),
+            () => reader.GetFieldValue<DateTime>(0), () => reader.GetFieldValue<TimeOnly>(0)];
+        return getters.All(getter => Capture(getter) is DmException { Number: 6081 })
+            && reader.GetValue(0) is DBNull && reader.GetFieldValue<object>(0) is DBNull
+            && reader.GetFieldValue<DBNull>(0) is DBNull;
+    }
+
+    private static bool SequentialGeneric(DmConnection connection, string table)
+    {
+        using (var command = Command(connection, null, $"SELECT INTVAL,ID FROM {table} WHERE ID=2"))
+        using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
+        {
+            Require(reader.Read() && reader.GetFieldValue<int>(0) == 0 && reader.GetFieldValue<int>(1) == 2,
+                "sequential_generic_non_null_failed");
+            Require(Capture(() => reader.GetFieldValue<int>(0)) is DmException { Number: 6097 },
+                "sequential_generic_backward_not_rejected");
+        }
+        using (var command = Command(connection, null, $"SELECT INTVAL,ID FROM {table} WHERE ID=1"))
+        using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
+        {
+            Require(reader.Read() && Capture(() => reader.GetFieldValue<int>(0)) is DmException { Number: 6081 }
+                && reader.GetFieldValue<int>(1) == 1, "sequential_generic_null_then_next_failed");
+        }
+        using (var command = Command(connection, null, "SELECT CAST(NULL AS DECIMAL(10,2)),42 FROM DUAL"))
+        using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
+        {
+            Require(reader.Read() && Capture(() => reader.GetFieldValue<DmDecimal>(0)) is DmException { Number: 6081 }
+                && reader.GetFieldValue<int>(1) == 42, "sequential_dmdecimal_null_then_next_failed");
+        }
+        using (var command = Command(connection, null, "SELECT CAST(123.45 AS DECIMAL(10,2)),42 FROM DUAL"))
+        using (var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
+            return reader.Read() && reader.GetFieldValue<DmDecimal>(0).ToDecimalExact() == 123.45m
+                && reader.GetFieldValue<int>(1) == 42;
+    }
+
+    private static bool SmallLobs(DmConnection connection, string table)
+    {
+        using var command = Command(connection, null, $"SELECT TXT,BIN FROM {table} WHERE ID=1");
+        using var reader = command.ExecuteReader();
+        Require(reader.Read(), "lob_row_missing");
+        Require(reader.GetString(0) == ClobText && Equals(reader.GetValue(0), ClobText)
+            && reader.GetFieldValue<string>(0) == ClobText, "clob_materialization_failed");
+        Require(reader.GetFieldValue<byte[]>(1).SequenceEqual(BlobBytes), "blob_value_failed");
+        Require(reader.GetString(1) == Convert.ToHexString(BlobBytes), "blob_payload_hex_failed");
+        var copy = new byte[BlobBytes.Length];
+        return reader.GetBytes(1, 0, copy, 0, copy.Length) == copy.Length && copy.SequenceEqual(BlobBytes);
+    }
+
+    private static bool PackageLobBoundaries()
+    {
+        // Exercise the actual PackageReference assembly, with synthetic lengths only.
+        Type guard = typeof(DmConnection).Assembly.GetType("W.Dm.Internal.Types.DmLobMaterialization")
+            ?? throw new ProbeFailure("package_lob_guard_missing");
+        const long limit = 64L * 1024 * 1024;
+        foreach (var (name, exact) in new[] { ("Bytes", limit), ("Characters", limit / 2), ("HexInput", limit / 4) })
+        {
+            MethodInfo method = guard.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)
+                ?? throw new ProbeFailure("package_lob_guard_method_missing");
+            Require(Equals(method.Invoke(null, [exact]), checked((int)exact)), "lob_exact_boundary_rejected");
+            foreach (long rejected in new[] { exact + 1, (long)int.MaxValue + 1, long.MaxValue })
+                Require(Capture(() => method.Invoke(null, [rejected])) is TargetInvocationException
+                    { InnerException: NotSupportedException }, "lob_over_boundary_not_rejected");
+        }
+        return true;
     }
 
     private static bool Zero(DmConnection connection, string table)
@@ -245,7 +327,7 @@ internal static class Program
     private static CaseResult TransactionGuard(DmConnection connection, string table)
     {
         using var transaction = (DmTransaction)connection.BeginTransaction();
-        Exec(connection, transaction, "SAVEPOINT sp");
+        transaction.Save("sp");
         Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (81,81)");
         using var command = Command(connection, transaction, "ROLLBACK TO sp /* /* */ ; COMMIT -- */");
         Exception? rejected = Capture(() => command.ExecuteNonQuery());
@@ -264,6 +346,210 @@ internal static class Program
             independent_connection_final_rows = finalRows
         });
     }
+
+    private static bool SavepointStack(DmConnection connection, string table)
+    {
+        using var transaction = (DmTransaction)connection.BeginTransaction();
+        transaction.Save("one");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (91,91)");
+        transaction.Save("two");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (92,92)");
+        foreach (string sql in new[] { "SAVEPOINT WSP_1", "SAVEPOINT \"WSP_2\"",
+            "ROLLBACK TO WSP_1", "ROLLBACK TO SAVEPOINT \"WSP_2\"", "RELEASE SAVEPOINT WSP_2" })
+        {
+            Require(Capture(() => Exec(connection, transaction, sql)) is NotSupportedException,
+                "raw_savepoint_sql_not_rejected");
+            Require(transaction.Outcome == DmTransactionOutcome.Active && SavepointRows(connection, transaction, table) == 2,
+                "raw_savepoint_rejection_changed_transaction");
+        }
+        transaction.Rollback("two");
+        Require(SavepointRows(connection, transaction, table) == 1, "rollback_two_failed");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (93,93)");
+        transaction.Rollback("two");
+        Require(SavepointRows(connection, transaction, table) == 1, "rollback_target_not_retained");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (93,93)");
+        transaction.Rollback("one");
+        Require(SavepointRows(connection, transaction, table) == 0
+            && Capture(() => transaction.Rollback("two")) is InvalidOperationException
+            && transaction.Outcome == DmTransactionOutcome.Active,
+            "rollback_one_did_not_invalidate_two");
+        transaction.Save("three");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (94,94)");
+        transaction.Release("three");
+        Require(SavepointRows(connection, transaction, table) == 1
+            && Capture(() => transaction.Rollback("three")) is InvalidOperationException
+            && transaction.Outcome == DmTransactionOutcome.Active, "release_three_contract_failed");
+        transaction.Rollback();
+        using var observer = OpenVerified();
+        return transaction.Outcome == DmTransactionOutcome.RolledBack && SavepointRows(observer, null, table) == 0;
+    }
+
+    private static CaseResult MixedSavepointStack(DmConnection connection, string table)
+    {
+        using var transaction = (DmTransaction)connection.BeginTransaction();
+        transaction.Save("api_base");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (111,111)");
+        Exec(connection, transaction, "SAVEPOINT \"__EFSavePoint\"");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (112,112)");
+        Exec(connection, transaction, "ROLLBACK TO \"__EFSavePoint\"");
+        Require(MixedRows(connection, transaction, table) == 1, "mixed_ef_raw_rollback_failed");
+        transaction.Rollback("api_base");
+        Require(MixedRows(connection, transaction, table) == 0, "mixed_raw_rollback_lost_earlier_api");
+
+        // All three public execution entry points must register successful raw control.
+        _ = Scalar(connection, "SAVEPOINT EF10_SAVEPOINT", transaction);
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (113,113)");
+        Exec(connection, transaction, "RELEASE SAVEPOINT EF10_SAVEPOINT");
+        Require(MixedRows(connection, transaction, table) == 1, "mixed_ef_raw_release_changed_rows");
+        transaction.Rollback("api_base");
+        Require(MixedRows(connection, transaction, table) == 0, "mixed_raw_release_lost_earlier_api");
+        using (var command = Command(connection, transaction, "SAVEPOINT reader_point"))
+        using (var reader = command.ExecuteReader()) { }
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (115,115)");
+        Exec(connection, transaction, "ROLLBACK TO SAVEPOINT reader_point");
+        Require(MixedRows(connection, transaction, table) == 0, "mixed_reader_raw_point_failed");
+        transaction.Rollback("api_base");
+
+        Exec(connection, transaction, "SAVEPOINT outside_early");
+        transaction.Save("api_later");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (114,114)");
+        Exec(connection, transaction, "ROLLBACK TO outside_early");
+        Require(MixedRows(connection, transaction, table) == 0
+            && Capture(() => transaction.Rollback("api_later")) is InvalidOperationException
+            && transaction.Outcome == DmTransactionOutcome.Active, "mixed_raw_rollback_kept_later_api");
+        transaction.Rollback("api_base");
+
+        Exec(connection, transaction, "SAVEPOINT outside_release");
+        transaction.Save("api_after_release");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (115,115)");
+        Exec(connection, transaction, "RELEASE SAVEPOINT outside_release");
+        Require(MixedRows(connection, transaction, table) == 1
+            && Capture(() => transaction.Rollback("api_after_release")) is InvalidOperationException
+            && transaction.Outcome == DmTransactionOutcome.Active, "mixed_raw_release_kept_later_api");
+        transaction.Rollback("api_base");
+        Require(MixedRows(connection, transaction, table) == 0, "mixed_early_release_lost_earlier_api");
+
+        Exec(connection, transaction, "SAVEPOINT prepared_anchor");
+        transaction.Save("api_after_prepare");
+        Exec(connection, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (115,115)");
+        using (var prepared = Command(connection, transaction, "ROLLBACK TO prepared_anchor"))
+            prepared.Prepare();
+        // Preparing a rollback must neither execute it nor invalidate the later API point.
+        Require(MixedRows(connection, transaction, table) == 1, "mixed_prepare_executed_control");
+        transaction.Rollback("api_after_prepare");
+        Require(MixedRows(connection, transaction, table) == 0, "mixed_prepare_changed_api_stack");
+        transaction.Rollback("api_base");
+
+        transaction.Rollback();
+        using (var observer = OpenVerified())
+            Require(transaction.Outcome == DmTransactionOutcome.RolledBack && MixedRows(observer, null, table) == 0,
+                "mixed_positive_final_rollback_failed");
+        return new CaseResult(true, "contract_verified", null, new { mixed_positive_flows_pass = true });
+    }
+
+    private static CaseResult DiagnoseAbsentSavepoint(string table, bool mixedPositiveFlowsPass)
+    {
+        var details = new Dictionary<string, object?>
+        {
+            ["mixed_positive_flows_pass"] = mixedPositiveFlowsPass, ["isolated_negative_connection"] = true
+        };
+        DmConnection? isolated = null;
+        DmTransaction? transaction = null;
+        Exception? setupError = null;
+        bool pass = false;
+        string stage = "verified_connection";
+        try
+        {
+            isolated = OpenVerified();
+            stage = "transaction_and_seed";
+            transaction = (DmTransaction)isolated.BeginTransaction();
+            transaction.Save("api_base");
+            Exec(isolated, transaction, $"INSERT INTO {table}(ID,INTVAL) VALUES (115,115)");
+            stage = "absent_rollback_capture";
+            Exception? rollbackError = Capture(() => Exec(isolated, transaction, "ROLLBACK TO absent_review_point"));
+            ConnectionState stateAfterError = isolated.State;
+            DmTransactionOutcome outcomeAfterError = transaction.Outcome;
+            details["absent_rollback_capture"] = rollbackError == null ? null : SafeError(rollbackError);
+            details["absent_rollback_is_transient"] = rollbackError is DmException dmError ? (bool?)dmError.IsTransient : null;
+            details["connection_state_after_absent_rollback"] = stateAfterError.ToString();
+            details["transaction_outcome_after_absent_rollback"] = outcomeAfterError.ToString();
+            int? rowsAfterError = null;
+            Exception? rowError = Capture(() => rowsAfterError = MixedRows(isolated, transaction, table));
+            details["rows_query_after_absent_rollback_capture"] = rowError == null ? null : SafeError(rowError);
+            details["rows_after_absent_rollback"] = rowsAfterError;
+            details["connection_state_after_rows_query"] = isolated.State.ToString();
+            details["transaction_outcome_after_rows_query"] = transaction.Outcome.ToString();
+            bool rowsQueryFailedClosed = isolated.State == ConnectionState.Closed
+                && transaction.Outcome == DmTransactionOutcome.OutcomeUnknown;
+            Exception? apiError = Capture(() => transaction.Rollback("api_base"));
+            details["api_rollback_capture"] = apiError == null ? null : SafeError(apiError);
+            details["connection_state_after_api_rollback"] = isolated.State.ToString();
+            details["transaction_outcome_after_api_rollback"] = transaction.Outcome.ToString();
+            bool apiFailedClosed = isolated.State == ConnectionState.Closed
+                && transaction.Outcome == DmTransactionOutcome.OutcomeUnknown;
+            int? rowsAfterApi = null;
+            Exception? apiRowError = Capture(() => rowsAfterApi = MixedRows(isolated, transaction, table));
+            details["rows_query_after_api_rollback_capture"] = apiRowError == null ? null : SafeError(apiRowError);
+            details["rows_after_api_rollback"] = rowsAfterApi;
+            details["connection_state_after_api_rows_query"] = isolated.State.ToString();
+            details["transaction_outcome_after_api_rows_query"] = transaction.Outcome.ToString();
+            bool apiRowsFailedClosed = isolated.State == ConnectionState.Closed
+                && transaction.Outcome == DmTransactionOutcome.OutcomeUnknown;
+            Exception? finalRollbackError = Capture(() => transaction.Rollback());
+            details["full_rollback_capture"] = finalRollbackError == null ? null : SafeError(finalRollbackError);
+            details["connection_state_after_full_rollback"] = isolated.State.ToString();
+            details["transaction_outcome_after_full_rollback"] = transaction.Outcome.ToString();
+            // Existing T10 profileUnsupportedError contract: this verified 8.1.5.60
+            // -2121 response is outside the narrowly accepted recoverable-error profile.
+            // The physical connection closes; the outcome is unknown and subsequent controls are rejected.
+            pass = mixedPositiveFlowsPass
+                && rollbackError is DmException { Number: -2121, IsTransient: false }
+                && stateAfterError == ConnectionState.Closed
+                && outcomeAfterError == DmTransactionOutcome.OutcomeUnknown
+                && rowError is InvalidOperationException && rowsAfterError == null && rowsQueryFailedClosed
+                && apiError is InvalidOperationException && apiFailedClosed
+                && apiRowError is InvalidOperationException && rowsAfterApi == null && apiRowsFailedClosed
+                && finalRollbackError is InvalidOperationException && isolated.State == ConnectionState.Closed
+                && transaction.Outcome == DmTransactionOutcome.OutcomeUnknown;
+        }
+        catch (Exception error)
+        {
+            setupError = error;
+            details["failed_stage"] = stage;
+        }
+        finally
+        {
+            if (transaction != null)
+            {
+                Exception? disposeError = Capture(transaction.Dispose);
+                details["transaction_dispose_capture"] = disposeError == null ? null : SafeError(disposeError);
+                if (disposeError != null) pass = false;
+            }
+            if (isolated != null)
+            {
+                Exception? disposeError = Capture(isolated.Dispose);
+                details["connection_dispose_capture"] = disposeError == null ? null : SafeError(disposeError);
+                if (disposeError != null) pass = false;
+            }
+        }
+        int? finalRows = null;
+        Exception? observerError = Capture(() =>
+        {
+            using var observer = OpenVerified();
+            finalRows = MixedRows(observer, null, table);
+        });
+        details["fresh_connection_rows_capture"] = observerError == null ? null : SafeError(observerError);
+        details["fresh_connection_final_rows"] = finalRows;
+        pass = pass && observerError == null && finalRows == 0;
+        return new CaseResult(pass, pass ? "contract_verified" : "contract_failed",
+            setupError == null ? null : SafeError(setupError), details);
+    }
+
+    private static int MixedRows(DmConnection connection, DbTransaction? transaction, string table) =>
+        Convert.ToInt32(Scalar(connection, $"SELECT COUNT(*) FROM {table} WHERE ID BETWEEN 111 AND 115", transaction), CultureInfo.InvariantCulture);
+
+    private static int SavepointRows(DmConnection connection, DbTransaction? transaction, string table) =>
+        Convert.ToInt32(Scalar(connection, $"SELECT COUNT(*) FROM {table} WHERE ID BETWEEN 91 AND 94", transaction), CultureInfo.InvariantCulture);
 
     private static DmConnection OpenVerified()
     {
@@ -315,6 +601,11 @@ internal static class Program
     private static void Case(Dictionary<string, object> cases, string name, Func<bool> action)
     {
         try { bool pass = action(); cases[name] = new CaseResult(pass, pass ? "contract_verified" : "contract_failed", null); }
+        catch (Exception error) { cases[name] = new CaseResult(false, "error", SafeError(error)); }
+    }
+    private static void Case(Dictionary<string, object> cases, string name, Func<CaseResult> action)
+    {
+        try { cases[name] = action(); }
         catch (Exception error) { cases[name] = new CaseResult(false, "error", SafeError(error)); }
     }
     private static object SafeError(Exception error) => new

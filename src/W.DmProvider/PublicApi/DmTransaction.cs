@@ -48,8 +48,12 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 	{
 		internal readonly string UserName;
 		internal readonly string ServerName;
+		internal readonly bool IsRaw;
+		internal readonly bool IsQuoted;
 		internal SavepointEntry(string userName, string serverName)
 		{ UserName = userName; ServerName = serverName; }
+		internal SavepointEntry(DmSqlSavepointControl control)
+		{ UserName = control.Name; ServerName = control.Name; IsRaw = true; IsQuoted = control.IsQuoted; }
 	}
 
 	public DisposeStatus _disposeStatus = DisposeStatus.Valid;
@@ -330,12 +334,15 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 		{
 			if (savepointSequence >= MaxSavepoints)
 				throw new InvalidOperationException("Transaction savepoint limit reached.");
+			if (savepoints.Count - (savepoints.Exists(entry => !entry.IsRaw &&
+				string.Equals(entry.UserName, savepointName, StringComparison.Ordinal)) ? 1 : 0) >= MaxSavepoints)
+				throw new InvalidOperationException("Transaction savepoint stack limit reached.");
 			serverName = "WSP_" + (++savepointSequence).ToString(System.Globalization.CultureInfo.InvariantCulture);
 		}
 		ExecuteSavepointSql(lease, "SAVEPOINT \"" + serverName + "\"");
 		lock (savepointGate)
 		{
-			savepoints.RemoveAll(entry => string.Equals(entry.UserName, savepointName, StringComparison.Ordinal));
+			savepoints.RemoveAll(entry => !entry.IsRaw && string.Equals(entry.UserName, savepointName, StringComparison.Ordinal));
 			savepoints.Add(new SavepointEntry(savepointName, serverName));
 		}
 		return DmSavePoint.CreateHandle(connInst.Conn, this, savepointName);
@@ -396,7 +403,7 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 		lock (savepointGate)
 		{
 			for (int index = savepoints.Count - 1; index >= 0; index--)
-				if (string.Equals(savepoints[index].UserName, userName, StringComparison.Ordinal))
+				if (!savepoints[index].IsRaw && string.Equals(savepoints[index].UserName, userName, StringComparison.Ordinal))
 					return savepoints[index];
 		}
 		throw new InvalidOperationException("Savepoint is not active in this transaction.");
@@ -551,30 +558,98 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 
 	// The lexical scanner retains the user's complete SQL unchanged. This narrow
 	// gate blocks transaction-control escape hatches whose effects would bypass
-	// the bound transaction's outcome state; broader DDL policy is profile-gated.
+	// the bound transaction's outcome and savepoint stack. User savepoints require
+	// one strict statement and may never name the driver's reserved namespace.
+	// Their stack effects are recorded only after confirmed execution.
+	// Broader DDL policy is profile-gated.
 	internal static void ValidateCommandSql(DmConnection connection, DmTransaction selected, string sql,
 		bool hasBoundParameters = false)
 	{
 		if (connection?.Session?.ActiveTransaction == null ||
 			!ReferenceEquals(connection.Session.ActiveTransaction, selected)) return;
 		var statements = DmParameterBinding.ScanTopLevelStatements(sql);
+		DmSqlSavepointControl control = default;
+		bool strictSavepoint = !hasBoundParameters && statements.Count == 1 &&
+			DmParameterBinding.TryParseSavepointControl(sql, out control);
+		if (strictSavepoint)
+		{
+			if (control.Name.StartsWith("WSP_", StringComparison.OrdinalIgnoreCase))
+				throw new NotSupportedException("The WSP_ savepoint namespace is reserved for the driver.");
+			selected.RequireSavepoints();
+			selected.ValidateRawSavepointCapacity(control);
+		}
 		foreach (DmSqlStatementHead statement in statements)
 		{
 			bool forbidden = statement.First switch
 			{
 				"COMMIT" => true,
-				"ROLLBACK" => !DmParameterBinding.IsStrictRollbackToSavepoint(sql),
+				"ROLLBACK" or "SAVEPOINT" or "RELEASE" => !strictSavepoint,
 				"SET" => statement.Second is "TRANSACTION" or "AUTOCOMMIT",
 				"CALL" or "EXEC" or "EXECUTE" or "BEGIN" or "DECLARE" => true,
 				"CREATE" or "ALTER" or "DROP" or "TRUNCATE" =>
 					statement.Second != "TABLE" || !selected.SupportsVerifiedDdlCompletion ||
 					statements.Count != 1 || hasBoundParameters,
 				"GRANT" or "REVOKE" or "AUDIT" or "COMMENT" or "RENAME" => true,
-				"RELEASE" => statement.Second != "SAVEPOINT",
 				_ => false
 			};
 			if (forbidden)
 				throw new NotSupportedException("Direct transaction or dynamic control SQL is unavailable inside a local transaction.");
+		}
+	}
+
+	private void ValidateRawSavepointCapacity(DmSqlSavepointControl control)
+	{
+		if (control.Kind != DmSqlSavepointKind.Save) return;
+		lock (savepointGate)
+		{
+			if (savepoints.Count - (savepoints.Exists(entry => IsExactRawName(entry, control)) ? 1 : 0) >= MaxSavepoints)
+				throw new InvalidOperationException("Transaction savepoint stack limit reached.");
+		}
+	}
+
+	private static bool IsExactRawName(SavepointEntry entry, DmSqlSavepointControl control) =>
+		entry.IsRaw && entry.IsQuoted == control.IsQuoted &&
+		string.Equals(entry.ServerName, control.Name, StringComparison.Ordinal);
+
+	// Called only by a public command after a successful execution response, while
+	// its invocation still owns the session. Prepare/internal controls never enter.
+	internal void ConfirmUserSavepointControl(DmConnection connection, DmSqlSavepointControl control,
+		DmExecutionLease lease)
+	{
+		DmInvocation invocation = DmInvocation.Current;
+		if (lease == null || invocation == null || !ReferenceEquals(invocation.Lease, lease) ||
+			!ReferenceEquals(lease.Session, boundSession) || !ReferenceEquals(connection, connInst.Conn) ||
+			!ReferenceEquals(connection?.Session?.ActiveTransaction, this) ||
+			boundSession.State != DmPhysicalSessionState.Busy ||
+			lease.Purpose is not (DmOperationPurpose.Query or DmOperationPurpose.Reader))
+			throw new InvalidOperationException("Savepoint execution has no current user-command owner.");
+		boundSession.RequireWireOwnership(invocation);
+		CheckBoundSession();
+		if (Outcome != DmTransactionOutcome.Active ||
+			control.Name.StartsWith("WSP_", StringComparison.OrdinalIgnoreCase))
+			throw new InvalidOperationException("Savepoint execution does not belong to this active transaction.");
+		lock (savepointGate)
+		{
+			if (control.Kind == DmSqlSavepointKind.Save)
+			{
+				ValidateRawSavepointCapacity(control);
+				savepoints.RemoveAll(entry => IsExactRawName(entry, control));
+				savepoints.Add(new SavepointEntry(control));
+				return;
+			}
+			// Do not infer the server's collation. A differently cased or quoted
+			// spelling, or several plausible aliases, makes the target uncertain.
+			int index = -1;
+			for (int candidate = 0; candidate < savepoints.Count; candidate++)
+			{
+				SavepointEntry entry = savepoints[candidate];
+				if (!entry.IsRaw || !string.Equals(entry.ServerName, control.Name, StringComparison.OrdinalIgnoreCase)) continue;
+				if (index >= 0 || !IsExactRawName(entry, control)) { savepoints.Clear(); return; }
+				index = candidate;
+			}
+			if (index < 0) { savepoints.Clear(); return; }
+			if (control.Kind == DmSqlSavepointKind.Rollback) index++;
+			savepoints.RemoveRange(index, savepoints.Count - index);
 		}
 	}
 
