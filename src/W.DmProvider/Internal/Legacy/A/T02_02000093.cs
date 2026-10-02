@@ -8,7 +8,7 @@ using W.Dm.util;
 
 namespace W.Dm.Internal.Legacy.A;
 
-internal class C
+internal partial class C
 {
 	private C()
 	{

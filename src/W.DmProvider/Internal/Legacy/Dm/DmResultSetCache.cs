@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Internal.Protocol;
 
@@ -346,5 +348,39 @@ internal class DmResultSetCache
 	internal long CursorUpdateRow()
 	{
 		return currentPos;
+	}
+	internal async Task<bool> do_nextAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		checkClosed();
+		if (totalRowCount == 0L)
+		{
+			currentPos++;
+			return false;
+		}
+		if (currentPos >= totalRowCount)
+		{
+			return false;
+		}
+		if (currentPos == totalRowCount - 1)
+		{
+			currentPos++;
+			datasOffset++;
+			return false;
+		}
+		if (currentPos + 1 < datasStartPos || datas == null || currentPos + 1 >= datasStartPos + datas.Length)
+		{
+			if (await connInstance.GetCsi().AAsync(statement, this, 0, currentPos + 1, long.MaxValue, cancellationToken).ConfigureAwait(false))
+			{
+				currentPos++;
+				return true;
+			}
+			currentPos++;
+			datasOffset++;
+			return false;
+		}
+		datasOffset++;
+		currentPos++;
+		return true;
 	}
 }

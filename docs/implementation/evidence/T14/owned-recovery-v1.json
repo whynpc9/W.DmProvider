@@ -1,0 +1,11 @@
+{
+  "owned_table": "T14_921060586F914E658A7FD736",
+  "loaded_dll_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+  "stage": "fresh_absence",
+  "cleanup_identity": "WDM_PROVIDER_TEST",
+  "before_count": 1,
+  "final_identity": "WDM_PROVIDER_TEST",
+  "final_count": 0,
+  "cleanup_verified": true,
+  "exit_code": 0
+}

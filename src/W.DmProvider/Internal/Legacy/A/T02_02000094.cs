@@ -8,7 +8,7 @@ using W.Dm.util;
 
 namespace W.Dm.Internal.Legacy.A;
 
-internal class c
+internal partial class c
 {
 	public static void A(b P_0, DmConnProperty P_1)
 	{

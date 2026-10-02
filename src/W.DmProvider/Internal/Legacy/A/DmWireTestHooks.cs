@@ -9,6 +9,7 @@ internal static class DmWireTestHooks
 {
     internal static Action<OperationIdentity, DmOperationPurpose> AfterExchangeEntered;
     internal static Action<OperationIdentity, DmOperationPurpose> AfterSendBeforeReceive;
+    internal static Action<OperationIdentity, short> AfterFrameSent;
     internal static Action<OperationIdentity, DmOperationPurpose> BeforeDecode;
     internal static Action<OperationIdentity, short> AfterHandshakeExchangeEntered;
     internal static Action<int> AfterStartupNegotiatedEncryptMode;
@@ -43,6 +44,12 @@ internal static class DmWireTestHooks
         Volatile.Read(ref AfterSendBeforeReceive)?.Invoke(invocation.Identity, invocation.Lease.Purpose);
     }
 
+    internal static void FrameSent(short opcode)
+    {
+        var invocation = DmInvocation.Current;
+        Volatile.Read(ref AfterFrameSent)?.Invoke(invocation.Identity, opcode);
+    }
+
     internal static void ResponseReady()
     {
         var invocation = DmInvocation.Current;
@@ -53,6 +60,7 @@ internal static class DmWireTestHooks
     {
         Volatile.Write(ref AfterExchangeEntered, null);
         Volatile.Write(ref AfterSendBeforeReceive, null);
+        Volatile.Write(ref AfterFrameSent, null);
         Volatile.Write(ref BeforeDecode, null);
         Volatile.Write(ref AfterHandshakeExchangeEntered, null);
         Volatile.Write(ref AfterStartupNegotiatedEncryptMode, null);

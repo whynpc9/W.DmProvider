@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <RestoreAdditionalProjectSources>$(R2PackageSource)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="W.DmProvider" Version="[$(R2PackageVersion)]" />
+    <AssemblyMetadata Include="R2PackageVersion" Value="$(R2PackageVersion)" />
+  </ItemGroup>
+  <Target Name="RequireExactPackageVersion" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error Condition="'$(R2PackageVersion)' == ''" Text="R2PackageVersion must identify an exact candidate package." />
+    <Error Condition="'$(R2PackageSource)' == ''" Text="R2PackageSource must identify the local candidate package source." />
+  </Target>
+</Project>

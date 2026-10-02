@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.util;
 using W.Dm.Internal.Types;
 
@@ -73,6 +75,25 @@ public class DmBlob : AbstractLob
 			return array;
 		}
 		return ConnInstance.GetCsi().A(this, pos, len);
+	}
+
+	internal async Task<byte[]> do_getBytesAsync(long pos, int len, CancellationToken cancellationToken)
+	{
+		using var invocation = BeginInternalOperation(cancellationToken);
+		if (pos < 1 || len < 0)
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
+		pos--;
+		long remaining = await do_lengthAsync(cancellationToken).ConfigureAwait(false) - pos;
+		if (remaining < 0)
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
+		len = DmLobMaterialization.Bytes(Math.Min((long)len, remaining));
+		if (local || storageType == STORAGE_IN_ROW || fetchAll)
+		{
+			byte[] result = new byte[len];
+			ByteUtil.setBytes(result, 0, data, checked((int)pos), result.Length);
+			return result;
+		}
+		return await ConnInstance.GetCsi().ReadLobAsync(this, pos, len, cancellationToken).ConfigureAwait(false);
 	}
 
 	public int SetBytes(long pos, byte[] bytes)
@@ -179,6 +200,19 @@ public class DmBlob : AbstractLob
 		if (!local && storageType != 1 && !fetchAll)
 		{
 			data = do_getBytes(1L, DmLobMaterialization.Bytes(do_length()));
+			fetchAll = true;
+		}
+	}
+
+	internal async Task LoadAllDataUnderOwnerAsync(CancellationToken cancellationToken)
+	{
+		using var invocation = BeginInternalOperation(cancellationToken);
+		if (!local && storageType != STORAGE_IN_ROW && !fetchAll)
+		{
+			// A known locator is rejected before issuing even a length query.
+			if (bytesLength >= 0) DmLobMaterialization.Bytes(bytesLength);
+			int length = DmLobMaterialization.Bytes(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
+			data = await do_getBytesAsync(1L, length, cancellationToken).ConfigureAwait(false);
 			fetchAll = true;
 		}
 	}

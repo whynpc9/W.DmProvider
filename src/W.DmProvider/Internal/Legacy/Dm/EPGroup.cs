@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Config;
 using W.Dm.filter.log;
 using W.Dm.util;
@@ -160,4 +161,17 @@ internal class EPGroup
 		}
 		DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMUNITION_ERROR);
 	}
+
+	internal async Task connectAsync(DmConnection conn,CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		if(epList.Count != 1) throw new NotSupportedException("Async endpoint failover is not supported.");
+		await epList[0].connectAsync(conn,cancellationToken).ConfigureAwait(false);
+		if(!getDbSelection(conn).checkServerMode(true,conn))
+		{
+			conn.do_Close();
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_SERVER_MODE);
+		}
+	}
+
 }

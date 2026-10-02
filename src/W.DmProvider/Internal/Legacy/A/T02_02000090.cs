@@ -9,7 +9,7 @@ using W.Dm.Internal.Protocol;
 
 namespace W.Dm.Internal.Legacy.A;
 
-internal class D : a
+internal partial class D : a
 {
 	private DmSession wireSession;
 

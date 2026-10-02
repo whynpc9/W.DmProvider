@@ -1,0 +1,58 @@
+[
+  {
+    "index": "layers/00-validation-v2-t13-offline-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/t13-offline-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T092856Z-86761-11672",
+    "exit_code": 0,
+    "status": "offline_verified",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/01-validation-v2-t13-shared-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/t13-shared-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T092913Z-86908-20643",
+    "exit_code": 1,
+    "status": "rejected",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/02-resumed-window-t14-tls-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/resumed-window/t14-tls-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261002T093553Z-90555-7829",
+    "exit_code": 0,
+    "status": "package_cancellation_verified",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/03-resumed-window-t13-tls-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/resumed-window/t13-tls-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093547Z-90340-22115",
+    "exit_code": 0,
+    "status": "package_async_verified",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/04-resumed-window-t13-shared-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/resumed-window/t13-shared-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093559Z-90739-28611",
+    "exit_code": 1,
+    "status": "rejected",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/05-resumed-window-t13-security-tls-run",
+    "run_summary_source": ".local/verification/r2-review/validation-v2/resumed-window/t13-security-tls-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093550Z-90529-11038",
+    "exit_code": 0,
+    "status": "security_rejection_verified",
+    "original_failures_preserved": true
+  },
+  {
+    "index": "layers/06-baseline-comparison-v1-t13-shared-run",
+    "run_summary_source": ".local/verification/r2-review/baseline-comparison-v1/t13-shared-run.json",
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T094137Z-93721-29580",
+    "exit_code": 1,
+    "status": "rejected",
+    "original_failures_preserved": true
+  }
+]

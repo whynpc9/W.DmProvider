@@ -1,0 +1,1901 @@
+{
+  "schema_version": 1,
+  "task": "T13",
+  "implementation": "W-package",
+  "status": "package_async_verified",
+  "accepted": true,
+  "streaming_lob_claimed": false,
+  "cancellation_acceptance": "T14_pending",
+  "mode": "tls",
+  "package_version": "0.1.0-r2.20261001164429",
+  "package_sha256": "5b10a471c6becbfbc2d2d6474aa7f9e12fcf33fa7522d22a811b3cc0141c8122",
+  "loaded_assembly_sha256": "fdea777db6150aeac6ecbe8c69a17329d3089b1364ee5c7f9b2cf4637e52f431",
+  "loaded_assembly_mvid": "24e7baa3-bb4c-430e-85f1-9a3dbdc4ac60",
+  "reference_kind": "exact_PackageReference",
+  "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+  "api_override_audit": [
+    "DmConnection.OpenAsync(CancellationToken)",
+    "DmConnection.CloseAsync()",
+    "DmConnection.DisposeAsync()",
+    "DmConnection.BeginDbTransactionAsync(IsolationLevel,CancellationToken)",
+    "DmConnection.GetSchemaAsync(CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,String[],CancellationToken)",
+    "DmConnection.ChangeDatabaseAsync(String,CancellationToken)",
+    "DmCommand.PrepareAsync(CancellationToken)",
+    "DmCommand.ExecuteNonQueryAsync(CancellationToken)",
+    "DmCommand.ExecuteScalarAsync(CancellationToken)",
+    "DmCommand.ExecuteDbDataReaderAsync(CommandBehavior,CancellationToken)",
+    "DmCommand.DisposeAsync()",
+    "DmDataReader.ReadAsync(CancellationToken)",
+    "DmDataReader.NextResultAsync(CancellationToken)",
+    "DmDataReader.CloseAsync()",
+    "DmDataReader.DisposeAsync()",
+    "DmDataReader.IsDBNullAsync(Int32,CancellationToken)",
+    "DmDataReader.GetSchemaTableAsync(CancellationToken)",
+    "DmDataReader.GetFieldValueAsync(Int32,CancellationToken)",
+    "DmTransaction.CommitAsync(CancellationToken)",
+    "DmTransaction.RollbackAsync(CancellationToken)",
+    "DmTransaction.SaveAsync(String,CancellationToken)",
+    "DmTransaction.ReleaseAsync(String,CancellationToken)",
+    "DmTransaction.RollbackAsync(String,CancellationToken)",
+    "DmTransaction.DisposeAsync()"
+  ],
+  "configuration_step": "complete",
+  "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+  "explicit_transport": "RequireTls",
+  "persist_security_info": false,
+  "buf_prefetch": 0,
+  "owned_table": "T13_F17F07BC26E14030B214B03D",
+  "final_database_state": "random_object_absent",
+  "cases": {
+    "open_async": true,
+    "prepare_execute_nonquery_async": true,
+    "execute_scalar_async": true,
+    "read_async_cross_page_fetch": {
+      "rows": 2048,
+      "fetch_frames": 4,
+      "rows_before_first_actual_fetch": 100
+    },
+    "next_result_async": {
+      "rowsets": 2,
+      "more_result_frames": 2,
+      "source": "T08_two_selects_target_evidence"
+    },
+    "transaction_begin_commit_async": {
+      "fresh_committed_rows": 1
+    },
+    "transaction_rollback_async": {
+      "fresh_rolled_back_rows": 0
+    },
+    "transaction_savepoints_async": {
+      "status": "unsupported_for_server_profile",
+      "server_version": "8.1.4.6",
+      "supports_savepoints": false,
+      "rejections": {
+        "SaveAsync": {
+          "exception_type": "System.NotSupportedException",
+          "new_frames": 0,
+          "transaction_outcome": "Active",
+          "connection_state": "Open"
+        },
+        "RollbackAsync": {
+          "exception_type": "System.NotSupportedException",
+          "new_frames": 0,
+          "transaction_outcome": "Active",
+          "connection_state": "Open"
+        },
+        "ReleaseAsync": {
+          "exception_type": "System.NotSupportedException",
+          "new_frames": 0,
+          "transaction_outcome": "Active",
+          "connection_state": "Open"
+        }
+      },
+      "post_rollback_outcome": "RolledBack",
+      "fresh_candidate_rows": 0,
+      "fresh_rolled_back_rows": 0
+    },
+    "transaction_dispose_async_rollback": {
+      "fresh_rolled_back_rows": 0
+    },
+    "lob_parameter_upload_async": {
+      "blob_bytes": 262144,
+      "clob_utf16_units": 163840
+    },
+    "lob_get_field_value_async": {
+      "blob_sha256": "31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be",
+      "clob_utf8_sha256": "04c960a382b5612501697da0be06a895d66b71ae928fffeffbb9aadaa49f5687",
+      "get_lob_data_frames": 20
+    },
+    "lob_execute_scalar_async": {
+      "get_lob_data_frames": 20
+    },
+    "connection_close_dispose_async": true
+  },
+  "server_identity": "WDM_PROVIDER_TEST",
+  "server_schema": "WDM_PROVIDER_TEST",
+  "server_version": "8.1.4.6",
+  "server_final_rows_before_cleanup": 0,
+  "cleanup_verified": true,
+  "final_verification_identity": "WDM_PROVIDER_TEST",
+  "final_verification_schema": "WDM_PROVIDER_TEST",
+  "numeric_frame_observations": [
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 79
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 118
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 105178
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 7,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 523950
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 7,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 523950
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 7,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 523950
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 7,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 473550
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "next_result_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "next_result_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 74
+    },
+    {
+      "Stage": "next_result_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 75
+    },
+    {
+      "Stage": "next_result_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "next_result_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 8,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 82
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 74
+    },
+    {
+      "Stage": "transaction_begin_commit_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 9,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "transaction_rollback_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 9,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "transaction_savepoints_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 9,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "transaction_dispose_async_rollback",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 114
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 90,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 114
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 26,
+      "ResponseOpcode": 261,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "lob_parameter_upload_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 394
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 9271
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 29,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 8
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31634
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31634
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 11599
+    },
+    {
+      "Stage": "lob_get_field_value_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 156
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 9271
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 156
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 29,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 8
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31634
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31635
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31634
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 31633
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 32,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 11599
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "lob_execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 74
+    },
+    {
+      "Stage": "fresh_connection_final_rows",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 35
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 162
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 34
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 24
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 83
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "exact_cleanup_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 24
+    }
+  ],
+  "negotiated_encrypt_modes": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "integration": "real_test_schema",
+  "exit_code": 0
+}

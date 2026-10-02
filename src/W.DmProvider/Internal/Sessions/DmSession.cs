@@ -49,7 +49,8 @@ internal sealed class DmSession
     internal void ActivateTransaction(DmTransaction transaction, OperationIdentity beginIdentity)
     {
         ArgumentNullException.ThrowIfNull(transaction);
-        lock (gate)
+        DmInvocation invocation = DmInvocation.Current ?? throw new InvalidOperationException("Transaction start has no invocation.");
+        AdvanceInvocation(invocation, send: false, onComplete: () =>
         {
             if (state != DmPhysicalSessionState.Busy || transactionState != DmLocalTransactionState.Starting ||
                 activeTransaction != null || activeLease?.Identity.ExecutionId != beginIdentity.ExecutionId ||
@@ -60,7 +61,7 @@ internal sealed class DmSession
             lastBusinessTransactionStatus = null;
             transactionState = DmLocalTransactionState.Active;
             transaction.SetOutcomeFromSession(DmTransactionOutcome.Active);
-        }
+        });
     }
 
     internal void BeginTransactionControl(DmTransaction transaction, OperationIdentity identity, DmTransactionControlKind kind)
@@ -75,6 +76,7 @@ internal sealed class DmSession
                 identity.LeaseGeneration != leaseGeneration)
                 throw new InvalidOperationException("Transaction control has no active owner.");
             transactionControl = new TransactionControlOperation(transaction, identity, kind);
+            activeInvocation.Phase = kind == DmTransactionControlKind.Commit ? DmFailurePhase.Commit : DmFailurePhase.Rollback;
             transactionState = kind == DmTransactionControlKind.Commit
                 ? DmLocalTransactionState.Committing : DmLocalTransactionState.RollingBack;
             transaction.SetOutcomeFromSession(kind == DmTransactionControlKind.Commit
@@ -283,14 +285,15 @@ internal sealed class DmSession
 
     internal void CompleteHandshake()
     {
-        lock (gate)
+        DmInvocation invocation = DmInvocation.Current ?? throw new InvalidOperationException("Handshake has no invocation.");
+        AdvanceInvocation(invocation, send: false, onComplete: () =>
         {
             if (state is not (DmPhysicalSessionState.Connecting or DmPhysicalSessionState.Authenticating or DmPhysicalSessionState.Busy))
                 throw new InvalidOperationException("Session handshake cannot complete.");
             if (activeLease?.Purpose != DmOperationPurpose.Handshake) throw new InvalidOperationException("Handshake lease is missing.");
             if (transport == null) throw new InvalidOperationException("Physical transport is missing.");
             handshakeComplete = true;
-        }
+        });
     }
 
     internal void AttachTransport(DmConnInstance instance)
@@ -361,12 +364,25 @@ internal sealed class DmSession
         }
     }
 
-    internal DmInvocation BeginInvocation(DmExecutionLease lease, DmDeadline deadline)
+    internal DmInvocation BeginInvocation(DmExecutionLease lease, DmDeadline deadline, CancellationToken cancellationToken = default,
+        bool cleanup = false)
     {
         DmDetachedTransport toAbort = null;
         DmInvocation result = null;
         lock (gate)
         {
+            // Cleanup is a fresh finite child, not an extension of the canceled
+            // public invocation. It still uses the same physical and child gates.
+            if (cleanup && (!ReferenceEquals(activeLease, lease) || lease.Identity.SessionId != SessionId ||
+                lease.Identity.LeaseGeneration != leaseGeneration ||
+                state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+                throw new InvalidOperationException("Cleanup execution lease is stale.");
+            if (!cleanup && lease.TerminalCause == DmCancelSource.Command)
+                throw new DmOperationCanceledException(new DmFailureInfo(DmErrorKind.Canceled, PhaseForPurpose(lease.Purpose),
+                    "WDM_CANCELED", lease.SendAttempted ? DmOperationOutcome.Unknown : DmOperationOutcome.NotSent,
+                    GetTransactionOutcomeUnderLock(), state is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed),
+                    DmCancelSource.Command), lease.CommandCancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (!ReferenceEquals(activeLease, lease) || state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed)
                 throw new InvalidOperationException("Execution lease is stale.");
             if (activeInvocation != null) throw new InvalidOperationException("Another invocation owns this execution.");
@@ -378,14 +394,200 @@ internal sealed class DmSession
             else
             {
                 var identity = lease.Identity with { InvocationId = ++nextInvocationId };
-                result = new DmInvocation(this, lease, identity, deadline);
+                result = new DmInvocation(this, lease, identity, deadline, cancellationToken);
+                if (cleanup) result.Phase = DmFailurePhase.Cleanup;
                 activeInvocation = result;
             }
         }
         toAbort?.AbortTransport();
         if (result == null) onBroken?.Invoke(this);
         if (result == null) throw new InvalidOperationException("Invocation identity space exhausted.");
-        return result;
+        try
+        {
+            result.ActivateCancellation();
+            result.ThrowIfTerminated();
+            return result;
+        }
+        catch { result.Dispose(); throw; }
+    }
+
+    internal DmCancelSource GetTerminalCause(DmInvocation invocation)
+    {
+        lock (gate) return invocation.TerminalCause;
+    }
+
+    internal void CompleteInvocation(DmInvocation invocation)
+    {
+        AdvanceInvocation(invocation, send: false);
+    }
+
+    internal bool IsRecoverableUnsentFailure(DmInvocation invocation)
+    {
+        lock (gate) return invocation != null && !invocation.SendAttempted &&
+            (invocation.TerminalCause != DmCancelSource.None || IsRecoverableUnsentTransactionControl(invocation));
+    }
+
+    internal void CancelExecution(DmExecutionLease lease)
+    {
+        DmInvocation invocation;
+        DmDetachedTransport captured = null;
+        lock (gate)
+        {
+            if (!ReferenceEquals(activeLease, lease) || state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed) return;
+            invocation = activeInvocation;
+            if (invocation?.Completed == true)
+            {
+                if (lease.Purpose != DmOperationPurpose.Reader) return;
+                invocation = null; // A successful reader call has become idle.
+            }
+            if (lease.TerminalCause == DmCancelSource.None) lease.TerminalCause = DmCancelSource.Command;
+            if (invocation != null && invocation.TerminalCause == DmCancelSource.None)
+            {
+                invocation.TerminalCause = DmCancelSource.Command;
+                invocation.TerminalToken = lease.CommandCancellationToken;
+            }
+            // A reader retains its root lease between calls. Even without an
+            // invocation, command cancellation must invalidate its server cursor.
+            if (lease.SendAttempted) captured = BreakAndCaptureUnderLock();
+        }
+        FinishTermination(captured, invocation, lease);
+    }
+
+    internal void TerminateInvocation(DmInvocation invocation, DmCancelSource cause, CancellationToken token = default)
+    {
+        DmDetachedTransport captured = null;
+        lock (gate)
+        {
+            if (!ReferenceEquals(activeInvocation, invocation) || !ReferenceEquals(activeLease, invocation.Lease) ||
+                invocation.Identity.SessionId != SessionId || invocation.Identity.LeaseGeneration != leaseGeneration ||
+                invocation.Completed || invocation.IsDisposed || invocation.TerminalCause != DmCancelSource.None ||
+                state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed) return;
+            invocation.TerminalCause = cause;
+            invocation.TerminalToken = token;
+            if (invocation.SendAttempted) captured = BreakAndCaptureUnderLock();
+        }
+        FinishTermination(captured, invocation, null);
+    }
+
+    private void FinishTermination(DmDetachedTransport captured, DmInvocation invocation, DmExecutionLease lease)
+    {
+        // Signal and dispose outside the gate: both can run arbitrary callbacks.
+        try { invocation?.SignalTermination(); }
+        finally
+        {
+            try { lease?.SignalCommandCancellation(); }
+            finally
+            {
+                try
+                {
+                    if (captured != null && invocation != null) DmSessionTestHooks.BeforeTransportAbort?.Invoke(invocation.Identity);
+                }
+                finally
+                {
+                    try { captured?.AbortTransport(); }
+                    finally { if (captured != null) { try { onBroken?.Invoke(this); } catch { } } }
+                }
+            }
+        }
+    }
+
+    internal void TryBeginSendAttempt(DmInvocation invocation)
+    {
+        if (invocation != null) AdvanceInvocation(invocation, send: true);
+    }
+
+    private void AdvanceInvocation(DmInvocation invocation, bool send, Action onComplete = null)
+    {
+        DmDetachedTransport captured = null;
+        bool newlyTerminated = false;
+        bool failed;
+        lock (gate)
+        {
+            // Check all captured ownership before observing tokens/deadlines.
+            // A stale send or completion must not terminate a later lease.
+            if (!ReferenceEquals(activeInvocation, invocation) || !ReferenceEquals(activeLease, invocation.Lease) ||
+                invocation.Identity.SessionId != SessionId || invocation.Identity.LeaseGeneration != leaseGeneration ||
+                invocation.IsDisposed || state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed)
+            {
+                if (invocation.TerminalCause != DmCancelSource.None) throw invocation.TranslateFailure(null);
+                throw new InvalidOperationException("Invocation is stale.");
+            }
+            if (invocation.TerminalCause == DmCancelSource.None && !invocation.Completed)
+            {
+                DmCancelSource cause = invocation.UserCancellationToken.IsCancellationRequested ? DmCancelSource.User :
+                    !invocation.Deadline.IsInfinite && invocation.Deadline.RemainingTime == TimeSpan.Zero
+                        ? DmCancelSource.TotalDeadline : DmCancelSource.None;
+                if (cause != DmCancelSource.None)
+                {
+                    invocation.TerminalCause = cause;
+                    invocation.TerminalToken = cause == DmCancelSource.User ? invocation.UserCancellationToken : default;
+                    newlyTerminated = true;
+                    if (invocation.SendAttempted) captured = BreakAndCaptureUnderLock();
+                }
+            }
+            failed = invocation.TerminalCause != DmCancelSource.None;
+            if (!failed)
+            {
+                RequireWireOwnership(invocation);
+                if (send)
+                {
+                    if (invocation.Completed) throw new InvalidOperationException("A completed invocation cannot send.");
+                    // The sole send/cancel linearization point. Zero reported
+                    // bytes after this point cannot prove an unsent request.
+                    invocation.SendAttempted = true;
+                    invocation.Lease.SendAttempted = true;
+                    invocation.Phase = DmFailurePhase.Send;
+                    MarkTransactionSendAttempt(invocation);
+                }
+                else
+                {
+                    // This action is supplied only by this coordinator's own
+                    // activation/handshake paths; it never invokes user code.
+                    onComplete?.Invoke();
+                    invocation.Completed = true;
+                }
+            }
+        }
+        if (newlyTerminated) FinishTermination(captured, invocation, null);
+        if (failed) throw invocation.TranslateFailure(null);
+    }
+
+    private static DmFailurePhase PhaseForPurpose(DmOperationPurpose purpose) => purpose switch
+    {
+        DmOperationPurpose.Handshake => DmFailurePhase.Connect,
+        DmOperationPurpose.Reader => DmFailurePhase.Fetch,
+        DmOperationPurpose.TransactionControl => DmFailurePhase.Prepare,
+        _ => DmFailurePhase.Prepare
+    };
+
+    private DmTransactionOutcome? GetTransactionOutcomeUnderLock() => activeTransaction?.Outcome ?? (transactionState switch
+    {
+        DmLocalTransactionState.Starting => DmTransactionOutcome.Starting,
+        DmLocalTransactionState.Active => DmTransactionOutcome.Active,
+        DmLocalTransactionState.Committing => DmTransactionOutcome.Committing,
+        DmLocalTransactionState.Committed => DmTransactionOutcome.Committed,
+        DmLocalTransactionState.RollingBack => DmTransactionOutcome.RollingBack,
+        DmLocalTransactionState.RolledBack => DmTransactionOutcome.RolledBack,
+        DmLocalTransactionState.CompletedExternally => DmTransactionOutcome.CompletedExternally,
+        DmLocalTransactionState.OutcomeUnknown => DmTransactionOutcome.OutcomeUnknown,
+        _ => (DmTransactionOutcome?)null
+    });
+
+    internal DmFailureInfo CreateFailureInfo(DmInvocation invocation, Exception error = null)
+    {
+        lock (gate)
+        {
+            DmCancelSource cause = invocation.TerminalCause;
+            bool server = error is DmException dm && dm.HasVerifiedServerResponse && dm.VerifiedResponseIdentity == invocation.Identity;
+            DmErrorKind kind = server ? DmErrorKind.Server : cause is DmCancelSource.TotalDeadline or DmCancelSource.IdleTimeout ? DmErrorKind.Timeout :
+                cause is DmCancelSource.User or DmCancelSource.Command ? DmErrorKind.Canceled : DmErrorKind.Transport;
+            DmTransactionOutcome? outcome = GetTransactionOutcomeUnderLock();
+            return new DmFailureInfo(kind, invocation.Phase, kind switch
+            { DmErrorKind.Timeout => "WDM_TIMEOUT", DmErrorKind.Canceled => "WDM_CANCELED", DmErrorKind.Server => "WDM_SERVER", _ => "WDM_TRANSPORT" },
+                server ? DmOperationOutcome.ServerReported : invocation.SendAttempted ? DmOperationOutcome.Unknown : DmOperationOutcome.NotSent,
+                outcome, state is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed), cause,
+                server ? ((DmException)error).Number : null);
+        }
     }
 
     internal void RequireWireOwnership(DmInvocation invocation)
@@ -499,6 +701,7 @@ internal sealed class DmSession
 
     private DmDetachedTransport BreakAndCaptureUnderLock()
     {
+        if (state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed) return null;
         state = DmPhysicalSessionState.Broken;
         if (transactionState is DmLocalTransactionState.Starting or DmLocalTransactionState.Active or
             DmLocalTransactionState.Committing or DmLocalTransactionState.RollingBack)

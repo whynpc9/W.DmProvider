@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
@@ -167,7 +168,7 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 		boundIdentity = DmInvocation.Current?.Identity ?? throw new InvalidOperationException("Transaction start has no session invocation.");
 		commandTimeoutSeconds = connInst.Conn.Settings.CommandTimeout;
 		cleanupTimeout = connInst.Conn.Settings.CleanupTimeout;
-		transactionClock = connInst.Conn.TransactionClock;
+		transactionClock = connInst.Conn.OperationClock;
 		m_il = System.Data.IsolationLevel.ReadCommitted;
 	}
 
@@ -203,10 +204,13 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 				return;
 			}
 			boundSession.EndTransactionControl(invocation);
-			if (Outcome == DmTransactionOutcome.Active) throw;
+			Exception cause = invocation.TranslateFailure(ex);
+			if (Outcome == DmTransactionOutcome.Active) throw cause;
 			RecordFailure("commit_response_unconfirmed");
 			AbortUnknownOutcome();
-			throw new DmCommitOutcomeUnknownException(ex);
+			var unknown = new DmCommitOutcomeUnknownException(cause);
+			unknown.SetFailureInfo(invocation.CreateFailureInfo(cause).WithCommitUnknown());
+			throw unknown;
 		}
 		finally
 		{
@@ -234,7 +238,7 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 			if (Outcome != DmTransactionOutcome.RolledBack)
 				throw new InvalidOperationException("Rollback did not receive a confirmed response.");
 		}
-		catch
+		catch (Exception error)
 		{
 			if (Outcome == DmTransactionOutcome.RolledBack)
 			{
@@ -243,10 +247,95 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 				return;
 			}
 			boundSession.EndTransactionControl(invocation);
-			if (Outcome == DmTransactionOutcome.Active) throw;
+			Exception translated = invocation.TranslateFailure(error);
+			if (Outcome == DmTransactionOutcome.Active) throw translated;
 			RecordFailure("rollback_response_unconfirmed");
 			AbortUnknownOutcome();
-			throw;
+			throw translated;
+		}
+		finally
+		{
+			boundSession.EndTransactionControl(invocation);
+			if (Outcome != DmTransactionOutcome.Active) Clear();
+		}
+	}
+
+	public override async Task CommitAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmDeadline deadline = CreateControlDeadline();
+		CheckBoundSession();
+		using var lease = BeginControlExecution(deadline);
+		using var invocation = lease.BeginInvocation(cancellationToken);
+		CheckBoundSession();
+		DmPromotableTransaction currentDmPromotableTransaction = connInst.CurrentDmPromotableTransaction;
+		if (currentDmPromotableTransaction != null)
+			throw new NotSupportedException("Ambient transaction enlistment is unavailable.");
+		boundSession.BeginTransactionControl(this, invocation.Identity, DmTransactionControlKind.Commit);
+		try
+		{
+			await connInst.CommitAsync(cancellationToken).ConfigureAwait(false);
+			if (Outcome != DmTransactionOutcome.Committed)
+				throw new InvalidOperationException("Commit did not receive a confirmed response.");
+		}
+		catch (Exception ex)
+		{
+			if (Outcome == DmTransactionOutcome.Committed)
+			{
+				RecordFailure("post_ack_cleanup_failed");
+				AbortUnknownOutcome();
+				return;
+			}
+			boundSession.EndTransactionControl(invocation);
+			Exception cause = invocation.TranslateFailure(ex);
+			if (Outcome == DmTransactionOutcome.Active) throw cause;
+			RecordFailure("commit_response_unconfirmed");
+			AbortUnknownOutcome();
+			var unknown = new DmCommitOutcomeUnknownException(cause);
+			unknown.SetFailureInfo(invocation.CreateFailureInfo(cause).WithCommitUnknown());
+			throw unknown;
+		}
+		finally
+		{
+			boundSession.EndTransactionControl(invocation);
+			if (Outcome != DmTransactionOutcome.Active) Clear();
+		}
+	}
+
+	public override Task RollbackAsync(CancellationToken cancellationToken = default)
+		=> RollbackCoreAsync(CreateControlDeadline(), cleanup: false, cancellationToken);
+
+	private async Task RollbackCoreAsync(DmDeadline deadline, bool cleanup, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		CheckBoundSession();
+		using var lease = BeginControlExecution(deadline, cleanup);
+		using var invocation = lease.BeginInvocation(cancellationToken);
+		CheckBoundSession();
+		DmPromotableTransaction currentDmPromotableTransaction = connInst.CurrentDmPromotableTransaction;
+		if (currentDmPromotableTransaction != null)
+			throw new NotSupportedException("Ambient transaction enlistment is unavailable.");
+		boundSession.BeginTransactionControl(this, invocation.Identity, DmTransactionControlKind.Rollback);
+		try
+		{
+			await connInst.RollbackAsync(cancellationToken).ConfigureAwait(false);
+			if (Outcome != DmTransactionOutcome.RolledBack)
+				throw new InvalidOperationException("Rollback did not receive a confirmed response.");
+		}
+		catch (Exception error)
+		{
+			if (Outcome == DmTransactionOutcome.RolledBack)
+			{
+				RecordFailure("post_ack_cleanup_failed");
+				AbortUnknownOutcome();
+				return;
+			}
+			boundSession.EndTransactionControl(invocation);
+			Exception translated = invocation.TranslateFailure(error);
+			if (Outcome == DmTransactionOutcome.Active) throw translated;
+			RecordFailure("rollback_response_unconfirmed");
+			AbortUnknownOutcome();
+			throw translated;
 		}
 		finally
 		{
@@ -282,7 +371,9 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 
 	private void CleanupOnDispose()
 	{
-		DmDeadline cleanupDeadline = DmDeadline.Start(cleanupTimeout, transactionClock);
+		// Invalid/zero cleanup budgets cannot become the public "infinite" convention.
+		DmDeadline cleanupDeadline = DmDeadline.Start(
+			cleanupTimeout > TimeSpan.Zero ? cleanupTimeout : TimeSpan.FromTicks(1), transactionClock);
 		try
 		{
 			if (Outcome is DmTransactionOutcome.Committed or DmTransactionOutcome.RolledBack or
@@ -317,6 +408,56 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 			try { AbortBoundSession(); } catch { }
 		}
 		finally { Clear(); }
+	}
+
+	private async Task CleanupOnDisposeAsync()
+	{
+		// Invalid/zero cleanup budgets cannot become the public "infinite" convention.
+		DmDeadline cleanupDeadline = DmDeadline.Start(
+			cleanupTimeout > TimeSpan.Zero ? cleanupTimeout : TimeSpan.FromTicks(1), transactionClock);
+		try
+		{
+			if (Outcome is DmTransactionOutcome.Committed or DmTransactionOutcome.RolledBack or
+				DmTransactionOutcome.CompletedExternally) return;
+			if (Outcome != DmTransactionOutcome.Active)
+			{
+				AbortBoundSession();
+				return;
+			}
+			if (boundSession.TryGetActiveReader(out DmDataReader reader))
+			{
+				try { await reader.CloseForTransactionCleanupAsync(cleanupDeadline).ConfigureAwait(false); }
+				catch { RecordFailure("reader_cleanup_failed"); }
+			}
+			TimeSpan timeout = this.cleanupTimeout;
+			if (timeout <= TimeSpan.Zero || boundSession.State != DmPhysicalSessionState.Ready)
+			{
+				RecordFailure("reader_or_session_not_synchronized");
+				AbortBoundSession();
+				return;
+			}
+			try { await RollbackCoreAsync(cleanupDeadline, cleanup: true, CancellationToken.None).ConfigureAwait(false); }
+			catch
+			{
+				RecordFailure("dispose_rollback_unconfirmed");
+				AbortBoundSession();
+			}
+		}
+		catch
+		{
+			RecordFailure("dispose_cleanup_failed");
+			try { AbortBoundSession(); } catch { }
+		}
+		finally { Clear(); }
+	}
+
+	public override async ValueTask DisposeAsync()
+	{
+		if (Interlocked.Exchange(ref disposeStarted, 1) != 0) return;
+		_disposeStatus = DisposeStatus.Disposed;
+		GC.SuppressFinalize(this);
+		base.Dispose(disposing: true);
+		await CleanupOnDisposeAsync().ConfigureAwait(false);
 	}
 
 	internal DmSavePoint do_Save(string savepointName)
@@ -379,6 +520,75 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_RELEASE_SAVEPOINT_IN_AUTOCOMMIT_MODE);
 		SavepointEntry target = FindSavepoint(savepointName);
 		ExecuteSavepointSql(lease, "RELEASE SAVEPOINT \"" + target.ServerName + "\"");
+		lock (savepointGate)
+		{
+			int index = savepoints.IndexOf(target);
+			if (index >= 0) savepoints.RemoveRange(index, savepoints.Count - index);
+		}
+	}
+
+	public override async Task SaveAsync(string savepointName, CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmDeadline deadline = CreateControlDeadline();
+		RequireSavepoints();
+		ValidateSavepointName(savepointName);
+		CheckBoundSession();
+		using var lease = BeginControlExecution(deadline);
+		CheckBoundSession();
+		if (connInst.GetAutoCommit())
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_SAVEPOINT_IN_AUTOCOMMIT_MODE);
+		string serverName;
+		lock (savepointGate)
+		{
+			if (savepointSequence >= MaxSavepoints)
+				throw new InvalidOperationException("Transaction savepoint limit reached.");
+			if (savepoints.Count - (savepoints.Exists(entry => !entry.IsRaw &&
+				string.Equals(entry.UserName, savepointName, StringComparison.Ordinal)) ? 1 : 0) >= MaxSavepoints)
+				throw new InvalidOperationException("Transaction savepoint stack limit reached.");
+			serverName = "WSP_" + (++savepointSequence).ToString(System.Globalization.CultureInfo.InvariantCulture);
+		}
+		await ExecuteSavepointSqlAsync(lease, "SAVEPOINT \"" + serverName + "\"", cancellationToken).ConfigureAwait(false);
+		lock (savepointGate)
+		{
+			savepoints.RemoveAll(entry => !entry.IsRaw && string.Equals(entry.UserName, savepointName, StringComparison.Ordinal));
+			savepoints.Add(new SavepointEntry(savepointName, serverName));
+		}
+	}
+
+	public override async Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmDeadline deadline = CreateControlDeadline();
+		RequireSavepoints();
+		ValidateSavepointName(savepointName);
+		CheckBoundSession();
+		using var lease = BeginControlExecution(deadline);
+		CheckBoundSession();
+		if (connInst.GetAutoCommit() && !connInst.ConnProperty.AlwaysAllowAutoCommit)
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_ROLLBACK_TO_SAVEPOINT_IN_AUTOCOMMIT_MODE);
+		SavepointEntry target = FindSavepoint(savepointName);
+		await ExecuteSavepointSqlAsync(lease, "ROLLBACK TO SAVEPOINT \"" + target.ServerName + "\"", cancellationToken).ConfigureAwait(false);
+		lock (savepointGate)
+		{
+			int index = savepoints.IndexOf(target);
+			if (index >= 0) savepoints.RemoveRange(index + 1, savepoints.Count - index - 1);
+		}
+	}
+
+	public override async Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmDeadline deadline = CreateControlDeadline();
+		RequireSavepoints();
+		ValidateSavepointName(savepointName);
+		CheckBoundSession();
+		using var lease = BeginControlExecution(deadline);
+		CheckBoundSession();
+		if (connInst.GetAutoCommit() && !connInst.ConnProperty.AlwaysAllowAutoCommit)
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_RELEASE_SAVEPOINT_IN_AUTOCOMMIT_MODE);
+		SavepointEntry target = FindSavepoint(savepointName);
+		await ExecuteSavepointSqlAsync(lease, "RELEASE SAVEPOINT \"" + target.ServerName + "\"", cancellationToken).ConfigureAwait(false);
 		lock (savepointGate)
 		{
 			int index = savepoints.IndexOf(target);
@@ -684,6 +894,16 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 		command.ExecuteInternalNonQuery(lease);
 	}
 
+	private async Task ExecuteSavepointSqlAsync(DmExecutionLease lease, string sql, CancellationToken cancellationToken)
+	{
+		if (lease == null || !ReferenceEquals(lease.Session, boundSession))
+			throw new InvalidOperationException("Savepoint has no bound session owner.");
+		CheckBoundSession();
+		var command = connInst.Conn.CreateCommand(sql);
+		await using (command.ConfigureAwait(false))
+			await command.ExecuteInternalNonQueryAsync(lease, cancellationToken).ConfigureAwait(false);
+	}
+
 	private DmDeadline CreateControlDeadline() =>
 		DmDeadline.FromSeconds(commandTimeoutSeconds, transactionClock);
 
@@ -703,7 +923,13 @@ public sealed class DmTransaction : DbTransaction, IFilterInfo
 
 	private void AbortBoundSession()
 	{
-		try { connInst.Conn?.CloseExpectedSession(boundSession); }
+		try
+		{
+			// The coordinator has already captured and aborted a broken transport.
+			// Retain Broken until the caller explicitly closes/reopens the connection.
+			if (boundSession.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+				connInst.Conn?.CloseExpectedSession(boundSession);
+		}
 		finally
 		{
 			if (boundSession.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))

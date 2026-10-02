@@ -5,6 +5,7 @@ using System.Data;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Transport;
 using W.Dm.Internal.Legacy.A;
@@ -293,9 +294,9 @@ internal class DmConnInstance
 			string text = "SET TRANSACTION ISOLATION LEVEL ";
 			text = num switch
 			{
-				0 => text + "READ UNCOMMITTED;", 
-				1 => text + "READ COMMITTED;", 
-				_ => text + "SERIALIZABLE;", 
+				0 => text + "READ UNCOMMITTED;",
+				1 => text + "READ COMMITTED;",
+				_ => text + "SERIALIZABLE;",
 			};
 			// This owner belongs only to the configuration exchange. Its explicit
 			// SQL and handle must never become a user command's transaction statement.
@@ -524,4 +525,158 @@ internal class DmConnInstance
 	{
 		throw new NotSupportedException("Legacy socket health checks are unsupported without an owned exchange.");
 	}
+
+	internal Task OpenAsync(DmDeadline deadline,CancellationToken cancellationToken = default) => m_Csi.OpenAsync(deadline,cancellationToken);
+	internal async Task<global::W.Dm.Internal.Legacy.A.A> GetStmtFromPoolAsync(DmCommand cmd,CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		global::W.Dm.Internal.Legacy.A.A statement = null;
+		lock(stmt_queue)
+		{
+			if(m_ConnPro.PreparePooling && cmd != null && !string.IsNullOrWhiteSpace(cmd.do_CommandText)) statement = pstmtCache.FindValue(cmd.GetCommandText());
+			if(m_ConnPro.StmtPooling && statement == null && stmt_queue.Count > 0) statement = stmt_queue.Dequeue() as global::W.Dm.Internal.Legacy.A.A;
+			if(statement != null) { statement.__t02_method_0600089A(cmd); AddStmt(statement); }
+		}
+		return statement ?? await global::W.Dm.Internal.Legacy.A.A.CreateAsync(this,cmd,cancellationToken).ConfigureAwait(false);
+	}
+	private async Task<bool> SetTransactionIsolationAsync(IsolationLevel level, DmCommand isolationOwner, CancellationToken cancellationToken)
+	{
+		int num = 1;
+		switch (level)
+		{
+		case IsolationLevel.Unspecified:
+		case IsolationLevel.ReadCommitted:
+			level = IsolationLevel.ReadCommitted;
+			num = 1;
+			break;
+		case IsolationLevel.Serializable:
+			num = 3;
+			break;
+		case IsolationLevel.ReadUncommitted:
+			num = 0;
+			break;
+		case IsolationLevel.RepeatableRead:
+			if (ConnProperty.CompatibleMode == CompatibleMode.MYSQL)
+			{
+				num = 1;
+			}
+			else
+			{
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_TRAN_ISOLATION);
+			}
+			break;
+		default:
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_TRAN_ISOLATION);
+			break;
+		}
+		if (level != m_ConnPro.IsolationLevel)
+		{
+			string text = "SET TRANSACTION ISOLATION LEVEL ";
+			text = num switch
+			{
+				0 => text + "READ UNCOMMITTED;",
+				1 => text + "READ COMMITTED;",
+				_ => text + "SERIALIZABLE;",
+			};
+			// This owner belongs only to the configuration exchange. Its explicit
+			// SQL and handle must never become a user command's transaction statement.
+			isolationOwner.CommandText = text;
+			var controlStatement = await GetStmtFromPoolAsync(isolationOwner, cancellationToken).ConfigureAwait(false);
+			isolationOwner.Statement = controlStatement;
+			controlStatement.B(text);
+			await m_Csi.AAsync(controlStatement.__t02_field_04000925, controlStatement.__t02_field_04000926,
+				controlStatement, text, true, 0, cancellationToken).ConfigureAwait(false);
+			var invocation = DmInvocation.Current ??
+				throw new InvalidOperationException("Isolation configuration has no invocation owner.");
+			controlStatement.F().RequireTransactionIsolationReceipt((short)num, invocation.Identity);
+		}
+		// With no SET, the complete LOGIN/SET SESSION response already established
+		// the default value. A transaction SET is confirmed by its own receipt above.
+		return true;
+	}
+internal async Task<(DmTransaction Transaction,DmCommand IsolationOwner,bool IsolationConfirmed)> BeginTrxAsync(IsolationLevel il,CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		if(Transaction != null && Transaction.Valid)
+		{
+			if(ConnProperty.Enlist) return (Transaction,null,true);
+			throw new InvalidOperationException("不支持并行事务");
+		}
+		DmCommand isolationOwner = Conn.CreateCommand("");
+		Transaction = new DmTransaction(this,il);
+		try
+		{
+			bool confirmed = await SetTransactionIsolationAsync(il,isolationOwner,cancellationToken).ConfigureAwait(false);
+			SetAutoCommit(false);
+			if(isolationOwner.Statement == null) { await isolationOwner.DisposeAsync().ConfigureAwait(false); isolationOwner = null; }
+			return (Transaction,isolationOwner,confirmed);
+		}
+		catch
+		{
+			var statement = isolationOwner.Statement;
+			if(statement != null)
+			{
+				RemoveStmt(statement);
+				statement.o();
+			}
+			await isolationOwner.DisposeAsync().ConfigureAwait(false);
+			throw;
+		}
+	}
+	public async Task CommitAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		CheckClosed();
+		if (GetAutoCommit())
+		{
+			if (!ConnProperty.AlwaysAllowAutoCommit)
+			{
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMIT_IN_AUTOCOMMIT_MODE);
+			}
+		}
+		else
+		{
+			await m_Csi.__t02_method_06000A82Async(m_SendMsg, m_RecvMsg, cancellationToken).ConfigureAwait(false);
+			do_setTrxFinish(trxFinish: true);
+			ConnProperty.ClearAutoCommit();
+			ClearTrx();
+		}
+	}
+	public async Task RollbackAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		CheckClosed();
+		if (GetAutoCommit())
+		{
+			if (!ConnProperty.AlwaysAllowAutoCommit)
+			{
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_COMMIT_IN_AUTOCOMMIT_MODE);
+			}
+		}
+		else
+		{
+			await m_Csi.bAsync(m_SendMsg, m_RecvMsg, cancellationToken).ConfigureAwait(false);
+			do_setTrxFinish(trxFinish: true);
+			ConnProperty.ClearAutoCommit();
+			ClearTrx();
+		}
+	}
+	internal async Task<bool> RollbackWithoutAutoCommitCheckAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		try
+		{
+			CheckClosed();
+			ClearTrx();
+			await m_Csi.bAsync(m_SendMsg, m_RecvMsg, cancellationToken).ConfigureAwait(false);
+			do_setTrxFinish(trxFinish: true);
+			ConnProperty.ClearAutoCommit();
+			return true;
+		}
+		catch (Exception)
+		{
+			return false;
+		}
+	}
+
 }

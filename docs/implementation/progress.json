@@ -77,15 +77,19 @@
     },
     {
       "id": "T13",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T13.md",
+      "evidence": "evidence/T13/validation-summary.json",
+      "candidate_version": "0.1.0-r2.20261001134645"
     },
     {
       "id": "T14",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T14.md",
+      "evidence": "evidence/T14/validation-summary.json",
+      "candidate_version": "0.1.0-r2.20261001164429"
     },
     {
       "id": "T15",
@@ -164,5 +168,34 @@
     "evidence": "evidence/R1-review-followup/validation-summary.json",
     "source_state": "working_tree",
     "production_release_accepted": false
+  },
+  "r2": {
+    "status": "integration_verified",
+    "completed": true,
+    "tasks": [
+      "T13",
+      "T14"
+    ],
+    "candidate_version": "0.1.0-r2.20261001164429",
+    "evidence": "evidence/T14/validation-summary.json",
+    "source_state": "working_tree",
+    "production_release_accepted": false
+  },
+  "r2_review_followup": {
+    "status": "offline_verified",
+    "completed": false,
+    "baseline_candidate_version": "0.1.0-r2.20261001164429",
+    "report": "reports/R2-review.md",
+    "source_state": "working_tree",
+    "production_release_accepted": false,
+    "implementation_completed": true,
+    "offline_tests_passed": 603,
+    "tls_status": "integration_verified",
+    "shared_status": "integration_pending",
+    "candidate_version": "0.1.0-r2.review.20261002092837",
+    "shared_blocker": "Current shared profile fails the same cross-page fetch workload with both review and accepted baseline packages; precise owned-object recovery verified.",
+    "root_review": "scoped_code_fixes_accepted",
+    "evidence": "evidence/R2-review/validation-summary.json",
+    "source_manifest": "evidence/R2-review/accepted-source-manifest.json"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "path": "accepted-binaries/W.DmProvider.dll",
+      "sha256": "c88913339fb373d586c9502b426df448b22d3031995a254348fa9d68c19a895a"
+    },
+    {
+      "path": "accepted-binaries/W.DmProvider.0.1.0-r2.review.20261002092837.nupkg",
+      "sha256": "462ad2d275ce4745184809a14c70264b2f96d371a8da02cdd775e8deb00f1abb"
+    }
+  ],
+  "status": "candidate_frozen_scoped_validation_only"
+}

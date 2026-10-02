@@ -10,6 +10,10 @@ namespace W.Dm;
 public class DmException : DbException
 {
 	private DmErrorCollection m_ErrorCollection = new DmErrorCollection();
+	public DmFailureInfo FailureInfo { get; private set; }
+	public DmErrorKind ErrorKind => FailureInfo?.ErrorKind ?? DmErrorKind.Unknown;
+	public string DriverErrorCode => FailureInfo?.ErrorCode;
+	internal void SetFailureInfo(DmFailureInfo info) => FailureInfo = info;
 	internal bool HasVerifiedServerResponse { get; private set; }
 	internal OperationIdentity VerifiedResponseIdentity { get; private set; }
 
@@ -60,7 +64,8 @@ public class DmException : DbException
 	{
 		return new DmException(ToString() + StringUtil.LINE_SEPARATOR)
 		{
-			m_ErrorCollection = m_ErrorCollection
+			m_ErrorCollection = m_ErrorCollection,
+			FailureInfo = FailureInfo
 		};
 	}
 }

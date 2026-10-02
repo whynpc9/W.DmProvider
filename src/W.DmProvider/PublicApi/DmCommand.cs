@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
@@ -64,6 +65,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 	private bool running;
 	private readonly DmCommandPlanGate commandPlanGate = new();
 	private DmCommandPlan activePlan;
+	internal static Action<DmExecutionLease> AfterExecutionCaptured;
 	internal static Action AfterPlanCaptured;
 	private DmParameterCollection ExecutionParameters => activePlan?.Parameters ?? m_Paras;
 
@@ -537,7 +539,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 
 	internal void do_Cancel()
 	{
-		throw new NotSupportedException("Command cancellation is not supported.");
+		// Capture one plan, including a cancellation request made before its lease exists.
+		Volatile.Read(ref activePlan)?.RequestCancellation();
 	}
 
 	internal virtual int do_ExecuteNonQuery()
@@ -558,7 +561,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		bool verifiedServerError = false;
 		try
 		{
-			using (lease.BeginInvocation())
+			using (var invocation = lease.BeginInvocation())
 			{
 				try
 				{
@@ -567,6 +570,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 					reader.AttachExecutionLease(lease, ownsLease: false);
 					while (reader.NextResultForCommandOwned()) { }
 					int affected = reader.do_RecordsAffected;
+					invocation.Complete();
 					completed = true;
 					return affected;
 				}
@@ -575,6 +579,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 					verifiedServerError = true;
 					throw;
 				}
+				catch (Exception error) { throw invocation.TranslateFailure(error); }
 			}
 		}
 		catch (DmException) when (verifiedServerError)
@@ -600,9 +605,10 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		bool succeeded = false;
 		try
 		{
-			using (borrowed.BeginInvocation())
+			using (var invocation = borrowed.BeginInvocation())
 			{
 				int result = ExecuteNonQueryOwned();
+				invocation.Complete();
 				succeeded = true;
 				return result;
 			}
@@ -680,7 +686,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			bool verifiedServerError = false;
 			try
 			{
-				using (lease.BeginInvocation())
+				using (var invocation = lease.BeginInvocation())
 				{
 					try { reader = ExecuteReaderOwned(CommandBehavior.Default, userExecution: true); }
 					catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
@@ -688,7 +694,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 						verifiedServerError = true;
 						throw;
 					}
-					catch { AbortStatementAfterFailedExecution(); throw; }
+					catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 					if (reader == null)
 					{
 						AbortStatementAfterFailedExecution();
@@ -696,6 +702,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 					}
 					reader.AttachExecutionLease(lease, ownsLease: false);
 					object scalar = reader.do_FieldCount > 0 && reader.ReadOwned() ? reader.GetValueOwned(0) : null;
+					invocation.Complete();
 					completed = true;
 					return scalar;
 				}
@@ -724,8 +731,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Query);
 			using var invocation = lease.BeginInvocation();
-			try { PrepareInternalCore(checkCommandText: false); }
-			catch { AbortStatementAfterFailedExecution(); throw; }
+			try { PrepareInternalCore(checkCommandText: false); invocation.Complete(); }
+			catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 		}
 		finally { ReleasePlan(plan); }
 	}
@@ -746,7 +753,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		try
 		{
 			lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Reader);
-			using (lease.BeginInvocation())
+			using (var invocation = lease.BeginInvocation())
 			{
 				try { reader = ExecuteReaderOwned(behavior, userExecution: true); }
 				catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
@@ -754,12 +761,13 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 					verifiedServerError = true;
 					throw;
 				}
-				catch { AbortStatementAfterFailedExecution(); throw; }
+				catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 				if (reader == null)
 				{
 					AbortStatementAfterFailedExecution();
 					throw new InvalidOperationException("Execution did not return a reader.");
 				}
+				invocation.Complete();
 			}
 			reader.AttachExecutionLease(lease);
 			reader.AttachCommandPlan(plan, ReleasePlan);
@@ -791,7 +799,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var invocation = borrowed.BeginInvocation();
 			try { reader = ExecuteReaderOwned(behavior); }
-			catch { AbortStatementAfterFailedExecution(); throw; }
+			catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 			if (reader == null)
 			{
 				AbortStatementAfterFailedExecution();
@@ -799,6 +807,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			}
 			reader.AttachExecutionLease(borrowed, ownsLease: false);
 			reader.AttachCommandPlan(plan, ReleasePlan);
+			invocation.Complete();
 			return reader;
 		}
 		catch
@@ -914,19 +923,381 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			AfterExecute();
 			throw;
 		}
-		catch
+		catch (Exception error)
 		{
-			AbortStatementAfterFailedExecution();
-			throw;
+			AbortStatementAfterFailedExecution(error);
+			throw TranslateCurrentFailure(error);
 		}
 		try { rd?.SeekFirstReadableResultOwned(); }
-		catch { AbortStatementAfterFailedExecution(); throw; }
+		catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 		RetCmdType = m_Stmt.m().GetRetStmtType();
 		CurResultSetCache = m_Stmt.l();
 		executeId = m_Stmt.H().Execid;
 		m_Stmt = null;
 		AfterExecute();
 		return rd;
+	}
+
+	public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+		=> (int)await ExecuteCompleteAsync(false, cancellationToken).ConfigureAwait(false);
+
+	public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+		=> ExecuteCompleteAsync(true, cancellationToken);
+
+	private async Task<object> ExecuteCompleteAsync(bool scalar, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmCommandPlan plan = EnterPlan();
+		DmDataReader reader = null;
+		DmExecutionLease lease = null;
+		bool completed = false;
+		bool verifiedServerError = false;
+		try
+		{
+			lease = BeginValidatedUserExecutionAsync(plan, DmOperationPurpose.Query, cancellationToken);
+			try
+			{
+				using var invocation = lease.BeginInvocation(cancellationToken);
+				try
+				{
+					try { reader = await ExecuteReaderOwnedAsync(CommandBehavior.Default, true, cancellationToken).ConfigureAwait(false); }
+					catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
+					{ verifiedServerError = true; throw; }
+					reader.AttachExecutionLease(lease, ownsLease: false);
+					object result;
+					if (scalar)
+						result = reader.do_FieldCount > 0 && await reader.ReadOwnedAsync(cancellationToken).ConfigureAwait(false)
+							? await reader.GetValueOwnedAsync(0, cancellationToken).ConfigureAwait(false) : null;
+					else
+					{
+						while (await reader.NextResultForCommandOwnedAsync(cancellationToken).ConfigureAwait(false)) { }
+						result = reader.do_RecordsAffected;
+					}
+					invocation.Complete();
+					completed = true;
+					return result;
+				}
+				catch (Exception error) { throw invocation.TranslateFailure(error); }
+			}
+			catch (DmException) when (verifiedServerError)
+			{
+				await CleanupAfterVerifiedServerErrorAsync(lease, plan).ConfigureAwait(false);
+				throw;
+			}
+		}
+		finally
+		{
+			try
+			{
+				if (reader != null)
+				{
+					if (completed) await reader.CloseAsync().ConfigureAwait(false);
+					else try { await reader.CloseAsync().ConfigureAwait(false); } catch { }
+				}
+			}
+			finally
+			{
+				lease?.Dispose();
+				await ReleasePlanAsync(plan).ConfigureAwait(false);
+			}
+		}
+	}
+
+	protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		CheckCommandBehavior(behavior);
+		DmCommandPlan plan = EnterPlan();
+		DmExecutionLease lease = null;
+		DmDataReader reader = null;
+		bool transferred = false;
+		bool verifiedServerError = false;
+		try
+		{
+			lease = BeginValidatedUserExecutionAsync(plan, DmOperationPurpose.Reader, cancellationToken);
+			using (var invocation = lease.BeginInvocation(cancellationToken))
+			{
+				try { reader = await ExecuteReaderOwnedAsync(behavior, true, cancellationToken).ConfigureAwait(false); }
+				catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
+				{ verifiedServerError = true; throw; }
+				invocation.Complete();
+			}
+			reader.AttachExecutionLease(lease);
+			reader.AttachCommandPlan(plan, ReleasePlan);
+			transferred = true;
+			return reader;
+		}
+		catch
+		{
+			if (verifiedServerError) await CleanupAfterVerifiedServerErrorAsync(lease, plan).ConfigureAwait(false);
+			if (reader != null && !transferred)
+			{
+				lease?.Session.Detach(lease.Identity)?.AbortTransport();
+				try { await reader.CloseAsync().ConfigureAwait(false); } catch { }
+			}
+			throw;
+		}
+		finally
+		{
+			if (!transferred)
+			{
+				lease?.Dispose();
+				await ReleasePlanAsync(plan).ConfigureAwait(false);
+			}
+		}
+	}
+
+	public override async Task PrepareAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmCommandPlan plan = EnterPlan();
+		DmExecutionLease lease = null;
+		bool verifiedServerError = false;
+		try
+		{
+			lease = BeginValidatedUserExecutionAsync(plan, DmOperationPurpose.Query, cancellationToken);
+			try
+			{
+				using var invocation = lease.BeginInvocation(cancellationToken);
+				try { await PrepareInternalCoreAsync(false, cancellationToken).ConfigureAwait(false); invocation.Complete(); }
+				catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
+				{ verifiedServerError = true; throw; }
+				catch (Exception error) { AbortStatementAfterFailedExecutionAsync(error); throw TranslateCurrentFailure(error); }
+			}
+			catch (DmException) when (verifiedServerError)
+			{
+				await CleanupAfterVerifiedServerErrorAsync(lease, plan).ConfigureAwait(false);
+				throw;
+			}
+		}
+		finally { lease?.Dispose(); await ReleasePlanAsync(plan).ConfigureAwait(false); }
+	}
+
+	internal async Task<int> ExecuteInternalNonQueryAsync(DmExecutionLease borrowed, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		if (borrowed == null || m_Conn == null || !ReferenceEquals(borrowed.Session, m_Conn.Session))
+			throw new InvalidOperationException("Internal execution lease does not belong to this command.");
+		DmCommandPlan plan = EnterPlan();
+		DmDataReader reader = null;
+		bool succeeded = false;
+		try
+		{
+			using var invocation = borrowed.BeginInvocation(cancellationToken);
+			try
+			{
+				reader = await ExecuteReaderOwnedAsync(CommandBehavior.Default, false, cancellationToken).ConfigureAwait(false);
+				reader.AttachExecutionLease(borrowed, ownsLease: false);
+				while (await reader.NextResultForCommandOwnedAsync(cancellationToken).ConfigureAwait(false)) { }
+				int result = reader.do_RecordsAffected;
+				invocation.Complete();
+				succeeded = true;
+				return result;
+			}
+			catch (Exception error) { throw invocation.TranslateFailure(error); }
+		}
+		finally
+		{
+			try
+			{
+				if (reader != null) await reader.CloseAsync().ConfigureAwait(false);
+				else if (m_Stmt != null)
+				{
+					using var cleanup = borrowed.BeginCleanupInvocation(plan.CleanupTimeout);
+					await CleanupCurrentStatementAsync(!succeeded, CancellationToken.None).ConfigureAwait(false);
+				}
+			}
+			catch when (!succeeded) { }
+			finally { await ReleasePlanAsync(plan).ConfigureAwait(false); }
+		}
+	}
+
+	private async Task<DmDataReader> ExecuteReaderOwnedAsync(CommandBehavior behavior, bool userExecution, CancellationToken cancellationToken)
+	{
+		// Existing locator objects can read their source connection during legacy binding.
+		// Reject that path before allocating or preparing any server statement.
+		foreach (DmParameter parameter in ExecutionParameters)
+			if (parameter.do_Value is AbstractLob)
+				throw new NotSupportedException("Binding an existing LOB object asynchronously is not supported; use a byte array or string value.");
+		DmCommandPlan plan = userExecution ? Volatile.Read(ref activePlan) : null;
+		DmSqlSavepointControl? rawSavepoint = null;
+		if (plan?.Transaction != null && ReferenceEquals(plan.Connection?.Session?.ActiveTransaction, plan.Transaction)
+			&& DmParameterBinding.TryParseSavepointControl(plan.Sql, out var control)) rawSavepoint = control;
+		BeforeExecute();
+		try
+		{
+			if (rd != null && !rd.do_IsClosed)
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_DATAREADER_ALREADY_OPENED);
+			CheckCommandBehavior(behavior);
+			await EnsureStatementAsync(cancellationToken).ConfigureAwait(false);
+			if (ExecutionParameters.do_Count == 0)
+				rd = await m_Stmt.ExecuteReaderAsync(GetCommandText(), behavior, cancellationToken).ConfigureAwait(false);
+			else
+			{
+				await PrepareInternalCoreAsync(true, cancellationToken).ConfigureAwait(false);
+				int rowCount = 0;
+				if (!BindParameters(ref rowCount, rd, behavior)) throw new InvalidOperationException("Parameter binding failed.");
+				rd = await m_Stmt.ExecutePreparedReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+			}
+			if (rd == null) throw new InvalidOperationException("Execution did not return a reader.");
+			if (rawSavepoint.HasValue)
+			{
+				if (!ReferenceEquals(plan, Volatile.Read(ref activePlan)) || m_Stmt.m() == null ||
+					m_Stmt.m().IsTerminal || m_Stmt.m().GetHasResultSet())
+					throw new InvalidOperationException("Savepoint execution did not return a current control response.");
+				plan.Transaction.ConfirmUserSavepointControl(plan.Connection, rawSavepoint.Value, DmInvocation.Current?.Lease);
+			}
+			await rd.SeekFirstReadableResultOwnedAsync(cancellationToken).ConfigureAwait(false);
+			RetCmdType = m_Stmt.m().GetRetStmtType();
+			CurResultSetCache = m_Stmt.l();
+			executeId = m_Stmt.H().Execid;
+			m_Stmt = null;
+			return rd;
+		}
+		catch (DmException error) when (IsOwnedVerifiedServerError(error, DmInvocation.Current?.Lease)) { throw; }
+		catch (Exception error) { AbortStatementAfterFailedExecutionAsync(error); throw TranslateCurrentFailure(error); }
+		finally { AfterExecute(); }
+	}
+
+	private async Task EnsureStatementAsync(CancellationToken cancellationToken)
+	{
+		if (m_Conn == null || m_Conn.do_State == ConnectionState.Closed)
+			throw new InvalidOperationException("Command requires an open connection.");
+		DmConnInstance instance = m_Conn.GetConnInstance() ?? throw new InvalidOperationException("Connection has no physical instance.");
+		if (StatementInvalid())
+		{
+			await CleanupCurrentStatementAsync(false, cancellationToken).ConfigureAwait(false);
+			m_Stmt = await global::W.Dm.Internal.Legacy.A.A.CreateAsync(instance, this, cancellationToken).ConfigureAwait(false);
+			statementSession = m_Conn.Session;
+			statementConnection = m_Conn;
+		}
+		m_Stmt.__t02_field_04000931 = m_StmtSerial;
+	}
+
+	private async Task PrepareInternalCoreAsync(bool checkCommandText, CancellationToken cancellationToken)
+	{
+		await EnsureStatementAsync(cancellationToken).ConfigureAwait(false);
+		if (!checkCommandText || !m_Stmt.b())
+			await m_Stmt.PrepareAsync(GetCommandText(), cancellationToken).ConfigureAwait(false);
+		preparedMetadata = Volatile.Read(ref activePlan)?.ParameterMetadata;
+	}
+
+	private DmExecutionLease BeginValidatedUserExecutionAsync(DmCommandPlan plan, DmOperationPurpose purpose, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+		DmTransaction.ValidateCommandBinding(plan.Connection, plan.Transaction);
+		DmTransaction.ValidateCommandSql(plan.Connection, plan.Transaction, plan.Sql, plan.Binding.MarkerCount != 0);
+		if (commandPlanGate.IsDisposed) throw new ObjectDisposedException(nameof(DmCommand));
+		if (plan.Connection == null) throw new InvalidOperationException("Command has no connection.");
+		DmExecutionLease lease = plan.Connection.BeginExecution(purpose, DmDeadline.FromSeconds(plan.TimeoutSeconds, plan.Connection.OperationClock), plan.TimeoutSeconds);
+		try
+		{
+			DmTransaction.ValidateCommandBinding(plan.Connection, plan.Transaction);
+			DmTransaction.ValidateCommandSql(plan.Connection, plan.Transaction, plan.Sql, plan.Binding.MarkerCount != 0);
+			CaptureExecution(plan, lease);
+			return lease;
+		}
+		catch { lease.Dispose(); throw; }
+	}
+
+	private async Task CleanupCurrentStatementAsync(bool suppressFailure, CancellationToken token)
+	{
+		var statement = m_Stmt;
+		m_Stmt = null;
+		preparedMetadata = null;
+		var owner = statementSession;
+		statementSession = null;
+		statementConnection = null;
+		if (statement == null || statement.P()) return;
+		try
+		{
+			if (owner != null && ReferenceEquals(DmInvocation.Current?.Lease.Session, owner))
+			{
+				executeId = statement.H()?.Execid ?? -1L;
+				await statement.CloseAsync(token).ConfigureAwait(false);
+			}
+			else statement.o();
+		}
+		catch
+		{
+			var lease = DmInvocation.Current?.Lease;
+			if (ReferenceEquals(lease?.Session, owner)) owner.Detach(lease.Identity)?.AbortTransport();
+			statement.o();
+			if (!suppressFailure) throw;
+		}
+	}
+
+	private void AbortStatementAfterFailedExecutionAsync(Exception error = null)
+	{
+		if (error != null && DmInvocation.Current?.ShouldAbortAfterFailure(error) == false)
+		{ AfterExecute(); return; }
+		var lease = DmInvocation.Current?.Lease;
+		if (lease != null && (error == null || DmInvocation.Current.ShouldAbortAfterFailure(error)))
+			lease.Session.Detach(lease.Identity)?.AbortTransport();
+		var statement = m_Stmt;
+		m_Stmt = null;
+		preparedMetadata = null;
+		statementSession = null;
+		statementConnection = null;
+		try { statement?.o(); } catch { }
+		AfterExecute();
+	}
+
+	private async Task CleanupAfterVerifiedServerErrorAsync(DmExecutionLease lease, DmCommandPlan plan)
+	{
+		try
+		{
+			if (lease == null || m_Stmt == null || m_Stmt.P() || !ReferenceEquals(statementSession, lease.Session))
+				throw new InvalidOperationException("Verified server error has no current statement to close.");
+			using var cleanup = lease.BeginCleanupInvocation(plan.CleanupTimeout);
+			await CleanupCurrentStatementAsync(false, CancellationToken.None).ConfigureAwait(false);
+		}
+		catch { lease?.Session.Detach(lease.Identity)?.AbortTransport(); }
+	}
+
+	private async Task ReleasePlanAsync(DmCommandPlan plan)
+	{
+		if (plan == null) return;
+		Interlocked.CompareExchange(ref activePlan, null, plan);
+		plan.Dispose();
+		if (m_AlreadyDisposed && m_Stmt != null) await ReleaseUnmanagedResourceAsync().ConfigureAwait(false);
+	}
+
+	private async Task ReleaseUnmanagedResourceAsync()
+	{
+		if (rd != null && !rd.do_IsClosed) return;
+		var statement = Interlocked.Exchange(ref m_Stmt, null);
+		preparedMetadata = null;
+		var owner = statementSession;
+		statementSession = null;
+		var connection = statementConnection;
+		statementConnection = null;
+		if (statement == null || statement.P()) return;
+		if (owner == null) { statement.o(); return; }
+		DmExecutionLease lease = null;
+		try
+		{
+			lease = owner.BeginExecution(DmOperationPurpose.Query,
+				DmDeadline.Start(connection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5), connection?.OperationClock));
+			using var invocation = lease.BeginInvocation();
+			await statement.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+		}
+		catch
+		{
+			if (lease != null) owner.Detach(lease.Identity)?.AbortTransport();
+			else connection?.CloseExpectedSession(owner);
+			statement.o();
+		}
+		finally { lease?.Dispose(); }
+	}
+
+	public override async ValueTask DisposeAsync()
+	{
+		commandPlanGate.MarkDisposed();
+		if (Interlocked.Exchange(ref disposeStarted, 1) != 0) return;
+		m_AlreadyDisposed = true;
+		if (!commandPlanGate.IsExecuting) await ReleaseUnmanagedResourceAsync().ConfigureAwait(false);
+		GC.SuppressFinalize(this);
 	}
 
 	public override void Cancel()
@@ -1042,8 +1413,10 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		}
 	}
 
-	private void AbortStatementAfterFailedExecution()
+	private void AbortStatementAfterFailedExecution(Exception error = null)
 	{
+		if (error != null && DmInvocation.Current?.ShouldAbortAfterFailure(error) == false)
+		{ AfterExecute(); return; }
 		var statement = m_Stmt;
 		m_Stmt = null;
 		preparedMetadata = null;
@@ -1051,7 +1424,17 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		statementSession = null;
 		var connection = statementConnection;
 		statementConnection = null;
-		try { if (owner != null) connection?.CloseExpectedSession(owner); }
+		try
+		{
+			if (owner != null && (error == null || DmInvocation.Current?.ShouldAbortAfterFailure(error) != false))
+			{
+				var capturedLease = DmInvocation.Current?.Lease;
+				if (ReferenceEquals(capturedLease?.Session, owner))
+					owner.Detach(capturedLease.Identity)?.AbortTransport();
+				else if (owner.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+					connection?.CloseExpectedSession(owner);
+			}
+		}
 		catch { /* Preserve the execution error while closing the captured session. */ }
 		finally
 		{
@@ -1075,7 +1458,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		try
 		{
 			TimeSpan cleanupTimeout = ownerConnection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5);
-			using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout));
+			using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout, ownerConnection?.OperationClock));
 			using var invocation = lease.BeginInvocation();
 			statement.p();
 		}
@@ -1103,7 +1486,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		// Acquire before clearing the handle. Another command's reader must keep its
 		// session and statement when this connection change cannot obtain ownership.
 		TimeSpan cleanupTimeout = statementConnection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5);
-		using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout));
+		using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout, statementConnection?.OperationClock));
 		using var invocation = lease.BeginInvocation();
 		CleanupCurrentStatement(suppressFailure: false);
 	}
@@ -1120,7 +1503,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			{
 				ReleaseManagedResource();
 			}
-			ReleaseUnmanagedResource();
+			if (!commandPlanGate.IsExecuting) ReleaseUnmanagedResource();
 		}
 		finally
 		{
@@ -1200,8 +1583,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Query);
 			using var invocation = lease.BeginInvocation();
-			try { PrepareInternalCore(checkCommandText); }
-			catch { AbortStatementAfterFailedExecution(); throw; }
+			try { PrepareInternalCore(checkCommandText); invocation.Complete(); }
+			catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 		}
 		finally { ReleasePlan(plan); }
 	}
@@ -1476,6 +1859,15 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		running = false;
 	}
 
+	private void CaptureExecution(DmCommandPlan plan, DmExecutionLease lease)
+	{
+		plan.AttachExecution(lease);
+		AfterExecutionCaptured?.Invoke(lease);
+	}
+
+	private static Exception TranslateCurrentFailure(Exception error)
+		=> DmInvocation.Current?.TranslateFailure(error) ?? error;
+
 	private DmExecutionLease BeginCommandExecution(DmOperationPurpose purpose)
 	{
 		if (commandPlanGate.IsDisposed) throw new ObjectDisposedException(nameof(DmCommand));
@@ -1483,7 +1875,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		if (m_Stmt != null && statementSession != null && !ReferenceEquals(statementSession, m_Conn.Session))
 			ReleaseUnmanagedResource();
 		int timeoutSeconds = Volatile.Read(ref activePlan)?.TimeoutSeconds ?? do_CommandTimeout;
-		return m_Conn.BeginExecution(purpose, DmDeadline.FromSeconds(timeoutSeconds), timeoutSeconds);
+		return m_Conn.BeginExecution(purpose, DmDeadline.FromSeconds(timeoutSeconds, m_Conn.OperationClock), timeoutSeconds);
 	}
 
 	private DmExecutionLease BeginValidatedUserExecution(DmCommandPlan plan, DmOperationPurpose purpose)
@@ -1495,6 +1887,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			DmTransaction.ValidateCommandBinding(plan.Connection, plan.Transaction);
 			DmTransaction.ValidateCommandSql(plan.Connection, plan.Transaction, plan.Sql, plan.Binding.MarkerCount != 0);
+			CaptureExecution(plan, lease);
 			return lease;
 		}
 		catch

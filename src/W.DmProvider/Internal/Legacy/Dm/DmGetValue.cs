@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using System;
 using System.Text;
 using System.Numerics;
@@ -5,6 +7,7 @@ using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
 using W.Dm.util;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Sessions;
 
 namespace W.Dm;
 
@@ -694,6 +697,53 @@ internal class DmGetValue
 			return num;
 		}
 		return iNTERVALYM;
+	}
+
+
+	internal async Task<object> GetObjectAsync(int i, byte[] value, int type, int precision, int scale, CancellationToken token)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		token.ThrowIfCancellationRequested();
+		if (value == null) return DBNull.Value;
+		if (type == 12) return await GetBytesAsync(i, value, type, precision, scale, token).ConfigureAwait(false);
+		if (type == 19) return await GetStringAsync(i, value, type, precision, scale, token).ConfigureAwait(false);
+		return GetObject(i, value, type, precision, scale);
+	}
+
+	internal async Task<byte[]> GetBytesAsync(int i, byte[] value, int type, int precision, int scale, CancellationToken token)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		token.ThrowIfCancellationRequested();
+		if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		if (type == 12)
+		{
+			if (value.Length < 13) DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			var blob = new DmBlob(value, m_Statement.G(), m_ColInfo[i], false);
+			int length = DmLobMaterialization.Bytes(await blob.do_lengthAsync(token).ConfigureAwait(false));
+			return await blob.do_getBytesAsync(1L, length, token).ConfigureAwait(false);
+		}
+		if (type == 19)
+		{
+			if (value.Length < 13) DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			return await new DmClob(value, m_Statement.G(), m_ColInfo[i], false).MaterializeBytesUnderOwnerAsync(token).ConfigureAwait(false);
+		}
+		return GetBytes(i, value, type, precision, scale);
+	}
+
+	internal async Task<string> GetStringAsync(int i, byte[] value, int type, int precision, int scale, CancellationToken token)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		token.ThrowIfCancellationRequested();
+		if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		if (type == 12)
+		{
+			var blob = new DmBlob(value, m_Statement.G(), m_ColInfo[i], false, hexPayload: true);
+			int length = DmLobMaterialization.HexInput(await blob.do_lengthAsync(token).ConfigureAwait(false));
+			return Convert.ToHexString(await blob.do_getBytesAsync(1L, length, token).ConfigureAwait(false));
+		}
+		if (type == 19)
+			return await new DmClob(value, m_Statement.G(), m_ColInfo[i], false).MaterializeStringUnderOwnerAsync(token).ConfigureAwait(false);
+		return GetString(i, value, type, precision, scale);
 	}
 
 	internal object GetObject(int i, byte[] val, int CType, int prec, int scale)

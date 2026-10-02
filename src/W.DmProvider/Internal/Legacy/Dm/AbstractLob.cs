@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Internal.Sessions;
 
 namespace W.Dm;
@@ -68,13 +70,14 @@ public class AbstractLob
 		throw new InvalidOperationException("LOB has no active reader lease.");
 	}
 
-	internal DmInvocation BeginInternalOperation()
+	internal DmInvocation BeginInternalOperation(CancellationToken cancellationToken = default)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		if (local) return null;
 		if (executionLease != null)
 		{
 			if (DmInvocation.Current?.Lease == executionLease) return null;
-			return executionLease.BeginInvocation();
+			return executionLease.BeginInvocation(cancellationToken);
 		}
 		if (DmInvocation.Current?.Lease.Session == ConnInstance?.Session) return null;
 		throw new InvalidOperationException("LOB has no current session owner.");
@@ -158,6 +161,14 @@ public class AbstractLob
 		{
 			m_length = ConnInstance.GetCsi().A(this);
 		}
+		return m_length;
+	}
+
+	internal async Task<long> do_lengthAsync(CancellationToken cancellationToken)
+	{
+		using var invocation = BeginInternalOperation(cancellationToken);
+		if (m_length == -1)
+			m_length = await ConnInstance.GetCsi().GetLobLengthAsync(this, cancellationToken).ConfigureAwait(false);
 		return m_length;
 	}
 

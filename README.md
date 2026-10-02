@@ -1,6 +1,6 @@
 # W.DmProvider
 
-面向达梦数据库的自有 ADO.NET Provider 调查与开发仓库。已基于 **DM.DmProvider 8.3.1.47463** 完成 **R1（T01–T12）** 的限定开发验收：来源、独立包、配置、会话、传输、TLS、命令/Reader、参数类型、本地事务与隔离级别，以及固定 EF Core 10.0.12 下游的实际候选包验证。当前是开发候选；支持范围见 [R1 兼容矩阵](docs/compatibility/R1.md)，真异步、取消、池化等后续任务尚未启动。
+面向达梦数据库的自有 ADO.NET Provider 调查与开发仓库。已基于 **DM.DmProvider 8.3.1.47463** 完成 **R1（T01–T12）** 的限定开发验收：来源、独立包、配置、会话、传输、TLS、命令/Reader、参数类型、本地事务与隔离级别，以及固定 EF Core 10.0.12 下游的实际候选包验证。R2（T13–T14）已独立验收：异步调用链、执行范围取消、期限及未知结果闭环均通过，详见 [T13](docs/implementation/reports/T13.md)、[T14](docs/implementation/reports/T14.md)。当前仍是开发候选；支持范围与门禁见 [R2 兼容矩阵](docs/compatibility/R2.md)、[任务进度](docs/implementation/progress.json)；R1 历史范围见 [R1 矩阵](docs/compatibility/R1.md)。池化及完整流式能力属于后续任务。
 
 ## 从哪里开始
 
@@ -25,6 +25,7 @@
 - [T11 实施报告](docs/implementation/reports/T11.md)：隔离级别 SaveChanges 根因修复与实际包公开入口验收；[兼容性变化](docs/compatibility/T11-isolation.md)。
 
 - [R1 review 修复](docs/implementation/reports/R1-review.md)：PR #1 已合并批次的独立回归；[main review 跟进](docs/implementation/reports/R1-review-followup.md)：LOB 上限、保存点隔离、NULL/TLS 诊断和当前门禁状态。
+- [T13 异步调用链](docs/implementation/reports/T13.md)：480 项离线、实际包双 profile 业务链及 TLS 安全拒绝；[T14 取消/期限/未知结果](docs/implementation/reports/T14.md)：独立验收通过。
 - [T12 / R1 实施报告](docs/implementation/reports/T12.md)：298 项驱动离线、307 项 EF 单元、76 项功能、4 项脚本、4 项规范切片和 1 项 CLI 均通过；[离线 CI 与包审计](eng/T12.md)、[下游接入工具](tools/DownstreamAcceptance/README.md)。
 
 `packages/` 和 `decompiled/` 是来源样本及反编译参考，不是产品源码。新驱动应有独立的程序集身份和命名空间。规范是待实施设计，不表示相关能力已经完成。

@@ -1,0 +1,128 @@
+[
+  {
+    "trx": ".local/verification/r2-review/validation-v1/red-results/red-failure-info.trx",
+    "counters": {
+      "total": "10",
+      "executed": "10",
+      "passed": "5",
+      "failed": "5",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "results": [
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownPreservesSuppliedServerNumberAndCancelSource(cancelSource: IdleTimeout, serverNumber: 12345)",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: 12345\nActual:   null"
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownDoesNotInventMissingServerNumber(cancelSource: None)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownDoesNotInventMissingServerNumber(cancelSource: TotalDeadline)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownPreservesSuppliedServerNumberAndCancelSource(cancelSource: None, serverNumber: -12345)",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: -12345\nActual:   null"
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownDoesNotInventMissingServerNumber(cancelSource: Command)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownDoesNotInventMissingServerNumber(cancelSource: User)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownPreservesSuppliedServerNumberAndCancelSource(cancelSource: TotalDeadline, serverNumber: -12345)",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: -12345\nActual:   null"
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownPreservesSuppliedServerNumberAndCancelSource(cancelSource: Command, serverNumber: 0)",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: 0\nActual:   null"
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownPreservesSuppliedServerNumberAndCancelSource(cancelSource: User, serverNumber: 12345)",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: 12345\nActual:   null"
+      },
+      {
+        "test": "W.DmProvider.AsyncTests.R2ReviewFailureInfoTests.CommitUnknownDoesNotInventMissingServerNumber(cancelSource: IdleTimeout)",
+        "outcome": "Passed",
+        "failure": null
+      }
+    ]
+  },
+  {
+    "trx": ".local/verification/r2-review/validation-v1/red-results/red-transport.trx",
+    "counters": {
+      "total": "6",
+      "executed": "6",
+      "passed": "2",
+      "failed": "4",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "results": [
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.RawDeadlineCatchPreservesEarlierCancellationAndToken(commandCancellation: True)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.DeadlineExpiringBetweenBudgetChecksPreservesUnsentSession(operation: \"fetch\")",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: Busy\nActual:   Broken"
+      },
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.SameRawDeadlineAfterPartialSendStillBreaksCapturedSession",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: Broken\nActual:   Busy"
+      },
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.DeadlineExpiringBetweenBudgetChecksPreservesUnsentSession(operation: \"query\")",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: Busy\nActual:   Broken"
+      },
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.RawDeadlineCatchPreservesEarlierCancellationAndToken(commandCancellation: False)",
+        "outcome": "Passed",
+        "failure": null
+      },
+      {
+        "test": "W.DmProvider.TransportTests.R2ReviewSendDeadlineTests.DeadlineExpiringBetweenBudgetChecksPreservesUnsentSession(operation: \"prepare\")",
+        "outcome": "Failed",
+        "failure": "Assert.Equal() Failure: Values differ\nExpected: Busy\nActual:   Broken"
+      }
+    ]
+  }
+]

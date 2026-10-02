@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "status": "package_verified",
+  "package_name": "W.DmProvider.0.1.0-r2.20261001164429.nupkg",
+  "version": "0.1.0-r2.20261001164429",
+  "package_sha256": "5b10a471c6becbfbc2d2d6474aa7f9e12fcf33fa7522d22a811b3cc0141c8122",
+  "assets": {
+    "lib/net10.0/W.DmProvider.dll": "fdea777db6150aeac6ecbe8c69a17329d3089b1364ee5c7f9b2cf4637e52f431",
+    "lib/net10.0/en/W.DmProvider.resources.dll": "83e359fc2d2c3b725c08a9b2aba80b8eb3cf175b613917b924226e3a03f6be50",
+    "lib/net10.0/zh-CN/W.DmProvider.resources.dll": "068695b130bf54b5465adda492ef3f4c2a8129610df7615933592267eb08be72",
+    "lib/net10.0/zh-HK/W.DmProvider.resources.dll": "03b508c683b96bcf4cb09e1a8ae1fb6cea65d0835f42e75765d3be57b3b90c49",
+    "lib/net10.0/zh-TW/W.DmProvider.resources.dll": "c30ae5bb262ee131e0e0760bfd629d0a24f9c000549885ec1c8a1efc49c9f5d0"
+  },
+  "source_sha256": "6dd6852bb4846ec2c82d2508c042bf177c7ae87dcf1354eca1fe55c762f7d5b3",
+  "source_file_count": 286,
+  "entries": [
+    "README.md",
+    "THIRD-PARTY-NOTICES.md",
+    "W.DmProvider.nuspec",
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "lib/net10.0/W.DmProvider.dll",
+    "lib/net10.0/en/W.DmProvider.resources.dll",
+    "lib/net10.0/zh-CN/W.DmProvider.resources.dll",
+    "lib/net10.0/zh-HK/W.DmProvider.resources.dll",
+    "lib/net10.0/zh-TW/W.DmProvider.resources.dll",
+    "package/services/metadata/core-properties/1f802b63b65b4355b13c6f354352f5bf.psmdcp"
+  ]
+}

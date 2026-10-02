@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "fixture": "S08 R2 asynchronous cancellation and deadline logical schedules",
+  "evidence_level": "offline_logical_fixture",
+  "execution_status": "not_run",
+  "evidence_boundary": {
+    "synthetic_scenarios": "Logical client-side schedules and expected outcomes only; no scenario records an observed test result.",
+    "transport_model": "Transport operations are abstract async calls, barriers, and transfer counts. No DM packet layout, opcode, authentication exchange, or server response is modeled.",
+    "server_results": "None. No real server, database, socket, or authentication material is represented.",
+    "execution": "All scenarios are not_run and require consuming offline test evidence."
+  },
+  "scenario_shape": {
+    "ordered_case": ["id", "contract", "evidence_level", "execution_status", "setup", "steps", "expected_outcomes"],
+    "race_case": "schedule_variants contains separately ordered steps and expectations for each interleaving."
+  },
+  "scenarios": [
+    {
+      "id": "s08_async_io_forbids_sync_transport_calls",
+      "contract": "ASY-01",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "operation": "OpenAsync",
+        "fake_transport": {
+          "async_connect_gate": "closed",
+          "sync_connect_behavior": "throw_test_failure",
+          "sync_read_behavior": "throw_test_failure",
+          "sync_write_behavior": "throw_test_failure"
+        }
+      },
+      "steps": [
+        {
+          "action": "invoke_async_operation",
+          "actor": "caller",
+          "expect": {
+            "call_returns_before_connect_gate_release": true,
+            "task_completed": false,
+            "sync_transport_calls": 0
+          }
+        },
+        {
+          "action": "observe_transport_wait",
+          "actor": "fake_transport",
+          "expect": {
+            "async_connect_waiting": true,
+            "sync_connect_called": false
+          }
+        },
+        {
+          "action": "release_gate",
+          "gate": "async_connect_gate",
+          "synthetic_result": "connected"
+        },
+        {
+          "action": "await_operation",
+          "actor": "caller",
+          "expect": {
+            "task_completed": true,
+            "sync_transport_calls": 0
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "operation_completed": true,
+        "async_transport_used": true,
+        "sync_transport_used": false,
+        "sync_fallback_would_fail_test": true
+      }
+    },
+    {
+      "id": "s08_barrier_releases_pending_response",
+      "contract": "ASY-02",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "operation": "ExecuteReaderAsync",
+        "response_gate": "closed",
+        "response": "synthetic_reader_result"
+      },
+      "steps": [
+        {
+          "action": "invoke_async_operation",
+          "actor": "caller",
+          "expect": {
+            "invocation_returned_without_waiting_for_response": true,
+            "task_completed": false
+          }
+        },
+        {
+          "action": "wait_at_barrier",
+          "actor": "fake_transport",
+          "barrier": "response_gate",
+          "expect": {"operation_task_completed": false}
+        },
+        {
+          "action": "release_barrier",
+          "barrier": "response_gate",
+          "value": "synthetic_reader_result"
+        },
+        {
+          "action": "await_operation",
+          "actor": "caller",
+          "expect": {
+            "task_completed": true,
+            "returned_result": "synthetic_reader_result"
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "pending_until_barrier_release": true,
+        "completed_after_barrier_release": true,
+        "fixed_sleep_used": false
+      }
+    },
+    {
+      "id": "s08_short_async_send_and_read_progress",
+      "contract": "ASY-01",
+      "related_contract": "NET-01 short progress",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "logical_transfer_length_bytes": 7,
+        "send_async_returned_byte_counts": [2, 1, 4],
+        "read_async_returned_byte_counts": [1, 2, 4],
+        "sync_read_behavior": "throw_test_failure",
+        "sync_write_behavior": "throw_test_failure"
+      },
+      "steps": [
+        {
+          "action": "send_async_progress",
+          "returned_byte_counts": [2, 1, 4],
+          "expect": {
+            "cumulative_bytes_after_each_call": [2, 3, 7],
+            "write_completes": true,
+            "sync_write_calls": 0
+          }
+        },
+        {
+          "action": "read_async_progress",
+          "returned_byte_counts": [1, 2, 4],
+          "expect": {
+            "cumulative_bytes_after_each_call": [1, 3, 7],
+            "read_completes": true,
+            "sync_read_calls": 0
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "sent_logical_bytes": 7,
+        "read_logical_bytes": 7,
+        "short_progress_retried_until_complete": true,
+        "sync_transport_calls": 0
+      }
+    },
+    {
+      "id": "s08_heartbeat_progress_does_not_extend_total_deadline",
+      "contract": "TMO-02",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "clock": "synthetic_monotonic",
+        "command_total_deadline_ms": 100,
+        "read_idle_budget_ms": 30,
+        "heartbeat_progress_ticks_ms": [20, 40, 60, 80],
+        "business_response_tick_ms": 101
+      },
+      "steps": [
+        {
+          "action": "start_network_wait",
+          "tick_ms": 0,
+          "expect": {"command_deadline_tick_ms": 100}
+        },
+        {
+          "action": "deliver_synthetic_heartbeat_progress",
+          "tick_ms": 20,
+          "expect": {
+            "read_idle_deadline_may_advance": true,
+            "command_deadline_tick_ms": 100
+          }
+        },
+        {
+          "action": "deliver_synthetic_heartbeat_progress",
+          "tick_ms": 40,
+          "expect": {
+            "read_idle_deadline_may_advance": true,
+            "command_deadline_tick_ms": 100
+          }
+        },
+        {
+          "action": "deliver_synthetic_heartbeat_progress",
+          "tick_ms": 60,
+          "expect": {
+            "read_idle_deadline_may_advance": true,
+            "command_deadline_tick_ms": 100
+          }
+        },
+        {
+          "action": "deliver_synthetic_heartbeat_progress",
+          "tick_ms": 80,
+          "expect": {
+            "read_idle_deadline_may_advance": true,
+            "command_deadline_tick_ms": 100
+          }
+        },
+        {
+          "action": "expire_total_deadline",
+          "tick_ms": 100,
+          "expect": {
+            "termination_reason": "Timeout",
+            "business_response_consumed": false
+          }
+        },
+        {
+          "action": "deliver_late_synthetic_business_response",
+          "tick_ms": 101,
+          "expect": {"response_accepted": false}
+        }
+      ],
+      "expected_outcomes": {
+        "command_deadline_reset_count": 0,
+        "heartbeat_resets_only_idle_budget": true,
+        "termination_reason": "Timeout",
+        "session_state": "Broken"
+      }
+    },
+    {
+      "id": "s08_pre_cancel_has_zero_transport_bytes",
+      "contract": "CAN-01",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "connection_state": "Open",
+        "session_state": "Ready",
+        "transaction_state": "Active",
+        "caller_token_state": "CanceledBeforeInvocation",
+        "operation": "ExecuteNonQueryAsync"
+      },
+      "steps": [
+        {
+          "action": "invoke_with_pre_canceled_token",
+          "actor": "caller",
+          "expect": {
+            "exception_type": "OperationCanceledException",
+            "request_send_started": false,
+            "transport_bytes_sent": 0
+          }
+        },
+        {
+          "action": "inspect_session_and_transaction",
+          "expect": {
+            "session_state": "Ready",
+            "transaction_state": "Active",
+            "connection_remains_usable": true
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "transport_bytes_sent": 0,
+        "session_destroyed": false,
+        "transaction_state": "Active",
+        "automatic_reconnect": false
+      }
+    },
+    {
+      "id": "s08_execute_reader_token_is_unbound_after_return",
+      "contract": "CAN-03",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "operation_token": "execute_reader_token_old",
+        "reader_token": "read_token_new",
+        "synthetic_reader_result": "reader_1"
+      },
+      "steps": [
+        {
+          "action": "complete_execute_reader_async",
+          "token": "execute_reader_token_old",
+          "synthetic_result": "reader_1",
+          "expect": {"reader_returned": true}
+        },
+        {
+          "action": "cancel_token",
+          "token": "execute_reader_token_old",
+          "expect": {
+            "reader_aborted": false,
+            "session_aborted": false
+          }
+        },
+        {
+          "action": "read_async",
+          "actor": "reader_1",
+          "token": "read_token_new",
+          "synthetic_result": true,
+          "expect": {
+            "read_completed": true,
+            "reader_remains_usable": true
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "execute_reader_token_registered_after_return": false,
+        "old_token_cancels_later_read": false,
+        "read_uses_its_own_token": true
+      }
+    },
+    {
+      "id": "s08_stale_generation_cancel_cannot_abort_current_lease",
+      "contract": "CAN-04",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "current_identity": {
+          "session_id": 42,
+          "lease_generation": 9,
+          "execution_id": 202,
+          "invocation_id": 1
+        },
+        "stale_cancel_identity": {
+          "session_id": 42,
+          "lease_generation": 8,
+          "execution_id": 201,
+          "invocation_id": 1
+        },
+        "current_transport_state": "Open",
+        "current_operation_state": "WaitingAtBarrier"
+      },
+      "steps": [
+        {
+          "action": "deliver_stale_cancel",
+          "identity": {
+            "session_id": 42,
+            "lease_generation": 8,
+            "execution_id": 201,
+            "invocation_id": 1
+          },
+          "expect": {
+            "identity_matches_current_operation": false,
+            "current_transport_closed": false,
+            "current_operation_canceled": false
+          }
+        },
+        {
+          "action": "release_current_operation_barrier",
+          "actor": "current_lease",
+          "synthetic_result": "success",
+          "expect": {
+            "operation_completed": true,
+            "current_transport_state": "Open"
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "stale_abort_applied_to_current_identity": false,
+        "current_lease_remains_usable": true,
+        "current_operation_completes": true
+      }
+    },
+    {
+      "id": "s08_cancel_close_race_has_single_bounded_cleanup",
+      "contract": "CAN-05",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "session_state": "Busy",
+        "operation_state": "RequestStarted",
+        "cleanup_timeout": "finite_independent_budget",
+        "cleanup_token": "independent_cleanup_token"
+      },
+      "schedule_variants": [
+        {
+          "id": "cancel_then_close",
+          "steps": [
+            {
+              "action": "enter_cancel_and_close_barrier",
+              "expect": {"cancel_entered": true, "close_entered": true}
+            },
+            {"action": "release_cleanup_order", "order": ["Cancel", "Close"]},
+            {
+              "action": "await_both_calls",
+              "expect": {
+                "deadlock": false,
+                "double_transport_close": false,
+                "double_lease_release": false
+              }
+            }
+          ],
+          "expected_outcomes": {
+            "session_state": "Closed",
+            "physical_close_count": 1,
+            "lease_release_count": 1
+          }
+        },
+        {
+          "id": "close_then_cancel",
+          "steps": [
+            {
+              "action": "enter_cancel_and_close_barrier",
+              "expect": {"cancel_entered": true, "close_entered": true}
+            },
+            {"action": "release_cleanup_order", "order": ["Close", "Cancel"]},
+            {
+              "action": "await_both_calls",
+              "expect": {
+                "deadlock": false,
+                "double_transport_close": false,
+                "double_lease_release": false
+              }
+            }
+          ],
+          "expected_outcomes": {
+            "session_state": "Closed",
+            "physical_close_count": 1,
+            "lease_release_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "s08_unknown_commit_outcome_is_not_replayed",
+      "contract": "ERR-01",
+      "evidence_level": "offline_logical_fixture",
+      "execution_status": "not_run",
+      "setup": {
+        "transaction_state": "Active",
+        "operation": "CommitAsync",
+        "synthetic_business_operation_id": "write_1"
+      },
+      "steps": [
+        {
+          "action": "begin_commit_dispatch",
+          "dispatch_count": 1,
+          "expect": {"operation_outcome": "UnknownUntilTerminalResult"}
+        },
+        {
+          "action": "inject_transport_failure_before_terminal_result",
+          "synthetic_server_result": "none",
+          "expect": {
+            "operation_outcome": "Unknown",
+            "transaction_outcome": "Unknown",
+            "session_state": "Broken"
+          }
+        },
+        {
+          "action": "inspect_retry_policy",
+          "expect": {
+            "driver_replay_count": 0,
+            "automatic_retry_recommended": false,
+            "commit_dispatch_count": 1
+          }
+        }
+      ],
+      "expected_outcomes": {
+        "failure_classification": "UnknownCommitOutcome",
+        "operation_outcome": "Unknown",
+        "transaction_outcome": "Unknown",
+        "driver_replay_count": 0,
+        "session_state": "Broken"
+      }
+    }
+  ]
+}

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.util;
 
 namespace W.Dm;
@@ -186,5 +188,23 @@ internal class EP
 	public override string ToString()
 	{
 		return StringUtil.trimToEmpty(host) + ":" + port + " (" + getServerModeDesc(serverMode) + ", " + getServerStatusDesc(serverStatus) + (dscControl ? ", DSC CONTROL)" : ")");
+	}
+	public async Task connectAsync(DmConnection conn, CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		conn.ConnProperty.Server = host;
+		conn.ConnProperty.Port = port;
+		try
+		{
+			await conn.do_OpenAsync(cancellationToken).ConfigureAwait(false);
+			conn.ConnProperty.ServerActual = conn.ConnProperty.Server;
+			conn.ConnProperty.PortActual = conn.ConnProperty.Port;
+			refreshStatus(alive: true, conn);
+		}
+		catch
+		{
+			refreshStatus(alive: false, conn);
+			throw;
+		}
 	}
 }

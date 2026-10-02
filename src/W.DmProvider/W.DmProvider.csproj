@@ -4,12 +4,12 @@
     <AssemblyName>W.DmProvider</AssemblyName>
     <PackageId>W.DmProvider</PackageId>
     <RootNamespace>W.Dm</RootNamespace>
-    <Version Condition="'$(Version)' == ''">0.1.0-t11</Version>
+    <Version Condition="'$(Version)' == ''">0.1.0-r2</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
     <Authors>W.DmProvider contributors</Authors>
     <Company>W.DmProvider contributors</Company>
-    <Description>Development candidate of an independent Dameng ADO.NET provider for .NET 10 with isolated statement ownership and server-profile-gated transaction isolation. ReadCommitted is the default.</Description>
+    <Description>Development candidate of an independent Dameng ADO.NET provider for .NET 10 with asynchronous network operations, execution-scoped cancellation, client deadlines, and server-profile-gated transactions. ReadCommitted is the default.</Description>
     <PackageTags>Dameng;ADO.NET;development-candidate</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -31,6 +31,7 @@
     <InternalsVisibleTo Include="W.DmProvider.TransportTests" />
     <InternalsVisibleTo Include="W.DmProvider.SecurityTests" />
     <InternalsVisibleTo Include="W.DmProvider.CommandTests" />
+    <InternalsVisibleTo Include="W.DmProvider.AsyncTests" />
     <InternalsVisibleTo Include="W.DmProvider.TypeTests" />
     <InternalsVisibleTo Include="W.DmProvider.TransactionTests" />
     <InternalsVisibleTo Include="W.DmProvider.IsolationTests" />

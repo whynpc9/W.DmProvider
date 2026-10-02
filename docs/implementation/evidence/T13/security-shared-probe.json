@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "task": "T13",
+  "implementation": "W-package",
+  "status": "security_rejection_verified",
+  "accepted": true,
+  "streaming_lob_claimed": false,
+  "cancellation_acceptance": "T14_pending",
+  "mode": "security-shared",
+  "package_version": "0.1.0-r2.20261001134645",
+  "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+  "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+  "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+  "reference_kind": "exact_PackageReference",
+  "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+  "api_override_audit": [
+    "DmConnection.OpenAsync(CancellationToken)",
+    "DmConnection.CloseAsync()",
+    "DmConnection.DisposeAsync()",
+    "DmConnection.BeginDbTransactionAsync(IsolationLevel,CancellationToken)",
+    "DmConnection.GetSchemaAsync(CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,String[],CancellationToken)",
+    "DmConnection.ChangeDatabaseAsync(String,CancellationToken)",
+    "DmCommand.PrepareAsync(CancellationToken)",
+    "DmCommand.ExecuteNonQueryAsync(CancellationToken)",
+    "DmCommand.ExecuteScalarAsync(CancellationToken)",
+    "DmCommand.ExecuteDbDataReaderAsync(CommandBehavior,CancellationToken)",
+    "DmCommand.DisposeAsync()",
+    "DmDataReader.ReadAsync(CancellationToken)",
+    "DmDataReader.NextResultAsync(CancellationToken)",
+    "DmDataReader.CloseAsync()",
+    "DmDataReader.DisposeAsync()",
+    "DmDataReader.IsDBNullAsync(Int32,CancellationToken)",
+    "DmDataReader.GetSchemaTableAsync(CancellationToken)",
+    "DmDataReader.GetFieldValueAsync(Int32,CancellationToken)",
+    "DmTransaction.CommitAsync(CancellationToken)",
+    "DmTransaction.RollbackAsync(CancellationToken)",
+    "DmTransaction.SaveAsync(String,CancellationToken)",
+    "DmTransaction.ReleaseAsync(String,CancellationToken)",
+    "DmTransaction.RollbackAsync(String,CancellationToken)",
+    "DmTransaction.DisposeAsync()"
+  ],
+  "configuration_step": "complete",
+  "explicit_transport": "PlaintextAllowed",
+  "persist_security_info": false,
+  "buf_prefetch": 0,
+  "handshake_hook": "DmWireTestHooks.AfterHandshakeExchangeEntered_via_HandshakeFrameEncoded",
+  "before": {
+    "identity": "WDM_PROVIDER_TEST",
+    "schema": "WDM_PROVIDER_TEST",
+    "negotiated_encrypt_mode": 0,
+    "login_encoded_count": 1,
+    "server_version": "8.1.5.60"
+  },
+  "security_case": {
+    "classification": "require_tls_rejected_plaintext_before_login",
+    "exception_type": "System.NotSupportedException",
+    "connection_state": "Closed",
+    "handshake_opcodes": [
+      200
+    ],
+    "login_encoded_count": 0,
+    "negotiated_encrypt_modes": [
+      0
+    ],
+    "created_tcp_sockets": 1,
+    "disposed_tcp_sockets": 1,
+    "successful_tls_upgrades": 0,
+    "failed_tls_upgrades": 0,
+    "explicit_transport": "RequireTls"
+  },
+  "negative_numeric_frame_observations": [
+    {
+      "Stage": "security_negative_open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 26
+    }
+  ],
+  "final_database_state": "no_objects_created",
+  "after": {
+    "identity": "WDM_PROVIDER_TEST",
+    "schema": "WDM_PROVIDER_TEST",
+    "negotiated_encrypt_mode": 0,
+    "login_encoded_count": 1,
+    "server_version": "8.1.5.60"
+  },
+  "integration": "real_test_security",
+  "exit_code": 0
+}

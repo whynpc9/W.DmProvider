@@ -1,0 +1,420 @@
+[
+  {
+    "stage": "green_Configuration",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Configuration.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Configuration.log"
+  },
+  {
+    "stage": "green_Session",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.SessionTests/W.DmProvider.SessionTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Session.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Session.log"
+  },
+  {
+    "stage": "green_Transport",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Transport.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Transport.log"
+  },
+  {
+    "stage": "green_Security",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.SecurityTests/W.DmProvider.SecurityTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Security.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Security.log"
+  },
+  {
+    "stage": "green_Command",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.CommandTests/W.DmProvider.CommandTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Command.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Command.log"
+  },
+  {
+    "stage": "green_Type",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.TypeTests/W.DmProvider.TypeTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Type.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Type.log"
+  },
+  {
+    "stage": "green_Transaction",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.TransactionTests/W.DmProvider.TransactionTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Transaction.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Transaction.log"
+  },
+  {
+    "stage": "green_Isolation",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.IsolationTests/W.DmProvider.IsolationTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Isolation.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Isolation.log"
+  },
+  {
+    "stage": "green_Async",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj",
+      "-c",
+      "Release",
+      "--logger",
+      "trx;LogFileName=Async.trx",
+      "--results-directory",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v2/trx",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/Async.log"
+  },
+  {
+    "stage": "pack",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "pack",
+      "src/W.DmProvider/W.DmProvider.csproj",
+      "-c",
+      "Release",
+      "-o",
+      ".local/verification/r2-review/validation-v2/feed",
+      "/p:Version=0.1.0-r2.review.20261002092837",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0,
+    "log": ".local/verification/r2-review/validation-v2/pack.log"
+  },
+  {
+    "stage": "layers/00-validation-v2-t13-offline-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "offline",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 0,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T092856Z-86761-11672",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/01-validation-v2-t13-shared-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "shared",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 1,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T092913Z-86908-20643",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/02-resumed-window-t14-tls-run",
+    "argv": [
+      "bash",
+      "eng/t14.sh",
+      "tls",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 0,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261002T093553Z-90555-7829",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/03-resumed-window-t13-tls-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "tls",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 0,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093547Z-90340-22115",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/04-resumed-window-t13-shared-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "shared",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 1,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093559Z-90739-28611",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/05-resumed-window-t13-security-tls-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "security-tls",
+      "0.1.0-r2.review.20261002092837",
+      ".local/verification/r2-review/validation-v2/feed"
+    ],
+    "exit_code": 0,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T093550Z-90529-11038",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "layers/06-baseline-comparison-v1-t13-shared-run",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "shared",
+      "0.1.0-r2.20261001164429",
+      ".local/verification/r2/t14/validation-v4/feed"
+    ],
+    "exit_code": 1,
+    "original_run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261002T094137Z-93721-29580",
+    "recorded_command_note": "Feed may have been passed as equivalent absolute path during resumed window."
+  },
+  {
+    "stage": "red-transport",
+    "cwd": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v1/red-work",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj",
+      "-c",
+      "Release",
+      "--filter",
+      "FullyQualifiedName~R2ReviewSendDeadlineTests",
+      "--logger",
+      "trx;LogFileName=red-transport.trx",
+      "--results-directory",
+      "../red-results",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 1
+  },
+  {
+    "stage": "red-failure-info",
+    "cwd": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2-review/validation-v1/red-work",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "test",
+      "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj",
+      "-c",
+      "Release",
+      "--filter",
+      "FullyQualifiedName~R2ReviewFailureInfoTests",
+      "--logger",
+      "trx;LogFileName=red-failure-info.trx",
+      "--results-directory",
+      "../red-results",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 1
+  },
+  {
+    "stage": "recovery-v1-build",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "build",
+      ".local/verification/r2-review/recovery-v1/Cleanup.csproj",
+      "-c",
+      "Release",
+      "--output",
+      ".local/verification/r2-review/recovery-v1/app",
+      "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/validation-v4/feed",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "recovery-v1-run",
+    "argv": [
+      "scripts/with-dameng-test.sh",
+      "/usr/local/share/dotnet/dotnet",
+      ".local/verification/r2-review/recovery-v1/app/Cleanup.dll",
+      ".local/verification/r2-review/recovery-v1/report.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "recovery-v2-build",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "build",
+      ".local/verification/r2-review/recovery-v2/Cleanup.csproj",
+      "-c",
+      "Release",
+      "--output",
+      ".local/verification/r2-review/recovery-v2/app",
+      "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/validation-v4/feed",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "recovery-v2-run",
+    "argv": [
+      "scripts/with-dameng-test.sh",
+      "/usr/local/share/dotnet/dotnet",
+      ".local/verification/r2-review/recovery-v2/app/Cleanup.dll",
+      ".local/verification/r2-review/recovery-v2/report.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "recovery-v3-build",
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "build",
+      ".local/verification/r2-review/recovery-v3/Cleanup.csproj",
+      "-c",
+      "Release",
+      "--output",
+      ".local/verification/r2-review/recovery-v3/app",
+      "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/validation-v4/feed",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ],
+    "exit_code": 0
+  },
+  {
+    "stage": "recovery-v3-run",
+    "argv": [
+      "scripts/with-dameng-test.sh",
+      "/usr/local/share/dotnet/dotnet",
+      ".local/verification/r2-review/recovery-v3/app/Cleanup.dll",
+      ".local/verification/r2-review/recovery-v3/report.json"
+    ],
+    "exit_code": 0
+  }
+]

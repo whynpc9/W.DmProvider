@@ -13,6 +13,8 @@ namespace W.Dm.Internal.Transport;
 internal static class DmTransportTestHooks
 {
     internal static Action BeforeTlsRead;
+    internal static Action<OperationIdentity> BeforeSendAttempt;
+    internal static Action<OperationIdentity> AfterSendAttempt;
     internal static Action<OperationIdentity, DmTransactionControlKind> BeforeControlSendAttempt;
     internal static Action<OperationIdentity, DmTransactionControlKind> AfterControlAttemptMarked;
     internal static Action<OperationIdentity, DmTransactionControlKind, short, short, int> AfterControlFrameValidated;
@@ -41,6 +43,8 @@ internal static class DmTransportTestHooks
         Interlocked.Exchange(ref failedTlsUpgrades, 0);
         Volatile.Write(ref lastNegotiatedTlsProtocol, 0);
         Volatile.Write(ref BeforeTlsRead, null);
+        Volatile.Write(ref BeforeSendAttempt, null);
+        Volatile.Write(ref AfterSendAttempt, null);
         Volatile.Write(ref BeforeControlSendAttempt, null);
         Volatile.Write(ref AfterControlAttemptMarked, null);
         Volatile.Write(ref AfterControlFrameValidated, null);
@@ -64,6 +68,10 @@ internal interface IDmByteChannel : IDisposable
     int Send(byte[] buffer, int offset, int count, int timeoutMilliseconds);
     int Receive(byte[] buffer, int offset, int count, int timeoutMilliseconds);
     bool IsClosed { get; }
+    ValueTask<int> SendAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+        ValueTask.FromException<int>(new NotSupportedException("This byte channel does not support asynchronous sends."));
+    ValueTask<int> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+        ValueTask.FromException<int>(new NotSupportedException("This byte channel does not support asynchronous receives."));
 }
 
 internal sealed class DmTransport : IDisposable
@@ -194,13 +202,95 @@ internal sealed class DmTransport : IDisposable
         }
     }
 
-    private CancellationTokenSource LinkedDeadline(DmDeadline deadline)
+    internal async Task OpenAsync(DmDeadline deadline, CancellationToken cancellationToken = default)
     {
-        deadline.ThrowIfExpired();
-        var source = CancellationTokenSource.CreateLinkedTokenSource(closeSource.Token);
-        if (!deadline.IsInfinite) source.CancelAfter(deadline.RemainingMilliseconds);
-        return source;
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (gate)
+        {
+            if (closed) throw new ObjectDisposedException(nameof(DmTransport));
+            if (channel != null || openStarted) throw new InvalidOperationException("Transport has already opened.");
+            openStarted = true;
+        }
+
+        try
+        {
+            IPAddress[] addresses;
+            using (var dnsDeadline = new DmIoCancellation(deadline, cancellationToken, closeSource.Token))
+            {
+                try { addresses = await resolveAddresses(host, dnsDeadline.Token).WaitAsync(dnsDeadline.Token).ConfigureAwait(false); }
+                catch (OperationCanceledException ex) { dnsDeadline.RethrowCancellation(ex); throw; }
+            }
+            deadline.ThrowIfExpired();
+            if (addresses.Length == 0) throw new SocketException((int)SocketError.HostNotFound);
+
+            Exception lastFailure = null;
+            foreach (IPAddress address in addresses)
+            {
+                deadline.ThrowIfExpired();
+                cancellationToken.ThrowIfCancellationRequested();
+                closeSource.Token.ThrowIfCancellationRequested();
+                beforeAttempt?.Invoke(address, deadline.RemainingMilliseconds);
+                deadline.ThrowIfExpired();
+                Socket candidate;
+                try { candidate = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp); }
+                catch (SocketException ex) { lastFailure = ex; continue; }
+                DmTransportTestHooks.Created();
+                bool rejected;
+                lock (gate)
+                {
+                    rejected = closed;
+                    if (!rejected) connectingSocket = candidate;
+                }
+                if (rejected) { DisposeSocket(candidate); throw new ObjectDisposedException(nameof(DmTransport)); }
+                bool transferred = false;
+                try
+                {
+                    using var attemptDeadline = new DmIoCancellation(deadline, cancellationToken, closeSource.Token);
+                    DmTransportTestHooks.Attempted();
+                    try { await connectSocket(candidate, new IPEndPoint(address, port), attemptDeadline.Token).ConfigureAwait(false); }
+                    catch (OperationCanceledException ex) { attemptDeadline.RethrowCancellation(ex); throw; }
+                    deadline.ThrowIfExpired();
+                    lock (gate)
+                    {
+                        if (closed) throw new ObjectDisposedException(nameof(DmTransport));
+                        deadline.ThrowIfExpired();
+                        channel = new SocketByteChannel(candidate);
+                        connectingSocket = null;
+                        transferred = true;
+                        DmTransportTestHooks.Connected();
+                    }
+                    return;
+                }
+                catch (Exception ex) when (ex is SocketException or IOException)
+                {
+                    lastFailure = ex;
+                }
+                finally
+                {
+                    bool dispose = false;
+                    lock (gate)
+                    {
+                        if (!transferred && ReferenceEquals(connectingSocket, candidate))
+                        {
+                            connectingSocket = null;
+                            dispose = true;
+                        }
+                    }
+                    if (dispose) DisposeSocket(candidate);
+                }
+            }
+            deadline.ThrowIfExpired();
+            throw lastFailure ?? new SocketException((int)SocketError.NotConnected);
+        }
+        catch
+        {
+            Close();
+            throw;
+        }
     }
+
+    private DmIoCancellation LinkedDeadline(DmDeadline deadline) =>
+        new(deadline, DmInvocation.Current?.CancellationToken ?? CancellationToken.None, closeSource.Token);
 
     internal void UpgradeTls(DmTlsOptions options, DmDeadline deadline)
     {
@@ -275,6 +365,78 @@ internal sealed class DmTransport : IDisposable
         }
     }
 
+    internal async Task UpgradeTlsAsync(DmTlsOptions options, DmDeadline deadline, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        cancellationToken.ThrowIfCancellationRequested();
+        SocketByteChannel raw;
+        lock (gate)
+        {
+            if (closed) throw new ObjectDisposedException(nameof(DmTransport));
+            raw = channel as SocketByteChannel ?? throw new InvalidOperationException("TLS requires an open raw TCP channel.");
+            if (tlsUpgradeStarted) throw new InvalidOperationException("TLS authentication has already started.");
+            tlsUpgradeStarted = true;
+        }
+
+        DmTlsOptionsScope scope = null;
+        SslStreamByteChannel tls = null;
+        bool upgraded = false;
+        try
+        {
+            deadline.ThrowIfExpired();
+            scope = options.CreateAuthenticationScope(deadline);
+            var network = new NetworkStream(raw.Socket, ownsSocket: false);
+            SslStream ssl;
+            try { ssl = new SslStream(network, leaveInnerStreamOpen: false); }
+            catch { network.Dispose(); throw; }
+            tls = new SslStreamByteChannel(ssl, raw.Socket, scope);
+            scope = null;
+            lock (gate)
+            {
+                if (closed || !ReferenceEquals(channel, raw)) throw new ObjectDisposedException(nameof(DmTransport));
+                pendingTls = tls;
+            }
+
+            using (var handshakeDeadline = new DmIoCancellation(deadline, cancellationToken, closeSource.Token))
+            {
+                try { await ssl.AuthenticateAsClientAsync(tls.Authentication, handshakeDeadline.Token).ConfigureAwait(false); }
+                catch (OperationCanceledException ex) { handshakeDeadline.RethrowCancellation(ex); throw; }
+            }
+            deadline.ThrowIfExpired();
+            if (!ssl.IsAuthenticated || !ssl.IsEncrypted || ssl.SslProtocol is not (SslProtocols.Tls12 or SslProtocols.Tls13))
+                throw new AuthenticationException("TLS transport did not negotiate an accepted protocol.");
+            lock (gate)
+            {
+                if (closed || !ReferenceEquals(channel, raw) || !ReferenceEquals(pendingTls, tls))
+                    throw new ObjectDisposedException(nameof(DmTransport));
+                deadline.ThrowIfExpired();
+                raw.RelinquishSocket();
+                tls.ActivateSocketOwnership();
+                channel = tls;
+                pendingTls = null;
+            }
+            DmTransportTestHooks.TlsUpgraded(ssl.SslProtocol);
+            upgraded = true;
+        }
+        catch (Exception ex) when (ex is AuthenticationException or IOException)
+        {
+            throw new AuthenticationException("TLS authentication failed.", ex);
+        }
+        finally
+        {
+            if (!upgraded)
+            {
+                DmTransportTestHooks.TlsFailed();
+                try { Close(); }
+                finally
+                {
+                    tls?.Dispose();
+                    scope?.Dispose();
+                }
+            }
+        }
+    }
+
     private IDmByteChannel CurrentChannel()
     {
         lock (gate)
@@ -286,12 +448,34 @@ internal sealed class DmTransport : IDisposable
         }
     }
 
+    private static void CheckOperationDeadline(DmDeadline deadline)
+    {
+        DmInvocation.Current?.ThrowIfTerminated();
+        deadline.ThrowIfExpired();
+    }
+
     private static int Timeout(DmDeadline deadline, int limitMilliseconds)
     {
-        deadline.ThrowIfExpired();
+        CheckOperationDeadline(deadline);
         int remaining = deadline.IsInfinite ? 0 : Math.Max(1, deadline.RemainingMilliseconds);
         if (limitMilliseconds <= 0) return remaining;
         return remaining == 0 ? limitMilliseconds : Math.Min(remaining, limitMilliseconds);
+    }
+
+    private static void PrepareSendAttempt(DmInvocation invocation, bool first)
+    {
+        if (invocation == null) return;
+        DmTransactionControlKind kind = default;
+        bool control = first && invocation.Lease.Session.IsCurrentTransactionControl(invocation, out kind);
+        if (control)
+        {
+            try { Volatile.Read(ref DmTransportTestHooks.BeforeControlSendAttempt)?.Invoke(invocation.Identity, kind); }
+            catch { invocation.Lease.Session.MarkRecoverablePreSendFailure(invocation); throw; }
+        }
+        Volatile.Read(ref DmTransportTestHooks.BeforeSendAttempt)?.Invoke(invocation.Identity);
+        invocation.Lease.Session.TryBeginSendAttempt(invocation);
+        if (control) Volatile.Read(ref DmTransportTestHooks.AfterControlAttemptMarked)?.Invoke(invocation.Identity, kind);
+        Volatile.Read(ref DmTransportTestHooks.AfterSendAttempt)?.Invoke(invocation.Identity);
     }
 
     internal void SendAll(byte[] buffer, int offset, int count, DmDeadline deadline, int timeoutMilliseconds, Action<int> onSent = null)
@@ -306,23 +490,13 @@ internal sealed class DmTransport : IDisposable
             try { timeout = Timeout(deadline, timeoutMilliseconds); }
             catch (TimeoutException)
             {
+                invocation?.Lease.Session.TerminateInvocation(invocation, DmCancelSource.TotalDeadline);
                 invocation?.Lease.Session.MarkRecoverablePreSendFailure(invocation);
                 throw;
             }
-            if (sent == 0 && invocation != null &&
-                invocation.Lease.Session.IsCurrentTransactionControl(invocation, out DmTransactionControlKind kind))
-            {
-                try { Volatile.Read(ref DmTransportTestHooks.BeforeControlSendAttempt)?.Invoke(invocation.Identity, kind); }
-                catch
-                {
-                    invocation.Lease.Session.MarkRecoverablePreSendFailure(invocation);
-                    throw;
-                }
-                invocation.Lease.Session.MarkTransactionSendAttempt(invocation);
-                Volatile.Read(ref DmTransportTestHooks.AfterControlAttemptMarked)?.Invoke(invocation.Identity, kind);
-            }
+            PrepareSendAttempt(invocation, sent == 0);
             int progress = current.Send(buffer, offset + sent, count - sent, timeout);
-            deadline.ThrowIfExpired();
+            CheckOperationDeadline(deadline);
             if (progress <= 0 || progress > count - sent) throw new IOException("Socket send made no valid progress.");
             sent += progress;
             onSent?.Invoke(progress);
@@ -333,8 +507,10 @@ internal sealed class DmTransport : IDisposable
     {
         ValidateRange(buffer, offset, count);
         if (count == 0) return 0;
+        DmInvocation.Current?.ThrowIfTerminated();
+        if (DmInvocation.Current is { } invocation) invocation.Phase = DmFailurePhase.Receive;
         int read = CurrentChannel().Receive(buffer, offset, count, Timeout(deadline, timeoutMilliseconds));
-        deadline.ThrowIfExpired();
+        CheckOperationDeadline(deadline);
         if (read <= 0) throw new EndOfStreamException("Socket closed before the expected bytes arrived.");
         if (read > count) throw new IOException("Socket returned an invalid byte count.");
         return read;
@@ -346,6 +522,69 @@ internal sealed class DmTransport : IDisposable
         int read = 0;
         while (read < count)
             read += ReadSome(buffer, offset + read, count - read, deadline, timeoutMilliseconds);
+    }
+
+    internal async ValueTask SendAllAsync(byte[] buffer, int offset, int count, DmDeadline deadline,
+        int timeoutMilliseconds, CancellationToken cancellationToken = default, Action<int> onSent = null)
+    {
+        ValidateRange(buffer, offset, count);
+        DmInvocation.Current?.ThrowIfTerminated();
+        cancellationToken.ThrowIfCancellationRequested();
+        IDmByteChannel current = CurrentChannel();
+        int sent = 0;
+        while (sent < count)
+        {
+            DmInvocation invocation = DmInvocation.Current;
+            DmIoCancellation budget;
+            try { budget = new DmIoCancellation(deadline, cancellationToken, closeSource.Token, timeoutMilliseconds); }
+            catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
+            {
+                if (ex is TimeoutException)
+                    invocation?.Lease.Session.TerminateInvocation(invocation, DmCancelSource.TotalDeadline);
+                if (sent == 0) invocation?.Lease.Session.MarkRecoverablePreSendFailure(invocation);
+                throw;
+            }
+            using (budget)
+            {
+                PrepareSendAttempt(invocation, sent == 0);
+                int progress;
+                try { progress = await current.SendAsync(buffer, offset + sent, count - sent, budget.Token).ConfigureAwait(false); }
+                catch (OperationCanceledException ex) { budget.RethrowCancellation(ex); throw; }
+                CheckOperationDeadline(deadline);
+                if (progress <= 0 || progress > count - sent) throw new IOException("Socket send made no valid progress.");
+                sent += progress;
+                onSent?.Invoke(progress);
+            }
+        }
+    }
+
+    internal async ValueTask<int> ReadSomeAsync(byte[] buffer, int offset, int count, DmDeadline deadline,
+        int timeoutMilliseconds, CancellationToken cancellationToken = default)
+    {
+        ValidateRange(buffer, offset, count);
+        DmInvocation.Current?.ThrowIfTerminated();
+        cancellationToken.ThrowIfCancellationRequested();
+        if (count == 0) return 0;
+        if (DmInvocation.Current is { } invocation) invocation.Phase = DmFailurePhase.Receive;
+        using var budget = new DmIoCancellation(deadline, cancellationToken, closeSource.Token, timeoutMilliseconds);
+        int read;
+        try { read = await CurrentChannel().ReceiveAsync(buffer, offset, count, budget.Token).ConfigureAwait(false); }
+        catch (OperationCanceledException ex) { budget.RethrowCancellation(ex); throw; }
+        CheckOperationDeadline(deadline);
+        if (read <= 0) throw new EndOfStreamException("Socket closed before the expected bytes arrived.");
+        if (read > count) throw new IOException("Socket returned an invalid byte count.");
+        return read;
+    }
+
+    internal async ValueTask ReadExactlyAsync(byte[] buffer, int offset, int count, DmDeadline deadline,
+        int timeoutMilliseconds, CancellationToken cancellationToken = default)
+    {
+        ValidateRange(buffer, offset, count);
+        cancellationToken.ThrowIfCancellationRequested();
+        int read = 0;
+        while (read < count)
+            read += await ReadSomeAsync(buffer, offset + read, count - read, deadline,
+                timeoutMilliseconds, cancellationToken).ConfigureAwait(false);
     }
 
     internal bool IsPeerClosed()
@@ -414,6 +653,10 @@ internal sealed class DmTransport : IDisposable
             Socket.ReceiveTimeout = timeoutMilliseconds;
             return Socket.Receive(buffer, offset, count, SocketFlags.None);
         }
+        public ValueTask<int> SendAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            Socket.SendAsync(buffer.AsMemory(offset, count), SocketFlags.None, cancellationToken);
+        public ValueTask<int> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            Socket.ReceiveAsync(buffer.AsMemory(offset, count), SocketFlags.None, cancellationToken);
         public bool IsClosed => Volatile.Read(ref disposed) != 0;
         public void Dispose()
         {
@@ -450,6 +693,16 @@ internal sealed class DmTransport : IDisposable
             stream.ReadTimeout = timeoutMilliseconds == 0 ? System.Threading.Timeout.Infinite : timeoutMilliseconds;
             Volatile.Read(ref DmTransportTestHooks.BeforeTlsRead)?.Invoke();
             return stream.Read(buffer, offset, count);
+        }
+        public async ValueTask<int> SendAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await stream.WriteAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+            return count;
+        }
+        public ValueTask<int> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            Volatile.Read(ref DmTransportTestHooks.BeforeTlsRead)?.Invoke();
+            return stream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
         }
         public void Dispose()
         {

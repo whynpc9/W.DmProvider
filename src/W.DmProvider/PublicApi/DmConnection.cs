@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Transport;
@@ -45,7 +46,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private bool hasExplicitSettings;
 	private volatile bool openingInProgress;
 	private DmSession session;
-	internal TimeProvider TransactionClock { get; set; } = TimeProvider.System;
+	// Shared by all public operation budgets; retained TransactionClock aliases the
+	// same provider so existing transaction fixtures do not select a separate clock.
+	internal TimeProvider OperationClock { get; set; } = TimeProvider.System;
+	internal TimeProvider TransactionClock { get => OperationClock; set => OperationClock = value; }
 	private DmInvocation handshakeInvocation;
 	internal DmSession Session => Volatile.Read(ref session);
 	private void OnSessionBroken(DmSession broken)
@@ -428,38 +432,69 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			throw new NotSupportedException("Local isolation level is unavailable for this server profile.");
 		if (instance.Transaction?.Valid == true)
 			throw new InvalidOperationException("A local transaction is already active.");
-		lease.Session.SetTransactionState(DmLocalTransactionState.Starting);
+		DmLocalTransactionState priorState = lease.Session.TransactionState;
+		DmTransaction priorTransaction = instance.Transaction;
+		bool priorAutoCommit = instance.GetAutoCommit();
+		var priorIsolation = instance.ConnProperty.IsolationLevel;
 		DmCommand isolationOwner = null;
 		DmTransaction transaction = null;
+		DmInvocation failureInvocation = null;
+		DmFailurePhase failurePhase = DmFailurePhase.Prepare;
 		try
 		{
-			using (var configuration = lease.BeginInvocation())
+			using (var configuration = failureInvocation = lease.BeginInvocation())
 			{
+				configuration.ThrowIfTerminated();
+				lease.Session.SetTransactionState(DmLocalTransactionState.Starting);
 				transaction = instance.BeginTrx(isolationLevel, out isolationOwner, out bool isolationConfirmed);
 				if (!isolationConfirmed || instance.GetAutoCommit())
 					throw new InvalidOperationException("Transaction configuration was not confirmed.");
+				configuration.Complete();
 			}
 			if (isolationOwner?.Statement is { } controlStatement)
 			{
 				// The configuration child has ended. Close the isolated handle under
 				// one finite cleanup child of the same root execution, with no new lease.
-				using var cleanup = lease.BeginCleanupInvocation(
+				failureInvocation = null;
+				failurePhase = DmFailurePhase.Cleanup;
+				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
 					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
 				controlStatement.p();
 			}
 			// Cleanup has its own budget so resources can be released after timeout;
 			// it must not renew Begin's budget or permit a late Active result.
-			lease.Deadline.ThrowIfExpired();
-			using var activation = lease.BeginInvocation();
+			failureInvocation = null;
+			failurePhase = DmFailurePhase.Prepare;
+			using var activation = failureInvocation = lease.BeginInvocation();
 			lease.Session.ActivateTransaction(transaction, activation.Identity);
 			return transaction;
 		}
-		catch
+		catch (Exception error)
 		{
-			(transaction ?? instance.Transaction)?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
-			(transaction ?? instance.Transaction)?.RecordFailure("begin_configuration_unconfirmed");
-			try { CloseExpectedSession(lease.Session); } catch { }
-			throw;
+			DmTransaction failedTransaction = transaction ?? instance.Transaction;
+			DmTransactionOutcome? failureTransactionOutcome;
+			if (!lease.SendAttempted && lease.Session.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+			{
+				// No configuration request reached its send boundary. Undo only the
+				// provisional local state; the old session and transaction remain usable.
+				if (!ReferenceEquals(instance.Transaction, priorTransaction))
+					instance.Transaction?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
+				instance.Transaction = priorTransaction;
+				instance.ConnProperty.AutoCommit = priorAutoCommit;
+				instance.ConnProperty.IsolationLevel = priorIsolation;
+				lease.Session.SetTransactionState(priorState);
+				failureTransactionOutcome = BeginTransactionOutcome(priorTransaction, priorState);
+			}
+			else
+			{
+				failedTransaction?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
+				failedTransaction?.RecordFailure("begin_configuration_unconfirmed");
+				// Physical abort clears instance.Transaction. Freeze the final result
+				// while the captured transaction still belongs to this Begin attempt.
+				failureTransactionOutcome = BeginTransactionOutcome(failedTransaction, lease.Session.TransactionState);
+				try { CloseExpectedSession(lease.Session); } catch { }
+			}
+			throw TranslateBeginFailure(error, failureInvocation, failurePhase, lease, failureTransactionOutcome);
 		}
 		finally
 		{
@@ -476,6 +511,186 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			}
 			finally { isolationOwner?.Dispose(); }
 		}
+	}
+
+	private async ValueTask<DbTransaction> BeginLocalTransactionCoreAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		int timeoutSeconds = Settings.CommandTimeout;
+		TimeSpan cleanupTimeout = Settings.CleanupTimeout;
+		using var lease = BeginExecution(DmOperationPurpose.TransactionControl,
+			DmDeadline.FromSeconds(timeoutSeconds, TransactionClock), timeoutSeconds);
+		DmConnInstance instance;
+		lock (settingsGate)
+		{
+			if (!ReferenceEquals(session, lease.Session) || m_ConnInst == null)
+				throw new InvalidOperationException("Connection changed during transaction start.");
+			instance = m_ConnInst;
+		}
+		if (isolationLevel == System.Data.IsolationLevel.Unspecified)
+			isolationLevel = System.Data.IsolationLevel.ReadCommitted;
+		if (!IsPublicTransactionIsolationSupported(isolationLevel, instance.ConnProperty.ServerVersion))
+			throw new NotSupportedException("Local isolation level is unavailable for this server profile.");
+		if (instance.Transaction?.Valid == true)
+			throw new InvalidOperationException("A local transaction is already active.");
+		DmLocalTransactionState priorState = lease.Session.TransactionState;
+		DmTransaction priorTransaction = instance.Transaction;
+		bool priorAutoCommit = instance.GetAutoCommit();
+		var priorIsolation = instance.ConnProperty.IsolationLevel;
+		DmCommand isolationOwner = null;
+		DmTransaction transaction = null;
+		DmInvocation failureInvocation = null;
+		DmFailurePhase failurePhase = DmFailurePhase.Prepare;
+		try
+		{
+			using (var configuration = failureInvocation = lease.BeginInvocation(cancellationToken))
+			{
+				configuration.ThrowIfTerminated();
+				lease.Session.SetTransactionState(DmLocalTransactionState.Starting);
+				var configured = await instance.BeginTrxAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+				transaction = configured.Transaction;
+				isolationOwner = configured.IsolationOwner;
+				bool isolationConfirmed = configured.IsolationConfirmed;
+				if (!isolationConfirmed || instance.GetAutoCommit())
+					throw new InvalidOperationException("Transaction configuration was not confirmed.");
+				configuration.Complete();
+			}
+			if (isolationOwner?.Statement is { } controlStatement)
+			{
+				// The configuration child has ended. Close the isolated handle under
+				// one finite cleanup child of the same root execution, with no new lease.
+				failureInvocation = null;
+				failurePhase = DmFailurePhase.Cleanup;
+				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
+					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
+				await controlStatement.pAsync(CancellationToken.None).ConfigureAwait(false);
+			}
+			// Cleanup has its own budget so resources can be released after timeout;
+			// it must not renew Begin's budget or permit a late Active result.
+			failureInvocation = null;
+			failurePhase = DmFailurePhase.Prepare;
+			using var activation = failureInvocation = lease.BeginInvocation(cancellationToken);
+			lease.Session.ActivateTransaction(transaction, activation.Identity);
+			return transaction;
+		}
+		catch (Exception error)
+		{
+			DmTransaction failedTransaction = transaction ?? instance.Transaction;
+			DmTransactionOutcome? failureTransactionOutcome;
+			if (!lease.SendAttempted && lease.Session.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+			{
+				// No configuration request reached its send boundary. Undo only the
+				// provisional local state; the old session and transaction remain usable.
+				if (!ReferenceEquals(instance.Transaction, priorTransaction))
+					instance.Transaction?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
+				instance.Transaction = priorTransaction;
+				instance.ConnProperty.AutoCommit = priorAutoCommit;
+				instance.ConnProperty.IsolationLevel = priorIsolation;
+				lease.Session.SetTransactionState(priorState);
+				failureTransactionOutcome = BeginTransactionOutcome(priorTransaction, priorState);
+			}
+			else
+			{
+				failedTransaction?.SetOutcomeFromSession(DmTransactionOutcome.OutcomeUnknown);
+				failedTransaction?.RecordFailure("begin_configuration_unconfirmed");
+				// Physical abort clears instance.Transaction. Freeze the final result
+				// while the captured transaction still belongs to this Begin attempt.
+				failureTransactionOutcome = BeginTransactionOutcome(failedTransaction, lease.Session.TransactionState);
+				try { CloseExpectedSession(lease.Session); } catch { }
+			}
+			throw TranslateBeginFailure(error, failureInvocation, failurePhase, lease, failureTransactionOutcome);
+		}
+		finally
+		{
+			// Success already closed the handle; on failure the captured session was
+			// aborted. Clear any remaining local owner before Dispose, which must not
+			// acquire another lease or send a second statement-close request.
+			try
+			{
+				if (isolationOwner?.Statement is { } abandoned)
+				{
+					instance.RemoveStmt(abandoned);
+					abandoned.o();
+				}
+			}
+			finally
+			{
+				if (isolationOwner != null) await isolationOwner.DisposeAsync().ConfigureAwait(false);
+			}
+		}
+	}
+
+	private static DmTransactionOutcome? BeginTransactionOutcome(DmTransaction transaction,
+		DmLocalTransactionState state) => transaction?.Outcome ?? (state switch
+		{
+			DmLocalTransactionState.Starting => DmTransactionOutcome.Starting,
+			DmLocalTransactionState.Active => DmTransactionOutcome.Active,
+			DmLocalTransactionState.Committing => DmTransactionOutcome.Committing,
+			DmLocalTransactionState.Committed => DmTransactionOutcome.Committed,
+			DmLocalTransactionState.RollingBack => DmTransactionOutcome.RollingBack,
+			DmLocalTransactionState.RolledBack => DmTransactionOutcome.RolledBack,
+			DmLocalTransactionState.CompletedExternally => DmTransactionOutcome.CompletedExternally,
+			DmLocalTransactionState.OutcomeUnknown => DmTransactionOutcome.OutcomeUnknown,
+			_ => (DmTransactionOutcome?)null
+		});
+
+	private static Exception TranslateBeginFailure(Exception error, DmInvocation invocation,
+		DmFailurePhase phase, DmExecutionLease lease, DmTransactionOutcome? transactionOutcome)
+	{
+		// A child may already be disposed, or its factory may have failed before
+		// assigning it. Never ask a completed configuration child to terminate or
+		// infer the winning cause from the caller token's current state.
+		DmFailureInfo existing = error switch
+		{
+			DmOperationCanceledException canceled => canceled.FailureInfo,
+			DmException driver => driver.FailureInfo,
+			_ => null
+		};
+		DmFailureInfo captured = invocation?.CreateFailureInfo(error);
+		DmCancelSource cause = existing?.CancelSource is { } existingCause && existingCause != DmCancelSource.None
+			? existingCause : captured?.CancelSource ?? DmCancelSource.None;
+		if (cause == DmCancelSource.None)
+			cause = error switch
+			{
+				TimeoutException => DmCancelSource.TotalDeadline,
+				OperationCanceledException => DmCancelSource.User,
+				_ => DmCancelSource.None
+			};
+		DmErrorKind kind = cause is DmCancelSource.TotalDeadline or DmCancelSource.IdleTimeout ? DmErrorKind.Timeout :
+			cause is DmCancelSource.User or DmCancelSource.Command ? DmErrorKind.Canceled :
+			existing?.ErrorKind ?? captured?.ErrorKind ?? DmErrorKind.Transport;
+		// Cleanup is a semantic phase even when its close exchange reached Send
+		// or Receive. For configuration, retain the actual protocol failure phase.
+		DmFailurePhase actualPhase = phase == DmFailurePhase.Cleanup ? phase :
+			invocation?.Phase ?? existing?.Phase ?? phase;
+		var info = new DmFailureInfo(kind, actualPhase, kind switch
+		{
+			DmErrorKind.Timeout => "WDM_TIMEOUT",
+			DmErrorKind.Canceled => "WDM_CANCELED",
+			_ => existing?.ErrorCode ?? captured?.ErrorCode ?? "WDM_TRANSPORT"
+		}, existing?.OperationOutcome ?? captured?.OperationOutcome ?? DmOperationOutcome.NotSent,
+			transactionOutcome, lease.Session.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed),
+			cause, existing?.ServerErrorNumber ?? captured?.ServerErrorNumber);
+		if (error is DmOperationCanceledException typedCanceled)
+		{
+			typedCanceled.SetFailureInfo(info);
+			return typedCanceled;
+		}
+		if (error is DmTimeoutException typedTimeout)
+		{
+			typedTimeout.SetFailureInfo(info);
+			return typedTimeout;
+		}
+		if (kind == DmErrorKind.Timeout) return new DmTimeoutException(info, error);
+		if (kind == DmErrorKind.Canceled)
+		{
+			CancellationToken token = cause == DmCancelSource.Command ? lease.CommandCancellationToken :
+				invocation?.TerminalCause == DmCancelSource.User ? invocation.TerminalToken :
+				(error as OperationCanceledException)?.CancellationToken ?? default;
+			return new DmOperationCanceledException(info, token, error);
+		}
+		if (error is DmException driverError) driverError.SetFailureInfo(info);
+		return error;
 	}
 
 	internal void do_ChangeDatabase(string databaseName)
@@ -611,9 +826,65 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		openingSession.BeginAuthenticating();
 		// Schema setup is part of the handshake ownership interval.
+		handshakeInvocation?.Complete();
 		handshakeInvocation?.Dispose();
 		handshakeInvocation = null;
 		DriverUtil.executeSetSchema(this);
+	}
+
+	internal async Task do_OpenAsync(CancellationToken cancellationToken)
+	{
+		DmSession openingSession = Session;
+		if (do_State != ConnectionState.Connecting || openingSession == null)
+			throw new InvalidOperationException("Connection must be connecting.");
+		CheckProperty();
+		ConnProperty.encryptPwd = false;
+		ConnProperty.encryptMsg = false;
+		ConnProperty.msgVersion = 21;
+		CheckProperty();
+		DmConnInstance opened = new DmConnInstance(this);
+		DmDeadline handshakeDeadline = DmInvocation.Current?.Deadline ??
+			throw new InvalidOperationException("Handshake invocation is missing.");
+		await opened.OpenAsync(handshakeDeadline, cancellationToken).ConfigureAwait(false);
+		DmInvocation.Current.ThrowIfTerminated();
+		bool rejected;
+		lock (settingsGate)
+		{
+			rejected = !ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Connecting;
+			if (!rejected)
+			{
+				m_ConnInst = opened;
+				redactCredentials = true;
+				connectionState = ConnectionState.Open;
+			}
+		}
+		if (rejected)
+		{
+			opened.AbortTransport();
+			throw new InvalidOperationException("Connection was closed during handshake.");
+		}
+		openingSession.BeginAuthenticating();
+		// Schema setup is part of the handshake ownership interval.
+		handshakeInvocation?.Complete();
+		handshakeInvocation?.Dispose();
+		handshakeInvocation = null;
+		await ExecuteSetSchemaAsync(cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task ExecuteSetSchemaAsync(CancellationToken cancellationToken)
+	{
+		string statement = DriverUtil.FormatSchemaStatement(ConnProperty.Schema);
+		if (statement == null) return;
+		DmConnInstance instance = GetConnInstance();
+		using var borrowed = BeginInternalExecution(DmOperationPurpose.Query);
+		instance.ConnProperty.AutoCommit = true;
+		try
+		{
+			var command = CreateCommand(statement);
+			await using (command.ConfigureAwait(false))
+				await command.ExecuteInternalNonQueryAsync(borrowed, cancellationToken).ConfigureAwait(false);
+		}
+		finally { instance.ConnProperty.ClearAutoCommit(); }
 	}
 
 	internal DmStruct do_CreateStruct(string typeName, object[] attributes)
@@ -656,6 +927,59 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	{
 		do_Close();
 	}
+
+	protected override ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel,
+		CancellationToken cancellationToken)
+		=> BeginLocalTransactionCoreAsync(isolationLevel, cancellationToken);
+
+	public override Task OpenAsync(CancellationToken cancellationToken)
+	{
+		if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);
+		if (m_AlreadyDisposed) return Task.FromException(new ObjectDisposedException(nameof(DmConnection)));
+		return ConnectAsync(cancellationToken);
+	}
+
+	// Closing is a local detach/abort. It sends no logout, rollback, or cursor I/O.
+	public override Task CloseAsync() => CloseExpectedSessionAsync(null);
+
+	internal Task CloseExpectedSessionAsync(DmSession expected)
+	{
+		try { CloseExpectedSession(expected); return Task.CompletedTask; }
+		catch (Exception exception) { return Task.FromException(exception); }
+	}
+
+	public override async ValueTask DisposeAsync()
+	{
+		lock (settingsGate)
+		{
+			if (m_AlreadyDisposed) return;
+			m_AlreadyDisposed = true;
+		}
+		try { await CloseAsync().ConfigureAwait(false); }
+		finally
+		{
+			base.Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+	}
+
+	public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
+		=> cancellationToken.IsCancellationRequested ? Task.FromCanceled(cancellationToken) :
+			Task.FromException(new NotSupportedException("Physical database switching is unsupported."));
+
+	public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
+		=> UnsupportedSchemaAsync(cancellationToken);
+
+	public override Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
+		=> UnsupportedSchemaAsync(cancellationToken);
+
+	public override Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictionValues,
+		CancellationToken cancellationToken = default)
+		=> UnsupportedSchemaAsync(cancellationToken);
+
+	private static Task<DataTable> UnsupportedSchemaAsync(CancellationToken cancellationToken)
+		=> cancellationToken.IsCancellationRequested ? Task.FromCanceled<DataTable>(cancellationToken) :
+			Task.FromException<DataTable>(new NotSupportedException("Asynchronous schema discovery is unsupported."));
 
 	public void ForceClose()
 	{
@@ -740,15 +1064,18 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			}
 			connectingNotified = true;
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
-			connectDeadline = DmDeadline.Start(settings.ConnectTimeout);
+			connectDeadline = DmDeadline.Start(settings.ConnectTimeout, OperationClock);
 			lease = openingSession.BeginExecution(DmOperationPurpose.Handshake, connectDeadline);
 			invocation = lease.BeginInvocation();
 			handshakeInvocation = invocation;
 			ConnProperty.EPGroup.connect(this);
-			connectDeadline.ThrowIfExpired();
+			invocation.Dispose();
+			invocation = lease.BeginInvocation();
+			invocation.ThrowIfTerminated();
 			if (!ReferenceEquals(Session, openingSession) || do_State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection did not open.");
 			openingSession.CompleteHandshake();
+			invocation.Complete();
 			invocation.Dispose();
 			lease.Dispose();
 			lock (settingsGate)
@@ -760,8 +1087,9 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			try { OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open)); }
 			finally { lock (settingsGate) openingInProgress = false; }
 		}
-		catch
+		catch (Exception error)
 		{
+			Exception translated = invocation?.TranslateFailure(error) ?? error;
 			if (openingSession != null)
 			{
 				try { invocation?.Dispose(); } catch { }
@@ -788,7 +1116,89 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				if (prior != ConnectionState.Closed && connectingNotified)
 					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
 			}
-			throw;
+			throw translated;
+		}
+	}
+
+	private async Task ConnectAsync(CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmSession openingSession = null;
+		DmExecutionLease lease = null;
+		DmInvocation invocation = null;
+		bool connectingNotified = false;
+		DmDeadline connectDeadline = default;
+		try
+		{
+			lock (settingsGate)
+			{
+				if (openingInProgress)
+					throw new InvalidOperationException("Connection is opening.");
+				if (connectionState == ConnectionState.Open)
+					return;
+				EnsureConfigurationMutable();
+				CheckProperty();
+				openingSession = new DmSession(OnSessionBroken);
+				openingSession.BeginConnecting();
+				openingInProgress = true;
+				session = openingSession;
+				connectionState = ConnectionState.Connecting;
+			}
+			connectingNotified = true;
+			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
+			connectDeadline = DmDeadline.Start(settings.ConnectTimeout, OperationClock);
+			lease = openingSession.BeginExecution(DmOperationPurpose.Handshake, connectDeadline);
+			invocation = lease.BeginInvocation(cancellationToken);
+			handshakeInvocation = invocation;
+			await ConnProperty.EPGroup.connectAsync(this, cancellationToken).ConfigureAwait(false);
+			invocation.Dispose();
+			invocation = lease.BeginInvocation(cancellationToken);
+			invocation.ThrowIfTerminated();
+			if (!ReferenceEquals(Session, openingSession) || do_State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection did not open.");
+			openingSession.CompleteHandshake();
+			invocation.Complete();
+			invocation.Dispose();
+			lease.Dispose();
+			lock (settingsGate)
+			{
+				if (!ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Open)
+					throw new InvalidOperationException("Connection was closed during opening.");
+				handshakeInvocation = null;
+			}
+			try { OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open)); }
+			finally { lock (settingsGate) openingInProgress = false; }
+		}
+		catch (Exception error)
+		{
+			Exception translated = invocation?.TranslateFailure(error) ?? error;
+			if (openingSession != null)
+			{
+				try { invocation?.Dispose(); } catch { }
+				try { lease?.Dispose(); } catch { }
+				DmDetachedTransport captured = null;
+				DmConnInstance orphan = null;
+				ConnectionState prior = ConnectionState.Closed;
+				lock (settingsGate)
+				{
+					if (ReferenceEquals(session, openingSession))
+					{
+						captured = openingSession.Detach();
+						orphan = m_ConnInst;
+						m_ConnInst = null;
+						session = null;
+						prior = connectionState;
+						connectionState = ConnectionState.Closed;
+					}
+					openingInProgress = false;
+					handshakeInvocation = null;
+				}
+				try { captured?.AbortTransport(); orphan?.AbortTransport(); } catch { }
+				openingSession.MarkClosed();
+				if (prior != ConnectionState.Closed && connectingNotified)
+					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
+			}
+			throw translated;
 		}
 	}
 

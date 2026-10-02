@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Internal.Transport;
 
@@ -98,6 +100,64 @@ internal static class DmFrameReader
                 return total;
             }
         }
+    }
+
+    internal static async ValueTask<int> ReadAsync(Func<byte[], int, int, CancellationToken, ValueTask> readExactly,
+        b destination, Func<b, int, bool> validateFrame, DmDeadline deadline,
+        CancellationToken cancellationToken = default, Func<byte[], bool> validateHeader = null)
+    {
+        ArgumentNullException.ThrowIfNull(readExactly);
+        ArgumentNullException.ThrowIfNull(destination);
+        ArgumentNullException.ThrowIfNull(validateFrame);
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            deadline.ThrowIfExpired();
+            destination.a(0);
+            destination.B(HeaderSize);
+            await readExactly(destination.A(), 0, HeaderSize, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            deadline.ThrowIfExpired();
+            destination.A(HeaderSize);
+            int total = ValidateLength(BodyLength(destination.A()));
+            if (destination.A()[18] != 0) throw new NotSupportedException("Compressed protocol frames are not supported.");
+            if (validateHeader != null && !validateHeader(destination.A()))
+                throw new InvalidDataException("Frame header checksum failed.");
+            int bodyLength = total - HeaderSize;
+            destination.B(bodyLength);
+            if (bodyLength != 0)
+                await readExactly(destination.A(), HeaderSize, bodyLength, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            deadline.ThrowIfExpired();
+            destination.A(total);
+            if (!validateFrame(destination, total)) throw new InvalidDataException("Frame checksum failed.");
+            if (Command(destination.A()) != HeartbeatCommand)
+            {
+                destination.G(HeaderSize);
+                return total;
+            }
+        }
+    }
+
+    internal static ValueTask<int> ReadAsync(Stream stream, b destination, bool crcBody, DmDeadline deadline,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return ReadAsync(async (buffer, offset, count, token) =>
+        {
+            int read = 0;
+            using var budget = new DmIoCancellation(deadline, token, CancellationToken.None);
+            while (read < count)
+            {
+                int progress;
+                try { progress = await stream.ReadAsync(buffer.AsMemory(offset + read, count - read), budget.Token).ConfigureAwait(false); }
+                catch (OperationCanceledException ex) { budget.RethrowCancellation(ex); throw; }
+                deadline.ThrowIfExpired();
+                if (progress <= 0) throw new EndOfStreamException("Truncated protocol frame.");
+                read += progress;
+            }
+        }, destination, (buffer, total) => ValidateChecksum(buffer, total, crcBody), deadline, cancellationToken,
+           header => (crcBody && Command(header) != 200) || ValidateHeaderChecksum(header));
     }
 
     internal static int Read(Stream stream, b destination, bool crcBody, DmDeadline deadline)

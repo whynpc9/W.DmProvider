@@ -1,0 +1,1007 @@
+{
+  "task": "T13",
+  "status": "integration_verified",
+  "sdk": "10.0.203",
+  "tests": {
+    "Configuration": {
+      "total": 11,
+      "executed": 11,
+      "passed": 11,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Session": {
+      "total": 12,
+      "executed": 12,
+      "passed": 12,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Transport": {
+      "total": 56,
+      "executed": 56,
+      "passed": 56,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Security": {
+      "total": 39,
+      "executed": 39,
+      "passed": 39,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Command": {
+      "total": 16,
+      "executed": 16,
+      "passed": 16,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Type": {
+      "total": 142,
+      "executed": 142,
+      "passed": 142,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Transaction": {
+      "total": 88,
+      "executed": 88,
+      "passed": 88,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Isolation": {
+      "total": 78,
+      "executed": 78,
+      "passed": 78,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "Async": {
+      "total": 38,
+      "executed": 38,
+      "passed": 38,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    }
+  },
+  "total_passed": 480,
+  "layers": {
+    "offline": {
+      "run_dir": ".local/verification/r2/t13/runs/20261001T144200Z-88795-3465",
+      "validation": {
+        "schema_version": 1,
+        "task": "T13",
+        "mode": "offline",
+        "status": "offline_verified",
+        "exit_code": 0,
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "api_overrides": 26,
+        "integration": "integration_pending",
+        "server_version": null,
+        "savepoint_status": null,
+        "final_database_state": null,
+        "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261001T144200Z-88795-3465"
+      },
+      "probe_sha256": "997b78b00a1f87eb1c94872f3f5d00f87c8bca2d999a9aa4d6e48036bb4be2cb",
+      "probe": {
+        "schema_version": 1,
+        "task": "T13",
+        "implementation": "W-package",
+        "status": "offline_verified",
+        "accepted": true,
+        "streaming_lob_claimed": false,
+        "cancellation_acceptance": "T14_pending",
+        "mode": "offline",
+        "package_version": "0.1.0-r2.20261001134645",
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "reference_kind": "exact_PackageReference",
+        "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+        "integration": "integration_pending",
+        "exit_code": 0
+      }
+    },
+    "shared": {
+      "run_dir": ".local/verification/r2/t13/runs/20261001T144202Z-88881-10676",
+      "validation": {
+        "schema_version": 1,
+        "task": "T13",
+        "mode": "shared",
+        "status": "package_async_verified",
+        "exit_code": 0,
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "api_overrides": 26,
+        "integration": "real_test_schema",
+        "server_version": "8.1.5.60",
+        "savepoint_status": "supported_for_server_profile",
+        "final_database_state": "random_object_absent",
+        "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261001T144202Z-88881-10676"
+      },
+      "probe_sha256": "eca05b38639cfecedb9315774ac24556716ff228b29127c285ff9c25ccb60e92",
+      "probe": {
+        "schema_version": 1,
+        "task": "T13",
+        "implementation": "W-package",
+        "status": "package_async_verified",
+        "accepted": true,
+        "streaming_lob_claimed": false,
+        "cancellation_acceptance": "T14_pending",
+        "mode": "shared",
+        "package_version": "0.1.0-r2.20261001134645",
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "reference_kind": "exact_PackageReference",
+        "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+        "configuration_step": "complete",
+        "explicit_transport": "PlaintextAllowed",
+        "persist_security_info": false,
+        "buf_prefetch": 0,
+        "owned_table": "T13_0F1C1DB1784842B6AD32B9FA",
+        "final_database_state": "random_object_absent",
+        "cases": {
+          "open_async": true,
+          "prepare_execute_nonquery_async": true,
+          "execute_scalar_async": true,
+          "read_async_cross_page_fetch": {
+            "rows": 2048,
+            "fetch_frames": 4,
+            "rows_before_first_actual_fetch": 100
+          },
+          "next_result_async": {
+            "rowsets": 2,
+            "more_result_frames": 2,
+            "source": "T08_two_selects_target_evidence"
+          },
+          "transaction_begin_commit_async": {
+            "fresh_committed_rows": 1
+          },
+          "transaction_rollback_async": {
+            "fresh_rolled_back_rows": 0
+          },
+          "transaction_savepoints_async": {
+            "status": "supported_for_server_profile",
+            "server_version": "8.1.5.60",
+            "supports_savepoints": true,
+            "fresh_retained_rows": 1,
+            "fresh_rolled_back_rows": 0
+          },
+          "transaction_dispose_async_rollback": {
+            "fresh_rolled_back_rows": 0
+          },
+          "lob_parameter_upload_async": {
+            "blob_bytes": 262144,
+            "clob_utf16_units": 163840
+          },
+          "lob_get_field_value_async": {
+            "blob_sha256": "31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be",
+            "clob_utf8_sha256": "04c960a382b5612501697da0be06a895d66b71ae928fffeffbb9aadaa49f5687",
+            "get_lob_data_frames": 20
+          },
+          "lob_execute_scalar_async": {
+            "get_lob_data_frames": 20
+          },
+          "connection_close_dispose_async": true
+        },
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "server_version": "8.1.5.60",
+        "server_final_rows_before_cleanup": 0,
+        "cleanup_verified": true,
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "negotiated_encrypt_modes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "integration": "real_test_schema",
+        "exit_code": 0
+      }
+    },
+    "tls": {
+      "run_dir": ".local/verification/r2/t13/runs/20261001T144235Z-89178-29525",
+      "validation": {
+        "schema_version": 1,
+        "task": "T13",
+        "mode": "tls",
+        "status": "package_async_verified",
+        "exit_code": 0,
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "api_overrides": 26,
+        "integration": "real_test_schema",
+        "server_version": "8.1.4.6",
+        "savepoint_status": "unsupported_for_server_profile",
+        "final_database_state": "random_object_absent",
+        "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261001T144235Z-89178-29525"
+      },
+      "probe_sha256": "2810c5d7d42dde8902cd2035ed6db23428b8632964257e923a00c2f4d0c851b4",
+      "probe": {
+        "schema_version": 1,
+        "task": "T13",
+        "implementation": "W-package",
+        "status": "package_async_verified",
+        "accepted": true,
+        "streaming_lob_claimed": false,
+        "cancellation_acceptance": "T14_pending",
+        "mode": "tls",
+        "package_version": "0.1.0-r2.20261001134645",
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "reference_kind": "exact_PackageReference",
+        "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+        "configuration_step": "complete",
+        "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+        "explicit_transport": "RequireTls",
+        "persist_security_info": false,
+        "buf_prefetch": 0,
+        "owned_table": "T13_4FF8B1AAEB784708ABE23CF7",
+        "final_database_state": "random_object_absent",
+        "cases": {
+          "open_async": true,
+          "prepare_execute_nonquery_async": true,
+          "execute_scalar_async": true,
+          "read_async_cross_page_fetch": {
+            "rows": 2048,
+            "fetch_frames": 4,
+            "rows_before_first_actual_fetch": 100
+          },
+          "next_result_async": {
+            "rowsets": 2,
+            "more_result_frames": 2,
+            "source": "T08_two_selects_target_evidence"
+          },
+          "transaction_begin_commit_async": {
+            "fresh_committed_rows": 1
+          },
+          "transaction_rollback_async": {
+            "fresh_rolled_back_rows": 0
+          },
+          "transaction_savepoints_async": {
+            "status": "unsupported_for_server_profile",
+            "server_version": "8.1.4.6",
+            "supports_savepoints": false,
+            "rejections": {
+              "SaveAsync": {
+                "exception_type": "System.NotSupportedException",
+                "new_frames": 0,
+                "transaction_outcome": "Active",
+                "connection_state": "Open"
+              },
+              "RollbackAsync": {
+                "exception_type": "System.NotSupportedException",
+                "new_frames": 0,
+                "transaction_outcome": "Active",
+                "connection_state": "Open"
+              },
+              "ReleaseAsync": {
+                "exception_type": "System.NotSupportedException",
+                "new_frames": 0,
+                "transaction_outcome": "Active",
+                "connection_state": "Open"
+              }
+            },
+            "post_rollback_outcome": "RolledBack",
+            "fresh_candidate_rows": 0,
+            "fresh_rolled_back_rows": 0
+          },
+          "transaction_dispose_async_rollback": {
+            "fresh_rolled_back_rows": 0
+          },
+          "lob_parameter_upload_async": {
+            "blob_bytes": 262144,
+            "clob_utf16_units": 163840
+          },
+          "lob_get_field_value_async": {
+            "blob_sha256": "31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be",
+            "clob_utf8_sha256": "04c960a382b5612501697da0be06a895d66b71ae928fffeffbb9aadaa49f5687",
+            "get_lob_data_frames": 20
+          },
+          "lob_execute_scalar_async": {
+            "get_lob_data_frames": 20
+          },
+          "connection_close_dispose_async": true
+        },
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "server_version": "8.1.4.6",
+        "server_final_rows_before_cleanup": 0,
+        "cleanup_verified": true,
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "negotiated_encrypt_modes": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "integration": "real_test_schema",
+        "exit_code": 0
+      }
+    },
+    "security-shared": {
+      "run_dir": ".local/verification/r2/t13/runs/20261001T145301Z-98999-7920",
+      "validation": {
+        "schema_version": 1,
+        "task": "T13",
+        "mode": "security-shared",
+        "status": "security_rejection_verified",
+        "exit_code": 0,
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "api_overrides": 26,
+        "integration": "real_test_security",
+        "server_version": null,
+        "savepoint_status": null,
+        "security_classification": "require_tls_rejected_plaintext_before_login",
+        "final_database_state": "no_objects_created",
+        "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261001T145301Z-98999-7920"
+      },
+      "probe_sha256": "bdad23c7d544957e61424a78e441c59f57c7f422170bc8e9851394a0ba4914a7",
+      "probe": {
+        "schema_version": 1,
+        "task": "T13",
+        "implementation": "W-package",
+        "status": "security_rejection_verified",
+        "accepted": true,
+        "streaming_lob_claimed": false,
+        "cancellation_acceptance": "T14_pending",
+        "mode": "security-shared",
+        "package_version": "0.1.0-r2.20261001134645",
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "reference_kind": "exact_PackageReference",
+        "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+        "configuration_step": "complete",
+        "explicit_transport": "PlaintextAllowed",
+        "persist_security_info": false,
+        "buf_prefetch": 0,
+        "handshake_hook": "DmWireTestHooks.AfterHandshakeExchangeEntered_via_HandshakeFrameEncoded",
+        "before": {
+          "identity": "WDM_PROVIDER_TEST",
+          "schema": "WDM_PROVIDER_TEST",
+          "negotiated_encrypt_mode": 0,
+          "login_encoded_count": 1,
+          "server_version": "8.1.5.60"
+        },
+        "security_case": {
+          "classification": "require_tls_rejected_plaintext_before_login",
+          "exception_type": "System.NotSupportedException",
+          "connection_state": "Closed",
+          "handshake_opcodes": [
+            200
+          ],
+          "login_encoded_count": 0,
+          "negotiated_encrypt_modes": [
+            0
+          ],
+          "created_tcp_sockets": 1,
+          "disposed_tcp_sockets": 1,
+          "successful_tls_upgrades": 0,
+          "failed_tls_upgrades": 0,
+          "explicit_transport": "RequireTls"
+        },
+        "negative_numeric_frame_observations": [
+          {
+            "Stage": "security_negative_open_async",
+            "RequestOpcode": 200,
+            "ResponseOpcode": 228,
+            "SqlCode": 0,
+            "BodyLength": 26
+          }
+        ],
+        "final_database_state": "no_objects_created",
+        "after": {
+          "identity": "WDM_PROVIDER_TEST",
+          "schema": "WDM_PROVIDER_TEST",
+          "negotiated_encrypt_mode": 0,
+          "login_encoded_count": 1,
+          "server_version": "8.1.5.60"
+        },
+        "integration": "real_test_security",
+        "exit_code": 0
+      }
+    },
+    "security-tls": {
+      "run_dir": ".local/verification/r2/t13/runs/20261001T145305Z-99062-21974",
+      "validation": {
+        "schema_version": 1,
+        "task": "T13",
+        "mode": "security-tls",
+        "status": "security_rejection_verified",
+        "exit_code": 0,
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "api_overrides": 26,
+        "integration": "real_test_security",
+        "server_version": null,
+        "savepoint_status": null,
+        "security_classification": "unknown_ca_rejected_before_login",
+        "final_database_state": "no_objects_created",
+        "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261001T145305Z-99062-21974"
+      },
+      "probe_sha256": "75cc7f9cfd6925de8bc87e5629d7d2c56d462b5608265701db05c59403f155d6",
+      "probe": {
+        "schema_version": 1,
+        "task": "T13",
+        "implementation": "W-package",
+        "status": "security_rejection_verified",
+        "accepted": true,
+        "streaming_lob_claimed": false,
+        "cancellation_acceptance": "T14_pending",
+        "mode": "security-tls",
+        "package_version": "0.1.0-r2.20261001134645",
+        "package_sha256": "b3133628fe8221efc6cace4616daaea370222b5381792b07eec9c9685a3d416c",
+        "loaded_assembly_sha256": "3eaa6a45872304d07489e713d3e913b92547367f78e2dd86327de6407a50e36c",
+        "loaded_assembly_mvid": "f00bb05f-67ec-4498-9aba-1d5cf18aa42a",
+        "reference_kind": "exact_PackageReference",
+        "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+        "configuration_step": "complete",
+        "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+        "explicit_transport": "RequireTls",
+        "persist_security_info": false,
+        "buf_prefetch": 0,
+        "handshake_hook": "DmWireTestHooks.AfterHandshakeExchangeEntered_via_HandshakeFrameEncoded",
+        "before": {
+          "identity": "WDM_PROVIDER_TEST",
+          "schema": "WDM_PROVIDER_TEST",
+          "negotiated_encrypt_mode": 1,
+          "login_encoded_count": 1,
+          "server_version": "8.1.4.6"
+        },
+        "unrelated_ca": {
+          "public_certificate_only": true,
+          "certificate_mode": "0600",
+          "directory_mode": "0700"
+        },
+        "security_case": {
+          "classification": "unknown_ca_rejected_before_login",
+          "exception_type": "System.Security.Authentication.AuthenticationException",
+          "connection_state": "Closed",
+          "handshake_opcodes": [
+            200
+          ],
+          "login_encoded_count": 0,
+          "negotiated_encrypt_modes": [
+            1
+          ],
+          "created_tcp_sockets": 1,
+          "disposed_tcp_sockets": 1,
+          "successful_tls_upgrades": 0,
+          "failed_tls_upgrades": 1,
+          "explicit_transport": "RequireTls"
+        },
+        "negative_numeric_frame_observations": [
+          {
+            "Stage": "security_negative_open_async",
+            "RequestOpcode": 200,
+            "ResponseOpcode": 228,
+            "SqlCode": 0,
+            "BodyLength": 35
+          }
+        ],
+        "final_database_state": "no_objects_created",
+        "after": {
+          "identity": "WDM_PROVIDER_TEST",
+          "schema": "WDM_PROVIDER_TEST",
+          "negotiated_encrypt_mode": 1,
+          "login_encoded_count": 1,
+          "server_version": "8.1.4.6"
+        },
+        "temporary_public_ca_removed": true,
+        "integration": "real_test_security",
+        "exit_code": 0
+      }
+    }
+  },
+  "commands": {
+    "offline-v2": [
+      {
+        "stage": "sdk",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "--version"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:28.389862+00:00",
+        "ended_utc": "2026-10-01T13:41:28.443529+00:00"
+      },
+      {
+        "stage": "product-build",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "build",
+          "src/W.DmProvider/W.DmProvider.csproj",
+          "-c",
+          "Release",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:28.443805+00:00",
+        "ended_utc": "2026-10-01T13:41:31.182481+00:00"
+      },
+      {
+        "stage": "Configuration",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Configuration.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:31.182744+00:00",
+        "ended_utc": "2026-10-01T13:41:41.750047+00:00"
+      },
+      {
+        "stage": "Session",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.SessionTests/W.DmProvider.SessionTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Session.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:41.750771+00:00",
+        "ended_utc": "2026-10-01T13:41:43.570539+00:00"
+      },
+      {
+        "stage": "Transport",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Transport.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:43.571154+00:00",
+        "ended_utc": "2026-10-01T13:41:45.457383+00:00"
+      },
+      {
+        "stage": "Security",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.SecurityTests/W.DmProvider.SecurityTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Security.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:45.458408+00:00",
+        "ended_utc": "2026-10-01T13:41:54.239787+00:00"
+      },
+      {
+        "stage": "Command",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.CommandTests/W.DmProvider.CommandTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Command.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:54.240717+00:00",
+        "ended_utc": "2026-10-01T13:41:56.122072+00:00"
+      },
+      {
+        "stage": "Type",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.TypeTests/W.DmProvider.TypeTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Type.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:56.122927+00:00",
+        "ended_utc": "2026-10-01T13:41:57.982120+00:00"
+      },
+      {
+        "stage": "Transaction",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.TransactionTests/W.DmProvider.TransactionTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Transaction.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:57.983948+00:00",
+        "ended_utc": "2026-10-01T13:41:59.851018+00:00"
+      },
+      {
+        "stage": "Isolation",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.IsolationTests/W.DmProvider.IsolationTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Isolation.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:41:59.852545+00:00",
+        "ended_utc": "2026-10-01T13:42:01.717491+00:00"
+      },
+      {
+        "stage": "Async",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Async.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v2",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 1,
+        "started_utc": "2026-10-01T13:42:01.718812+00:00",
+        "ended_utc": "2026-10-01T13:42:03.633022+00:00"
+      }
+    ],
+    "offline-v3": [
+      {
+        "stage": "sdk",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "--version"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:45:34.915849+00:00",
+        "ended_utc": "2026-10-01T13:45:34.975936+00:00"
+      },
+      {
+        "stage": "Async",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "test",
+          "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj",
+          "-c",
+          "Release",
+          "--logger",
+          "trx;LogFileName=Async.trx",
+          "--results-directory",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/offline-v3",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:45:34.976709+00:00",
+        "ended_utc": "2026-10-01T13:45:46.374809+00:00"
+      }
+    ],
+    "package-v3": [
+      {
+        "stage": "pack",
+        "argv": [
+          "/usr/local/share/dotnet/dotnet",
+          "pack",
+          "src/W.DmProvider/W.DmProvider.csproj",
+          "-c",
+          "Release",
+          "--output",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed",
+          "/p:Version=0.1.0-r2.20261001134645",
+          "/p:PackageVersion=0.1.0-r2.20261001134645",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:46:45.015560+00:00",
+        "ended_utc": "2026-10-01T13:46:47.870822+00:00"
+      },
+      {
+        "stage": "package-source-inspect",
+        "argv": [
+          "python3",
+          "tools/ProductPackageProbe/inspect.py",
+          "package",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed/W.DmProvider.0.1.0-r2.20261001134645.nupkg",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/source-package-manifest.json",
+          "0.1.0-r2.20261001134645",
+          "src/W.DmProvider"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T13:46:47.871074+00:00",
+        "ended_utc": "2026-10-01T13:46:47.927344+00:00"
+      },
+      {
+        "stage": "consumer-offline",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "offline",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 1,
+        "started_utc": "2026-10-01T13:46:47.928120+00:00",
+        "ended_utc": "2026-10-01T13:46:49.685526+00:00"
+      }
+    ],
+    "consumer-v6": [
+      {
+        "stage": "consumer-offline",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "offline",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T14:42:00.491761+00:00",
+        "ended_utc": "2026-10-01T14:42:02.341420+00:00"
+      },
+      {
+        "stage": "consumer-shared",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "shared",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T14:42:02.341690+00:00",
+        "ended_utc": "2026-10-01T14:42:35.379530+00:00"
+      },
+      {
+        "stage": "consumer-tls",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "tls",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T14:42:35.379773+00:00",
+        "ended_utc": "2026-10-01T14:42:38.619984+00:00"
+      }
+    ],
+    "consumer-v7-security": [
+      {
+        "stage": "consumer-security-shared",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "security-shared",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T14:53:01.779924+00:00",
+        "ended_utc": "2026-10-01T14:53:05.494322+00:00"
+      },
+      {
+        "stage": "consumer-security-tls",
+        "argv": [
+          "bash",
+          "eng/t13.sh",
+          "security-tls",
+          "0.1.0-r2.20261001134645",
+          "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/package-v3/feed"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-01T14:53:05.494566+00:00",
+        "ended_utc": "2026-10-01T14:53:07.936780+00:00"
+      }
+    ]
+  },
+  "source_count": 516,
+  "historical_unchanged": true,
+  "profile_difference": "shared 8.1.5.60 supports savepoints; isolated TLS 8.1.4.6 rejects all three savepoint APIs without I/O while preserving Active/Open, then rollback and fresh zero rows verified",
+  "audit_limitations": [
+    "26 overrides exclude ADO.NET base fallback; true nonblocking I/O relies on offline barrier tests and root source review, not override audit alone",
+    "Current product source and binary unchanged; positive v6 input used overlay-v3, security v7 used overlay-v4 whose positive methods were unchanged and validator readbacks passed",
+    "Streaming LOB and T14 cancellation/deadline/performance acceptance are not claimed"
+  ],
+  "window": "released",
+  "T14_started": false,
+  "independent_status": "independent_validation_complete_pending_root_review",
+  "completed": true,
+  "root_review": "accepted",
+  "production_release_accepted": false,
+  "R2_accepted": false
+}

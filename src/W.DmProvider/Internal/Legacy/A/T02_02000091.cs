@@ -20,7 +20,8 @@ namespace W.Dm.Internal.Legacy.A;
 // the codec; callbacks run inside the owned exchange so failures break the session.
 internal static class DmResultProtocolTrace
 {
-	[ThreadStatic] private static short currentRequestOpcode;
+	private static readonly AsyncLocal<short> requestOpcodeSlot = new AsyncLocal<short>();
+	private static short currentRequestOpcode { get => requestOpcodeSlot.Value; set => requestOpcodeSlot.Value = value; }
 	internal static Action<short, short, int, int> AfterFrame;
 	internal static Action<short, int, long, long, int, bool, bool> AfterStatementDecode;
 	internal static short CurrentRequestOpcode => currentRequestOpcode;
@@ -66,7 +67,7 @@ internal static class DmTransactionProtocolTrace
 	}
 }
 
-internal class B
+internal partial class B
 {
 	private ILogger __t02_field_04000AB8 = (Logger)LogFactory.getLog(typeof(B));
 
@@ -96,8 +97,10 @@ internal class B
 	private int CurrentMessageIdleTimeout() => MessageIdleTimeout(
 		DmInvocation.Current?.Lease.Purpose ?? throw new InvalidOperationException("Message has no invocation."),
 		a().SocketTimeout);
-	[ThreadStatic] private static B decodeOwner;
-	[ThreadStatic] private static B parameterUploadOwner;
+	private static readonly AsyncLocal<B> decodeOwnerSlot = new AsyncLocal<B>();
+	private static B decodeOwner { get => decodeOwnerSlot.Value; set => decodeOwnerSlot.Value = value; }
+	private static readonly AsyncLocal<B> parameterUploadOwnerSlot = new AsyncLocal<B>();
+	private static B parameterUploadOwner { get => parameterUploadOwnerSlot.Value; set => parameterUploadOwnerSlot.Value = value; }
 
 	private void EncodeWithParameterUploads(Action encode)
 	{

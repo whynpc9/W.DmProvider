@@ -201,8 +201,16 @@ public sealed class TransactionControlBoundaryTests
             using var invocation = lease.BeginInvocation();
             session.BeginTransactionControl(transaction, invocation.Identity, DmTransactionControlKind.Commit);
             time.AdvanceMilliseconds(30000);
-            Assert.Throws<TimeoutException>(() =>
+            var error = Assert.Throws<DmTimeoutException>(() =>
                 transport.SendAll([1, 2, 3], 0, 3, invocation.Deadline, 0));
+            Assert.Equal(DmErrorKind.Timeout, error.ErrorKind);
+            Assert.Equal("WDM_TIMEOUT", error.DriverErrorCode);
+            Assert.Equal(0, error.Number);
+            Assert.NotNull(error.FailureInfo);
+            Assert.Equal(DmFailurePhase.Commit, error.FailureInfo.Phase);
+            Assert.Equal(DmOperationOutcome.NotSent, error.FailureInfo.OperationOutcome);
+            Assert.Equal(DmCancelSource.TotalDeadline, error.FailureInfo.CancelSource);
+            Assert.True(error.FailureInfo.ConnectionReusable);
             Assert.False(session.EndTransactionControl(invocation));
             Assert.Equal(DmTransactionOutcome.Active, transaction.Outcome);
             Assert.Equal(0, channel.SendCalls);
@@ -230,8 +238,17 @@ public sealed class TransactionControlBoundaryTests
                 DmDeadline.Start(TimeSpan.FromSeconds(30), time));
             using var invocation = lease.BeginInvocation();
             session.BeginTransactionControl(transaction, invocation.Identity, DmTransactionControlKind.Commit);
-            Assert.Throws<TimeoutException>(() =>
+            var error = Assert.Throws<DmTimeoutException>(() =>
                 transport.SendAll([1, 2, 3], 0, 3, invocation.Deadline, 0));
+            Assert.Equal(DmErrorKind.Timeout, error.ErrorKind);
+            Assert.Equal("WDM_TIMEOUT", error.DriverErrorCode);
+            Assert.Equal(0, error.Number);
+            Assert.NotNull(error.FailureInfo);
+            Assert.Equal(DmFailurePhase.Send, error.FailureInfo.Phase);
+            Assert.Equal(DmOperationOutcome.Unknown, error.FailureInfo.OperationOutcome);
+            Assert.Equal(DmTransactionOutcome.OutcomeUnknown, error.FailureInfo.TransactionOutcome);
+            Assert.Equal(DmCancelSource.TotalDeadline, error.FailureInfo.CancelSource);
+            Assert.False(error.FailureInfo.ConnectionReusable);
             Assert.False(session.EndTransactionControl(invocation));
             Assert.Equal(DmTransactionOutcome.OutcomeUnknown, transaction.Outcome);
             Assert.Equal(1, channel.SendCalls);

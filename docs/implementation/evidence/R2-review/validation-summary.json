@@ -1,0 +1,74 @@
+{
+  "status": "offline_verified_shared_integration_pending",
+  "root_review": "scoped_code_fixes_accepted",
+  "source_status": "scoped_fix_verified",
+  "candidate": {
+    "version": "0.1.0-r2.review.20261002092837",
+    "package_sha256": "462ad2d275ce4745184809a14c70264b2f96d371a8da02cdd775e8deb00f1abb",
+    "dll_sha256": "c88913339fb373d586c9502b426df448b22d3031995a254348fa9d68c19a895a",
+    "mvid": "834905ee-d786-42f9-a69b-2e0089b0ac55"
+  },
+  "sdk": "10.0.203",
+  "offline": {
+    "total": 603,
+    "passed": 603,
+    "failed": 0,
+    "zero_skip": true
+  },
+  "source_count": 549,
+  "product_source_count": 286,
+  "product_source_sha256": "b17bea440ccac4103a24ee774aef2d4009cdd42df3d972081a343f4d45d3591f",
+  "api_override_count": 26,
+  "tls": {
+    "t13_business": "passed",
+    "t13_security": "passed",
+    "t14_cases": 8,
+    "t14_status": "passed"
+  },
+  "shared": {
+    "integration": "integration_pending",
+    "new_candidate_failed_attempts": 2,
+    "baseline_comparison_failed_attempts": 1,
+    "attribution": "Baseline same-load failure prevents attributing shared timeout solely to review change; new shared acceptance remains incomplete.",
+    "not_executed": [
+      "T13 security-shared",
+      "T14 shared 10 cases"
+    ]
+  },
+  "recoveries": {
+    "count": 3,
+    "all_exit_zero": true,
+    "all_exact_owned_table_fresh_count_zero": true,
+    "original_failed_final_database_state": "unverified_preserved"
+  },
+  "red": {
+    "cases": 16,
+    "passed": 7,
+    "failed": 9,
+    "transport": {
+      "total": 6,
+      "passed": 2,
+      "failed": 4
+    },
+    "failure_info": {
+      "total": 10,
+      "passed": 5,
+      "failed": 5
+    }
+  },
+  "failed_green_v1": {
+    "total": 603,
+    "passed": 595,
+    "failed": 8,
+    "preserved_path": ".local/verification/r2-review/validation-v1"
+  },
+  "historical": {
+    "count": 75,
+    "before_after_unchanged": true
+  },
+  "native_cancel": "No implementation change; no opcode or native-cancel claim added",
+  "limits": "Original operation budgets and 1200-second T14 process cap preserved; no retries beyond authorized bounded shared comparison.",
+  "publication": "not_committed_not_pushed_not_released",
+  "window": "released_no_dotnet_or_DB_during_artifact_close",
+  "production_release_accepted": false
+}

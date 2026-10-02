@@ -7,7 +7,7 @@ using W.Dm.parser;
 
 namespace W.Dm.Internal.Legacy.A;
 
-internal class A
+internal partial class A
 {
 	private int __t02_field_04000922;
 

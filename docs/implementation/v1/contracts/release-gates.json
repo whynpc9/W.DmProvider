@@ -70,7 +70,20 @@
         "async I/O chain verified",
         "cancellation/timeout/unknown outcomes validated"
       ],
-      "status": "not_started"
+      "status": "integration_verified",
+      "reports": [
+        "../../reports/T13.md",
+        "../../reports/T14.md"
+      ],
+      "evidence": "../../evidence/T14/validation-summary.json",
+      "scope": "limited-profile async preview; no production release",
+      "latest_candidate": {
+        "version": "0.1.0-r2.20261001164429",
+        "package_sha256": "5b10a471c6becbfbc2d2d6474aa7f9e12fcf33fa7522d22a811b3cc0141c8122",
+        "dll_sha256": "fdea777db6150aeac6ecbe8c69a17329d3089b1364ee5c7f9b2cf4637e52f431",
+        "source_state": "working_tree",
+        "source_commit": null
+      }
     },
     {
       "id": "R3",

@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "task": "T13",
+  "implementation": "W-package",
+  "status": "rejected",
+  "accepted": false,
+  "streaming_lob_claimed": false,
+  "cancellation_acceptance": "T14_pending",
+  "mode": "shared",
+  "package_version": "0.1.0-r2.20261001164429",
+  "package_sha256": "5b10a471c6becbfbc2d2d6474aa7f9e12fcf33fa7522d22a811b3cc0141c8122",
+  "loaded_assembly_sha256": "fdea777db6150aeac6ecbe8c69a17329d3089b1364ee5c7f9b2cf4637e52f431",
+  "loaded_assembly_mvid": "24e7baa3-bb4c-430e-85f1-9a3dbdc4ac60",
+  "reference_kind": "exact_PackageReference",
+  "api_override_audit_limit": "Provider overrides exclude ADO.NET base fallback; offline barrier tests and reviewed call chains establish nonblocking network I/O.",
+  "api_override_audit": [
+    "DmConnection.OpenAsync(CancellationToken)",
+    "DmConnection.CloseAsync()",
+    "DmConnection.DisposeAsync()",
+    "DmConnection.BeginDbTransactionAsync(IsolationLevel,CancellationToken)",
+    "DmConnection.GetSchemaAsync(CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,CancellationToken)",
+    "DmConnection.GetSchemaAsync(String,String[],CancellationToken)",
+    "DmConnection.ChangeDatabaseAsync(String,CancellationToken)",
+    "DmCommand.PrepareAsync(CancellationToken)",
+    "DmCommand.ExecuteNonQueryAsync(CancellationToken)",
+    "DmCommand.ExecuteScalarAsync(CancellationToken)",
+    "DmCommand.ExecuteDbDataReaderAsync(CommandBehavior,CancellationToken)",
+    "DmCommand.DisposeAsync()",
+    "DmDataReader.ReadAsync(CancellationToken)",
+    "DmDataReader.NextResultAsync(CancellationToken)",
+    "DmDataReader.CloseAsync()",
+    "DmDataReader.DisposeAsync()",
+    "DmDataReader.IsDBNullAsync(Int32,CancellationToken)",
+    "DmDataReader.GetSchemaTableAsync(CancellationToken)",
+    "DmDataReader.GetFieldValueAsync(Int32,CancellationToken)",
+    "DmTransaction.CommitAsync(CancellationToken)",
+    "DmTransaction.RollbackAsync(CancellationToken)",
+    "DmTransaction.SaveAsync(String,CancellationToken)",
+    "DmTransaction.ReleaseAsync(String,CancellationToken)",
+    "DmTransaction.RollbackAsync(String,CancellationToken)",
+    "DmTransaction.DisposeAsync()"
+  ],
+  "configuration_step": "complete",
+  "explicit_transport": "PlaintextAllowed",
+  "persist_security_info": false,
+  "buf_prefetch": 0,
+  "owned_table": "T13_0E1B0802E8D948B88AD11350",
+  "final_database_state": "unverified",
+  "cases": {
+    "open_async": true,
+    "prepare_execute_nonquery_async": true,
+    "execute_scalar_async": true
+  },
+  "server_identity": "WDM_PROVIDER_TEST",
+  "server_schema": "WDM_PROVIDER_TEST",
+  "server_version": "8.1.5.60",
+  "work_failure_stage": "read_async_cross_page_fetch",
+  "cleanup_error": {
+    "type": "System.IO.EndOfStreamException",
+    "classification": "unclassified_failure",
+    "server_number": null
+  },
+  "numeric_frame_observations": [
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 200,
+      "ResponseOpcode": 228,
+      "SqlCode": 0,
+      "BodyLength": 26
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 1,
+      "ResponseOpcode": 163,
+      "SqlCode": 0,
+      "BodyLength": 196
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 21
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 43
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 183
+    },
+    {
+      "Stage": "open_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 43
+    },
+    {
+      "Stage": "owned_table_create_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 79
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 13,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 43
+    },
+    {
+      "Stage": "prepare_execute_nonquery_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 118
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 0
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 43
+    },
+    {
+      "Stage": "execute_scalar_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 12
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 44,
+      "ResponseOpcode": 0,
+      "SqlCode": 111,
+      "BodyLength": 43
+    },
+    {
+      "Stage": "fetch_fixture_insert_async",
+      "RequestOpcode": 4,
+      "ResponseOpcode": 0,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 3,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 28
+    },
+    {
+      "Stage": "read_async_cross_page_fetch",
+      "RequestOpcode": 5,
+      "ResponseOpcode": 187,
+      "SqlCode": 0,
+      "BodyLength": 105178
+    }
+  ],
+  "negotiated_encrypt_modes": [
+    0
+  ],
+  "work_error": {
+    "type": "W.Dm.DmTimeoutException",
+    "classification": "provider_error",
+    "server_number": 0
+  },
+  "stage": "exact_cleanup_async",
+  "error": {
+    "type": "Program\u002BProbeFailure",
+    "classification": "cleanup_failed",
+    "server_number": null
+  },
+  "exit_code": 1
+}

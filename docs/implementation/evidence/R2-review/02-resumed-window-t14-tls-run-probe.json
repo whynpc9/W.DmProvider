@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "task": "T14",
+  "implementation": "W-package",
+  "accepted": true,
+  "status": "package_cancellation_verified",
+  "native_cancel_claimed": false,
+  "server_immediate_stop_claimed": false,
+  "mode": "tls",
+  "package_version": "0.1.0-r2.review.20261002092837",
+  "package_sha256": "462ad2d275ce4745184809a14c70264b2f96d371a8da02cdd775e8deb00f1abb",
+  "loaded_assembly_sha256": "c88913339fb373d586c9502b426df448b22d3031995a254348fa9d68c19a895a",
+  "loaded_assembly_mvid": "834905ee-d786-42f9-a69b-2e0089b0ac55",
+  "reference_kind": "exact_PackageReference",
+  "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+  "explicit_transport": "RequireTls",
+  "owned_table": "T14_F2AA95AC4C9C4E03995CADDD",
+  "cases": {
+    "pre_cancel_and_idle_noop": {
+      "command_error": {
+        "type": "System.OperationCanceledException",
+        "classification": "typed_operation_failure",
+        "number": null,
+        "failure_info": null
+      },
+      "commit_error": {
+        "type": "System.OperationCanceledException",
+        "classification": "typed_operation_failure",
+        "number": null,
+        "failure_info": null
+      },
+      "sends": 0,
+      "active_preserved": true,
+      "connection_reusable": true,
+      "no_active_cancel_noop": true,
+      "new_token_query": 1
+    },
+    "rowlock_user": {
+      "pending_after_numeric_send": true,
+      "execution_frames": 1,
+      "automatic_reconnections": 0,
+      "baseline_execution_frames": 0,
+      "sent_opcodes": [
+        13
+      ],
+      "connection_state": "Broken",
+      "transaction_outcome": "OutcomeUnknown",
+      "failure": {
+        "type": "W.Dm.DmOperationCanceledException",
+        "classification": "typed_operation_failure",
+        "number": null,
+        "failure_info": {
+          "error_kind": "Canceled",
+          "phase": "Receive",
+          "error_code": "WDM_CANCELED",
+          "operation_outcome": "Unknown",
+          "transaction_outcome": "OutcomeUnknown",
+          "connection_reusable": false,
+          "cancel_source": "User",
+          "server_error_number": null
+        }
+      },
+      "fresh_final_value": 0,
+      "token_contract_verified": true,
+      "server_immediate_stop_claimed": false
+    },
+    "rowlock_command": {
+      "pending_after_numeric_send": true,
+      "execution_frames": 1,
+      "automatic_reconnections": 0,
+      "baseline_execution_frames": 0,
+      "sent_opcodes": [
+        13
+      ],
+      "connection_state": "Broken",
+      "transaction_outcome": "OutcomeUnknown",
+      "failure": {
+        "type": "W.Dm.DmOperationCanceledException",
+        "classification": "typed_operation_failure",
+        "number": null,
+        "failure_info": {
+          "error_kind": "Canceled",
+          "phase": "Receive",
+          "error_code": "WDM_CANCELED",
+          "operation_outcome": "Unknown",
+          "transaction_outcome": "OutcomeUnknown",
+          "connection_reusable": false,
+          "cancel_source": "Command",
+          "server_error_number": null
+        }
+      },
+      "fresh_final_value": 0,
+      "token_contract_verified": true,
+      "server_immediate_stop_claimed": false
+    },
+    "rowlock_deadline": {
+      "pending_after_numeric_send": true,
+      "execution_frames": 1,
+      "automatic_reconnections": 0,
+      "baseline_execution_frames": 0,
+      "sent_opcodes": [
+        13
+      ],
+      "connection_state": "Broken",
+      "transaction_outcome": "OutcomeUnknown",
+      "failure": {
+        "type": "W.Dm.DmTimeoutException",
+        "classification": "typed_operation_failure",
+        "number": 0,
+        "failure_info": {
+          "error_kind": "Timeout",
+          "phase": "Receive",
+          "error_code": "WDM_TIMEOUT",
+          "operation_outcome": "Unknown",
+          "transaction_outcome": "OutcomeUnknown",
+          "connection_reusable": false,
+          "cancel_source": "TotalDeadline",
+          "server_error_number": null
+        }
+      },
+      "fresh_final_value": 0,
+      "token_contract_verified": true,
+      "server_immediate_stop_claimed": false
+    },
+    "returned_reader_token_scope": {
+      "rows": 2048,
+      "cached_first_read": true,
+      "actual_fetch_frames": 4,
+      "old_execute_token_canceled": true,
+      "new_read_token_usable": true
+    },
+    "idle_reader_cancel_captured_session": {
+      "future_read_failed": true,
+      "failure": {
+        "type": "W.Dm.DmOperationCanceledException",
+        "classification": "typed_operation_failure",
+        "number": null,
+        "failure_info": {
+          "error_kind": "Canceled",
+          "phase": "Fetch",
+          "error_code": "WDM_CANCELED",
+          "operation_outcome": "Unknown",
+          "transaction_outcome": null,
+          "connection_reusable": false,
+          "cancel_source": "Command",
+          "server_error_number": null
+        }
+      },
+      "old_session_replaced": true,
+      "stale_cancel_and_dispose_new_session_usable": true
+    },
+    "commit_sent_unknown": {
+      "boundary": "sent_before_response_read",
+      "commit_frames": 1,
+      "automatic_reconnections": 0,
+      "transaction_outcome": "OutcomeUnknown",
+      "connection_state": "Broken",
+      "failure": {
+        "type": "W.Dm.DmCommitOutcomeUnknownException",
+        "classification": "typed_operation_failure",
+        "number": 0,
+        "failure_info": {
+          "error_kind": "OutcomeUnknown",
+          "phase": "Commit",
+          "error_code": "WDM_COMMIT_UNKNOWN",
+          "operation_outcome": "Unknown",
+          "transaction_outcome": "OutcomeUnknown",
+          "connection_reusable": false,
+          "cancel_source": "User",
+          "server_error_number": null
+        }
+      },
+      "fresh_final_value": 1,
+      "automatic_replay_performed": false
+    },
+    "commit_validated_ack_late_cancel": {
+      "boundary": "validated_success_before_ack_confirmation",
+      "commit_frames": 1,
+      "automatic_reconnections": 0,
+      "transaction_outcome": "Committed",
+      "connection_state": "Broken",
+      "failure": null,
+      "fresh_final_value": 1,
+      "automatic_replay_performed": false
+    }
+  },
+  "final_database_state": "random_object_absent",
+  "case_timings": [
+    {
+      "case": "pre_cancel_and_idle_noop",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:55.90383+00:00",
+      "ended_utc": "2026-10-02T09:35:56.021597+00:00",
+      "elapsed_milliseconds": 117.7703
+    },
+    {
+      "case": "rowlock_user",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:56.022822+00:00",
+      "ended_utc": "2026-10-02T09:35:56.364453+00:00",
+      "elapsed_milliseconds": 341.6306
+    },
+    {
+      "case": "rowlock_command",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:56.364749+00:00",
+      "ended_utc": "2026-10-02T09:35:56.71111+00:00",
+      "elapsed_milliseconds": 346.3622
+    },
+    {
+      "case": "rowlock_deadline",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:56.711419+00:00",
+      "ended_utc": "2026-10-02T09:35:58.111666+00:00",
+      "elapsed_milliseconds": 1400.2437
+    },
+    {
+      "case": "returned_reader_token_scope",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:58.114224+00:00",
+      "ended_utc": "2026-10-02T09:35:58.285675+00:00",
+      "elapsed_milliseconds": 171.4545
+    },
+    {
+      "case": "idle_reader_cancel_captured_session",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:58.287379+00:00",
+      "ended_utc": "2026-10-02T09:35:58.546776+00:00",
+      "elapsed_milliseconds": 259.3971
+    },
+    {
+      "case": "commit_sent_unknown",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:58.548111+00:00",
+      "ended_utc": "2026-10-02T09:35:58.850839+00:00",
+      "elapsed_milliseconds": 302.7295
+    },
+    {
+      "case": "commit_validated_ack_late_cancel",
+      "status": "pass",
+      "started_utc": "2026-10-02T09:35:58.85143+00:00",
+      "ended_utc": "2026-10-02T09:35:59.132379+00:00",
+      "elapsed_milliseconds": 280.9525
+    }
+  ],
+  "server_identity": "WDM_PROVIDER_TEST",
+  "server_schema": "WDM_PROVIDER_TEST",
+  "server_version": "8.1.4.6",
+  "rowlock_send_diagnostics": {
+    "stage": "rowlock_deadline",
+    "baseline_execution_frames": 0,
+    "sent_opcodes": [
+      13
+    ]
+  },
+  "performance_scope": "shared_profile_only",
+  "native_cancel_frames": 0,
+  "fresh_nonzero_rows_before_cleanup": 0,
+  "cleanup_verified": true,
+  "final_verification_identity": "WDM_PROVIDER_TEST",
+  "final_verification_schema": "WDM_PROVIDER_TEST",
+  "exit_code": 0
+}

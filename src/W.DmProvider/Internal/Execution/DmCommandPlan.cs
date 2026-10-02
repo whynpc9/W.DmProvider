@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Threading;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Sessions;
 
 namespace W.Dm.Internal.Execution;
 
@@ -86,6 +87,9 @@ internal sealed class DmCommandPlanGate
 /// <summary>A frozen command contract for one execution, including an isolated parameter set.</summary>
 internal sealed class DmCommandPlan : IDisposable
 {
+    private readonly object cancellationGate = new();
+    private DmExecutionLease execution;
+    private bool cancellationRequested;
     private DmCommandPlanGate gate;
     private int disposed;
 
@@ -133,9 +137,36 @@ internal sealed class DmCommandPlan : IDisposable
             throw new InvalidOperationException("Command plan already has an owner.");
     }
 
+    internal void AttachExecution(DmExecutionLease lease)
+    {
+        bool cancel;
+        lock (cancellationGate)
+        {
+            if (Volatile.Read(ref disposed) != 0) throw new ObjectDisposedException(nameof(DmCommandPlan));
+            if (execution != null) throw new InvalidOperationException("Command plan already has an execution.");
+            execution = lease ?? throw new ArgumentNullException(nameof(lease));
+            cancel = cancellationRequested;
+        }
+        if (cancel) lease.Cancel();
+    }
+
+    internal void RequestCancellation()
+    {
+        DmExecutionLease captured;
+        lock (cancellationGate)
+        {
+            if (Volatile.Read(ref disposed) != 0) return;
+            cancellationRequested = true;
+            captured = execution;
+        }
+        // Callbacks and transport disposal run outside the plan's short state lock.
+        captured?.Cancel();
+    }
+
     public void Dispose()
     {
         if (Interlocked.Exchange(ref disposed, 1) != 0) return;
+        lock (cancellationGate) execution = null;
         Interlocked.Exchange(ref gate, null)?.Exit();
     }
 }

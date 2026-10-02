@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Config;
 using W.Dm.filter;
@@ -64,6 +65,8 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private bool ownsExecutionLease;
 	private bool registeredReader;
 	private int closeStarted;
+	private readonly object asyncCloseGate = new();
+	private Task asyncCloseTask;
 	internal static Action<OperationIdentity> AfterInvocationEntered;
 
 	internal void AttachExecutionLease(DmExecutionLease lease, bool ownsLease = true)
@@ -95,6 +98,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private DmExecutionLease ReaderLease => Volatile.Read(ref executionLease) ??
 		throw new InvalidOperationException("Reader has no execution lease.");
+
+	private static T CompleteReaderInvocation<T>(DmInvocation invocation, T value)
+	{
+		invocation.ThrowIfTerminated();
+		invocation.Complete();
+		return value;
+	}
 
 	private DmInvocation BeginReaderInvocation()
 	{
@@ -365,7 +375,8 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		var active = DmInvocation.Current;
 		DmInvocation invocation = null;
 		bool ownedInvocation = allowOwnedInvocation && active != null && active.Lease == lease;
-		if (lease != null && !ownedInvocation)
+		if (lease != null && !ownedInvocation &&
+			lease.Session.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
 		{
 			TimeSpan cleanupTimeout = commandPlan?.CleanupTimeout ?? m_Conn.Conn.Settings.CleanupTimeout;
 			try
@@ -417,6 +428,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		bool sameSession = lease != null && lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration)
 			&& ReferenceEquals(m_Conn?.Session, lease.Session);
 		if (sameSession && statement != null && !statement.P()) statement.p();
+		else statement?.o();
 		if (sameSession && (m_Behavior & CommandBehavior.CloseConnection) != 0)
 			m_Conn.Conn?.CloseExpectedSession(lease.Session);
 	}
@@ -910,6 +922,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal object GetValueOwned(int i)
 	{
+		DmInvocation.Current?.ThrowIfTerminated();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetValue(int i)");
 		CheckIndex(i);
 		checkClosed();
@@ -998,6 +1011,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private bool AdvanceToReadableResultOwned(bool initialSeek)
 	{
+		DmInvocation.Current?.ThrowIfTerminated();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "NextResult()");
 		checkClosed();
 		if ((!initialSeek && (m_Behavior & CommandBehavior.SingleResult) != 0) || resultCursor.IsTerminal)
@@ -1051,6 +1065,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal bool ReadOwned()
 	{
+		DmInvocation.Current?.ThrowIfTerminated();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Read()");
 		checkClosed();
 		ClearClobs();
@@ -1085,6 +1100,239 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	internal DmDataReader do_GetDbDataReader(int ordinal)
 	{
 		return (DmDataReader)base.GetDbDataReader(ordinal);
+	}
+
+	public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var invocation = ReaderLease.BeginInvocation(cancellationToken);
+		try
+		{
+			invocation.ThrowIfTerminated();
+			AfterInvocationEntered?.Invoke(invocation.Identity);
+			return CompleteReaderInvocation(invocation, await ReadOwnedAsync(cancellationToken).ConfigureAwait(false));
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	internal async Task<bool> ReadOwnedAsync(CancellationToken cancellationToken)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		cancellationToken.ThrowIfCancellationRequested();
+		checkClosed();
+		ClearClobs();
+		if (is_SequentialAccess) m_SequentialSeq = -1;
+		if ((m_Behavior & CommandBehavior.SingleRow) != 0 && m_CurrentRow != -1)
+		{ m_is_single_row = 1; return false; }
+		if (!do_HasRows || m_RsCache == null) return false;
+		bool result = await m_RsCache.do_nextAsync(cancellationToken).ConfigureAwait(false);
+		m_CurrentRow = m_RsCache.currentPos;
+		return result;
+	}
+
+	public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var invocation = ReaderLease.BeginInvocation(cancellationToken);
+		try
+		{
+			invocation.ThrowIfTerminated();
+			return CompleteReaderInvocation(invocation, await AdvanceToReadableResultOwnedAsync(false, cancellationToken).ConfigureAwait(false));
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	internal Task<bool> NextResultForCommandOwnedAsync(CancellationToken token)
+		=> AdvanceToReadableResultOwnedAsync(false, token);
+
+	internal async Task SeekFirstReadableResultOwnedAsync(CancellationToken token)
+	{
+		if (!resultCursor.HasReadableRowset && !resultCursor.IsTerminal)
+			await AdvanceToReadableResultOwnedAsync(true, token).ConfigureAwait(false);
+	}
+
+	private async Task<bool> AdvanceToReadableResultOwnedAsync(bool initialSeek, CancellationToken token)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		token.ThrowIfCancellationRequested();
+		checkClosed();
+		if ((!initialSeek && (m_Behavior & CommandBehavior.SingleResult) != 0) || resultCursor.IsTerminal) return false;
+		var statement = m_Statement;
+		if (statement?.f() == null) return false;
+		if (statement.f().RefCursorStmtArr != null && statement.f().RefCursorStmtArr.Count > statement.f().RefCursorStmtArr_cur)
+			throw new NotSupportedException("Reference cursor results are not supported by this provider version.");
+		for (int step = 0; step < 4096; step++)
+		{
+			DmInfo next = await statement.h().MoreResultsAsync(statement, m_DbInfo, 0, token).ConfigureAwait(false);
+			resultCursor.Observe(next);
+			ApplyResult(next, statement);
+			if (resultCursor.IsTerminal) return false;
+			if (resultCursor.HasReadableRowset) return true;
+		}
+		var owner = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
+		owner?.Session.Detach(owner.Identity)?.AbortTransport();
+		throw new System.IO.InvalidDataException("Result sequence exceeds the supported bound.");
+	}
+
+	public override Task CloseAsync() => BeginAsyncClose(null);
+
+	internal Task CloseForTransactionCleanupAsync(DmDeadline deadline) => BeginAsyncClose(deadline);
+
+	private Task BeginAsyncClose(DmDeadline? deadline)
+	{
+		TaskCompletionSource completion;
+		lock (asyncCloseGate)
+		{
+			if (asyncCloseTask != null) return asyncCloseTask;
+			completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			asyncCloseTask = ObserveCloseCompletionAsync(completion.Task);
+		}
+		// Publish ownership before running hooks or touching the wire. Reentrant and
+		// concurrent callers must observe the same still-pending cleanup task.
+		_ = CompleteAsyncClose(completion, deadline);
+		return asyncCloseTask;
+	}
+
+	private static async Task ObserveCloseCompletionAsync(Task completion)
+		=> await completion.ConfigureAwait(false);
+
+	private async Task CompleteAsyncClose(TaskCompletionSource completion, DmDeadline? deadline)
+	{
+		try
+		{
+			await CloseCoreAsync(deadline).ConfigureAwait(false);
+			completion.TrySetResult();
+		}
+		catch (Exception error) { completion.TrySetException(error); }
+	}
+
+	private async Task CloseCoreAsync(DmDeadline? cleanupDeadlineOverride)
+	{
+		if (Interlocked.CompareExchange(ref closeStarted, 1, 0) != 0) return;
+		var lease = Volatile.Read(ref executionLease);
+		DmInvocation invocation = null;
+		try
+		{
+			if (lease != null &&
+				lease.Session.State is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed))
+			{
+				TimeSpan timeout = commandPlan?.CleanupTimeout ?? m_Conn.Conn.Settings.CleanupTimeout;
+				try { invocation = cleanupDeadlineOverride is { } deadline
+					? lease.BeginCleanupInvocation(deadline) : lease.BeginCleanupInvocation(timeout); }
+				catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException or TimeoutException)
+				{ lease.Session.Detach(lease.Identity)?.AbortTransport(); }
+			}
+			if (m_IsClosed) return;
+			m_IsClosed = true;
+			m_DbInfo = null;
+			m_ColInfo = null;
+			m_CurrentRow = -1L;
+			m_RsCache = null;
+			var statement = m_Statement;
+			m_Statement = null;
+			bool sameSession = lease != null && lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration)
+				&& ReferenceEquals(m_Conn?.Session, lease.Session);
+			if (sameSession && invocation != null && statement != null && !statement.P())
+				await statement.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+			else statement?.o();
+			if (sameSession && (m_Behavior & CommandBehavior.CloseConnection) != 0)
+				await m_Conn.Conn.CloseExpectedSessionAsync(lease.Session).ConfigureAwait(false);
+		}
+		catch { lease?.Session.Detach(lease.Identity)?.AbortTransport(); throw; }
+		finally
+		{
+			invocation?.Dispose();
+			var released = Interlocked.Exchange(ref executionLease, null);
+			try
+			{
+				if (registeredReader) released?.Session.UnregisterReader(released, this);
+				if (ownsExecutionLease) released?.Dispose();
+			}
+			finally
+			{
+				var plan = Interlocked.Exchange(ref commandPlan, null);
+				if (plan != null) releaseCommandPlan?.Invoke(plan);
+			}
+		}
+	}
+
+	public override async ValueTask DisposeAsync()
+	{
+		await CloseAsync().ConfigureAwait(false);
+		GC.SuppressFinalize(this);
+	}
+
+	public override Task<DataTable> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var invocation = ReaderLease.BeginInvocation(cancellationToken);
+		try
+		{
+			invocation.ThrowIfTerminated();
+			return CompleteReaderInvocation(invocation, Task.FromResult(GetSchemaTableOwned()));
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var invocation = ReaderLease.BeginInvocation(cancellationToken);
+		try
+		{
+			invocation.ThrowIfTerminated();
+			CheckIndex(ordinal);
+			checkClosed();
+			byte[] value = null;
+			GetByteArrayValue(ordinal, ref value); // Already fetched row bytes; no network access.
+			return CompleteReaderInvocation(invocation, Task.FromResult(value == null));
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	public override async Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var invocation = ReaderLease.BeginInvocation(cancellationToken);
+		try
+		{
+			invocation.ThrowIfTerminated();
+			CheckIndex(ordinal);
+			checkClosed();
+			int type = m_ColInfo[ordinal].GetCType();
+			if (type is not (12 or 19)) return CompleteReaderInvocation(invocation, GetFieldValueOwned<T>(ordinal));
+			byte[] bytes = null;
+			GetByteArrayValue(ordinal, ref bytes);
+			if (bytes == null)
+			{
+				if (typeof(T) == typeof(object) || typeof(T) == typeof(DBNull)) return CompleteReaderInvocation(invocation, (T)(object)DBNull.Value);
+				DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			}
+			object value;
+			if (typeof(T) == typeof(string))
+				value = await m_GetVal.GetStringAsync(ordinal, bytes, type, m_ColInfo[ordinal].GetPrecision(), m_ColInfo[ordinal].GetScale(), cancellationToken).ConfigureAwait(false);
+			else if (typeof(T) == typeof(byte[]))
+				value = await m_GetVal.GetBytesAsync(ordinal, bytes, type, m_ColInfo[ordinal].GetPrecision(), m_ColInfo[ordinal].GetScale(), cancellationToken).ConfigureAwait(false);
+			else if (typeof(T) == typeof(object))
+				value = await m_GetVal.GetObjectAsync(ordinal, bytes, type, m_ColInfo[ordinal].GetPrecision(), m_ColInfo[ordinal].GetScale(), cancellationToken).ConfigureAwait(false);
+			else throw new NotSupportedException("Asynchronous LOB field conversion supports object, string and byte array values.");
+			return CompleteReaderInvocation(invocation, (T)value);
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	internal async Task<object> GetValueOwnedAsync(int ordinal, CancellationToken token)
+	{
+		DmInvocation.Current?.ThrowIfTerminated();
+		token.ThrowIfCancellationRequested();
+		CheckIndex(ordinal);
+		checkClosed();
+		if (m_ColInfo[ordinal].GetCType() is not (12 or 19)) return GetValueOwned(ordinal);
+		byte[] bytes = null;
+		GetByteArrayValue(ordinal, ref bytes);
+		if (bytes == null) return DBNull.Value;
+		return await m_GetVal.GetObjectAsync(ordinal, bytes, m_ColInfo[ordinal].GetCType(),
+			m_ColInfo[ordinal].GetPrecision(), m_ColInfo[ordinal].GetScale(), token).ConfigureAwait(false);
 	}
 
 	public override void Close()
@@ -1342,6 +1590,16 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	public override T GetFieldValue<T>(int ordinal)
 	{
 		using var invocation = BeginReaderInvocation();
+		try
+		{
+			invocation.ThrowIfTerminated();
+			return CompleteReaderInvocation(invocation, GetFieldValueOwned<T>(ordinal));
+		}
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
+	}
+
+	private T GetFieldValueOwned<T>(int ordinal)
+	{
 		if (typeof(T) == typeof(Guid)) return (T)(object)do_GetGuid(ordinal);
 		if (typeof(T) == typeof(DmDecimal))
 		{
@@ -1429,22 +1687,32 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	public override bool NextResult()
 	{
 		using var invocation = BeginReaderInvocation();
-		if (filterHead == null)
+		try
 		{
-			return NextResultOwned();
+			invocation.ThrowIfTerminated();
+			if (filterHead == null)
+			{
+				return CompleteReaderInvocation(invocation, NextResultOwned());
+			}
+			return CompleteReaderInvocation(invocation, filterHead.NextResult(this));
 		}
-		return filterHead.NextResult(this);
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
 
 	public override bool Read()
 	{
 		using var invocation = BeginReaderInvocation();
-		AfterInvocationEntered?.Invoke(invocation.Identity);
-		if (filterHead == null)
+		try
 		{
-			return ReadOwned();
+			invocation.ThrowIfTerminated();
+			AfterInvocationEntered?.Invoke(invocation.Identity);
+			if (filterHead == null)
+			{
+				return CompleteReaderInvocation(invocation, ReadOwned());
+			}
+			return CompleteReaderInvocation(invocation, filterHead.Read(this));
 		}
-		return filterHead.Read(this);
+		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
 
 	protected override void Dispose(bool disposing)

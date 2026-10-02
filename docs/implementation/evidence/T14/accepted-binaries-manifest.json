@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "path": "accepted-binaries/W.DmProvider.0.1.0-r2.20261001164429.nupkg",
+      "sha256": "5b10a471c6becbfbc2d2d6474aa7f9e12fcf33fa7522d22a811b3cc0141c8122"
+    },
+    {
+      "path": "accepted-binaries/W.DmProvider.dll",
+      "sha256": "fdea777db6150aeac6ecbe8c69a17329d3089b1364ee5c7f9b2cf4637e52f431"
+    }
+  ]
+}
