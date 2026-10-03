@@ -1,0 +1,360 @@
+{
+  "fixture": "T19 CLOB range and whole-value conversion vectors",
+  "fixture_kind": "LegacyInternalConversion/Synthetic",
+  "execution_status": "not_run",
+  "reference_runtime": {
+    "implementation": "CPython",
+    "version": "3.14.7",
+    "utf8_codec_lookup_name": "utf-8",
+    "gb18030_codec_lookup_name": "gb18030",
+    "scope": "Reference Python runtime codecs only; not a claim about server codec versions."
+  },
+  "oracle_methods": {
+    "utf16": "Count Unicode scalar values explicitly, expand supplementary values into high/low surrogate code units, then compare raw UTF-16LE bytes and code units with Python strict utf-16-le codec output.",
+    "text_encodings": "Python standard-library strict UTF-8 and GB18030 codecs, with byte hex and SHA-256 recorded for each complete value.",
+    "partial_surrogate_ranges": "Represent slices only as code-unit arrays; strict UTF-8/GB18030 re-encoding of a dangling surrogate must reject. No missing unit is appended and no opaque unit is guessed."
+  },
+  "local_legacy_framing_scope": "A synthetic 4-byte little-endian header records the actual complete encoded payload byte count, followed by the complete payload. It is not the opaque wire-unit count and does not establish Complex DB support.",
+  "vectors": [
+    {
+      "vector_id": "ab_supplementary_v1",
+      "text": "AB🙂",
+      "code_points_hex": [
+        "U+0041",
+        "U+0042",
+        "U+1F642"
+      ],
+      "unicode_rune_count": 3,
+      "utf16_code_unit_count": 4,
+      "utf16_code_units_hex": [
+        "0041",
+        "0042",
+        "D83D",
+        "DE42"
+      ],
+      "utf16le_bytes_hex": "410042003DD842DE",
+      "opaque_wire_units_synthetic": 3,
+      "opaque_wire_units_scope_note": "Present only for AB🙂 as an independent opaque test input (3); it is not UTF-16 length or encoded-byte count.",
+      "whole_value_encodings": [
+        {
+          "encoding": "UTF-8",
+          "codec_lookup_name": "utf-8",
+          "encoded_bytes_hex": "4142F09F9982",
+          "encoded_byte_count": 6,
+          "encoded_sha256_hex": "5ff657f7b04d9f7dac16c31b401504b47566688e4aa2649b066577bffdc8059d",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 6,
+            "header_hex": "06000000",
+            "payload_hex": "4142F09F9982",
+            "full_frame_hex": "060000004142F09F9982",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        },
+        {
+          "encoding": "GB18030",
+          "codec_lookup_name": "gb18030",
+          "encoded_bytes_hex": "414295308532",
+          "encoded_byte_count": 6,
+          "encoded_sha256_hex": "b472adc550a37367cec23dee220159e5911ed098afa4ee5580278d37bab30d4b",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 6,
+            "header_hex": "06000000",
+            "payload_hex": "414295308532",
+            "full_frame_hex": "06000000414295308532",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        }
+      ],
+      "utf16_range_cases": [
+        {
+          "case_id": "opaque_three_units_yield_three_utf16_units",
+          "field_offset_utf16": 0,
+          "requested_length_utf16": 3,
+          "expected_valid": true,
+          "expected_count": 3,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "0042",
+            "D83D"
+          ],
+          "strict_reencoding": {
+            "UTF-8": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 2,
+              "error_end": 3,
+              "reason": "surrogates not allowed"
+            },
+            "GB18030": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 2,
+              "error_end": 3,
+              "reason": "illegal multibyte sequence"
+            }
+          },
+          "must_not_extend_or_complete_surrogate_pair": true,
+          "opaque_wire_units_used_as_utf16_length": false
+        },
+        {
+          "case_id": "zero_length_at_utf16_end",
+          "field_offset_utf16": 4,
+          "requested_length_utf16": 0,
+          "expected_valid": true,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "zero_length_one_past_utf16_end",
+          "field_offset_utf16": 5,
+          "requested_length_utf16": 0,
+          "expected_valid": false,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "int32_max_request_clamps_to_available_whole_value",
+          "field_offset_utf16": 0,
+          "requested_length_utf16": 2147483647,
+          "expected_valid": true,
+          "expected_count": 4,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "0042",
+            "D83D",
+            "DE42"
+          ]
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "vector_id": "bmp_supplementary_nul_z_v1",
+      "text": "中🙂\u0000Z",
+      "code_points_hex": [
+        "U+4E2D",
+        "U+1F642",
+        "U+0000",
+        "U+005A"
+      ],
+      "unicode_rune_count": 4,
+      "utf16_code_unit_count": 5,
+      "utf16_code_units_hex": [
+        "4E2D",
+        "D83D",
+        "DE42",
+        "0000",
+        "005A"
+      ],
+      "utf16le_bytes_hex": "2D4E3DD842DE00005A00",
+      "opaque_wire_units_synthetic": null,
+      "opaque_wire_units_scope_note": "Present only for AB🙂 as an independent opaque test input (3); it is not UTF-16 length or encoded-byte count.",
+      "whole_value_encodings": [
+        {
+          "encoding": "UTF-8",
+          "codec_lookup_name": "utf-8",
+          "encoded_bytes_hex": "E4B8ADF09F9982005A",
+          "encoded_byte_count": 9,
+          "encoded_sha256_hex": "58a7506cdcbe16f376bd356b607b9b847493bcb2f9058a380a1e344476d471a6",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 9,
+            "header_hex": "09000000",
+            "payload_hex": "E4B8ADF09F9982005A",
+            "full_frame_hex": "09000000E4B8ADF09F9982005A",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        },
+        {
+          "encoding": "GB18030",
+          "codec_lookup_name": "gb18030",
+          "encoded_bytes_hex": "D6D095308532005A",
+          "encoded_byte_count": 8,
+          "encoded_sha256_hex": "0202845e08498e302f59d585799e5f952813aa301d0c5c881f5b8adccd4e1ecf",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 8,
+            "header_hex": "08000000",
+            "payload_hex": "D6D095308532005A",
+            "full_frame_hex": "08000000D6D095308532005A",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        }
+      ],
+      "utf16_range_cases": [
+        {
+          "case_id": "partial_high_surrogate_only",
+          "field_offset_utf16": 1,
+          "requested_length_utf16": 1,
+          "expected_valid": true,
+          "expected_count": 1,
+          "expected_utf16_code_units_hex": [
+            "D83D"
+          ],
+          "strict_reencoding": {
+            "UTF-8": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 0,
+              "error_end": 1,
+              "reason": "surrogates not allowed"
+            },
+            "GB18030": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 0,
+              "error_end": 1,
+              "reason": "illegal multibyte sequence"
+            }
+          },
+          "must_not_extend_or_complete_surrogate_pair": true,
+          "opaque_wire_units_used_as_utf16_length": false
+        },
+        {
+          "case_id": "partial_low_surrogate_only",
+          "field_offset_utf16": 2,
+          "requested_length_utf16": 1,
+          "expected_valid": true,
+          "expected_count": 1,
+          "expected_utf16_code_units_hex": [
+            "DE42"
+          ],
+          "strict_reencoding": {
+            "UTF-8": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 0,
+              "error_end": 1,
+              "reason": "surrogates not allowed"
+            },
+            "GB18030": {
+              "status": "rejected",
+              "exception_family": "UnicodeEncodeError",
+              "error_start": 0,
+              "error_end": 1,
+              "reason": "illegal multibyte sequence"
+            }
+          },
+          "must_not_extend_or_complete_surrogate_pair": true,
+          "opaque_wire_units_used_as_utf16_length": false
+        },
+        {
+          "case_id": "zero_length_at_utf16_end",
+          "field_offset_utf16": 5,
+          "requested_length_utf16": 0,
+          "expected_valid": true,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "zero_length_one_past_utf16_end",
+          "field_offset_utf16": 6,
+          "requested_length_utf16": 0,
+          "expected_valid": false,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "int32_max_request_clamps_to_available_whole_value",
+          "field_offset_utf16": 0,
+          "requested_length_utf16": 2147483647,
+          "expected_valid": true,
+          "expected_count": 5,
+          "expected_utf16_code_units_hex": [
+            "4E2D",
+            "D83D",
+            "DE42",
+            "0000",
+            "005A"
+          ]
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "vector_id": "empty_text_v1",
+      "text": "",
+      "code_points_hex": [],
+      "unicode_rune_count": 0,
+      "utf16_code_unit_count": 0,
+      "utf16_code_units_hex": [],
+      "utf16le_bytes_hex": "",
+      "opaque_wire_units_synthetic": null,
+      "opaque_wire_units_scope_note": "Present only for AB🙂 as an independent opaque test input (3); it is not UTF-16 length or encoded-byte count.",
+      "whole_value_encodings": [
+        {
+          "encoding": "UTF-8",
+          "codec_lookup_name": "utf-8",
+          "encoded_bytes_hex": "",
+          "encoded_byte_count": 0,
+          "encoded_sha256_hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 0,
+            "header_hex": "00000000",
+            "payload_hex": "",
+            "full_frame_hex": "00000000",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        },
+        {
+          "encoding": "GB18030",
+          "codec_lookup_name": "gb18030",
+          "encoded_bytes_hex": "",
+          "encoded_byte_count": 0,
+          "encoded_sha256_hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "local_legacy_framing": {
+            "header_width_bytes": 4,
+            "header_byte_order": "little-endian",
+            "header_value_actual_encoded_byte_count": 0,
+            "header_hex": "00000000",
+            "payload_hex": "",
+            "full_frame_hex": "00000000",
+            "header_value_is_opaque_wire_units": false,
+            "scope_note": "Local legacy conversion framing vector only; does not claim Complex DB support or protocol behavior."
+          }
+        }
+      ],
+      "utf16_range_cases": [
+        {
+          "case_id": "zero_length_at_utf16_end",
+          "field_offset_utf16": 0,
+          "requested_length_utf16": 0,
+          "expected_valid": true,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "zero_length_one_past_utf16_end",
+          "field_offset_utf16": 1,
+          "requested_length_utf16": 0,
+          "expected_valid": false,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        },
+        {
+          "case_id": "int32_max_request_clamps_to_available_whole_value",
+          "field_offset_utf16": 0,
+          "requested_length_utf16": 2147483647,
+          "expected_valid": true,
+          "expected_count": 0,
+          "expected_utf16_code_units_hex": []
+        }
+      ],
+      "status": "synthetic_not_run"
+    }
+  ],
+  "independence_scope": "All values are small synthetic inputs. Expected values are generated with Python standard-library scalar/UTF-16 algorithms, strict codecs, and hashlib; no product source encoder, database, server value, or credential was used."
+}

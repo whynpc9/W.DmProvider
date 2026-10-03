@@ -219,3 +219,21 @@ T19每lane源/包/实际DLL/MVID及退出码/TRX/case身份、fresh服务器状�
 ## 2026-10-03 CLI 验收工具来源分层定案
 
 Astra High/root批准保留已通过实测的同v6不可变包，仅冻结`t19-cli-retention-v1`工具执行overlay，严格八文件allowlist，产品、原测试与构建输入不变。新CLI原合同重跑并留存该次实际加载DLL；其它门按原工具与原证据逐份复核。producer来源、execution来源与最终aggregation分别记录，不把最终验证源码tree说成v6包的重建来源，不补造历史加载资产。CLI原清理、SQL、case及预算保持；旧失败保留。最终窗口1675输入及历史903证据不变后，root才归档报告和加入CI纯Python35项合同；这些是验证后的文档/CI改动。来源与独立验收见[T19](reports/T19.md)。
+
+## PR #2 产品审阅定点修复设计
+
+输入源首块在参数metadata opcode90之前有界预读，成功网络次序不变。只有调用者Read/ReadAsync抛出的确切异常、当前wire零发送尝试、同owner且无终止／过期时登记恢复receipt；历史Allocate/Prepare发送不清零。receipt跨正常wire释放供外层catch识别，新wire、取消、关闭、旧身份及invocation释放使其失效。已上传其它参数或ACK后错误仍Broken，输入不自动重读或重放。安全本地源错误使用既有Rejected诊断结果，取消／超时首因优先；不向诊断队列传异常对象。
+
+CLOB range仍采用CLR UTF-16，可按调用者请求切分代理对；零长度远程offset先由独立cursor验证，cap按实际返回量。完整legacy转换使用whole-value读取和严格目标编码，不将opaque GETLOB_LEN传给UTF-16切片。Complex本地case19仅按实际encoded-byte数写header/copy，不启用其仍Unsupported的复杂解码或Native bulk。保留legacy helper风险与当前普通ADO可达性分开，不能把所有内部转换说成已验证实库支持。
+
+上述是产品行为修正，退出仅工具overlay路线。旧v6证据保留原归属；修复须新冻结、唯一候选、完整离线与同包规定TLS/shared/资源/固定EF矩阵，再复核当前HEAD review bots和CI。
+
+## PR #2 第二轮边界审阅
+
+成功候选制品采用显式75文件名单与失败路径同一整批preflight，检查regular/symlink、8MiB大小、解析后内容和固定schema、敏感控制与安全TRX；未知文件不复制，缺必需证据失败，删除成功路径额外目录遍历。独立15项纯Python及原v8制品75项回读、Linux候选CI通过。
+
+Connect诊断归唯一outer Open终态：认证、schema、ownership发布、CompleteHandshake与回调全部完成才Success，失败和取消保持首因。opening handshake lease把Connect诊断委托给outer，内部invocation仍执行完整清理和ownership检查；不以初次认证Success做全局去重吞掉后续Open失败，不泛改execute/fetch计数。
+
+GET_LOB_DATA采用明确客户端资源预算：文本encoded payload最多128KiB，wire正文另含最多19字节metadata、4字节optional advance与4字节CRC。此值是固定客户端政策，不由opaque请求单位推断字符／字节倍数，也不把MaxLobDataLenPerMsg客户端选项说成服务端保证。binary仍严格count≤requested-byte，正文预算保留足够bounded错误／heartbeat空间及显式large-byte请求；所有预算clip现全局64MiB total-frame上限。MSG预算传sync/async FrameReader，header检查在正文扩容和读取之前，GET解码在payload复制前再次检查；不根据响应opcode豁免、不添加compression/native支持。Data.len opaque推进和现UTF16 decoder保持；两已测profile原大CLOB/NCLOB门必须新包证实，不裁剪数据或响应。
+
+v8的944项离线与TLS全scope（含完整600秒资源）、固定EFunit/TLS支持subset只保留历史部分结果，shared/EFfunctional按新review明确未运行。修复后再生成新冻结唯一候选，最终仍执行全部规定矩阵和current-HEAD review。

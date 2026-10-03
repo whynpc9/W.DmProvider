@@ -288,8 +288,11 @@ internal partial class C
 			{
 				if (num != streaming.WireType || P_3.G().ConnProperty.msgVersion < 10)
 					throw new NotSupportedException("Streaming input requires matching modern LOB parameter metadata.");
+				using var cursor = P_3.h().OpenStreamingParameterCursor(P_3, streaming);
+				int firstCount = cursor.ReadChunk(global::W.Dm.Internal.Sessions.DmInvocation.Current?.CancellationToken ??
+					throw new InvalidOperationException("Input upload has no invocation."));
 				if (!P_3.E()) { P_3.h().A(P_0, P_3, P_2); P_3.b(true); }
-				byte[] token = P_3.h().UploadStreamingParameter(P_3, i, streaming);
+				byte[] token = P_3.h().UploadStreamingParameter(P_3, i, streaming, cursor, firstCount);
 				P_1.h(65529); P_1.A(token);
 				continue;
 			}

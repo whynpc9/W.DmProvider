@@ -12,6 +12,7 @@ internal sealed class DmInvocation : IDisposable
     private readonly DmDiagnosticStamp diagnosticStamp = DmDiagnosticsCore.Start();
     internal DmDiagnosticOperation DiagnosticOperation { get; set; }
     internal DmTransactionOutcome? DiagnosticTransactionOutcome { get; set; }
+    internal bool DiagnosticLocalInputFailure { get; set; }
     private readonly DmInvocation prior;
     private readonly CancellationTokenSource operationCancellation = new();
     private readonly CancellationToken operationToken;
@@ -27,6 +28,10 @@ internal sealed class DmInvocation : IDisposable
     private volatile bool completed;
     internal bool Completed { get => completed; set => completed = value; }
     internal bool ServerErrorAccepted { get; set; }
+    // An exact caller-read failure receipt belongs to one unsent wire, not to the
+    // invocation's historical Prepare/Allocate sends. Never exported to diagnostics.
+    internal Exception LocalInputFailureException;
+    internal DmWireExchange LocalInputFailureWire;
     internal bool IsDisposed => Volatile.Read(ref disposed) != 0;
 
     internal void ActivateCancellation()
@@ -49,6 +54,7 @@ internal sealed class DmInvocation : IDisposable
     }
     internal bool ShouldAbortAfterFailure(Exception error)
     {
+        if (error != null && Lease.Session.IsRecoverableLocalInputFailure(this, error)) return false;
         if (error is DmException server && server.HasVerifiedServerResponse && server.CanPreserveSessionAfterServerError &&
             server.VerifiedResponseIdentity == Identity)
             return false;
@@ -146,15 +152,19 @@ internal sealed class DmInvocation : IDisposable
         }
         finally
         {
+            LocalInputFailureException = null;
+            LocalInputFailureWire = null;
             operationCancellation.Dispose();
             // Complete records are emitted only after the coordinator/user call
             // has fixed its terminal cause and transaction outcome. No sink runs here.
             // Cached getters/flow creation often have no wire and deliberately do
             // not Complete. Absence of an explicit result is not an error span.
-            if (SendAttempted || Completed || TerminalCause != DmCancelSource.None || ServerErrorAccepted)
+            if (!(DiagnosticOperation == DmDiagnosticOperation.Connect && Lease.OuterOwnsConnectDiagnostic) &&
+                (SendAttempted || Completed || TerminalCause != DmCancelSource.None || ServerErrorAccepted || DiagnosticLocalInputFailure))
             {
                 DmDiagnosticResult result = TerminalCause is DmCancelSource.TotalDeadline or DmCancelSource.IdleTimeout ? DmDiagnosticResult.Timeout :
                     TerminalCause is DmCancelSource.User or DmCancelSource.Command ? DmDiagnosticResult.Canceled :
+                    DiagnosticLocalInputFailure ? DmDiagnosticResult.Rejected :
                     ServerErrorAccepted ? DmDiagnosticResult.ServerError : Completed ? DmDiagnosticResult.Success :
                     SendAttempted ? DmDiagnosticResult.TransportError : DmDiagnosticResult.Rejected;
                 if (DiagnosticOperation is DmDiagnosticOperation.Commit or DmDiagnosticOperation.Rollback)
@@ -180,6 +190,7 @@ internal sealed class DmWireExchange : IDisposable
     private readonly DmSession session;
     private readonly DmInvocation invocation;
     private bool completed;
+    internal bool SendAttempted { get; set; } // Written at the session's send linearization point.
     private int disposed;
     internal DmWireExchange(DmSession session, DmInvocation invocation)
     {
@@ -206,7 +217,8 @@ internal sealed class DmWireExchange : IDisposable
         if (Interlocked.Exchange(ref disposed, 1) != 0) return;
         try
         {
-            if (!completed && !session.IsRecoverableUnsentFailure(invocation))
+            if (!completed && !session.IsRecoverableUnsentFailure(invocation) &&
+                !session.IsRecoverableLocalInputFailure(invocation, exchange: this))
             {
                 DmDetachedTransport captured = session.Detach(invocation.Identity);
                 try

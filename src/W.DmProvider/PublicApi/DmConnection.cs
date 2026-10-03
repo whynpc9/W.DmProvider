@@ -7,6 +7,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.IO;
+using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
+using W.Dm.Internal.Diagnostics;
 using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Transport;
 using W.Dm.Internal.Pooling;
@@ -1152,6 +1156,9 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		if (pending == null) return;
 		DmExecutionLease execution = null;
 		DmInvocation invocation = null;
+		DmDiagnosticStamp? connectDiagnostic = null;
+		DmDiagnosticResult connectResult = DmDiagnosticResult.Rejected;
+		bool connectFailed = false;
 		try
 		{
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
@@ -1171,7 +1178,12 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			pending.PoolDeadline.ThrowIfExpired();
 			DmPendingOpenTestHooks.AfterCapacityAcquired?.Invoke(this);
 			RequireCurrentPending(pending);
+			connectDiagnostic = DmDiagnosticsCore.Start();
 			execution = pending.Session.BeginExecution(DmOperationPurpose.Handshake, pending.HandshakeDeadline(OperationClock));
+			// One logical connect owns auth, schema setup, cleanup and publication.
+			// Borrowed handshake children keep all coordination but delegate only
+			// their Connect diagnostics to this outer result.
+			execution.OuterOwnsConnectDiagnostic = true;
 			invocation = execution.BeginInvocation(pending.UserToken);
 			pending.Candidate.handshakeInvocation = invocation;
 			pending.HandshakeStarted = true;
@@ -1201,6 +1213,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			// There are no state writes after user callbacks. Close/reopen from an
 			// Open notification therefore keeps the replacement generation intact.
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
+			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)
 		{
@@ -1230,6 +1243,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 					pending.HandshakeAcknowledged ? DmOperationOutcome.ServerReported :
 					pending.HandshakeSendAttempted ? DmOperationOutcome.Unknown : DmOperationOutcome.NotSent,
 					null, false, DmCancelSource.TotalDeadline), error);
+			connectFailed = true;
+			connectResult = ClassifyConnectDiagnostic(translated);
 			try { invocation?.Dispose(); } catch { }
 			try { execution?.Dispose(); } catch { }
 			if (pending.Published)
@@ -1260,10 +1275,29 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		finally
 		{
-			pending.Dispose();
-			pending.Candidate.Dispose();
+			try
+			{
+				Exception cleanupFailure = null;
+				try { pending.Dispose(); } catch (Exception error) { cleanupFailure = error; }
+				try { pending.Candidate.Dispose(); } catch (Exception error) { cleanupFailure ??= error; }
+				// Preserve the original translated failure, while still attempting
+				// both releases. A standalone cleanup failure remains observable.
+				if (!connectFailed && cleanupFailure != null)
+				{
+					connectResult = ClassifyConnectDiagnostic(cleanupFailure);
+					ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
+				}
+			}
+			finally
+			{
+				if (connectDiagnostic.HasValue)
+					DmDiagnosticsCore.CompleteOperation(connectDiagnostic.Value, DmDiagnosticOperation.Connect, connectResult);
+			}
 		}
 	}
+
+	private static DmDiagnosticResult ClassifyConnectDiagnostic(Exception error) =>
+		error is IOException or SocketException ? DmDiagnosticResult.TransportError : DmDiagnosticsCore.Classify(error);
 
 	internal DmConnection(DmConnectionSettings frozen, DmDataSource source) : this()
 	{

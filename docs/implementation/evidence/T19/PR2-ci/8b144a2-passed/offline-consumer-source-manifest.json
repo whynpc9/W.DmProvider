@@ -1,0 +1,100 @@
+{
+  "consumer_source_sha256": "827e0dd08ed8f02f7214e95a18bd3dd3b95352bc33d9d7a5d2d5ce32d974b1cc",
+  "file_metadata": {
+    "eng/T18.md": {
+      "executable": false,
+      "sha256": "093cbb33f4973a4c4e865d7d3223376809ced552166f22a576790d69e913055c",
+      "size": 1983
+    },
+    "eng/t18.sh": {
+      "executable": true,
+      "sha256": "b877682822f2ad1c1f9fbabaab69a2953b09f38b1d1de5b199ebc948d65fecd9",
+      "size": 160
+    },
+    "global.json": {
+      "executable": false,
+      "sha256": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d",
+      "size": 75
+    },
+    "tests/W.DmProvider.DiagnosticsTests/ScriptedTransactionFixture.cs": {
+      "executable": false,
+      "sha256": "f2428f0cb067d7043a306078d7b2c51a7c6b343115926d3b4cacd4e9ebf6bcc7",
+      "size": 4911
+    },
+    "tests/fixtures/r3-lob/generate_vectors.py": {
+      "executable": false,
+      "sha256": "d7ccb3f5863c92b435bf7c4740be9215ada32908aa509a7117338bc898698308",
+      "size": 22540
+    },
+    "tests/fixtures/r3-lob/vectors.json": {
+      "executable": false,
+      "sha256": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+      "size": 239494
+    },
+    "tools/R3ResourceProbe/DiagnosticListenerCapture.cs": {
+      "executable": false,
+      "sha256": "128a92440d4e01ca41f2931ca8e780cf642cc93d31330e62b0bfe7b6eff3c88f",
+      "size": 6572
+    },
+    "tools/R3ResourceProbe/Program.cs": {
+      "executable": false,
+      "sha256": "892716fb79ea1c7a0a74d3b6a2b38e0abf77995ff65c6bbb7fd1e022e3280315",
+      "size": 12062
+    },
+    "tools/R3ResourceProbe/R3ResourceProbe.csproj": {
+      "executable": false,
+      "sha256": "7106dc42925de0b16e2f6b1040a64a4c3e625bdba8e889daa3b4518ab3a37326",
+      "size": 1031
+    },
+    "tools/R3ResourceProbe/README.md": {
+      "executable": false,
+      "sha256": "5e40f252fbba55ba3fd079888f738b3fcbeb50334425945c1e118aed6f086a0b",
+      "size": 3472
+    },
+    "tools/R3ResourceProbe/ResourceSoak.cs": {
+      "executable": false,
+      "sha256": "24889ea18e1e5075b37243a200735749fee2fc09222faadf861afe3f035de4ae",
+      "size": 18971
+    },
+    "tools/R3ResourceProbe/run_probe.py": {
+      "executable": false,
+      "sha256": "a0606540acb1493e1e3a2d665c9ee99d8c316907202ba34951cb5dab924d3e0d",
+      "size": 1671
+    },
+    "tools/R3ResourceProbe/source_identity.py": {
+      "executable": false,
+      "sha256": "55d5798b5baecb48a4c1ec16f326bc4a0ecf40621eb7ce214e291467272c4700",
+      "size": 6817
+    },
+    "tools/R3ResourceProbe/validate.py": {
+      "executable": false,
+      "sha256": "f08720c1fa0a5991ca6a349f9d1b85c701e98f0be85acee37bd061822ab21d4f",
+      "size": 11026
+    }
+  },
+  "files": {
+    "eng/T18.md": "093cbb33f4973a4c4e865d7d3223376809ced552166f22a576790d69e913055c",
+    "eng/t18.sh": "b877682822f2ad1c1f9fbabaab69a2953b09f38b1d1de5b199ebc948d65fecd9",
+    "global.json": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d",
+    "tests/W.DmProvider.DiagnosticsTests/ScriptedTransactionFixture.cs": "f2428f0cb067d7043a306078d7b2c51a7c6b343115926d3b4cacd4e9ebf6bcc7",
+    "tests/fixtures/r3-lob/generate_vectors.py": "d7ccb3f5863c92b435bf7c4740be9215ada32908aa509a7117338bc898698308",
+    "tests/fixtures/r3-lob/vectors.json": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+    "tools/R3ResourceProbe/DiagnosticListenerCapture.cs": "128a92440d4e01ca41f2931ca8e780cf642cc93d31330e62b0bfe7b6eff3c88f",
+    "tools/R3ResourceProbe/Program.cs": "892716fb79ea1c7a0a74d3b6a2b38e0abf77995ff65c6bbb7fd1e022e3280315",
+    "tools/R3ResourceProbe/R3ResourceProbe.csproj": "7106dc42925de0b16e2f6b1040a64a4c3e625bdba8e889daa3b4518ab3a37326",
+    "tools/R3ResourceProbe/README.md": "5e40f252fbba55ba3fd079888f738b3fcbeb50334425945c1e118aed6f086a0b",
+    "tools/R3ResourceProbe/ResourceSoak.cs": "24889ea18e1e5075b37243a200735749fee2fc09222faadf861afe3f035de4ae",
+    "tools/R3ResourceProbe/run_probe.py": "a0606540acb1493e1e3a2d665c9ee99d8c316907202ba34951cb5dab924d3e0d",
+    "tools/R3ResourceProbe/source_identity.py": "55d5798b5baecb48a4c1ec16f326bc4a0ecf40621eb7ce214e291467272c4700",
+    "tools/R3ResourceProbe/validate.py": "f08720c1fa0a5991ca6a349f9d1b85c701e98f0be85acee37bd061822ab21d4f"
+  },
+  "identity_scope": "consumer_source_only",
+  "observed_git_head": null,
+  "producer_git_head": "03434c90f117e48ccb4ef1b52fc528a7376033f0",
+  "producer_source_manifest_sha256": "05c415fcd04c2980f04d8be34d1f83a7b4e2faabf89bcdd0aa605cb231c6593c",
+  "product_source_mapping": "root_frozen_candidate_manifest_required",
+  "schema_version": 1,
+  "source_origin": "verified_producer_source_manifest",
+  "sourcelink_claimed": false,
+  "task": "T18"
+}

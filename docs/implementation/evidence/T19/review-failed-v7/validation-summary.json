@@ -1,0 +1,82 @@
+{
+  "task": "T19_new_product_v7",
+  "status": "Lob_compile_failed",
+  "window": "released",
+  "source_count": 678,
+  "history_count": 1326,
+  "hashes_unchanged": true,
+  "offline": {
+    "schema_version": 1,
+    "task": "T19",
+    "status": "rejected",
+    "reason": "inner_audit_Lob_test_failed",
+    "production_release_accepted": false,
+    "inner_audit": {
+      "evidence_status": "safe_published",
+      "reject_reason": "Lob_test_failed",
+      "last_recorded_stage": "Lob_test",
+      "failed_commands": [
+        {
+          "stage": "Lob_test",
+          "exit_code": 1
+        }
+      ],
+      "retained_files": [
+        "Async.trx",
+        "Async_restore-command.json",
+        "Async_test-command.json",
+        "Command.trx",
+        "Command_restore-command.json",
+        "Command_test-command.json",
+        "Configuration.trx",
+        "Configuration_restore-command.json",
+        "Configuration_test-command.json",
+        "Isolation.trx",
+        "Isolation_restore-command.json",
+        "Isolation_test-command.json",
+        "Lob_restore-command.json",
+        "Lob_test-command.json",
+        "Pool.trx",
+        "Pool_restore-command.json",
+        "Pool_test-command.json",
+        "SDK-command.json",
+        "Security.trx",
+        "Security_restore-command.json",
+        "Security_test-command.json",
+        "Session.trx",
+        "Session_restore-command.json",
+        "Session_test-command.json",
+        "Transaction.trx",
+        "Transaction_restore-command.json",
+        "Transaction_test-command.json",
+        "Transport.trx",
+        "Transport_restore-command.json",
+        "Transport_test-command.json",
+        "Type.trx",
+        "Type_restore-command.json",
+        "Type_test-command.json",
+        "summary.json"
+      ]
+    }
+  },
+  "compile_errors": {
+    "file": "tests/W.DmProvider.LobTests/R3PreSendInputSourceFailureTests.cs",
+    "CS1503": [
+      81
+    ],
+    "CS1061": [
+      101,
+      113,
+      115
+    ],
+    "classification": "DbTransaction_static_type_requires_verified_typed_transaction"
+  },
+  "pure_tests": [
+    12,
+    10,
+    35
+  ],
+  "pack": "not_executed",
+  "DB": "not_executed",
+  "production_release_accepted": false
+}

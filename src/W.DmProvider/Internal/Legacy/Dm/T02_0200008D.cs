@@ -165,6 +165,8 @@ internal abstract class MSG<T>
 
 	public const int CRC32_LEN = 4;
 
+	internal virtual int MaxResponseBodyLength => DmFrameReader.MaxFrameSize - DmFrameReader.HeaderSize;
+
 	public B access;
 
 	public short cmd;

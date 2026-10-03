@@ -71,9 +71,20 @@ internal sealed class DmLobInput
                 while (count < Buffer.Length && !sourceEof)
                 {
                     Poll(token);
-                    int read = asynchronous
-                        ? await stream.ReadAsync(Buffer.AsMemory(count), token).ConfigureAwait(false)
-                        : stream.Read(Buffer, count, Buffer.Length - count);
+                    DmInvocation invocation = DmInvocation.Current;
+                    DmWireExchange wire = DmWireExchange.Current;
+                    int read;
+                    try
+                    {
+                        read = asynchronous
+                            ? await stream.ReadAsync(Buffer.AsMemory(count), token).ConfigureAwait(false)
+                            : stream.Read(Buffer, count, Buffer.Length - count);
+                    }
+                    catch (Exception error)
+                    {
+                        invocation?.Lease.Session.TryAcceptLocalInputFailure(invocation, wire, error);
+                        throw;
+                    }
                     Poll(token);
                     if (read < 0 || read > Buffer.Length - count) throw new IOException("Input returned an invalid byte count.");
                     if (read == 0) { sourceEof = true; break; }
@@ -97,9 +108,20 @@ internal sealed class DmLobInput
                     if (characterOffset == characterCount && !sourceEof)
                     {
                         var reader = (TextReader)input.SourceIdentity;
-                        int read = asynchronous
-                            ? await reader.ReadAsync(characters.AsMemory(), token).ConfigureAwait(false)
-                            : reader.Read(characters, 0, characters.Length);
+                        DmInvocation invocation = DmInvocation.Current;
+                        DmWireExchange wire = DmWireExchange.Current;
+                        int read;
+                        try
+                        {
+                            read = asynchronous
+                                ? await reader.ReadAsync(characters.AsMemory(), token).ConfigureAwait(false)
+                                : reader.Read(characters, 0, characters.Length);
+                        }
+                        catch (Exception error)
+                        {
+                            invocation?.Lease.Session.TryAcceptLocalInputFailure(invocation, wire, error);
+                            throw;
+                        }
                         Poll(token);
                         if (read < 0 || read > characters.Length) throw new IOException("Input returned an invalid character count.");
                         characterOffset = 0; characterCount = read;

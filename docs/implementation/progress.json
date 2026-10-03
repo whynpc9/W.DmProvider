@@ -122,8 +122,8 @@
     },
     {
       "id": "T17",
-      "status": "integration_verified",
-      "completed": true,
+      "status": "PR_review_revalidation_pending",
+      "completed": false,
       "report": "reports/T17.md",
       "implementation_completed": true,
       "offline_tests_passed": 843,
@@ -136,12 +136,14 @@
       "final_evidence": "evidence/T19/candidate-v6/t19/root-final-readback.json",
       "upstream_pending": [],
       "historical_scoped_dependency": "implementation_and_offline_TLS_accepted",
-      "validation_scope": "full_defined_R3_matrix"
+      "validation_scope": "full_defined_R3_matrix",
+      "review_fix_validation": "new_candidate_pending",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T18",
-      "status": "integration_verified",
-      "completed": true,
+      "status": "PR_review_revalidation_pending",
+      "completed": false,
       "report": "reports/T18.md",
       "upstream_pending": [],
       "implementation_completed": true,
@@ -154,19 +156,23 @@
       "final_candidate_version": "0.1.0-r3.20261003023000",
       "final_evidence": "evidence/T19/candidate-v6/t19/root-final-readback.json",
       "historical_activation_scope": "implementation_offline_TLS_only",
-      "validation_scope": "full_defined_R3_matrix"
+      "validation_scope": "full_defined_R3_matrix",
+      "review_fix_validation": "new_candidate_pending",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T19",
-      "status": "integration_verified",
-      "completed": true,
+      "status": "PR_review_revalidation_pending",
+      "completed": false,
       "report": "reports/T19.md",
       "implementation_completed": true,
       "upstream_pending": [],
       "final_candidate_version": "0.1.0-r3.20261003023000",
       "final_evidence": "evidence/T19/candidate-v6/t19/root-final-readback.json",
       "candidate_version": "0.1.0-r3.20261003023000",
-      "execution_revision": "t19-cli-retention-v1"
+      "execution_revision": "t19-cli-retention-v1",
+      "review_fix_validation": "new_candidate_pending",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T20",
@@ -200,8 +206,8 @@
     },
     {
       "id": "T25",
-      "status": "integration_verified",
-      "completed": true,
+      "status": "PR_review_revalidation_pending",
+      "completed": false,
       "report": "reports/T25.md",
       "upstream_pending": [],
       "implementation_completed": true,
@@ -213,7 +219,9 @@
       "final_candidate_version": "0.1.0-r3.20261003023000",
       "final_evidence": "evidence/T19/candidate-v6/t19/root-final-readback.json",
       "historical_activation_scope": "accepted_T18_offline_TLS_scope_only",
-      "validation_scope": "full_defined_R3_matrix"
+      "validation_scope": "full_defined_R3_matrix",
+      "review_fix_validation": "new_candidate_pending",
+      "historical_status": "integration_verified"
     }
   ],
   "r1_review_followup": {
@@ -260,7 +268,7 @@
     "shared_blocker_resolved_by": "evidence/T19/candidate-v6/t19/root-final-readback.json"
   },
   "r3": {
-    "status": "integration_verified_PR_review_merge_pending",
+    "status": "PR_review_product_corrections_validation_pending",
     "completed": false,
     "tasks": [
       "T15",
@@ -274,14 +282,18 @@
     "design": "R3-design.md",
     "production_release_accepted": false,
     "historical_evidence_manifest": ".local/verification/r3/historical-baseline/manifest.json",
-    "current_task": "PR_review_merge",
-    "upstream_pending": [],
+    "current_task": "PR2_product_review_fixes",
+    "upstream_pending": [
+      "new_review_candidate_defined_matrix",
+      "current_HEAD_bot_feedback_closure",
+      "PR_merge"
+    ],
     "t19_latest_checkpoint": {
-      "status": "defined_final_matrix_accepted",
-      "historical_candidate": "0.1.0-r3.20261002223702",
-      "offline_passed": 892,
+      "status": "v8_historical_partial_TLS_accepted_new_review_candidate_pending",
+      "historical_candidate": "0.1.0-r3.20261003085021",
+      "offline_passed": 944,
       "tls_matrix": "verified_same_package",
-      "shared_driver_matrix": "verified_same_package",
+      "shared_driver_matrix": "not_run_by_review_steering",
       "TEST_cleanup": "fresh_empty_ordinary_TEST_no_admin",
       "shared_functional_original_900": "two_timeouts_no_complete_TRX",
       "new_shared_functional_host_seconds": 1500,
@@ -290,16 +302,25 @@
       "full_R3_complete": false,
       "R4_started": false,
       "candidate_version": "0.1.0-r3.20261003023000",
-      "shared_EF_functional": "76/76_original_cases_passed",
-      "CLI": "1/1_original_and_all_nested_passed_actual_assets_retained"
+      "shared_EF_functional": "not_run_by_review_steering",
+      "CLI": "1/1_original_and_all_nested_passed_actual_assets_retained",
+      "TLS_resource_measurement_cycles": 8184
     },
     "candidate_version": "0.1.0-r3.20261003023000",
     "evidence": "evidence/T19/candidate-v6/t19/root-final-readback.json",
     "source_provenance": "immutable_v6_producer_plus_explicit_tooling_execution_overlay",
     "delivery": {
-      "PR": null,
+      "PR": "https://github.com/whynpc9/W.DmProvider/pull/2",
       "merge_completed": false,
       "R4_started": false
-    }
+    },
+    "review_findings": [
+      "4172130409",
+      "4172130412",
+      "4172153210",
+      "4172258031",
+      "4172258032"
+    ],
+    "resolved_tool_review": "4172199544_verified_23b2cc3"
   }
 }

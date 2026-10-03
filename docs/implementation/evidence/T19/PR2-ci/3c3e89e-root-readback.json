@@ -1,0 +1,60 @@
+{
+  "head": "3c3e89ef9f7a2b40de20232181761643e16ce904",
+  "CI": "candidate",
+  "status": "failed_consumer_source_identity_Git_free_snapshot",
+  "dotnet_suites": [
+    {
+      "suite": "offline-Pool.trx",
+      "passed": 142
+    },
+    {
+      "suite": "offline-Async.trx",
+      "passed": 124
+    },
+    {
+      "suite": "offline-Session.trx",
+      "passed": 12
+    },
+    {
+      "suite": "offline-Configuration.trx",
+      "passed": 11
+    },
+    {
+      "suite": "offline-Type.trx",
+      "passed": 162
+    },
+    {
+      "suite": "offline-Security.trx",
+      "passed": 39
+    },
+    {
+      "suite": "offline-Transaction.trx",
+      "passed": 88
+    },
+    {
+      "suite": "offline-Isolation.trx",
+      "passed": 78
+    },
+    {
+      "suite": "offline-Transport.trx",
+      "passed": 93
+    },
+    {
+      "suite": "offline-Lob.trx",
+      "passed": 110
+    },
+    {
+      "suite": "offline-Command.trx",
+      "passed": 16
+    },
+    {
+      "suite": "offline-Diagnostics.trx",
+      "passed": 17
+    }
+  ],
+  "dotnet_passed": 892,
+  "product_test_failure_proven": false,
+  "source_cause": "tools/R3ResourceProbe/source_identity.py requires git rev-parse in archive intentionally without .git; Linux RUNNER_TEMP is outside checkout; macOS .local ancestor Git hid assumption",
+  "pack_and_consumer_build": "zero_exit",
+  "next": "explicit verified producer manifest source identity, no fabricated observed Git HEAD"
+}

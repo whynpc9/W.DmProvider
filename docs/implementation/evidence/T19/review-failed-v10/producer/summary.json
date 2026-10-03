@@ -1,0 +1,53 @@
+{
+  "candidate_version": "0.1.0-r3.20261003095954",
+  "inner_audit": {
+    "evidence_status": "safe_published",
+    "failed_commands": [
+      {
+        "exit_code": 1,
+        "stage": "Lob_test"
+      }
+    ],
+    "last_recorded_stage": "Lob_test",
+    "reject_reason": "Lob_test_failed",
+    "retained_files": [
+      "Async.trx",
+      "Async_restore-command.json",
+      "Async_test-command.json",
+      "Command.trx",
+      "Command_restore-command.json",
+      "Command_test-command.json",
+      "Configuration.trx",
+      "Configuration_restore-command.json",
+      "Configuration_test-command.json",
+      "Isolation.trx",
+      "Isolation_restore-command.json",
+      "Isolation_test-command.json",
+      "Lob_restore-command.json",
+      "Lob_test-command.json",
+      "Pool.trx",
+      "Pool_restore-command.json",
+      "Pool_test-command.json",
+      "SDK-command.json",
+      "Security.trx",
+      "Security_restore-command.json",
+      "Security_test-command.json",
+      "Session.trx",
+      "Session_restore-command.json",
+      "Session_test-command.json",
+      "Transaction.trx",
+      "Transaction_restore-command.json",
+      "Transaction_test-command.json",
+      "Transport.trx",
+      "Transport_restore-command.json",
+      "Transport_test-command.json",
+      "Type.trx",
+      "Type_restore-command.json",
+      "Type_test-command.json",
+      "summary.json"
+    ]
+  },
+  "production_release_accepted": false,
+  "reason": "inner_audit_Lob_test_failed",
+  "status": "rejected"
+}

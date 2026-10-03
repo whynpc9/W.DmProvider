@@ -2,11 +2,18 @@ using System;
 using System.IO;
 using System.Threading;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm;
 
 internal class GET_LOB_DATA : MSG<Data>
 {
+	// Fixed encoded-byte client policy; opaque request units do not establish a charset expansion ratio.
+	internal const int TextPayloadBudget = 4 * DmConnectionSettings.DefaultLobChunkSize;
+	internal const int MaxSuccessBodyOverhead = 19 + 4 + 4;
+	internal override int MaxResponseBodyLength => (int)Math.Min(DmFrameReader.MaxFrameSize - DmFrameReader.HeaderSize,
+		Math.Max((long)TextPayloadBudget, lob.lobFlag == AbstractLob.LOB_FLAG_BYTE ? length : TextPayloadBudget) + MaxSuccessBodyOverhead);
+
 	internal static readonly AsyncLocal<Action<int>> PayloadAllocationObserver = new();
 
 	private const int REQ_GET_LOB_DATA_TYPE = 20;
@@ -78,6 +85,8 @@ internal class GET_LOB_DATA : MSG<Data>
 		long total = access.a().LongLobFlag ? buffer.e() : buffer.d();
 		if (count > int.MaxValue || count > DmConnectionSettings.DefaultMaxMessageSize || count > buffer.a(false))
 			throw new InvalidDataException("LOB payload length exceeds the response bounds.");
+		if (lob.lobFlag == AbstractLob.LOB_FLAG_CHAR && count > TextPayloadBudget)
+			throw new InvalidDataException("Text LOB payload exceeds the fixed encoded-byte client budget.");
 		// Binary request units are bytes. Text units are opaque and have no guessed multiplier.
 		if (lob.lobFlag == AbstractLob.LOB_FLAG_BYTE && count > length)
 			throw new InvalidDataException("Binary LOB response exceeds the requested bytes.");

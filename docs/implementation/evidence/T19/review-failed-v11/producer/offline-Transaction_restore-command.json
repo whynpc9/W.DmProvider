@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "restore",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003100900/private/source/tests/W.DmProvider.TransactionTests/W.DmProvider.TransactionTests.csproj",
+    "/p:Configuration=Release",
+    "/p:Version=0.1.0-r3.20261003100900",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 0.4397304579615593,
+  "exit_code": 0,
+  "stage": "Transaction_restore"
+}

@@ -94,23 +94,25 @@ public class DmClob : AbstractLob
 		using var invocation = BeginInternalOperation();
 		if (pos < 1 || len < 0) throw new ArgumentOutOfRangeException();
 		pos--;
-		DmLobMaterialization.Characters(len);
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
 		{
 			if (pos > data.Length) throw new ArgumentOutOfRangeException(nameof(pos));
-			return data.Substring(checked((int)pos), (int)Math.Min(len, data.Length - pos));
+			int returned = DmLobMaterialization.Characters(Math.Min((long)len, data.Length - pos));
+			return data.Substring(checked((int)pos), returned);
 		}
-		if (len == 0) return "";
+		if (pos == 0 && len == 0) return "";
 		using var cursor = NewReadCursor();
 		char[] chunk = new char[8192];
 		while (cursor.Position < pos)
 			if (cursor.ReadChars(chunk.AsSpan(0, (int)Math.Min(chunk.Length, pos - cursor.Position))) == 0)
 				throw new ArgumentOutOfRangeException(nameof(pos));
+		if (len == 0) return "";
 		var result = new StringBuilder();
 		while (result.Length < len)
 		{
 			int count = cursor.ReadChars(chunk.AsSpan(0, Math.Min(chunk.Length, len - result.Length)));
 			if (count == 0) break;
+			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
 		return result.ToString();
@@ -126,23 +128,25 @@ public class DmClob : AbstractLob
 		using var invocation = BeginInternalOperation(cancellationToken);
 		if (pos < 1 || len < 0) throw new ArgumentOutOfRangeException();
 		pos--;
-		DmLobMaterialization.Characters(len);
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
 		{
 			if (pos > data.Length) throw new ArgumentOutOfRangeException(nameof(pos));
-			return data.Substring(checked((int)pos), (int)Math.Min(len, data.Length - pos));
+			int returned = DmLobMaterialization.Characters(Math.Min((long)len, data.Length - pos));
+			return data.Substring(checked((int)pos), returned);
 		}
-		if (len == 0) return "";
+		if (pos == 0 && len == 0) return "";
 		using var cursor = NewReadCursor();
 		char[] chunk = new char[8192];
 		while (cursor.Position < pos)
 			if (await cursor.ReadCharsAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, pos - cursor.Position)), cancellationToken).ConfigureAwait(false) == 0)
 				throw new ArgumentOutOfRangeException(nameof(pos));
+		if (len == 0) return "";
 		var result = new StringBuilder();
 		while (result.Length < len)
 		{
 			int count = await cursor.ReadCharsAsync(chunk.AsMemory(0, Math.Min(chunk.Length, len - result.Length)), cancellationToken).ConfigureAwait(false);
 			if (count == 0) break;
+			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
 		return result.ToString();
@@ -331,14 +335,18 @@ public class DmClob : AbstractLob
 		return EncodeBounded(GetSubStringOwned(checked(pos + 1), len));
 	}
 
-	internal byte[] MaterializeBytesUnderOwner() => EncodeBounded(MaterializeStringUnderOwner());
+	internal byte[] MaterializeBytesUnderOwner() => MaterializeBytesUnderOwner(serverEncoding);
+
+	internal byte[] MaterializeBytesUnderOwner(string targetEncoding) => EncodeBounded(MaterializeStringUnderOwner(), targetEncoding);
 
 	internal async Task<byte[]> MaterializeBytesUnderOwnerAsync(CancellationToken cancellationToken) =>
 		EncodeBounded(await MaterializeStringUnderOwnerAsync(cancellationToken).ConfigureAwait(false));
 
-	private byte[] EncodeBounded(string text)
+	private byte[] EncodeBounded(string text) => EncodeBounded(text, serverEncoding);
+
+	private static byte[] EncodeBounded(string text, string targetEncoding)
 	{
-		var encoding = DmTextCodec.CreateStrictEncoding(serverEncoding);
+		var encoding = DmTextCodec.CreateStrictEncoding(targetEncoding);
 		DmLobMaterialization.Bytes(encoding.GetByteCount(text));
 		return encoding.GetBytes(text);
 	}

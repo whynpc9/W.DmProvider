@@ -22,12 +22,21 @@ internal partial class B
     internal byte[] UploadStreamingParameter(A statement, int index, DmLobInput input)
     {
         CancellationToken token = DmInvocation.Current?.CancellationToken ?? throw new InvalidOperationException("Input upload has no invocation.");
-        using var cursor = input.OpenCursor(StreamingInputChunkSize(statement), a().ServerEncoding);
+        using var cursor = OpenStreamingParameterCursor(statement, input);
+        return UploadStreamingParameter(statement, index, input, cursor, cursor.ReadChunk(token));
+    }
+
+    internal DmLobInput.Cursor OpenStreamingParameterCursor(A statement, DmLobInput input) =>
+        input.OpenCursor(StreamingInputChunkSize(statement), a().ServerEncoding);
+
+    internal byte[] UploadStreamingParameter(A statement, int index, DmLobInput input, DmLobInput.Cursor cursor, int firstCount)
+    {
+        CancellationToken token = DmInvocation.Current?.CancellationToken ?? throw new InvalidOperationException("Input upload has no invocation.");
         byte[] acknowledgement = global::W.Dm.Internal.Legacy.A.C.A();
         var send = new b(); var receive = new b();
+        int count = firstCount;
         while (true)
         {
-            int count = cursor.ReadChunk(token);
             acknowledgement = Wire(() =>
             {
                 global::W.Dm.Internal.Legacy.A.C.A(send, statement.g(), index, cursor.Buffer, count, a(), acknowledgement);
@@ -39,19 +48,27 @@ internal partial class B
             bool terminal = count < cursor.Buffer.Length && cursor.EndOfInput;
             DmDiagnosticsCore.LobChunk(true, input.IsText, terminal);
             if (terminal) return acknowledgement;
+            count = cursor.ReadChunk(token);
         }
     }
 
     internal async Task<byte[]> UploadStreamingParameterAsync(A statement, int index, DmLobInput input, CancellationToken cancellationToken)
     {
         cancellationToken = AsyncCancellationToken(cancellationToken);
-        using var cursor = input.OpenCursor(StreamingInputChunkSize(statement), a().ServerEncoding);
+        using var cursor = OpenStreamingParameterCursor(statement, input);
+        int count = await cursor.ReadChunkAsync(cancellationToken).ConfigureAwait(false);
+        return await UploadStreamingParameterAsync(statement, index, input, cursor, count, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal async Task<byte[]> UploadStreamingParameterAsync(A statement, int index, DmLobInput input, DmLobInput.Cursor cursor, int firstCount, CancellationToken cancellationToken)
+    {
+        cancellationToken = AsyncCancellationToken(cancellationToken);
         byte[] acknowledgement = global::W.Dm.Internal.Legacy.A.C.A();
         var send = new b(); var receive = new b();
+        int count = firstCount;
         while (true)
         {
             CheckAsyncTermination(cancellationToken);
-            int count = await cursor.ReadChunkAsync(cancellationToken).ConfigureAwait(false);
             acknowledgement = await WireAsync(async () =>
             {
                 global::W.Dm.Internal.Legacy.A.C.A(send, statement.g(), index, cursor.Buffer, count, a(), acknowledgement);
@@ -64,6 +81,7 @@ internal partial class B
             bool terminal = count < cursor.Buffer.Length && cursor.EndOfInput;
             DmDiagnosticsCore.LobChunk(true, input.IsText, terminal);
             if (terminal) return acknowledgement;
+            count = await cursor.ReadChunkAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
