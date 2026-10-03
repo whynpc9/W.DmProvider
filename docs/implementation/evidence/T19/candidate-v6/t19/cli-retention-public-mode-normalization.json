@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "reason": "Match original producer canonical non-executable source archive mode; public historical JSON bytes unchanged",
+  "private_files_touched": false,
+  "files": [
+    {
+      "path": "docs/implementation/evidence/T17/tls-verified-v8/commands.json",
+      "sha256": "3614b597b0ea063387092b8460ecdd37a244ba3c8e39c7e0698865b2d74bb13d",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T17/tls-verified-v8/consumer-source-manifest.json",
+      "sha256": "ef9937fcde2cb6a9747f34d2f7675324b21b305d9d7b32211fda3677c234c9e3",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T17/tls-verified-v8/package-manifest.json",
+      "sha256": "23c9d365b1e949188d3f555b3406ffd2659313b407fcd29842a15118810fff74",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T17/tls-verified-v8/probe.json",
+      "sha256": "eb48e5752ee6762e63411201c2bd44b51db0b3c1b5d8127a88c5f2fd042732c0",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T17/tls-verified-v8/validation.json",
+      "sha256": "26ecb328df8f0925942575e5e8f7af343a62cfa6a39d3ac7b1cfc086758c760f",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/audit-after-driver.json",
+      "sha256": "096e2b6fbf3da17b89b6b74491c3b6f6c762f8ccf3516333424a138dedbbc1ab",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/audit-before-driver.json",
+      "sha256": "ec826fcee082dd486dbb2d05fe1462f6e5b9c04d69a26be31813ce7eeaafe1bd",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/contracts/tls_crud_lob_concurrency_supported_subset.[owned-object].json",
+      "sha256": "53f411639be2f53b06b0a8220cf70090592f26231f12cc4f75d164528e97c791",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/contracts/tls_crud_lob_concurrency_supported_subset.[owned-object].owned.json",
+      "sha256": "e576486939ad6a1e9be4cfd4276501e0ba6e402fc9c47bd8316d97638c89f93c",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/contracts/tls_savepoint_explicitly_unsupported.[owned-object].json",
+      "sha256": "5b9aaa448adf81baaa1db6da932faefe698b2023d72986ee216fba7178cbff15",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/contracts/tls_savepoint_explicitly_unsupported.[owned-object].owned.json",
+      "sha256": "18e4dc68f92e63bd20137d1052bd7baac8432c2ef0c9046cb7049db9f8cad24c",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/diagnostic-v4/downstream/results-20261002T222615442827Z/testhost-driver.json",
+      "sha256": "bdea3e5b9665a67270818742479b607dc3fd3970d3283dd34a87542bd7f1bdec",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v3/downstream/shared-unit/results-20261002T215504056401Z-testhost-driver.json",
+      "sha256": "342a98883febaeaf2e9fa460807c2209ece3a960b2216cf257f6f5376d879063",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v3/downstream/tls-unit/results-20261002T215548134920Z-testhost-driver.json",
+      "sha256": "04f72b2f9e5d36f2984e45f8662dff65dca949f8c6cc275da8005f2ad3268cc9",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/shared-unit/results-20261002T220327215581Z/testhost-driver.json",
+      "sha256": "1de114cc8098ef4f7a34b32d05dd359ba24aded83579fa9d954878814e41d368",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/audit-after-driver.json",
+      "sha256": "c199c3692e14755104bfd3e4cad7eee7ff5fc350a289e0fc2907b068cd90e8b2",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/audit-before-driver.json",
+      "sha256": "336db76ad136e35608e847a8c0bd94fe674b3d68b02a9002ab17a7392a3a4a22",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/contracts/tls_crud_lob_concurrency_supported_subset.[owned-object].json",
+      "sha256": "f4ad89eae5eefe1d706067061a8b34b0c6354846d16d5d975166126bf56066fc",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/contracts/tls_crud_lob_concurrency_supported_subset.[owned-object].owned.json",
+      "sha256": "3102c258fd4acb6bf54dbac7963fdff68bddbba77e8cb7984d711a4b9915ee0a",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/contracts/tls_savepoint_explicitly_unsupported.[owned-object].json",
+      "sha256": "8e744e14cfa459c2cc805697b9a6373cdb9a359eb6da901784b631858ea454ee",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/contracts/tls_savepoint_explicitly_unsupported.[owned-object].owned.json",
+      "sha256": "37e17e94b8c0d4ae5cb81dd189f2b260efd060ed659b7f1f7d6ccfcaaec2b8c5",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-r3_tls/results-20261002T220417768325Z/testhost-driver.json",
+      "sha256": "ad267c6c141194eaae00aec38c62bdd9d11c9a5e72662f45b81b7dc57bf276e1",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T19/failed-v4/downstream/tls-unit/results-20261002T220400674577Z/testhost-driver.json",
+      "sha256": "a544b8e6fb7465daa904c82112e042e39ba9ad124a88150685bab56b284b33df",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/commands.json",
+      "sha256": "a605397aeff8e810b1875b57f4358ef860e12b8d562bbfb525bfb1b462bd9ce3",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/consumer-source-inspection.json",
+      "sha256": "1e727db09abe7c2691bd827e31697c6699dddcd94a26dae50c319b317fb32922",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/consumer-source-manifest.json",
+      "sha256": "a3312f35c86bc9151000f22023fcefa4be5651bfcf899b433daf0191bee77418",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/launcher.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/package-inspection-final.json",
+      "sha256": "374764ad20769c4b5764f506ee5f32f947b02d5ddaec48222c55c977c19861c8",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/package-inspection.json",
+      "sha256": "374764ad20769c4b5764f506ee5f32f947b02d5ddaec48222c55c977c19861c8",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/package-manifest-final.json",
+      "sha256": "0ec1189e4899733fff9b8f2d9ee058a12c72177a8553dba9ef0c3fb30812ca73",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/package-manifest.json",
+      "sha256": "0ec1189e4899733fff9b8f2d9ee058a12c72177a8553dba9ef0c3fb30812ca73",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/probe-stdout.json",
+      "sha256": "c39978e6efc6ffd3bf4e99c89fa6e043bbcba980b2b1d7673878a3b819271e8e",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/probe.json",
+      "sha256": "d020ebc4d079038ed89a8d570aa44723bfc0791f8c2262037bb384475310873c",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-offline/validation.json",
+      "sha256": "1461d0ea57d1dd26f140505fd2b2f5602d2ad1cedb34c42933066acd78fdeaba",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/commands.json",
+      "sha256": "de45c9aba7c4c7435986a486bea437dddc993a15ebfb2c540a99fd68dff866f4",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/consumer-source-inspection.json",
+      "sha256": "1e727db09abe7c2691bd827e31697c6699dddcd94a26dae50c319b317fb32922",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/consumer-source-manifest.json",
+      "sha256": "a3312f35c86bc9151000f22023fcefa4be5651bfcf899b433daf0191bee77418",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/launcher.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/package-inspection-final.json",
+      "sha256": "374764ad20769c4b5764f506ee5f32f947b02d5ddaec48222c55c977c19861c8",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/package-inspection.json",
+      "sha256": "374764ad20769c4b5764f506ee5f32f947b02d5ddaec48222c55c977c19861c8",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/package-manifest-final.json",
+      "sha256": "0ec1189e4899733fff9b8f2d9ee058a12c72177a8553dba9ef0c3fb30812ca73",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/package-manifest.json",
+      "sha256": "0ec1189e4899733fff9b8f2d9ee058a12c72177a8553dba9ef0c3fb30812ca73",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/probe-stdout.json",
+      "sha256": "81462d1fac2a7107635c47dfce6c91f3469b038e8a626a1e797e35d05d1f4ac5",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/probe.json",
+      "sha256": "4dfe2cd3bb61acd20729621af7a102960e25f177c73a87d42bae4791f2fd08ce",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    },
+    {
+      "path": "docs/implementation/evidence/T25/verified-v5/same-package-T16-tls/validation.json",
+      "sha256": "20387d88ae2517e3b3162cbc0eb64912626ff47bd6b2dddeaa4c0a5d0b0d893c",
+      "live_before_mode": 384,
+      "archive_canonical_mode": 420
+    }
+  ]
+}

@@ -5,7 +5,7 @@ namespace W.Dm.Internal.Types;
 
 internal static class DmTextCodec
 {
-    private static Encoding Resolve(string serverEncoding)
+    internal static Encoding CreateStrictEncoding(string serverEncoding)
     {
         string name = serverEncoding ?? "default";
         if (!DmConnProperty.encodingMap.TryGetValue(name, out Encoding encoding))
@@ -19,7 +19,7 @@ internal static class DmTextCodec
     internal static byte[] EncodeStrict(string text, string serverEncoding)
     {
         if (text == null) return null;
-        try { return Resolve(serverEncoding).GetBytes(text); }
+        try { return CreateStrictEncoding(serverEncoding).GetBytes(text); }
         catch (EncoderFallbackException)
         {
             throw new EncoderFallbackException("Text cannot be represented in the declared server charset.");
@@ -31,7 +31,7 @@ internal static class DmTextCodec
         if (data == null) return null;
         if (offset < 0 || length < 0 || offset > data.Length || length > data.Length - offset)
             throw new ArgumentOutOfRangeException(nameof(length));
-        try { return Resolve(serverEncoding).GetString(data, offset, length); }
+        try { return CreateStrictEncoding(serverEncoding).GetString(data, offset, length); }
         catch (DecoderFallbackException)
         {
             throw new DecoderFallbackException("Server text contains invalid bytes for its declared charset.");

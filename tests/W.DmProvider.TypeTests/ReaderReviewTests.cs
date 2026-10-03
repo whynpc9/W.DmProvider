@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Buffers.Binary;
+using System.Text;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using W.Dm;
@@ -78,10 +80,10 @@ public sealed class ReaderReviewTests
     }
 
     [Fact]
-    public void ClobLengthProbeRejectsAnUnmaterializableLengthWithoutReturningAPrefix()
+    public void ClobLengthScanCountsRealInlineUtf16InsteadOfAdvertisedCachedLength()
     {
         using var fixture = new ReaderFixture(19, [], "short", clobLength: (long)int.MaxValue + 1);
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetChars(0, 0, null!, 0, 0));
+        Assert.Equal(5, fixture.Reader.GetChars(0, 0, null!, 0, 0));
     }
 
     [Fact]
@@ -138,7 +140,7 @@ public sealed class ReaderReviewTests
         Assert.Equal(6097, Assert.Throws<DmException>(() => fixture.Reader.GetFieldValue<DmDecimal>(0)).Number);
     }
 
-    // Synthetic row bytes and a local CLOB exercise the public getter path without a socket.
+    // Synthetic row bytes and a complete inline CLOB locator exercise the public getter path without a socket.
     // Only the lease is disposed: disposing the synthetic reader would close a fake server statement.
     internal sealed class ReaderFixture : IDisposable
     {
@@ -154,6 +156,15 @@ public sealed class ReaderReviewTests
             var property = new DmConnection().ConnProperty;
             property.ServerEncoding = "UTF-8";
             property.msgVersion = 21;
+            property.NewLobFlag = true;
+            if (clobText != null)
+            {
+                byte[] encoded = Encoding.UTF8.GetBytes(clobText);
+                value = new byte[47 + encoded.Length];
+                value[0] = AbstractLob.STORAGE_IN_ROW;
+                BinaryPrimitives.WriteInt32LittleEndian(value.AsSpan(9), encoded.Length);
+                encoded.CopyTo(value, 47);
+            }
             SetField(physical, "m_ConnPro", property);
             SetField(physical, "<Session>k__BackingField", session);
             var statement = Uninitialized<LegacyStatement>();
@@ -181,8 +192,9 @@ public sealed class ReaderReviewTests
             Set("m_GetVal", new DmGetValue("UTF-8", statement, false, columns));
             Set("is_SequentialAccess", sequential);
             // Match normal field initialization. A preloaded local CLOB represents a
-            // current column, while ordinary rows start before the first column.
-            Set("skipCol", true);
+            // current column; its independent UTF-8 locator now backs reader flows.
+            Set("activeLobOrdinal", -1);
+            Set("sequentialLobUnitOrdinal", -1);
             Set("m_SequentialSeq", sequential && clobText != null ? 0 : -1);
             if (clobText != null)
             {

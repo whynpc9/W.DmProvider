@@ -1563,6 +1563,13 @@ internal class DmSetValue
 	internal void SetResolvedObject(DmParamValue paraVal, object x, DmConnection conn, string typeName,
 		int cType, DmParameterInternal paraInternal, int? precisionOverride = null, int? scaleOverride = null)
 	{
+		if (x is W.Dm.Internal.Lobs.DmLobInput input)
+		{
+			if (cType != input.WireType) throw new NotSupportedException("Streaming input does not match the resolved LOB wire type.");
+			paraVal.SetStreamingInput(input);
+			if (paraInternal.GetTypeFlag() != 1) { paraVal.SetSqlType(cType); paraVal.SetPrec(0); paraVal.SetScale(0); }
+			return;
+		}
 		int precision = precisionOverride ?? paraInternal.GetPrecision();
 		int scale = scaleOverride ?? (cType == 9 && paraInternal.GetTypeFlag() != 1 ? -1 : paraInternal.GetScale());
 		if (paraInternal.GetTypeFlag() != 1 && cType == 17 && precisionOverride == null)

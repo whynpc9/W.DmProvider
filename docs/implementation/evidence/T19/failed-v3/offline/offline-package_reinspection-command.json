@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/source/tools/R2AsyncProbe/package_manifest.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/audit/20261002T215250Z-ce7d665958/.private/feed/W.DmProvider.0.1.0-r3.20261002215249.nupkg",
+    "0.1.0-r3.20261002215249",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/audit/20261002T215250Z-ce7d665958/public/package-manifest-final.json"
+  ],
+  "elapsed_seconds": 0.04760533291846514,
+  "exit_code": 0,
+  "stage": "package_reinspection"
+}

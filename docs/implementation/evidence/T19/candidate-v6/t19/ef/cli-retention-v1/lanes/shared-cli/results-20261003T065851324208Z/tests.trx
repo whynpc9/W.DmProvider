@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a5542434-72df-4f42-a044-7be4943216a8" name="@wanghongyideMacBook-Pro 2026-10-03 14:59:38" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-03T14:59:38.0022380+08:00" queuing="2026-10-03T14:59:38.0022380+08:00" start="2026-10-03T14:58:53.5801350+08:00" finish="2026-10-03T14:59:38.0043440+08:00" />
+  <TestSettings name="default" id="4a59ce9b-863c-4821-925c-9cf83c89995d">
+    <Deployment runDeploymentRoot="_wanghongyideMacBook-Pro_2026-10-03_14_59_38" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="49d28bed-86ab-43fa-acef-5ea4bed266a4" testId="9d87b112-60bf-9853-824a-70e938adbb18" testName="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengDotNetEfCliFunctionalTests.MigrationsAndScaffoldRunThroughDotNetEfCli" computerName="wanghongyideMacBook-Pro" duration="00:00:44.1144462" startTime="2026-10-03T14:58:53.8431450+08:00" endTime="2026-10-03T14:59:37.9619290+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="49d28bed-86ab-43fa-acef-5ea4bed266a4">
+      <Output>
+        <StdOut>CLI subprocess stage=tool_provision started.
+CLI subprocess stage=tool_provision exit=0 stdout_sha256=6D135231367B40E3DC94AE4158842016E4E7B856031372410AC571FD99054F25 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=version started.
+CLI subprocess stage=version exit=0 stdout_sha256=A5ABA7E19C4A37105F611520BA8A7477CF7ACCF688E6F70A44A2771A982E6D83 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=version started.
+CLI subprocess stage=version exit=0 stdout_sha256=93C11B5221B72E0032AB2D9F93D28C2C9B7A0BB2557EFFFFCDFEF45AB739A0DA stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=restore started.
+CLI subprocess stage=restore exit=0 stdout_sha256=D174CE3B6785981B5FA04E55569EEB5562B56096739C4EC3D45652C76ED34265 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI assets_sha256=3ECAE95BAB44A956A4E4A9B9F57C3498C4A997446CF707B343788D2CE57B7D74 lock_sha256=47299F45AB7AB528D10BB27BD5D370ED7C45A1A4B78E3E66B253806350C578D8
+CLI subprocess stage=build started.
+CLI subprocess stage=build exit=0 stdout_sha256=D0FCC9BE31BC99AE046DDE01A13A5247FA29988D76B72BB0F2202E88499AC8B1 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=migrations_add started.
+CLI subprocess stage=migrations_add exit=0 stdout_sha256=C372DE04FB5BC614A6F92D0CD1563C9D46949713F89617924D652282D2783100 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=build started.
+CLI subprocess stage=build exit=0 stdout_sha256=D0FCC9BE31BC99AE046DDE01A13A5247FA29988D76B72BB0F2202E88499AC8B1 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=migrations_script started.
+CLI subprocess stage=migrations_script exit=0 stdout_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=database_update started.
+CLI subprocess stage=database_update exit=0 stdout_sha256=FE6EC1B0FBC723945B28C7747E8ACD7207EBEF6757B40433B14BB2533B08B9F9 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=scaffold started.
+CLI subprocess stage=scaffold exit=0 stdout_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=restore started.
+CLI subprocess stage=restore exit=0 stdout_sha256=A34768BE1E73AC485F51E36AC778EFF1510F369C72991F886F635734CAE954D3 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI assets_sha256=30DD29B988D34E90507F808FB8235E1026DD6F97BE7A8F3E2A09420B7A2B4623 lock_sha256=47299F45AB7AB528D10BB27BD5D370ED7C45A1A4B78E3E66B253806350C578D8
+CLI subprocess stage=build started.
+CLI subprocess stage=build exit=0 stdout_sha256=D0FCC9BE31BC99AE046DDE01A13A5247FA29988D76B72BB0F2202E88499AC8B1 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI subprocess stage=verify_model started.
+CLI subprocess stage=verify_model exit=0 stdout_sha256=5AB0EA19BA15E2BB4D71ECE633036CE5F766F648A03F0F6980B75D9809296F67 stderr_sha256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855
+CLI candidate DLL sha256=C0DFCFBC0AB39BA8029C741B3F4A264E3945B354FEBCAB12A4A09FA8CC42B2C7
+CLI owned objects absent on independent connection.</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengDotNetEfCliFunctionalTests.MigrationsAndScaffoldRunThroughDotNetEfCli" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/w/test/w.entityframeworkcore.dameng.functionaltests/bin/debug/net10.0/w.entityframeworkcore.dameng.functionaltests.dll" id="9d87b112-60bf-9853-824a-70e938adbb18">
+      <Execution id="49d28bed-86ab-43fa-acef-5ea4bed266a4" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengDotNetEfCliFunctionalTests" name="MigrationsAndScaffoldRunThroughDotNetEfCli" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9d87b112-60bf-9853-824a-70e938adbb18" executionId="49d28bed-86ab-43fa-acef-5ea4bed266a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.04]   Discovering: W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:00:00.10]   Discovered:  W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:00:00.11]   Starting:    W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:00:44.24]   Finished:    W.EntityFrameworkCore.Dameng.FunctionalTests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

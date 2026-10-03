@@ -1,0 +1,178 @@
+{
+  "task": "T19_shared",
+  "status": "driver_all_verified_EF_functional_timeout_cleanup_pending",
+  "window": "released",
+  "source_count": 670,
+  "history_count": 791,
+  "hashes_before_after_unchanged": true,
+  "driver_gates": {
+    "T13-shared-envelope.json": {
+      "schema_version": 1,
+      "task": "T13",
+      "mode": "shared",
+      "status": "package_async_verified",
+      "exit_code": 0,
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "loaded_assembly_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "loaded_assembly_mvid": "0c33d48b-4d42-46e1-99db-b53fe2f170f1",
+      "api_overrides": 26,
+      "integration": "real_test_schema",
+      "server_version": "8.1.5.60",
+      "savepoint_status": "supported_for_server_profile",
+      "security_classification": null,
+      "final_database_state": "random_object_absent",
+      "run_dir": ".local/verification/r2/t13/runs/20261002T230950Z-95070-30429"
+    },
+    "t14-shared-envelope.json": {
+      "task": "T14",
+      "mode": "shared",
+      "status": "package_cancellation_verified",
+      "exit_code": 0,
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "loaded_assembly_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "cases": 10,
+      "final_database_state": "random_object_absent",
+      "run_dir": ".local/verification/r2/t14/runs/20261002T231043Z-95461-2765"
+    },
+    "t13-security-shared-envelope.json": {
+      "schema_version": 1,
+      "task": "T13",
+      "mode": "security-shared",
+      "status": "security_rejection_verified",
+      "exit_code": 0,
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "loaded_assembly_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "loaded_assembly_mvid": "0c33d48b-4d42-46e1-99db-b53fe2f170f1",
+      "api_overrides": 26,
+      "integration": "real_test_security",
+      "server_version": null,
+      "savepoint_status": null,
+      "security_classification": "require_tls_rejected_plaintext_before_login",
+      "final_database_state": "no_objects_created",
+      "run_dir": ".local/verification/r2/t13/runs/20261002T231204Z-95895-23741"
+    },
+    "t16-shared-envelope.json": {
+      "schema_version": 1,
+      "task": "T16",
+      "status": "accepted",
+      "mode": "shared",
+      "integration": "real_test_schema",
+      "reuse_policy": "discard",
+      "session_reset_verified": false,
+      "package_version": "0.1.0-r3.20261002223702",
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "run_dir": ".local/verification/r3/t16/runs/20261002T231208Z-95962-6844"
+    },
+    "t17-shared-envelope.json": {
+      "schema_version": 1,
+      "task": "T17",
+      "status": "accepted",
+      "mode": "shared",
+      "integration": "real_test_schema",
+      "package_version": "0.1.0-r3.20261002223702",
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "blob_bytes": 67109888,
+      "text_utf16_chars": 1158260,
+      "reuse_policy": "discard",
+      "run_dir": ".local/verification/r3/t17/full/runs/20261002T231235Z-96054-11755"
+    }
+  },
+  "EF_commands": [
+    {
+      "lane": "audit",
+      "action": "build",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "tools/DownstreamAcceptance/T19/run.py",
+        "build",
+        "--output",
+        ".local/verification/r3/t19/ef/validation-v5",
+        "--profile",
+        "shared",
+        "--lane",
+        "audit"
+      ]
+    },
+    {
+      "lane": "audit",
+      "action": "run",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "tools/DownstreamAcceptance/T19/run.py",
+        "run",
+        "--output",
+        ".local/verification/r3/t19/ef/validation-v5",
+        "--profile",
+        "shared",
+        "--lane",
+        "audit"
+      ]
+    },
+    {
+      "lane": "functional",
+      "action": "build",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "tools/DownstreamAcceptance/T19/run.py",
+        "build",
+        "--output",
+        ".local/verification/r3/t19/ef/validation-v5",
+        "--profile",
+        "shared",
+        "--lane",
+        "functional"
+      ]
+    },
+    {
+      "lane": "functional",
+      "action": "run",
+      "exit_code": 124,
+      "argv": [
+        "python3",
+        "tools/DownstreamAcceptance/T19/run.py",
+        "run",
+        "--output",
+        ".local/verification/r3/t19/ef/validation-v5",
+        "--profile",
+        "shared",
+        "--lane",
+        "functional"
+      ]
+    }
+  ],
+  "failed_functional_exit_code": 124,
+  "failed_functional_original_process_seconds": 900,
+  "EF_failed_evidence": ".local/verification/r3/t19/ef/validation-v5/lanes/shared-functional/results-20261002T232059788109Z",
+  "fresh_final_inventory": {
+    "task": "T19",
+    "mode": "after",
+    "accepted": false,
+    "driver_dll_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+    "identity_verified": true,
+    "current_schema_verified": true,
+    "server_version": "8.1.5.60",
+    "inventory_count": 1,
+    "inventory_sha256": "3436913586ce14110be44a9607d45831784674983d1893823cb713ba688da383",
+    "independent_final_inventory_matches": false,
+    "new_object_hash_count": 1,
+    "removed_object_hash_count": 0,
+    "failed_stage": "owned_schema_inventory",
+    "error": [
+      {
+        "type": "AuditFailure",
+        "probe_kind": "owned_schema_inventory_changed",
+        "number": null,
+        "methods": [
+          "Program+<Main>d__0.MoveNext",
+          "System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw",
+          "Program+<Main>d__0.MoveNext"
+        ]
+      }
+    ]
+  },
+  "later_EF_lanes": "not_executed_after_failure",
+  "production_release_accepted": false
+}

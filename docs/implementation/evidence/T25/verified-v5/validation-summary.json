@@ -1,0 +1,829 @@
+{
+  "task": "T25",
+  "status": "scoped_verified",
+  "window": "released",
+  "source_count": 652,
+  "history_count": 271,
+  "source_manifest_sha256": "df3e196553b0f030031840afd56ad038fbf50ada724519c3565c93d58b3235bb",
+  "source_history_before_after_unchanged": true,
+  "targeted_counts_separate": [
+    {
+      "suite": "Lob",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.LobTests/W.DmProvider.LobTests.csproj",
+        "-c",
+        "Release",
+        "/p:Version=0.1.0-r3.t25.20261002205432",
+        "--filter",
+        "FullyQualifiedName~T25",
+        "--logger",
+        "trx;LogFileName=targeted-Lob.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "counters": {
+        "total": "2",
+        "executed": "2",
+        "passed": "2",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "suite": "Pool",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.PoolTests/W.DmProvider.PoolTests.csproj",
+        "-c",
+        "Release",
+        "/p:Version=0.1.0-r3.t25.20261002205432",
+        "--filter",
+        "FullyQualifiedName~T25",
+        "--logger",
+        "trx;LogFileName=targeted-Pool.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "counters": {
+        "total": "6",
+        "executed": "6",
+        "passed": "6",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "suite": "Diagnostics",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.DiagnosticsTests/W.DmProvider.DiagnosticsTests.csproj",
+        "-c",
+        "Release",
+        "/p:Version=0.1.0-r3.t25.20261002205432",
+        "--filter",
+        "FullyQualifiedName~T25",
+        "--logger",
+        "trx;LogFileName=targeted-Diagnostics.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "counters": {
+        "total": "2",
+        "executed": "2",
+        "passed": "2",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "offline": {
+    "schema_version": 1,
+    "task": "T18",
+    "status": "offline_verified",
+    "scope": "exact_twelve_suites_plus_isolated_first_init_package_probe",
+    "integration": "integration_pending",
+    "production_release_accepted": false,
+    "candidate_version": "0.1.0-r3.t25.20261002205432",
+    "suites": [
+      {
+        "suite": "Configuration",
+        "counts": {
+          "total": 11,
+          "executed": 11,
+          "passed": 11,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Session",
+        "counts": {
+          "total": 12,
+          "executed": 12,
+          "passed": 12,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Transport",
+        "counts": {
+          "total": 93,
+          "executed": 93,
+          "passed": 93,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Security",
+        "counts": {
+          "total": 39,
+          "executed": 39,
+          "passed": 39,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Command",
+        "counts": {
+          "total": 16,
+          "executed": 16,
+          "passed": 16,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Type",
+        "counts": {
+          "total": 145,
+          "executed": 145,
+          "passed": 145,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Transaction",
+        "counts": {
+          "total": 88,
+          "executed": 88,
+          "passed": 88,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Isolation",
+        "counts": {
+          "total": 78,
+          "executed": 78,
+          "passed": 78,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Async",
+        "counts": {
+          "total": 124,
+          "executed": 124,
+          "passed": 124,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Pool",
+        "counts": {
+          "total": 142,
+          "executed": 142,
+          "passed": 142,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Lob",
+        "counts": {
+          "total": 110,
+          "executed": 110,
+          "passed": 110,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      },
+      {
+        "suite": "Diagnostics",
+        "counts": {
+          "total": 17,
+          "executed": 17,
+          "passed": 17,
+          "failed": 0,
+          "error": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "inconclusive": 0,
+          "passedButRunAborted": 0,
+          "notRunnable": 0,
+          "notExecuted": 0,
+          "disconnected": 0,
+          "warning": 0,
+          "completed": 0,
+          "inProgress": 0,
+          "pending": 0
+        },
+        "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "status": "passed"
+      }
+    ],
+    "total_passed": 875,
+    "product_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+    "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700",
+    "upstream_pending": [
+      "T17_shared_large_value",
+      "shared_cleanup_recovery",
+      "complete_R3_matrix"
+    ]
+  },
+  "no_env_release_guard_exit_code": 66,
+  "T16_same_package": {
+    "offline": {
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208",
+      "exit_code": 0,
+      "probe": {
+        "schema_version": 1,
+        "task": "T16",
+        "implementation": "W-package",
+        "accepted": true,
+        "status": "offline_verified",
+        "exit_code": 0,
+        "session_reset_verified": false,
+        "reuse_policy": "discard",
+        "handshake_optimization_claimed": false,
+        "runtime": ".NET 10.0.7",
+        "runtime_identifier": "osx-arm64",
+        "mode": "offline",
+        "cases": {
+          "offline_public_contract": {
+            "category": "Improvement",
+            "feature": "Pooling",
+            "status": "passed",
+            "construction_sockets": 0,
+            "configuration_redacted": true
+          },
+          "direct_explicit_certificate_rejected": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "sockets": 0
+          }
+        },
+        "checkpoint_stage": "offline_public_contract",
+        "package_version": "0.1.0-r3.t25.20261002205432",
+        "package_sha256": "890d056b4249fbbe12ac2755597d76632f67278453b85d5be981e360ea578238",
+        "loaded_assembly_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "loaded_assembly_mvid": "cbc000c3-2c50-4af8-b3dd-c0c39ce22257",
+        "reference_kind": "exact_PackageReference",
+        "offline_core_scheduler_scope": "separate_PoolTests_not_fabricated_database_work",
+        "integration": "integration_pending"
+      },
+      "commands": [
+        {
+          "stage": "package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed/W.DmProvider.0.1.0-r3.t25.20261002205432.nupkg",
+            "0.1.0-r3.t25.20261002205432",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_source_identity",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/source_identity.py",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/consumer-source-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_build",
+          "exit_code": 0,
+          "argv": [
+            "/usr/local/share/dotnet/dotnet",
+            "build",
+            "tools/R3PoolProbe/R3PoolProbe.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/app",
+            "/p:R3PackageVersion=0.1.0-r3.t25.20261002205432",
+            "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed",
+            "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed",
+            "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/obj/",
+            "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/obj/",
+            "-m:1",
+            "/nodeReuse:false",
+            "/p:UseSharedCompilation=false",
+            "--disable-build-servers"
+          ]
+        },
+        {
+          "stage": "runtime_probe",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/run_probe.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/probe-stdout.json",
+            "/usr/local/share/dotnet/dotnet",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/app/R3PoolProbe.dll",
+            "offline",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/probe.json"
+          ]
+        },
+        {
+          "stage": "envelope_validation",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/validate.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/probe.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/app/W.DmProvider.dll",
+            "offline"
+          ]
+        },
+        {
+          "stage": "final_package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed/W.DmProvider.0.1.0-r3.t25.20261002205432.nupkg",
+            "0.1.0-r3.t25.20261002205432",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest-final.json"
+          ]
+        },
+        {
+          "stage": "immutable_package_compare",
+          "exit_code": 0,
+          "argv": [
+            "cmp",
+            "-s",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205632Z-52222-32208/package-manifest-final.json"
+          ]
+        }
+      ]
+    },
+    "tls": {
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215",
+      "exit_code": 0,
+      "probe": {
+        "schema_version": 1,
+        "task": "T16",
+        "implementation": "W-package",
+        "accepted": true,
+        "status": "pool_discard_verified",
+        "exit_code": 0,
+        "session_reset_verified": false,
+        "reuse_policy": "discard",
+        "handshake_optimization_claimed": false,
+        "runtime": ".NET 10.0.7",
+        "runtime_identifier": "osx-arm64",
+        "mode": "tls",
+        "cases": {
+          "offline_public_contract": {
+            "category": "Improvement",
+            "feature": "Pooling",
+            "status": "passed",
+            "construction_sockets": 0,
+            "configuration_redacted": true
+          },
+          "direct_explicit_certificate_rejected": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "sockets": 0
+          },
+          "datasource_capacity": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "waiting_cancel_not_sent": true,
+            "waiting_deadline_not_sent": true,
+            "clear_kept_capacity_domain": true,
+            "transport_closed_before_replacement_connect": true,
+            "physical_replacement_authenticated": true,
+            "reused_sessions": 0,
+            "final_state_zero": true
+          },
+          "shortcut_command_ownership": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "nonreader_success_returned": true,
+            "nonreader_server_failure_returned": true,
+            "scalar_returned": true,
+            "reader_held_until_close": true,
+            "implicit_identity_checked_by_sql": true,
+            "final_state_zero": true
+          },
+          "transaction_and_stale_objects": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "old_transaction_rows": 1,
+            "independent_rows_before_close": 0,
+            "fresh_uncommitted_rows": 0,
+            "old_reader_rejected_without_io": true,
+            "stale_cancel_and_transaction_did_not_touch_fresh": true,
+            "lock_released": true
+          },
+          "datasource_dispose_waiting": {
+            "category": "Contract",
+            "feature": "Pooling",
+            "status": "passed",
+            "waiting_terminated_without_socket": true,
+            "existing_business_lease_completed": true,
+            "new_admissions_rejected": true,
+            "final_state_zero": true
+          }
+        },
+        "checkpoint_stage": "fresh_owned_cleanup",
+        "package_version": "0.1.0-r3.t25.20261002205432",
+        "package_sha256": "890d056b4249fbbe12ac2755597d76632f67278453b85d5be981e360ea578238",
+        "loaded_assembly_sha256": "3d79f12737084868b1792329101c8e0e412d96d6f4e401afb3961a80a3f2502f",
+        "loaded_assembly_mvid": "cbc000c3-2c50-4af8-b3dd-c0c39ce22257",
+        "reference_kind": "exact_PackageReference",
+        "offline_core_scheduler_scope": "separate_PoolTests_not_fabricated_database_work",
+        "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+        "explicit_transport": "RequireTls",
+        "pooling_enabled": true,
+        "maximum_physical_connections_per_owner": 1,
+        "maximum_waiters_per_owner": 4,
+        "pool_acquire_timeout_milliseconds": 5000,
+        "persist_security_info": false,
+        "owned_objects": [
+          "T16_T_7996DD231882494982A4"
+        ],
+        "final_database_state": "unique_owned_objects_absent",
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "server_version": "8.1.4.6",
+        "shortcut_actual_failure": {
+          "type": "W.Dm.DmException",
+          "classification": "provider_error",
+          "failure_phase": "Receive",
+          "failure_kind": "Server",
+          "operation_outcome": "ServerReported",
+          "driver_error_code": "WDM_SERVER",
+          "number": -6602,
+          "server_number": -6602,
+          "connection_reusable": false
+        },
+        "cleanup_verified": true,
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 13,
+        "physical_connections_disposed": 13,
+        "authenticated_successful_open_count": 13,
+        "authenticated_open_count_basis": "unique_sessions_entering_user_wire_exchange_after_open",
+        "negotiated_encrypt_modes": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "measured_reused_sessions": 0,
+        "owner_final_snapshots": [
+          {
+            "creating": 0,
+            "leased": 0,
+            "closing": 0,
+            "waiting": 0,
+            "idle": 0,
+            "resetting": 0
+          },
+          {
+            "creating": 0,
+            "leased": 0,
+            "closing": 0,
+            "waiting": 0,
+            "idle": 0,
+            "resetting": 0
+          },
+          {
+            "creating": 0,
+            "leased": 0,
+            "closing": 0,
+            "waiting": 0,
+            "idle": 0,
+            "resetting": 0
+          }
+        ],
+        "state_evidence_category": "state_evidence",
+        "network_io_counts": {
+          "async_connect": 13,
+          "sync_connect": 0,
+          "async_tls": 13,
+          "sync_tls": 0,
+          "async_send": 163,
+          "sync_send": 0,
+          "async_receive": 323,
+          "sync_receive": 0
+        },
+        "integration": "real_test_schema"
+      },
+      "commands": [
+        {
+          "stage": "package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed/W.DmProvider.0.1.0-r3.t25.20261002205432.nupkg",
+            "0.1.0-r3.t25.20261002205432",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_source_identity",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/source_identity.py",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/consumer-source-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_build",
+          "exit_code": 0,
+          "argv": [
+            "/usr/local/share/dotnet/dotnet",
+            "build",
+            "tools/R3PoolProbe/R3PoolProbe.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/app",
+            "/p:R3PackageVersion=0.1.0-r3.t25.20261002205432",
+            "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed",
+            "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed",
+            "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/obj/",
+            "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/obj/",
+            "-m:1",
+            "/nodeReuse:false",
+            "/p:UseSharedCompilation=false",
+            "--disable-build-servers"
+          ]
+        },
+        {
+          "stage": "runtime_probe",
+          "exit_code": 0,
+          "argv": [
+            "scripts/with-dameng-tls-test.sh",
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/run_probe.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/probe-stdout.json",
+            "/usr/local/share/dotnet/dotnet",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/app/R3PoolProbe.dll",
+            "tls",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/probe.json"
+          ]
+        },
+        {
+          "stage": "envelope_validation",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3PoolProbe/validate.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/probe.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/app/W.DmProvider.dll",
+            "tls"
+          ]
+        },
+        {
+          "stage": "final_package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed/W.DmProvider.0.1.0-r3.t25.20261002205432.nupkg",
+            "0.1.0-r3.t25.20261002205432",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest-final.json"
+          ]
+        },
+        {
+          "stage": "immutable_package_compare",
+          "exit_code": 0,
+          "argv": [
+            "cmp",
+            "-s",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T205646Z-52304-26215/package-manifest-final.json"
+          ]
+        }
+      ]
+    }
+  },
+  "resource_soak": "not_repeated_prior_T18_scope_only_not_new_package_full_soak_claim",
+  "shared_cleanup_and_full_R3": "pending",
+  "production_release_accepted": false
+}

@@ -1,0 +1,38 @@
+{
+  "task": "T17",
+  "status": "targeted_compile_failed",
+  "window": "released",
+  "source_count": 624,
+  "history_count": 157,
+  "source_manifest_sha256": "6824b84e4a307371d3f656d82ca0710d0f80c8ffa18e8ed24791bd0b4191b122",
+  "source_history_before_after_unchanged": true,
+  "sdk": "10.0.203",
+  "targeted_exit_code": 1,
+  "diagnostic": {
+    "code": "CS1729",
+    "file": "tests/W.DmProvider.LobTests/InputOwnershipTests.cs",
+    "line": 53,
+    "column": 28,
+    "message": "DmParameter does not contain a constructor taking one argument"
+  },
+  "targeted_tests_executed": 0,
+  "full_offline": "not_executed",
+  "package": "not_built",
+  "integration": "not_executed",
+  "command": [
+    "/usr/local/share/dotnet/dotnet",
+    "test",
+    "tests/W.DmProvider.LobTests/W.DmProvider.LobTests.csproj",
+    "-c",
+    "Release",
+    "--logger",
+    "trx;LogFileName=targeted-Lob.trx",
+    "--results-directory",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v1/results",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "production_release_accepted": false
+}

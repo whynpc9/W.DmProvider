@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "pack",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002223702/private/source/src/W.DmProvider/W.DmProvider.csproj",
+    "--no-build",
+    "--no-restore",
+    "-c",
+    "Release",
+    "--output",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002223702/private/audit/20261002T223730Z-731bd97475/.private/feed",
+    "/p:Version=0.1.0-r3.20261002223702",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 0.4372137081809342,
+  "exit_code": 0,
+  "stage": "exact_package_pack"
+}

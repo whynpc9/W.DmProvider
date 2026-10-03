@@ -13,6 +13,8 @@ using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Transport;
 using W.Dm.Internal.Execution;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Lobs;
+using W.Dm.Internal.Diagnostics;
 
 namespace W.Dm;
 
@@ -90,6 +92,9 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		Volatile.Write(ref activePlan, plan);
 		try
 		{
+			foreach (DmParameter parameter in plan.Parameters)
+				if (parameter.do_Value is DmLobInput && (plan.Connection?.GetConnInstance()?.ConnProperty.msgVersion ?? 0) < 10)
+					throw new NotSupportedException("Streaming LOB input requires a negotiated modern parameter upload profile.");
 			Volatile.Read(ref AfterPlanCaptured)?.Invoke();
 			if (commandPlanGate.IsDisposed) throw new ObjectDisposedException(nameof(DmCommand));
 			return plan;
@@ -731,6 +736,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Query);
 			using var invocation = lease.BeginInvocation();
+			invocation.DiagnosticOperation = DmDiagnosticOperation.Prepare;
 			try { PrepareInternalCore(checkCommandText: false); invocation.Complete(); }
 			catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 		}
@@ -1059,6 +1065,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			try
 			{
 				using var invocation = lease.BeginInvocation(cancellationToken);
+				invocation.DiagnosticOperation = DmDiagnosticOperation.Prepare;
 				try { await PrepareInternalCoreAsync(false, cancellationToken).ConfigureAwait(false); invocation.Complete(); }
 				catch (DmException error) when (IsOwnedVerifiedServerError(error, lease))
 				{ verifiedServerError = true; throw; }
@@ -1583,6 +1590,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		{
 			using var lease = BeginValidatedUserExecution(plan, DmOperationPurpose.Query);
 			using var invocation = lease.BeginInvocation();
+			invocation.DiagnosticOperation = DmDiagnosticOperation.Prepare;
 			try { PrepareInternalCore(checkCommandText); invocation.Complete(); }
 			catch (Exception error) { AbortStatementAfterFailedExecution(error); throw TranslateCurrentFailure(error); }
 		}
@@ -1690,7 +1698,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			{
 				DmParameter dmParameter = plan.Binding.ResolveServerParameter(i, dmParameterInternal.GetName(), parameterCount);
 				var resolved = dmParameter.ResolveType(dmParameterInternal);
-				object obj = DmSysTypeConvertion.TypeConvertion(dmParameter);
+				object obj = dmParameter.do_Value is DmLobInput streaming ? streaming : DmSysTypeConvertion.TypeConvertion(dmParameter);
 				int describedCType = dmParameterInternal.GetCType();
 				int describedScale = dmParameterInternal.GetScale();
 				byte describedFlag = dmParameterInternal.GetTypeFlag();
@@ -1900,7 +1908,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 	private bool IsOwnedVerifiedServerError(DmException error, DmExecutionLease lease)
 	{
 		DmInvocation invocation = DmInvocation.Current;
-		if (error == null || lease == null || invocation == null || !error.HasVerifiedServerResponse ||
+		if (error == null || lease == null || invocation == null || !error.HasVerifiedServerResponse || !error.CanPreserveSessionAfterServerError ||
 			error.VerifiedResponseIdentity != invocation.Identity ||
 			error.VerifiedResponseIdentity.SessionId != lease.Identity.SessionId ||
 			error.VerifiedResponseIdentity.LeaseGeneration != lease.Identity.LeaseGeneration ||

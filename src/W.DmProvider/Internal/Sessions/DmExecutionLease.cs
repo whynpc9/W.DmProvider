@@ -8,6 +8,7 @@ namespace W.Dm.Internal.Sessions;
 internal sealed class DmExecutionLease : IDisposable, IAsyncDisposable
 {
     private int disposed;
+    internal bool IsDisposed => Volatile.Read(ref disposed) != 0 || (owner != null && owner.IsDisposed);
     private readonly DmExecutionLease owner;
     private int invocationStarted;
     private readonly CancellationTokenSource commandCancellation = new();

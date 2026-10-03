@@ -1,0 +1,100 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 1,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "metrics": {
+    "PUT_sent": 259,
+    "header_observed": 258,
+    "iterations_completed_after_ACK_acceptance": 258,
+    "source_consumed_current": 8288000,
+    "last_chunk_consumption": 8288000,
+    "frame_to_header": {
+      "n": 258,
+      "median_ms": 1083.5906245,
+      "mean_ms": 1157.8551358217055,
+      "p95_ms": 1904.944416,
+      "max_ms": 2448.4013330000002
+    },
+    "frame_to_before_decode": {
+      "n": 258,
+      "median_ms": 1083.5939165,
+      "mean_ms": 1157.8587129883722,
+      "p95_ms": 1904.948,
+      "max_ms": 2448.405041
+    },
+    "input_to_frame": {
+      "n": 259,
+      "median_ms": 0.107917,
+      "mean_ms": 0.12804395366795368,
+      "p95_ms": 0.24937499999999999,
+      "max_ms": 1.3285420000000001
+    },
+    "max_interframe_ms": 2448.733791,
+    "last_pending_age_primary_ms": 225.23333300000002,
+    "primary_elapsed_seconds": 300.0109045,
+    "primary_gaps": 0,
+    "cleanup_gaps_separate": 1
+  },
+  "primary_failure": {
+    "phase": 1,
+    "error": [
+      {
+        "depth": 0,
+        "type": "DmException",
+        "code": "UNAVAILABLE",
+        "number": 0,
+        "kind": 1,
+        "phase": 6,
+        "cancel_source": 3,
+        "outcome": 2,
+        "server_number": null,
+        "connection_reusable": false
+      },
+      {
+        "depth": 1,
+        "type": "Canceled",
+        "code": "UNAVAILABLE",
+        "number": null,
+        "kind": null,
+        "phase": null,
+        "cancel_source": null,
+        "outcome": null,
+        "server_number": null,
+        "connection_reusable": null
+      }
+    ]
+  },
+  "primary_progress": {
+    "sampled_at": 1233445811536791,
+    "phase": 1,
+    "timestamp_frequency": 1000000000,
+    "upload_started": 1233145800632291,
+    "upload_returned": 0,
+    "source_consumed_current": 8288000,
+    "source_last_read_at": 1233445586199041,
+    "last_completed_input_chunk_consumption": 8288000,
+    "last_completed_input_chunk_at": 1233445586201541,
+    "input_chunks_read_completed": 259,
+    "put_frames_sent": 259,
+    "header_response_observed": 258,
+    "before_decode_observed": 258,
+    "upload_iterations_completed": 258,
+    "iterations_source": "DmDiagnosticsCore.Snapshot.LobWriteChunks_delta_after_AcceptParameterUploadAck",
+    "current_frame_sequence": 296,
+    "current_request": 26,
+    "current_frame_sent_at": 1233445586303458,
+    "current_send_completed_at": 1233445586305416,
+    "current_header_observed_at": null,
+    "current_before_decode_at": null,
+    "gaps": 0,
+    "overflow": 0
+  },
+  "fresh_absent_after": true,
+  "whole_empty_after": true,
+  "header_observed_does_not_prove_body_acceptance": true,
+  "phase3cleanup_excluded_from_upload_metrics": true
+}

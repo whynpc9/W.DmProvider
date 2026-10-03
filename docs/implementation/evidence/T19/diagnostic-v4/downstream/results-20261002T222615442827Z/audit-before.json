@@ -1,0 +1,11 @@
+{
+  "task": "T19",
+  "mode": "before",
+  "accepted": true,
+  "driver_dll_sha256": "922fa03026690a9ee3490d7a4236e01dc1a40d0d4bb81a4ab2c0d9ac320ed067",
+  "identity_verified": true,
+  "current_schema_verified": true,
+  "server_version": "8.1.4.6",
+  "inventory_count": 0,
+  "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "stage": "package_inspection",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+      "0.1.0-r3.t16.20261002143244",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json"
+    ]
+  },
+  {
+    "stage": "consumer_source_identity",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/source_identity.py",
+      "/Users/wanghongyi/Projects/W.DmProvider",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/consumer-source-manifest.json"
+    ]
+  },
+  {
+    "stage": "consumer_build",
+    "exit_code": 0,
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "build",
+      "tools/R3UploadProfileProbe/R3UploadProfileProbe.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app",
+      "/p:R3PackageVersion=0.1.0-r3.t16.20261002143244",
+      "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+      "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+      "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/obj/",
+      "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/obj/",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ]
+  },
+  {
+    "stage": "runtime_probe",
+    "exit_code": 0,
+    "argv": [
+      "scripts/with-dameng-test.sh",
+      "python3",
+      "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/run_probe.py",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe-stdout.json",
+      "/usr/local/share/dotnet/dotnet",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app/R3UploadProfileProbe.dll",
+      "shared",
+      "/Users/wanghongyi/Projects/W.DmProvider",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe.json"
+    ]
+  },
+  {
+    "stage": "envelope_validation",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/validate.py",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe.json",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app/W.DmProvider.dll",
+      "shared"
+    ]
+  },
+  {
+    "stage": "final_package_inspection",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+      "0.1.0-r3.t16.20261002143244",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest-final.json"
+    ]
+  },
+  {
+    "stage": "immutable_package_compare",
+    "exit_code": 0,
+    "argv": [
+      "cmp",
+      "-s",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+      "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest-final.json"
+    ]
+  }
+]

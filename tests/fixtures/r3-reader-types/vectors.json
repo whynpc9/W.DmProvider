@@ -1,0 +1,557 @@
+{
+  "fixture": "reader type conversion and UTF-16 range vectors",
+  "fixture_kind": "synthetic_independent_golden_inputs",
+  "execution_status": "not_run",
+  "enum_label_policy": "All enum_label fields are test fixture labels, not product or server enum names.",
+  "reference_codec": {
+    "implementation": "CPython",
+    "runtime_version": "3.14.7",
+    "utf8_lookup_name": "utf-8",
+    "gb18030_lookup_name": "gb18030",
+    "scope": "Expected text bytes are checked against Python standard-library reference codecs on this runtime only; they do not identify server codec versions or behavior."
+  },
+  "source_basis": {
+    "rowid_rendering": "Local Legacy DmRowId.valueOf(byte[]), toString(), and parse() shape, plus DmConvertion.EightByteToLong; reimplemented in pure Python without loading product code.",
+    "text_rendering": "Local DmGetValue.GetString decodes CType 0, 1, 2, and 54 with ServerEncoding; the fixture stores literal reference bytes and expected UTF-16 units.",
+    "reader_ranges": "GetChars offsets are UTF-16 code units. Current source type gates are documented in README; fixture values are expected data, not a claim that the current gate already accepts every case.",
+    "getbytes_boundary": "Keep CType 0, 1, and 2 rejected by GetBytes; this fixture adds no binary support expectation for them.",
+    "paths": [
+      "src/W.DmProvider/Internal/Legacy/Dm/DmRowId.cs",
+      "src/W.DmProvider/Internal/Legacy/Dm/DmConvertion.cs",
+      "src/W.DmProvider/Internal/Legacy/Dm/DmGetValue.cs",
+      "src/W.DmProvider/PublicApi/DmDataReader.cs",
+      "docs/implementation/v1/specs/06-parameters-and-types.md",
+      "docs/implementation/v1/specs/10-streaming-lob.md"
+    ]
+  },
+  "rowid_vectors": [
+    {
+      "fixture_label": "synthetic_rowid_8_byte_invalid_utf8_v1",
+      "ctype": 28,
+      "enum_label": "synthetic_ctype_28_rowid_probe",
+      "raw_hex": "FFC080F59F988001",
+      "raw_byte_count": 8,
+      "local_shape_basis": {
+        "byte_length_accepted_by_local_valueOf": true,
+        "local_rendered_form_round_trips_raw_shape": true,
+        "server_origin_or_server_range_validation_claimed": false
+      },
+      "raw_utf8_strict_decode": {
+        "status": "rejected",
+        "first_error_offset": 0,
+        "reason": "invalid start byte"
+      },
+      "render_algorithm": "8-byte little-endian legacy rowid interpreted as signed Int64 then rendered as invariant decimal digits",
+      "rendered": "108254203842969855",
+      "utf16_count": 18,
+      "rune_count": 18,
+      "utf16_code_units_hex": [
+        "0031",
+        "0030",
+        "0038",
+        "0032",
+        "0035",
+        "0034",
+        "0032",
+        "0030",
+        "0033",
+        "0038",
+        "0034",
+        "0032",
+        "0039",
+        "0036",
+        "0039",
+        "0038",
+        "0035",
+        "0035"
+      ],
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_rendered": "1082",
+          "expected_utf16_code_units_hex": [
+            "0031",
+            "0030",
+            "0038",
+            "0032"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 3,
+          "request_length": 5,
+          "expected_rendered": "25420",
+          "expected_utf16_code_units_hex": [
+            "0032",
+            "0035",
+            "0034",
+            "0032",
+            "0030"
+          ],
+          "expected_count": 5
+        },
+        {
+          "field_offset": 15,
+          "request_length": 5,
+          "expected_rendered": "855",
+          "expected_utf16_code_units_hex": [
+            "0038",
+            "0035",
+            "0035"
+          ],
+          "expected_count": 3
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "fixture_label": "synthetic_rowid_12_byte_invalid_utf8_v1",
+      "ctype": 28,
+      "enum_label": "synthetic_ctype_28_rowid_probe",
+      "raw_hex": "000000000000FFC080F59F98",
+      "raw_byte_count": 12,
+      "local_shape_basis": {
+        "byte_length_accepted_by_local_valueOf": true,
+        "local_rendered_form_round_trips_raw_shape": true,
+        "server_origin_or_server_range_validation_claimed": false,
+        "first_byte_top_two_bits": "00",
+        "local_epno_big_endian": 0,
+        "local_hpno_big_endian": 0
+      },
+      "raw_utf8_strict_decode": {
+        "status": "rejected",
+        "first_error_offset": 6,
+        "reason": "invalid start byte"
+      },
+      "render_algorithm": "12-byte rowid rendered by the legacy 18-character alphabet/bit-field mapping",
+      "rendered": "AAAAAAAAAA/8CA9Z+Y",
+      "utf16_count": 18,
+      "rune_count": 18,
+      "utf16_code_units_hex": [
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "0041",
+        "002F",
+        "0038",
+        "0043",
+        "0041",
+        "0039",
+        "005A",
+        "002B",
+        "0059"
+      ],
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_rendered": "AAAA",
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "0041",
+            "0041",
+            "0041"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 3,
+          "request_length": 5,
+          "expected_rendered": "AAAAA",
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "0041",
+            "0041",
+            "0041",
+            "0041"
+          ],
+          "expected_count": 5
+        },
+        {
+          "field_offset": 15,
+          "request_length": 5,
+          "expected_rendered": "Z+Y",
+          "expected_utf16_code_units_hex": [
+            "005A",
+            "002B",
+            "0059"
+          ],
+          "expected_count": 3
+        }
+      ],
+      "status": "synthetic_not_run"
+    }
+  ],
+  "text_vectors": [
+    {
+      "fixture_label": "synthetic_ctype_0_utf_8_text_v1",
+      "ctype": 0,
+      "enum_label": "synthetic_ctype_0_text_probe",
+      "enum_label_is_synthetic": true,
+      "operation_profile": "GetChars ranges indexed by UTF-16 code units",
+      "encoding": "UTF-8",
+      "text": "A雪🚀é\u0000Z",
+      "code_points_hex": [
+        "U+0041",
+        "U+96EA",
+        "U+1F680",
+        "U+0065",
+        "U+0301",
+        "U+0000",
+        "U+005A"
+      ],
+      "encoded_bytes_hex": "41E99BAAF09F9A8065CC81005A",
+      "encoded_byte_count": 13,
+      "encoded_sha256_hex": "775834188cf58d7acff39803ff13226eac06e396d3f7db0942a98872ab342daf",
+      "utf16_code_units_hex": [
+        "0041",
+        "96EA",
+        "D83D",
+        "DE80",
+        "0065",
+        "0301",
+        "0000",
+        "005A"
+      ],
+      "utf16_count": 8,
+      "rune_count": 7,
+      "length_query_expected_utf16_count": 8,
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "96EA",
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 2,
+          "request_length": 2,
+          "expected_utf16_code_units_hex": [
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 2
+        },
+        {
+          "field_offset": 3,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "DE80",
+            "0065",
+            "0301",
+            "0000"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 5,
+          "request_length": 5,
+          "expected_utf16_code_units_hex": [
+            "0301",
+            "0000",
+            "005A"
+          ],
+          "expected_count": 3
+        },
+        {
+          "field_offset": 8,
+          "request_length": 3,
+          "expected_utf16_code_units_hex": [],
+          "expected_count": 0
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "fixture_label": "synthetic_ctype_0_gb18030_text_v1",
+      "ctype": 0,
+      "enum_label": "synthetic_ctype_0_text_probe",
+      "enum_label_is_synthetic": true,
+      "operation_profile": "GetChars ranges indexed by UTF-16 code units",
+      "encoding": "GB18030",
+      "text": "A雪🚀é\u0000Z",
+      "code_points_hex": [
+        "U+0041",
+        "U+96EA",
+        "U+1F680",
+        "U+0065",
+        "U+0301",
+        "U+0000",
+        "U+005A"
+      ],
+      "encoded_bytes_hex": "41D1A995308B34658130BC37005A",
+      "encoded_byte_count": 14,
+      "encoded_sha256_hex": "837fc7d3e13acfca4b6303f29e7efd0d02a186010a82b7953fa72729d67e9823",
+      "utf16_code_units_hex": [
+        "0041",
+        "96EA",
+        "D83D",
+        "DE80",
+        "0065",
+        "0301",
+        "0000",
+        "005A"
+      ],
+      "utf16_count": 8,
+      "rune_count": 7,
+      "length_query_expected_utf16_count": 8,
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "96EA",
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 2,
+          "request_length": 2,
+          "expected_utf16_code_units_hex": [
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 2
+        },
+        {
+          "field_offset": 3,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "DE80",
+            "0065",
+            "0301",
+            "0000"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 5,
+          "request_length": 5,
+          "expected_utf16_code_units_hex": [
+            "0301",
+            "0000",
+            "005A"
+          ],
+          "expected_count": 3
+        },
+        {
+          "field_offset": 8,
+          "request_length": 3,
+          "expected_utf16_code_units_hex": [],
+          "expected_count": 0
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "fixture_label": "synthetic_ctype_54_utf_8_text_v1",
+      "ctype": 54,
+      "enum_label": "synthetic_ctype_54_text_probe",
+      "enum_label_is_synthetic": true,
+      "operation_profile": "GetChars ranges indexed by UTF-16 code units",
+      "encoding": "UTF-8",
+      "text": "A雪🚀é\u0000Z",
+      "code_points_hex": [
+        "U+0041",
+        "U+96EA",
+        "U+1F680",
+        "U+0065",
+        "U+0301",
+        "U+0000",
+        "U+005A"
+      ],
+      "encoded_bytes_hex": "41E99BAAF09F9A8065CC81005A",
+      "encoded_byte_count": 13,
+      "encoded_sha256_hex": "775834188cf58d7acff39803ff13226eac06e396d3f7db0942a98872ab342daf",
+      "utf16_code_units_hex": [
+        "0041",
+        "96EA",
+        "D83D",
+        "DE80",
+        "0065",
+        "0301",
+        "0000",
+        "005A"
+      ],
+      "utf16_count": 8,
+      "rune_count": 7,
+      "length_query_expected_utf16_count": 8,
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "96EA",
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 2,
+          "request_length": 2,
+          "expected_utf16_code_units_hex": [
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 2
+        },
+        {
+          "field_offset": 3,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "DE80",
+            "0065",
+            "0301",
+            "0000"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 5,
+          "request_length": 5,
+          "expected_utf16_code_units_hex": [
+            "0301",
+            "0000",
+            "005A"
+          ],
+          "expected_count": 3
+        },
+        {
+          "field_offset": 8,
+          "request_length": 3,
+          "expected_utf16_code_units_hex": [],
+          "expected_count": 0
+        }
+      ],
+      "status": "synthetic_not_run"
+    },
+    {
+      "fixture_label": "synthetic_ctype_54_gb18030_text_v1",
+      "ctype": 54,
+      "enum_label": "synthetic_ctype_54_text_probe",
+      "enum_label_is_synthetic": true,
+      "operation_profile": "GetChars ranges indexed by UTF-16 code units",
+      "encoding": "GB18030",
+      "text": "A雪🚀é\u0000Z",
+      "code_points_hex": [
+        "U+0041",
+        "U+96EA",
+        "U+1F680",
+        "U+0065",
+        "U+0301",
+        "U+0000",
+        "U+005A"
+      ],
+      "encoded_bytes_hex": "41D1A995308B34658130BC37005A",
+      "encoded_byte_count": 14,
+      "encoded_sha256_hex": "837fc7d3e13acfca4b6303f29e7efd0d02a186010a82b7953fa72729d67e9823",
+      "utf16_code_units_hex": [
+        "0041",
+        "96EA",
+        "D83D",
+        "DE80",
+        "0065",
+        "0301",
+        "0000",
+        "005A"
+      ],
+      "utf16_count": 8,
+      "rune_count": 7,
+      "length_query_expected_utf16_count": 8,
+      "partial_ranges": [
+        {
+          "field_offset": 0,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "0041",
+            "96EA",
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 2,
+          "request_length": 2,
+          "expected_utf16_code_units_hex": [
+            "D83D",
+            "DE80"
+          ],
+          "expected_count": 2
+        },
+        {
+          "field_offset": 3,
+          "request_length": 4,
+          "expected_utf16_code_units_hex": [
+            "DE80",
+            "0065",
+            "0301",
+            "0000"
+          ],
+          "expected_count": 4
+        },
+        {
+          "field_offset": 5,
+          "request_length": 5,
+          "expected_utf16_code_units_hex": [
+            "0301",
+            "0000",
+            "005A"
+          ],
+          "expected_count": 3
+        },
+        {
+          "field_offset": 8,
+          "request_length": 3,
+          "expected_utf16_code_units_hex": [],
+          "expected_count": 0
+        }
+      ],
+      "status": "synthetic_not_run"
+    }
+  ],
+  "getbytes_rejection_controls": [
+    {
+      "fixture_label": "synthetic_ctype_0_getbytes_rejected_control",
+      "ctype": 0,
+      "enum_label": "synthetic_ctype_0_binary_rejection_control",
+      "operation": "GetBytes",
+      "expected_exception": "InvalidCastException",
+      "status": "preserve_existing_rejection"
+    },
+    {
+      "fixture_label": "synthetic_ctype_1_getbytes_rejected_control",
+      "ctype": 1,
+      "enum_label": "synthetic_ctype_1_binary_rejection_control",
+      "operation": "GetBytes",
+      "expected_exception": "InvalidCastException",
+      "status": "preserve_existing_rejection"
+    },
+    {
+      "fixture_label": "synthetic_ctype_2_getbytes_rejected_control",
+      "ctype": 2,
+      "enum_label": "synthetic_ctype_2_binary_rejection_control",
+      "operation": "GetBytes",
+      "expected_exception": "InvalidCastException",
+      "status": "preserve_existing_rejection"
+    }
+  ],
+  "data_scope": "No real user data, credentials, secrets, server captures, or database results are included."
+}

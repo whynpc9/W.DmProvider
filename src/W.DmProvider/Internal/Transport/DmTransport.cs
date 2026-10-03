@@ -7,11 +7,13 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Diagnostics;
 
 namespace W.Dm.Internal.Transport;
 
 internal static class DmTransportTestHooks
 {
+    internal static Action<bool, string> BeforeNetworkIo;
     internal static Action BeforeTlsRead;
     internal static Action<OperationIdentity> BeforeSendAttempt;
     internal static Action<OperationIdentity> AfterSendAttempt;
@@ -35,6 +37,7 @@ internal static class DmTransportTestHooks
     internal static SslProtocols LastNegotiatedTlsProtocol => (SslProtocols)Volatile.Read(ref lastNegotiatedTlsProtocol);
     internal static void Reset()
     {
+        Volatile.Write(ref BeforeNetworkIo, null);
         Interlocked.Exchange(ref successfulTcpConnections, 0);
         Interlocked.Exchange(ref attemptedTcpConnections, 0);
         Interlocked.Exchange(ref createdTcpSockets, 0);
@@ -52,8 +55,8 @@ internal static class DmTransportTestHooks
     }
     internal static void Attempted() => Interlocked.Increment(ref attemptedTcpConnections);
     internal static void Connected() => Interlocked.Increment(ref successfulTcpConnections);
-    internal static void Created() => Interlocked.Increment(ref createdTcpSockets);
-    internal static void Disposed() => Interlocked.Increment(ref disposedTcpSockets);
+    internal static void Created() { Interlocked.Increment(ref createdTcpSockets); DmDiagnosticsCore.ConnectionCreated(); }
+    internal static void Disposed() { Interlocked.Increment(ref disposedTcpSockets); DmDiagnosticsCore.ConnectionClosed(); }
     internal static void TlsUpgraded(SslProtocols protocol)
     {
         Volatile.Write(ref lastNegotiatedTlsProtocol, (int)protocol);
@@ -112,6 +115,7 @@ internal sealed class DmTransport : IDisposable
 
     internal void Open(DmDeadline deadline)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(false, "connect");
         lock (gate)
         {
             if (closed) throw new ObjectDisposedException(nameof(DmTransport));
@@ -205,6 +209,7 @@ internal sealed class DmTransport : IDisposable
     internal async Task OpenAsync(DmDeadline deadline, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(true, "connect");
         lock (gate)
         {
             if (closed) throw new ObjectDisposedException(nameof(DmTransport));
@@ -294,6 +299,7 @@ internal sealed class DmTransport : IDisposable
 
     internal void UpgradeTls(DmTlsOptions options, DmDeadline deadline)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(false, "tls");
         ArgumentNullException.ThrowIfNull(options);
         SocketByteChannel raw;
         lock (gate)
@@ -367,6 +373,7 @@ internal sealed class DmTransport : IDisposable
 
     internal async Task UpgradeTlsAsync(DmTlsOptions options, DmDeadline deadline, CancellationToken cancellationToken = default)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(true, "tls");
         ArgumentNullException.ThrowIfNull(options);
         cancellationToken.ThrowIfCancellationRequested();
         SocketByteChannel raw;
@@ -480,6 +487,7 @@ internal sealed class DmTransport : IDisposable
 
     internal void SendAll(byte[] buffer, int offset, int count, DmDeadline deadline, int timeoutMilliseconds, Action<int> onSent = null)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(false, "send");
         ValidateRange(buffer, offset, count);
         IDmByteChannel current = CurrentChannel();
         int sent = 0;
@@ -496,6 +504,7 @@ internal sealed class DmTransport : IDisposable
             }
             PrepareSendAttempt(invocation, sent == 0);
             int progress = current.Send(buffer, offset + sent, count - sent, timeout);
+            if (progress > 0 && progress <= count - sent) DmDiagnosticsCore.NetworkBytes(progress, true);
             CheckOperationDeadline(deadline);
             if (progress <= 0 || progress > count - sent) throw new IOException("Socket send made no valid progress.");
             sent += progress;
@@ -505,11 +514,13 @@ internal sealed class DmTransport : IDisposable
 
     internal int ReadSome(byte[] buffer, int offset, int count, DmDeadline deadline, int timeoutMilliseconds)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(false, "receive");
         ValidateRange(buffer, offset, count);
         if (count == 0) return 0;
         DmInvocation.Current?.ThrowIfTerminated();
         if (DmInvocation.Current is { } invocation) invocation.Phase = DmFailurePhase.Receive;
         int read = CurrentChannel().Receive(buffer, offset, count, Timeout(deadline, timeoutMilliseconds));
+        if (read > 0 && read <= count) DmDiagnosticsCore.NetworkBytes(read, false);
         CheckOperationDeadline(deadline);
         if (read <= 0) throw new EndOfStreamException("Socket closed before the expected bytes arrived.");
         if (read > count) throw new IOException("Socket returned an invalid byte count.");
@@ -527,6 +538,7 @@ internal sealed class DmTransport : IDisposable
     internal async ValueTask SendAllAsync(byte[] buffer, int offset, int count, DmDeadline deadline,
         int timeoutMilliseconds, CancellationToken cancellationToken = default, Action<int> onSent = null)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(true, "send");
         ValidateRange(buffer, offset, count);
         DmInvocation.Current?.ThrowIfTerminated();
         cancellationToken.ThrowIfCancellationRequested();
@@ -550,6 +562,7 @@ internal sealed class DmTransport : IDisposable
                 int progress;
                 try { progress = await current.SendAsync(buffer, offset + sent, count - sent, budget.Token).ConfigureAwait(false); }
                 catch (OperationCanceledException ex) { budget.RethrowCancellation(ex); throw; }
+                if (progress > 0 && progress <= count - sent) DmDiagnosticsCore.NetworkBytes(progress, true);
                 CheckOperationDeadline(deadline);
                 if (progress <= 0 || progress > count - sent) throw new IOException("Socket send made no valid progress.");
                 sent += progress;
@@ -561,6 +574,7 @@ internal sealed class DmTransport : IDisposable
     internal async ValueTask<int> ReadSomeAsync(byte[] buffer, int offset, int count, DmDeadline deadline,
         int timeoutMilliseconds, CancellationToken cancellationToken = default)
     {
+        DmTransportTestHooks.BeforeNetworkIo?.Invoke(true, "receive");
         ValidateRange(buffer, offset, count);
         DmInvocation.Current?.ThrowIfTerminated();
         cancellationToken.ThrowIfCancellationRequested();
@@ -570,6 +584,7 @@ internal sealed class DmTransport : IDisposable
         int read;
         try { read = await CurrentChannel().ReceiveAsync(buffer, offset, count, budget.Token).ConfigureAwait(false); }
         catch (OperationCanceledException ex) { budget.RethrowCancellation(ex); throw; }
+        if (read > 0 && read <= count) DmDiagnosticsCore.NetworkBytes(read, false);
         CheckOperationDeadline(deadline);
         if (read <= 0) throw new EndOfStreamException("Socket closed before the expected bytes arrived.");
         if (read > count) throw new IOException("Socket returned an invalid byte count.");

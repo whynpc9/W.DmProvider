@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "restore",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/source/tests/W.DmProvider.LobTests/W.DmProvider.LobTests.csproj",
+    "/p:Configuration=Release",
+    "/p:Version=0.1.0-r3.20261002220119",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 0.42891695792786777,
+  "exit_code": 0,
+  "stage": "Lob_restore"
+}

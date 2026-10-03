@@ -1,0 +1,104 @@
+[
+  {
+    "profile": "shared",
+    "lane": "unit",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "unit"
+    ]
+  },
+  {
+    "profile": "shared",
+    "lane": "unit",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "unit"
+    ]
+  },
+  {
+    "profile": "tls",
+    "lane": "unit",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "tls",
+      "--lane",
+      "unit"
+    ]
+  },
+  {
+    "profile": "tls",
+    "lane": "unit",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "tls",
+      "--lane",
+      "unit"
+    ]
+  },
+  {
+    "profile": "tls",
+    "lane": "r3_tls",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "tls",
+      "--lane",
+      "r3_tls"
+    ]
+  },
+  {
+    "profile": "tls",
+    "lane": "r3_tls",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "tls",
+      "--lane",
+      "r3_tls"
+    ]
+  }
+]

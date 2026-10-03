@@ -1,0 +1,173 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "measurements": {
+    "C1_first24": {
+      "upload_seconds": 2.581977584,
+      "fullcycles": 24,
+      "range_statistics": {
+        "1-2": {
+          "n": 2,
+          "median_ms": 149.197667,
+          "mean_ms": 149.197667,
+          "nearest_rank_p95_ms": 149.724459,
+          "max_ms": 149.724459
+        },
+        "3-12": {
+          "n": 10,
+          "median_ms": 77.3798335,
+          "mean_ms": 77.7939166,
+          "nearest_rank_p95_ms": 80.62166599999999,
+          "max_ms": 80.62166599999999
+        },
+        "13-24": {
+          "n": 12,
+          "median_ms": 78.063229,
+          "mean_ms": 78.01148958333333,
+          "nearest_rank_p95_ms": 79.930042,
+          "max_ms": 79.930042
+        }
+      }
+    },
+    "C1_second48": {
+      "upload_seconds": 4.31122475,
+      "fullcycles": 48,
+      "range_statistics": {
+        "1-2": {
+          "n": 2,
+          "median_ms": 77.808167,
+          "mean_ms": 77.808167,
+          "nearest_rank_p95_ms": 78.284542,
+          "max_ms": 78.284542
+        },
+        "3-12": {
+          "n": 10,
+          "median_ms": 77.53497949999999,
+          "mean_ms": 77.6606333,
+          "nearest_rank_p95_ms": 78.46000000000001,
+          "max_ms": 78.46000000000001
+        },
+        "13-24": {
+          "n": 12,
+          "median_ms": 78.2000205,
+          "mean_ms": 78.59040625,
+          "nearest_rank_p95_ms": 82.013375,
+          "max_ms": 82.013375
+        },
+        "25-48": {
+          "n": 24,
+          "median_ms": 78.6561045,
+          "mean_ms": 78.484329875,
+          "nearest_rank_p95_ms": 79.861084,
+          "max_ms": 82.182667
+        }
+      }
+    },
+    "C2_first48": {
+      "upload_seconds": 4.429897292,
+      "fullcycles": 48,
+      "range_statistics": {
+        "1-2": {
+          "n": 2,
+          "median_ms": 115.353396,
+          "mean_ms": 115.353396,
+          "nearest_rank_p95_ms": 149.982959,
+          "max_ms": 149.982959
+        },
+        "3-12": {
+          "n": 10,
+          "median_ms": 78.5191255,
+          "mean_ms": 79.16007499999999,
+          "nearest_rank_p95_ms": 86.222875,
+          "max_ms": 86.222875
+        },
+        "13-24": {
+          "n": 12,
+          "median_ms": 78.33393699999999,
+          "mean_ms": 78.90073958333333,
+          "nearest_rank_p95_ms": 81.546375,
+          "max_ms": 81.546375
+        },
+        "25-48": {
+          "n": 24,
+          "median_ms": 78.6113545,
+          "mean_ms": 78.64906770833333,
+          "nearest_rank_p95_ms": 80.95358399999999,
+          "max_ms": 81.15424999999999
+        }
+      }
+    },
+    "C2_second24": {
+      "upload_seconds": 2.448096,
+      "fullcycles": 24,
+      "range_statistics": {
+        "1-2": {
+          "n": 2,
+          "median_ms": 78.6189375,
+          "mean_ms": 78.6189375,
+          "nearest_rank_p95_ms": 79.425375,
+          "max_ms": 79.425375
+        },
+        "3-12": {
+          "n": 10,
+          "median_ms": 78.591396,
+          "mean_ms": 78.6980958,
+          "nearest_rank_p95_ms": 79.639667,
+          "max_ms": 79.639667
+        },
+        "13-24": {
+          "n": 12,
+          "median_ms": 78.417167,
+          "mean_ms": 80.151316,
+          "nearest_rank_p95_ms": 97.94270900000001,
+          "max_ms": 97.94270900000001
+        }
+      }
+    }
+  },
+  "readbacks": [
+    {
+      "RowId": 1,
+      "ExpectedBytes": 768000,
+      "ActualBytes": 768000,
+      "ExpectedSha": "40539438c427e97e9202daa6f431756a83f4c6826faac69493c0cd95c761679d",
+      "ActualSha": "40539438c427e97e9202daa6f431756a83f4c6826faac69493c0cd95c761679d",
+      "Verified": true
+    },
+    {
+      "RowId": 2,
+      "ExpectedBytes": 1536000,
+      "ActualBytes": 1536000,
+      "ExpectedSha": "0e812c21c8ec41ae576309cb5cf8d038472409b256568f85a603921e3e3b19a9",
+      "ActualSha": "0e812c21c8ec41ae576309cb5cf8d038472409b256568f85a603921e3e3b19a9",
+      "Verified": true
+    },
+    {
+      "RowId": 3,
+      "ExpectedBytes": 1536000,
+      "ActualBytes": 1536000,
+      "ExpectedSha": "0e812c21c8ec41ae576309cb5cf8d038472409b256568f85a603921e3e3b19a9",
+      "ActualSha": "0e812c21c8ec41ae576309cb5cf8d038472409b256568f85a603921e3e3b19a9",
+      "Verified": true
+    },
+    {
+      "RowId": 4,
+      "ExpectedBytes": 768000,
+      "ActualBytes": 768000,
+      "ExpectedSha": "40539438c427e97e9202daa6f431756a83f4c6826faac69493c0cd95c761679d",
+      "ActualSha": "40539438c427e97e9202daa6f431756a83f4c6826faac69493c0cd95c761679d",
+      "Verified": true
+    }
+  ],
+  "fresh_exact_absent": true,
+  "whole_empty_after": true,
+  "physical_created": 6,
+  "physical_disposed": 6,
+  "old_U394_unchanged": true,
+  "no_new_readiness_formula": true
+}

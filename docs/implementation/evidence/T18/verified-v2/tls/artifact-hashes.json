@@ -1,0 +1,54 @@
+[
+  {
+    "path": "SDK-command.json",
+    "sha256": "a9115ce4a40873b29a4cabf3ea53a3dad02bdfa6de61fa4829513961fb9d3099"
+  },
+  {
+    "path": "SDK.json",
+    "sha256": "dbeba5781fe61a669bf1cd7e0baa03c4a38e159ba1833a121f4ce248832dcd16"
+  },
+  {
+    "path": "consumer-source-manifest.json",
+    "sha256": "d3cae3c67fb7ca3734e0228a4ca39d40111b0a775c21acc730fb0f3758a5ec86"
+  },
+  {
+    "path": "consumer_build-command.json",
+    "sha256": "5c264f8ae53eb2c012889f229678e32872f28ab9c1477a519bfe84fabf67e2f8"
+  },
+  {
+    "path": "consumer_source_identity-command.json",
+    "sha256": "ec52c2bcc8948b31f909b5d7c35245d737b10ae5728ff6c1f2a5310573db3d54"
+  },
+  {
+    "path": "consumer_validation-command.json",
+    "sha256": "9d059fe05bbc840aeb834d1ddcf0ff25633f7f79cc375c4b54ca6671c8e77f5d"
+  },
+  {
+    "path": "package-manifest-final.json",
+    "sha256": "191e817f2021464f09d75cde0e53946e7d7a7bc92b64d0325f46095f5ce81977"
+  },
+  {
+    "path": "package-manifest.json",
+    "sha256": "191e817f2021464f09d75cde0e53946e7d7a7bc92b64d0325f46095f5ce81977"
+  },
+  {
+    "path": "package_inspection-command.json",
+    "sha256": "3f373ecd95a2b18448f12c0fbfbcc76fd9e117ed66e7e9279ae7c27d6499701b"
+  },
+  {
+    "path": "package_reinspection-command.json",
+    "sha256": "18684483675e876bc9ffbfcf82ab268d8cdd3d131a249ad64d0c88c68180ef3c"
+  },
+  {
+    "path": "probe-stdout.json",
+    "sha256": "bfda56e4ac0edae290d6c6dd8fc6dafb95cb6b0452a0c1449ff90fe516aa60c7"
+  },
+  {
+    "path": "probe.json",
+    "sha256": "3883c6351ffca96c14db1427082fbd3784f0ca1e36e53742b7a14e92e36ca3b0"
+  },
+  {
+    "path": "runtime_tls-command.json",
+    "sha256": "5b21dfb08ae7a88f0d836eb603084c7765a890230269be96d20fce0a5645b06d"
+  }
+]

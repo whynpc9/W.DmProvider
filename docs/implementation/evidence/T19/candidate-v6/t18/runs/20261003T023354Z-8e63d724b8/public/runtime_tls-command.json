@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "[repo]/scripts/with-dameng-tls-test.sh",
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "[repo]/tools/R3ResourceProbe/run_probe.py",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/probe-stdout.json",
+    "/usr/local/share/dotnet/dotnet",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/.private/app/R3ResourceProbe.dll",
+    "tls",
+    "[repo]",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/package-manifest.json",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/probe.json"
+  ],
+  "elapsed_seconds": 700.9931117079686,
+  "exit_code": 0,
+  "stage": "runtime_tls"
+}

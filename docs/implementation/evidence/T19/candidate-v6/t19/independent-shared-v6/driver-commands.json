@@ -1,0 +1,38 @@
+[
+  {
+    "gate": "t13",
+    "mode": "shared",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "shared",
+      "0.1.0-r3.20261003023000",
+      "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed"
+    ],
+    "exit_code": 0
+  },
+  {
+    "gate": "t14",
+    "mode": "shared",
+    "argv": [
+      "bash",
+      "eng/t14.sh",
+      "shared",
+      "0.1.0-r3.20261003023000",
+      "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed"
+    ],
+    "exit_code": 0
+  },
+  {
+    "gate": "t13",
+    "mode": "security-shared",
+    "argv": [
+      "bash",
+      "eng/t13.sh",
+      "security-shared",
+      "0.1.0-r3.20261003023000",
+      "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed"
+    ],
+    "exit_code": 0
+  }
+]

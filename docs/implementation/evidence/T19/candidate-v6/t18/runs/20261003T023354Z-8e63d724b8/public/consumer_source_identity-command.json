@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "[repo]/tools/R3ResourceProbe/source_identity.py",
+    "[repo]",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/consumer-source-manifest.json"
+  ],
+  "elapsed_seconds": 0.08912658388726413,
+  "exit_code": 0,
+  "stage": "consumer_source_identity"
+}

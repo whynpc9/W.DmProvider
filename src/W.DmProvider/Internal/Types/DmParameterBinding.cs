@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using W.Dm.Internal.Lobs;
 
 namespace W.Dm.Internal.Types;
 
@@ -62,6 +63,10 @@ internal sealed class DmParameterBinding
                 distinct.Add(index);
             }
         }
+        var inputIdentities = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        foreach (int index in occurrences)
+            if (parameters.do_GetParameter(index).do_Value is DmLobInput input && !inputIdentities.Add(input.SourceIdentity))
+                throw new NotSupportedException("One streaming input cannot be bound to multiple SQL occurrences.");
         return new DmParameterBinding(parameters, occurrences.ToArray(), distinct.ToArray(), named);
     }
 

@@ -7,6 +7,7 @@ using System.Threading;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.filter;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Lobs;
 
 namespace W.Dm;
 
@@ -865,7 +866,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		DmDbType expected = DefaultProviderType(explicitDbTypeValue);
 		bool compatible = WidenUnsigned(expected) == WidenUnsigned(explicitDmSqlTypeValue) ||
 			(explicitDbTypeValue == DbType.Binary && explicitDmSqlTypeValue is DmDbType.Binary or DmDbType.Blob or DmDbType.VarBinary) ||
-			(explicitDbTypeValue == DbType.String && explicitDmSqlTypeValue is DmDbType.Clob or DmDbType.Text) ||
+			((explicitDbTypeValue is DbType.String or DbType.AnsiString) && (explicitDmSqlTypeValue is DmDbType.Clob or DmDbType.Text)) ||
 			(explicitDbTypeValue == DbType.Int32 && explicitDmSqlTypeValue == DmDbType.Int64) ||
 			(explicitDbTypeValue == DbType.UInt16 && explicitDmSqlTypeValue is DmDbType.Int32 or DmDbType.Int64 or DmDbType.Decimal) ||
 			(explicitDbTypeValue == DbType.UInt32 && explicitDmSqlTypeValue is DmDbType.Int64 or DmDbType.Decimal) ||
@@ -1007,7 +1008,7 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 			m_pre = m_pre,
 			m_SourceCol = m_SourceCol,
 			m_DataRowVer = m_DataRowVer,
-			m_value = CopyMutableValue(m_value, strictSnapshot),
+			m_value = strictSnapshot && (m_value is Stream or TextReader) ? FreezeStreamingInput() : CopyMutableValue(m_value, strictSnapshot),
 			m_SourceColumnNullMapping = m_SourceColumnNullMapping,
 			m_refCursorStmt = null,
 			m_DmSqlTypeName = m_DmSqlTypeName,
@@ -1020,6 +1021,14 @@ public class DmParameter : DbParameter, IDbDataParameter, IDataParameter, IClone
 		if (strictSnapshot && !clone.explicitDbType && !clone.explicitDmSqlType)
 			clone.InferFromValue(clone.m_value);
 		return clone;
+	}
+
+	private DmLobInput FreezeStreamingInput()
+	{
+		ValidateTypeConfiguration();
+		if (!explicitDmSqlType || m_Direct != ParameterDirection.Input)
+			throw new NotSupportedException("Streaming inputs require explicit DmSqlType and Input direction.");
+		return new DmLobInput(m_value, explicitDmSqlTypeValue);
 	}
 
 	private static object CopyMutableValue(object value, bool strictSnapshot)

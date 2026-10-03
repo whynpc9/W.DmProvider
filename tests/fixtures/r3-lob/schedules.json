@@ -1,0 +1,486 @@
+{
+  "fixture": "T17 synthetic LOB source and reader schedule cases",
+  "fixture_kind": "protocol_neutral_logical_harness_schedule",
+  "execution_status": "not_run",
+  "chunk_capacity_bytes": 8,
+  "events_are": "synthetic harness scheduling labels, not DM messages, captured traffic, or claims about packet ordering",
+  "cases": [
+    {
+      "case_id": "empty_known_length",
+      "contract_tags": [
+        "LOB-01",
+        "LOB-02"
+      ],
+      "source": {
+        "length_bytes": 0,
+        "length_known": true,
+        "can_seek": true,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 0,
+          "eof": true
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed": 0,
+        "payload_chunks": 0,
+        "replayed": false,
+        "source_disposed_by_provider": false
+      }
+    },
+    {
+      "case_id": "exact_full_chunk_then_eof",
+      "contract_tags": [
+        "LOB-01",
+        "LOB-02"
+      ],
+      "source": {
+        "length_bytes": 8,
+        "length_known": true,
+        "can_seek": true,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 0,
+          "eof": true
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed": 8,
+        "payload_chunks": 1,
+        "replayed": false,
+        "source_disposed_by_provider": false
+      }
+    },
+    {
+      "case_id": "final_short_chunk",
+      "contract_tags": [
+        "LOB-01",
+        "LOB-02"
+      ],
+      "source": {
+        "length_bytes": 11,
+        "length_known": true,
+        "can_seek": true,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 3,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 1,
+          "byte_count": 3
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 0,
+          "eof": true
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed": 11,
+        "payload_chunks": 2,
+        "replayed": false,
+        "source_disposed_by_provider": false
+      }
+    },
+    {
+      "case_id": "unknown_length_nonseekable_source",
+      "contract_tags": [
+        "LOB-02"
+      ],
+      "source": {
+        "length_bytes": null,
+        "scripted_actual_bytes": 11,
+        "length_known": false,
+        "can_seek": false,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 3,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 1,
+          "byte_count": 3
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 0,
+          "eof": true
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed": 11,
+        "payload_chunks": 2,
+        "length_or_position_access_required": false,
+        "replayed": false,
+        "source_disposed_by_provider": false
+      }
+    },
+    {
+      "case_id": "caller_owns_source_after_success",
+      "contract_tags": [
+        "LOB-02"
+      ],
+      "source": {
+        "length_bytes": 3,
+        "length_known": true,
+        "can_seek": false,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 3,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 3
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 0,
+          "eof": true
+        },
+        {
+          "event": "operation_complete",
+          "result": "success",
+          "source_remains_open": true
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed": 3,
+        "replayed": false,
+        "source_disposed_by_provider": false
+      }
+    },
+    {
+      "case_id": "source_read_error_after_prefix",
+      "contract_tags": [
+        "LOB-02",
+        "LOB-05"
+      ],
+      "source": {
+        "length_bytes": null,
+        "length_known": false,
+        "can_seek": false,
+        "caller_owns": true,
+        "scripted_bytes_before_error": 5
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 5,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 5
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "outcome": "raises",
+          "exception_kind": "synthetic_io_error"
+        },
+        {
+          "event": "operation_stop",
+          "result": "source_read_error",
+          "retry_allowed": false
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed_before_error": 5,
+        "replayed": false,
+        "source_disposed_by_provider": false,
+        "source_position_rewound": false
+      }
+    },
+    {
+      "case_id": "cancellation_after_prefix",
+      "contract_tags": [
+        "LOB-02",
+        "LOB-05"
+      ],
+      "source": {
+        "length_bytes": null,
+        "length_known": false,
+        "can_seek": false,
+        "caller_owns": true
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 5,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 5
+        },
+        {
+          "event": "caller_cancellation",
+          "after_bytes": 5
+        },
+        {
+          "event": "operation_stop",
+          "result": "cancelled",
+          "automatic_replay": false
+        }
+      ],
+      "expected_summary": {
+        "bytes_consumed_before_cancel": 5,
+        "replayed": false,
+        "source_disposed_by_provider": false,
+        "source_position_rewound": false
+      }
+    },
+    {
+      "case_id": "parent_next_row_invalidates_stream",
+      "contract_tags": [
+        "LOB-04"
+      ],
+      "source": {
+        "length_bytes": 32,
+        "length_known": true,
+        "can_seek": false,
+        "caller_owns": false
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "stream_open",
+          "parent_lease_id": "lease-A",
+          "session_generation": 7
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "parent_next_row",
+          "invalidates_stream_id": "stream-A"
+        },
+        {
+          "event": "read",
+          "stream_id": "stream-A",
+          "requested_bytes": 8,
+          "outcome": "rejected_as_invalid"
+        }
+      ],
+      "expected_summary": {
+        "old_stream_can_read_after_parent_event": false,
+        "new_session_or_row_accessed_by_old_stream": false
+      }
+    },
+    {
+      "case_id": "parent_next_result_invalidates_stream",
+      "contract_tags": [
+        "LOB-04"
+      ],
+      "source": {
+        "length_bytes": 32,
+        "length_known": true,
+        "can_seek": false,
+        "caller_owns": false
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "stream_open",
+          "parent_lease_id": "lease-A",
+          "session_generation": 7
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "parent_next_result",
+          "invalidates_stream_id": "stream-A"
+        },
+        {
+          "event": "read",
+          "stream_id": "stream-A",
+          "requested_bytes": 8,
+          "outcome": "rejected_as_invalid"
+        }
+      ],
+      "expected_summary": {
+        "old_stream_can_read_after_parent_event": false,
+        "new_session_or_row_accessed_by_old_stream": false
+      }
+    },
+    {
+      "case_id": "parent_close_invalidates_stream",
+      "contract_tags": [
+        "LOB-04"
+      ],
+      "source": {
+        "length_bytes": 32,
+        "length_known": true,
+        "can_seek": false,
+        "caller_owns": false
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "stream_open",
+          "parent_lease_id": "lease-A",
+          "session_generation": 7
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "parent_reader_close",
+          "invalidates_stream_id": "stream-A"
+        },
+        {
+          "event": "read",
+          "stream_id": "stream-A",
+          "requested_bytes": 8,
+          "outcome": "rejected_as_invalid"
+        }
+      ],
+      "expected_summary": {
+        "old_stream_can_read_after_parent_event": false,
+        "new_session_or_row_accessed_by_old_stream": false
+      }
+    },
+    {
+      "case_id": "stale_generation_invalidates_stream",
+      "contract_tags": [
+        "LOB-04"
+      ],
+      "source": {
+        "length_bytes": 32,
+        "length_known": true,
+        "can_seek": false,
+        "caller_owns": false
+      },
+      "chunk_capacity_bytes": 8,
+      "logical_events": [
+        {
+          "event": "stream_open",
+          "parent_lease_id": "lease-A",
+          "session_generation": 7
+        },
+        {
+          "event": "read",
+          "requested_bytes": 8,
+          "returned_bytes": 8,
+          "eof": false
+        },
+        {
+          "event": "payload_chunk_available",
+          "chunk_index": 0,
+          "byte_count": 8
+        },
+        {
+          "event": "session_generation_changes",
+          "invalidates_stream_id": "stream-A"
+        },
+        {
+          "event": "read",
+          "stream_id": "stream-A",
+          "requested_bytes": 8,
+          "outcome": "rejected_as_invalid"
+        }
+      ],
+      "expected_summary": {
+        "old_stream_can_read_after_parent_event": false,
+        "new_session_or_row_accessed_by_old_stream": false
+      }
+    }
+  ]
+}

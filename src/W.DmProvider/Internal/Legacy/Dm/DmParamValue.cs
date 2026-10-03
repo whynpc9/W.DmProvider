@@ -1,4 +1,5 @@
 using System;
+using W.Dm.Internal.Lobs;
 
 namespace W.Dm;
 
@@ -13,6 +14,15 @@ internal class DmParamValue
 	private bool m_IsOutDataNull;
 
 	internal byte[] m_InValue;
+	internal DmLobInput StreamingInput { get; private set; }
+	internal void SetStreamingInput(DmLobInput input)
+	{
+		StreamingInput = input ?? throw new ArgumentNullException(nameof(input));
+		m_InValue = null;
+		m_Length = 0;
+		m_IsInDataNull = false;
+		m_InDataBound = true;
+	}
 
 	private byte[] m_OutValue;
 
@@ -66,6 +76,7 @@ internal class DmParamValue
 
 	public void SetInNull()
 	{
+		StreamingInput = null;
 		m_IsInDataNull = true;
 		m_InValue = new byte[0];
 		m_InDataBound = true;
@@ -112,6 +123,7 @@ internal class DmParamValue
 
 	public void SetInValue(byte[] inValue)
 	{
+		StreamingInput = null;
 		if (inValue == null)
 		{
 			SetInNull();
@@ -125,6 +137,7 @@ internal class DmParamValue
 
 	public void SetInValue(ref byte[] inValue)
 	{
+		StreamingInput = null;
 		m_InValue = inValue;
 		m_Length = m_InValue.Length;
 		m_IsInDataNull = false;
@@ -133,6 +146,7 @@ internal class DmParamValue
 
 	public void SetInValue()
 	{
+		StreamingInput = null;
 		m_Length = m_InValue.Length;
 		m_IsInDataNull = false;
 		m_InDataBound = true;
@@ -157,6 +171,7 @@ internal class DmParamValue
 
 	public void ClearInParam()
 	{
+		StreamingInput = null;
 		m_InValue = null;
 		m_InDataBound = false;
 		m_IsInDataNull = false;
@@ -203,11 +218,13 @@ internal class DmParamValue
 
 	public int GetStreamLen()
 	{
+		if (StreamingInput != null) throw new NotSupportedException("Streaming input has no precomputed length.");
 		return m_Length;
 	}
 
 	public int GetBytes(ref byte[] val, int val_off, int off, int len)
 	{
+		if (StreamingInput != null) throw new NotSupportedException("Streaming input must use its sequential cursor.");
 		if (off >= m_Length)
 		{
 			return 0;

@@ -1,0 +1,179 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "measurements": {
+    "A1": {
+      "result": {
+        "Block": "A1",
+        "NoDelayBefore": false,
+        "NoDelayAfter": false,
+        "SetterUsed": false,
+        "Affected": 1,
+        "Consumed": 384000,
+        "CallerOwned": true,
+        "Started": 1234313962733458,
+        "Returned": 1234332081210000,
+        "SentBytes": 385737,
+        "PutFrames": 13,
+        "HeaderResponses": 13,
+        "IterationsCompleted": 13,
+        "FullChunks": 12,
+        "ObservedZeroTailChunks": 1
+      },
+      "execute_seconds": 18.118476542,
+      "frame_to_header": {
+        "n": 13,
+        "median_ms": 1227.003375,
+        "mean_ms": 1234.100189153846,
+        "p95_ms": 1747.470542,
+        "max_ms": 1824.3604579999999
+      },
+      "input_to_frame": {
+        "n": 13,
+        "median_ms": 0.182333,
+        "mean_ms": 0.2597949230769231,
+        "p95_ms": 0.376,
+        "max_ms": 1.047458
+      },
+      "reply_shapes": [
+        [
+          261,
+          0,
+          21
+        ]
+      ]
+    },
+    "B1": {
+      "result": {
+        "Block": "B1",
+        "NoDelayBefore": false,
+        "NoDelayAfter": true,
+        "SetterUsed": true,
+        "Affected": 1,
+        "Consumed": 384000,
+        "CallerOwned": true,
+        "Started": 1234355926137416,
+        "Returned": 1234372012210416,
+        "SentBytes": 385737,
+        "PutFrames": 13,
+        "HeaderResponses": 13,
+        "IterationsCompleted": 13,
+        "FullChunks": 12,
+        "ObservedZeroTailChunks": 1
+      },
+      "execute_seconds": 16.086073,
+      "frame_to_header": {
+        "n": 13,
+        "median_ms": 1059.202583,
+        "mean_ms": 1084.3869902307692,
+        "p95_ms": 1525.286583,
+        "max_ms": 1712.0038749999999
+      },
+      "input_to_frame": {
+        "n": 13,
+        "median_ms": 0.144458,
+        "mean_ms": 0.1661923846153846,
+        "p95_ms": 0.280125,
+        "max_ms": 0.5005
+      },
+      "reply_shapes": [
+        [
+          261,
+          0,
+          21
+        ]
+      ]
+    },
+    "B2": {
+      "result": {
+        "Block": "B2",
+        "NoDelayBefore": false,
+        "NoDelayAfter": true,
+        "SetterUsed": true,
+        "Affected": 1,
+        "Consumed": 384000,
+        "CallerOwned": true,
+        "Started": 1234395792157083,
+        "Returned": 1234412043156916,
+        "SentBytes": 385737,
+        "PutFrames": 13,
+        "HeaderResponses": 13,
+        "IterationsCompleted": 13,
+        "FullChunks": 12,
+        "ObservedZeroTailChunks": 1
+      },
+      "execute_seconds": 16.250999833,
+      "frame_to_header": {
+        "n": 13,
+        "median_ms": 1167.1324160000001,
+        "mean_ms": 1102.3844231538462,
+        "p95_ms": 1359.3871669999999,
+        "max_ms": 1512.488791
+      },
+      "input_to_frame": {
+        "n": 13,
+        "median_ms": 0.107833,
+        "mean_ms": 0.1252116153846154,
+        "p95_ms": 0.24675,
+        "max_ms": 0.303
+      },
+      "reply_shapes": [
+        [
+          261,
+          0,
+          21
+        ]
+      ]
+    },
+    "A2": {
+      "result": {
+        "Block": "A2",
+        "NoDelayBefore": false,
+        "NoDelayAfter": false,
+        "SetterUsed": false,
+        "Affected": 1,
+        "Consumed": 384000,
+        "CallerOwned": true,
+        "Started": 1234436450380208,
+        "Returned": 1234453211279291,
+        "SentBytes": 385737,
+        "PutFrames": 13,
+        "HeaderResponses": 13,
+        "IterationsCompleted": 13,
+        "FullChunks": 12,
+        "ObservedZeroTailChunks": 1
+      },
+      "execute_seconds": 16.760899083,
+      "frame_to_header": {
+        "n": 13,
+        "median_ms": 1123.060583,
+        "mean_ms": 1140.0441443076922,
+        "p95_ms": 1589.0659170000001,
+        "max_ms": 2016.550917
+      },
+      "input_to_frame": {
+        "n": 13,
+        "median_ms": 0.129625,
+        "mean_ms": 0.13763453846153845,
+        "p95_ms": 0.255667,
+        "max_ms": 0.32458299999999995
+      },
+      "reply_shapes": [
+        [
+          261,
+          0,
+          21
+        ]
+      ]
+    }
+  },
+  "last_fresh_absent": true,
+  "last_whole_empty": true,
+  "no_Nagle_causal_claim": true,
+  "full64MiB_contract_not_accepted": true
+}

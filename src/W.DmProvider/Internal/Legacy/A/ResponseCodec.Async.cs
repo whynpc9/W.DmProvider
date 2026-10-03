@@ -201,28 +201,7 @@ internal partial class c
 		int num = P_0.L();
 		if (num < 0)
 		{
-			string text = A(P_1);
-			DmInvocation invocation = DmInvocation.Current;
-			DmSession session = P_1.G().Session;
-			bool recoverableStatementError = num == -2106 &&
-				string.Equals(P_2.ServerVersion, "8.1.5.60", StringComparison.Ordinal) &&
-				invocation != null && ReferenceEquals(invocation.Lease.Session, session) &&
-				invocation.Lease.Purpose is DmOperationPurpose.Query or DmOperationPurpose.Reader &&
-				ReferenceEquals(session.ActiveTransaction, P_1.G().Transaction) &&
-				session.ActiveTransaction?.Outcome == DmTransactionOutcome.Active;
-			if (recoverableStatementError)
-			{
-				DmTransactionProtocolTrace.RecordDiagnosticBody(requestOpcode, P_0);
-				A(P_0, P_2.ServerEncoding, P_2.RWStandby, text, error =>
-				{
-					DmException verified = new DmException(error);
-					(DmWireExchange.Current ?? throw new InvalidOperationException("Server error has no wire owner."))
-						.CompleteValidatedServerError(invocation.Identity);
-					verified.MarkVerifiedServerResponse(invocation.Identity);
-					return verified;
-				});
-			}
-			else A(P_0, P_2.ServerEncoding, P_2.RWStandby, text);
+            ThrowOwnedStatementServerError(P_0, P_1, P_2, requestOpcode, allowPreservation: true);
 		}
 		DmInfo dmInfo = new DmInfo(P_1.G());
 		dmInfo.SetParaNum(P_1.F().GetParameterCount());

@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""ABBA diagnostic coordinator. Executes already-built consumers only; never builds or reads secrets."""
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import selectors
+import signal
+import subprocess
+import sys
+import time
+
+sys.dont_write_bytecode = True
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[4]
+ORDER = (('A1', 'R1'), ('B1', 'current'), ('B2', 'current'), ('A2', 'R1'))
+WORK_MS, CLEANUP_MS, OUTER_MS = 200_000, 80_000, 300_000
+PINS = {
+    'R1': {'version': '0.1.0-r1.20260930064454', 'package_sha256': 'a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8',
+           'driver_dll_sha256': 'd3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed', 'driver_mvid': '205ef4d3-9b6e-42b8-8838-9a659074158c'},
+    'current': {'version': '0.1.0-r3.20261002223702', 'package_sha256': '92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc',
+                'driver_dll_sha256': '9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c', 'driver_mvid': '0c33d48b-4d42-46e1-99db-b53fe2f170f1'},
+}
+CURRENT_SOURCE_SHA = 'c904079e7fa69fb656c57486f22c88d742e21e7e0f0e39fb0b5217da69d38b85'
+
+
+class GuardFailure(Exception):
+    pass
+
+
+def need(condition, code):
+    if not condition:
+        raise GuardFailure(code)
+
+
+def sha(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for chunk in iter(lambda: stream.read(65536), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def private_file(path):
+    return os.fdopen(os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600), 'wb')
+
+
+def write_new(path, value):
+    with private_file(path) as stream:
+        stream.write((json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def absolute(value, directory=False):
+    need(isinstance(value, str) and Path(value).is_absolute(), 'ABSOLUTE_INPUT_PATH_REQUIRED')
+    path = Path(value)
+    need(not path.is_symlink() and (path.is_dir() if directory else path.is_file()), 'MATERIALIZED_INPUT_REQUIRED')
+    return path.resolve()
+
+
+def verify_consumers(manifest):
+    need(manifest.get('schema_version') == 1, 'CONSUMERS_SCHEMA_REQUIRED')
+    entries = manifest.get('consumers')
+    need(isinstance(entries, dict) and set(entries) == set(PINS), 'TWO_EXACT_CONSUMERS_REQUIRED')
+    # This read-only parser inspects PE metadata without executing driver code or invoking dotnet.
+    spec = importlib.util.spec_from_file_location('readonly_t19_identity', ROOT / 'tools/DownstreamAcceptance/T19/common.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    result = {}
+    for flavor, pin in PINS.items():
+        entry = entries[flavor]
+        dll = absolute(entry.get('consumer_dll'))
+        need(dll.name == 'BaselineLatencyProbe.dll' and sha(dll) == entry.get('consumer_dll_sha256'), 'CONSUMER_HASH_REQUIRED')
+        cache = absolute(entry.get('cache'), True)
+        feed = absolute(entry.get('feed'), True)
+        cwd = absolute(entry.get('working_directory'), True)
+        need(json.loads((cwd / 'global.json').read_text())['sdk']['version'] == '10.0.203', 'STANDALONE_DRIVER_SDK_PIN_REQUIRED')
+        name = 'W.DmProvider.' + pin['version'] + '.nupkg'
+        need(sha(feed / name) == pin['package_sha256'], 'FEED_PACKAGE_IDENTITY')
+        need(sha(cache / 'w.dmprovider' / pin['version'] / name.lower()) == pin['package_sha256'], 'BUILD_CACHE_PACKAGE_IDENTITY')
+        driver = dll.parent / 'W.DmProvider.dll'
+        need(sha(driver) == pin['driver_dll_sha256'] and module.mvid(driver.read_bytes()) == pin['driver_mvid'], 'LOCAL_DRIVER_IDENTITY')
+        deps = json.loads(dll.with_suffix('.deps.json').read_text())['libraries']
+        need(deps.get('W.DmProvider/' + pin['version'], {}).get('type') == 'package' and not any(k.startswith('DM.DmProvider/') for k in deps), 'EXACT_PACKAGE_REFERENCE_REQUIRED')
+        sources = entry.get('source_files')
+        if sources is not None:
+            need(isinstance(sources, dict) and set(sources) == {'Program.cs', 'BaselineLatencyProbe.csproj'}, 'SOURCE_GUARD_KEYS_REQUIRED')
+            for name, row in sources.items():
+                source = absolute(row.get('path'))
+                need(sha(source) == row.get('sha256') == sha(HERE / name), 'FROZEN_CONSUMER_SOURCE_REQUIRED')
+        result[flavor] = {'dll': dll, 'cache': cache, 'feed': feed, 'cwd': cwd, 'consumer_sha256': sha(dll), 'sources_verified': sources is not None}
+    for key in ('dll', 'cache', 'feed', 'cwd'):
+        need(result['R1'][key] != result['current'][key], 'INDEPENDENT_CONSUMER_LAYOUT_REQUIRED')
+    return result
+
+
+def safe_stdout_line(raw):
+    # Raw host/runtime diagnostics are never saved. Only the helper's exact fixed summary schema is admitted.
+    try:
+        obj = json.loads(raw)
+        allowed = {'diagnostic_only', 'accepted_final', 'exit_code', 'measured_rows_recorded', 'whole_empty_after', 'measured_rows_affected_one', 'cleanup_verified', 'code'}
+        if not isinstance(obj, dict) or not set(obj) <= allowed or obj.get('diagnostic_only') is not True or obj.get('accepted_final') is not False:
+            return None
+        for key, value in obj.items():
+            if key == 'code':
+                if value != 'PRIVATE_REPORT_FAILED':
+                    return None
+            elif type(value) not in (bool, int):
+                return None
+        return obj
+    except (ValueError, UnicodeError):
+        return None
+
+
+def kill_owned_group(proc):
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+
+
+def launch(dotnet, consumer, output, block, work_remaining, outer_remaining, deadline):
+    home = output.parent / (block + '-cli-home')
+    home.mkdir(mode=0o700)
+    env = os.environ.copy()  # Pass inherited ordinary TEST settings; never inspect/log their values.
+    env.update(DOTNET_CLI_HOME=str(home), DOTNET_SKIP_FIRST_TIME_EXPERIENCE='1', DOTNET_CLI_TELEMETRY_OPTOUT='1', NUGET_PACKAGES=str(consumer['cache']))
+    command = [str(dotnet), str(consumer['dll']), str(output), block, str(work_remaining), str(outer_remaining)]
+    stdout_hash, stderr_hash = hashlib.sha256(), hashlib.sha256()
+    sizes = {'stdout': 0, 'stderr': 0}
+    summary, line_buffer, ignored_lines, safe_lines = None, bytearray(), 0, 0
+    timed_out = False
+    with private_file(output.parent / (block + '-stdout.safe.jsonl')) as log:
+        proc = subprocess.Popen(command, cwd=consumer['cwd'], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+        with selectors.DefaultSelector() as selected:
+            for pipe, kind in ((proc.stdout, 'stdout'), (proc.stderr, 'stderr')):
+                os.set_blocking(pipe.fileno(), False)
+                selected.register(pipe, selectors.EVENT_READ, kind)
+            try:
+                while selected.get_map():
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        timed_out = True
+                        # Kill only this coordinator's newly created process group; never search/name-match processes.
+                        kill_owned_group(proc)
+                        break
+                    for key, _ in selected.select(min(0.2, remaining)):
+                        raw = os.read(key.fileobj.fileno(), 65536)
+                        if not raw:
+                            selected.unregister(key.fileobj)
+                            continue
+                        kind = key.data
+                        sizes[kind] += len(raw)
+                        (stdout_hash if kind == 'stdout' else stderr_hash).update(raw)
+                        if kind != 'stdout':
+                            continue
+                        line_buffer.extend(raw)
+                        while b'\n' in line_buffer:
+                            line, _, rest = line_buffer.partition(b'\n')
+                            line_buffer = bytearray(rest)
+                            value = safe_stdout_line(line) if len(line) <= 4096 else None
+                            if value is None or safe_lines >= 8:
+                                ignored_lines += 1
+                            else:
+                                log.write((json.dumps(value, sort_keys=True) + '\n').encode())
+                                safe_lines += 1
+                                summary = value
+                        if len(line_buffer) > 8192:
+                            line_buffer.clear()
+                            ignored_lines += 1
+                if line_buffer:
+                    value = safe_stdout_line(line_buffer)
+                    if value is not None and safe_lines < 8:
+                        log.write((json.dumps(value, sort_keys=True) + '\n').encode()); summary = value; safe_lines += 1
+                    else:
+                        ignored_lines += 1
+                remaining = deadline - time.monotonic()
+                if proc.poll() is None and remaining <= 0:
+                    timed_out = True
+                    kill_owned_group(proc)
+                try:
+                    exit_code = proc.wait(timeout=max(0.001, remaining))
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    kill_owned_group(proc)
+                    exit_code = proc.wait(timeout=1)
+            finally:
+                if proc.poll() is None:
+                    kill_owned_group(proc)
+                    proc.wait(timeout=1)
+                proc.stdout.close(); proc.stderr.close()
+        log.flush(); os.fsync(log.fileno())
+    return {'process_id': proc.pid, 'process_exit_code': exit_code, 'timed_out': timed_out, 'safe_stdout': summary,
+            'stdout_bytes': sizes['stdout'], 'stderr_bytes': sizes['stderr'], 'stdout_sha256': stdout_hash.hexdigest(), 'stderr_sha256': stderr_hash.hexdigest(),
+            'safe_stdout_records': safe_lines, 'ignored_stdout_records': ignored_lines}
+
+
+def verify_report(output, block, flavor, process):
+    need(not process['timed_out'], 'CHILD_PROCESS_TIMEOUT')
+    need(process['process_exit_code'] == 0, 'CHILD_PROCESS_NOT_SUCCESSFUL')
+    report_path = output / 'report.json'
+    need(report_path.is_file() and not report_path.is_symlink() and report_path.stat().st_size <= 4 * 1024 * 1024, 'BOUNDED_CHILD_REPORT_REQUIRED')
+    need(report_path.stat().st_mode & 0o077 == 0, 'PRIVATE_CHILD_REPORT_REQUIRED')
+    report = json.loads(report_path.read_text())
+    need(report.get('schema_version') == 1 and report.get('diagnostic_only') is True and report.get('accepted_final') is False and report.get('original_76_accepted') is False, 'DIAGNOSTIC_REPORT_REQUIRED')
+    need(report.get('exit_code') == 0 and report.get('consumer_flavor') == flavor and report.get('block') == block, 'CHILD_REPORT_IDENTITY_REQUIRED')
+    pin = PINS[flavor]
+    need(all(report.get(key) == pin[source] for key, source in [('package_version', 'version'), ('package_sha256', 'package_sha256'), ('driver_dll_sha256', 'driver_dll_sha256'), ('driver_mvid', 'driver_mvid')]), 'CHILD_CANDIDATE_IDENTITY_REQUIRED')
+    need(report.get('current_source_manifest_sha256') == CURRENT_SOURCE_SHA, 'CURRENT_SOURCE_IDENTITY_REQUIRED')
+    need(report.get('whole_empty_after') is True and report.get('cleanup_verified') is True and all(k in report and report[k] is None for k in ('failure', 'cleanup_failure', 'row_dispose_failure')), 'FRESH_WHOLE_EMPTY_CLEANUP_REQUIRED')
+    owned = report.get('owned_final_state')
+    need(isinstance(owned, list) and len(owned) == 1 and owned[0].get('mode') == block and all(owned[0].get(k) is True for k in ('create_attempted', 'create_ack', 'fresh_absent_after')), 'EXACT_OWNED_CLEANUP_REQUIRED')
+    stdout = process.get('safe_stdout')
+    need(isinstance(stdout, dict) and stdout.get('exit_code') == 0 and stdout.get('whole_empty_after') is True and stdout.get('cleanup_verified') is True and stdout.get('measured_rows_recorded') == 24 and stdout.get('measured_rows_affected_one') == 24, 'SAFE_HELPER_SUMMARY_REQUIRED')
+    rows = report.get('rows')
+    need(isinstance(rows, list) and len(rows) == 26 and sum(r.get('Warmup') is False for r in rows) == 24 and sum(r.get('Warmup') is True for r in rows) == 2, 'DECLARED_ROW_COUNTS_REQUIRED')
+    need(all(r.get('Affected') == 1 and r.get('Mode') == block and type(r.get('ExecuteTicks')) is int and r['ExecuteTicks'] >= 0 and type(r.get('DisposeTicks')) is int and r['DisposeTicks'] >= 0 for r in rows), 'ROW_ACK_TIMING_REQUIRED')
+    need(all(report.get(k) == 0 for k in ('missing', 'unmatched', 'overflow', 'missing_send_hook', 'missing_response_hook')), 'COMPLETE_COMMON_HOOK_OBSERVATION_REQUIRED')
+    exchanges = report.get('exchanges')
+    need(isinstance(exchanges, list), 'ACTUAL_EXCHANGE_COUNTS_REQUIRED')
+    counts = report.get('row_exchange_counts')
+    need(isinstance(counts, list) and len(counts) == 26 and all(r.get('Mode') == block and type(r.get('Warmup')) is bool and type(r.get('Sample')) is int and type(r.get('actual_exchange_count')) is int and r['actual_exchange_count'] >= 0 for r in counts), 'ACTUAL_ROW_EXCHANGE_COUNTS_REQUIRED')
+    safe_counts = [{'mode': block, 'warmup': r['Warmup'], 'sample': r['Sample'], 'actual_exchange_count': r['actual_exchange_count']} for r in counts]
+    tcp_values = {k: report.get(k) for k in ('created_tcp_delta', 'disposed_tcp_delta')}
+    need(all(value is None or type(value) is int and value >= 0 for value in tcp_values.values()) and type(report.get('runtime_zero')) is bool, 'NUMERIC_SUPPLEMENTAL_COUNTERS_REQUIRED')
+    # Preserve actual counts; the reference count of five is never a pass condition.
+    return {'report_sha256': sha(report_path), 'measured_rows': 24, 'warmup_rows': 2, 'actual_exchanges': len(exchanges), 'row_exchange_counts': safe_counts,
+            'whole_empty_after': True, 'cleanup_verified': True, 'process_exit_code': 0,
+            **tcp_values, 'runtime_zero': report['runtime_zero']}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--consumers', required=True); parser.add_argument('--output', required=True); parser.add_argument('--dotnet', required=True)
+    args = parser.parse_args()
+    output = Path(args.output)
+    need(output.is_absolute() and output.resolve().is_relative_to(ROOT / '.local/verification/r3/t19') and not output.exists(), 'NEW_IGNORED_RUN_REQUIRED')
+    need(output.parent.is_dir(), 'EXISTING_IGNORED_PARENT_REQUIRED')
+    output.mkdir(mode=0o700)
+    start = time.monotonic(); deadline = start + OUTER_MS / 1000
+    summary = {'schema_version': 1, 'diagnostic_only': True, 'accepted_final': False, 'original_76_accepted': False, 'original_functional_76_status': 'failed_pending',
+               'original_1266_seed_accepted': False, 'order': [b for b, _ in ORDER], 'budgets_milliseconds': {'cumulative_work': WORK_MS, 'cleanup_reserve': CLEANUP_MS, 'whole': OUTER_MS},
+               'candidate_tuples': PINS, 'sdk': '10.0.203', 'current_source_manifest_sha256': CURRENT_SOURCE_SHA, 'runner_sha256': sha(Path(__file__)), 'blocks': [], 'error_code': None}
+    code = 1
+    try:
+        need('DAMENG_TEST_CONNECTION_STRING' in os.environ, 'ORDINARY_TEST_WRAPPER_REQUIRED')
+        dotnet = absolute(args.dotnet)
+        need(dotnet == Path('/usr/local/share/dotnet/dotnet').resolve(), 'STANDALONE_DOTNET_HOST_REQUIRED')
+        manifest_path = absolute(args.consumers)
+        consumers = verify_consumers(json.loads(manifest_path.read_text()))
+        summary['consumers_manifest_sha256'] = sha(manifest_path)
+        summary['consumer_dll_sha256'] = {f: c['consumer_sha256'] for f, c in consumers.items()}
+        summary['consumer_source_guards_verified'] = {f: c['sources_verified'] for f, c in consumers.items()}
+        for block, flavor in ORDER:
+            elapsed = int((time.monotonic() - start) * 1000)
+            work_remaining, outer_remaining = WORK_MS - elapsed, OUTER_MS - elapsed
+            need(work_remaining > 0 and outer_remaining > CLEANUP_MS, 'CUMULATIVE_WORK_BUDGET_EXHAUSTED')
+            child_output = output / block
+            child_output.mkdir(mode=0o700)
+            row = {'block': block, 'consumer_flavor': flavor, 'work_remaining_milliseconds': work_remaining, 'outer_remaining_milliseconds': outer_remaining}
+            summary['blocks'].append(row)
+            process = launch(dotnet, consumers[flavor], child_output, block, work_remaining, outer_remaining, deadline)
+            row['process'] = process
+            need(time.monotonic() < deadline, 'WHOLE_DIAGNOSTIC_BUDGET_EXHAUSTED')
+            row.update(verify_report(child_output, block, flavor, process))
+            row['status'] = 'diagnostic_block_completed'
+        code = 0
+    except GuardFailure as error:
+        summary['error_code'] = error.args[0]
+    except Exception:
+        summary['error_code'] = 'COORDINATOR_FAILED'
+    summary['exit_code'] = code
+    summary['elapsed_milliseconds'] = int((time.monotonic() - start) * 1000)
+    summary['completed_blocks'] = sum(row.get('status') == 'diagnostic_block_completed' for row in summary['blocks'])
+    write_new(output / 'summary.json', summary)
+    print(json.dumps({'diagnostic_only': True, 'accepted_final': False, 'exit_code': code, 'completed_blocks': summary['completed_blocks'], 'error_code': summary['error_code']}, separators=(',', ':')))
+    return code
+
+
+if __name__ == '__main__':
+    try:
+        raise SystemExit(main())
+    except GuardFailure as error:
+        print(json.dumps({'diagnostic_only': True, 'accepted_final': False, 'exit_code': 1, 'error_code': error.args[0]}, separators=(',', ':')))
+        raise SystemExit(1)
+    except Exception:
+        print('{"diagnostic_only":true,"accepted_final":false,"exit_code":1,"error_code":"COORDINATOR_START_FAILED"}')
+        raise SystemExit(1)

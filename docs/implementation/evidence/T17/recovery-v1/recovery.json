@@ -1,0 +1,11 @@
+{
+  "classification": "precise_recovery_not_original_acceptance",
+  "owned_table": "T17S_FB8A8DD02418483DAF1A",
+  "final_database_state": "unverified",
+  "loaded_dll_sha256": "7cb755fd2d851b819520e207659b61845648f89ac176f7ff11b86a0c8a4cf183",
+  "mvid": "bf69b01b-12b3-47e2-9ee0-1fb1cbb277bf",
+  "stage": "open",
+  "error_type": "System.IO.EndOfStreamException",
+  "hresult": -2147024858,
+  "exit_code": 1
+}

@@ -1,0 +1,20 @@
+{
+  "consumer_source_sha256": "6cb1fa30b1874331d930867f91563535e079a3d9de47dcf6c830a0e816ae1630",
+  "files": {
+    "eng/T16.md": "c827d89797ed07300f0b392e62b37cd6586bba712fb3279e6e0d0429ca84eb16",
+    "eng/t16.sh": "d8ed2bf5024214ffa6b9ba858d7190880dc51bf915c4328491c82ea750eb268b",
+    "global.json": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d",
+    "tools/R3PoolProbe/Program.cs": "f9c4613d7029adb699f6152246750df2311d4c641435e3386d21fb060c4599f4",
+    "tools/R3PoolProbe/R3PoolProbe.csproj": "b6c5e6d7b49a8b22b1b10ffc504eea0bbda8b529aec97e382cbf8e10f1e8dc5e",
+    "tools/R3PoolProbe/README.md": "34caf29c8adf50610344664c4e583d3d7784aee0da8bcd6ba90c3a34f55aea9f",
+    "tools/R3PoolProbe/run_probe.py": "04b49553505c36271f7d9578a23b0b8ec504600b31c46fb74c0ee79bf8f6c0ed",
+    "tools/R3PoolProbe/source_identity.py": "78420cbd89110d12eb5503e19e753255221d2e3f4db2e63a16aa5185a8389e64",
+    "tools/R3PoolProbe/validate.py": "c7077710a55841a58c5632318bcfc8e7858af9d440b0b9fb8d82b60b961662a0"
+  },
+  "identity_scope": "consumer_source_only",
+  "observed_git_head": "ed0c8a19d2a3d275eb469960ae56778e6280b5b0",
+  "product_source_mapping": "root_frozen_candidate_manifest_required",
+  "schema_version": 1,
+  "sourcelink_claimed": false,
+  "task": "T16"
+}

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <RestoreAdditionalProjectSources>$(R3PackageSource)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="W.DmProvider" Version="[$(R3PackageVersion)]" />
+    <AssemblyMetadata Include="R3PackageVersion" Value="$(R3PackageVersion)" />
+    <Compile Include="../../tests/W.DmProvider.DiagnosticsTests/ScriptedTransactionFixture.cs" Link="ScriptedTransactionFixture.cs" />
+  </ItemGroup>
+  <Target Name="RequireExactPackageVersion" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error Condition="'$(R3PackageVersion)' == ''" Text="R3PackageVersion must identify an exact frozen package." />
+    <Error Condition="'$(R3PackageSource)' == ''" Text="R3PackageSource must identify the frozen package source." />
+  </Target>
+</Project>

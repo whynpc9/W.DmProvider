@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "pack",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v5/source/src/W.DmProvider/W.DmProvider.csproj",
+    "--no-build",
+    "--no-restore",
+    "-c",
+    "Release",
+    "--output",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed",
+    "/p:Version=0.1.0-r3.t25.20261002205432",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 0.4858063750434667,
+  "exit_code": 0,
+  "stage": "exact_package_pack"
+}

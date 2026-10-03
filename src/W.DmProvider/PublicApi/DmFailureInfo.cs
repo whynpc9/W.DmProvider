@@ -28,7 +28,7 @@ public sealed class DmFailureInfo
 }
 
 public enum DmErrorKind { Unknown, Timeout, Canceled, Transport, Server, OutcomeUnknown }
-public enum DmFailurePhase { Unknown, Dns, Connect, Authenticate, Prepare, Send, Receive, Fetch, Commit, Rollback, Cleanup }
+public enum DmFailurePhase { Unknown, Dns, Connect, Authenticate, Prepare, Send, Receive, Fetch, Commit, Rollback, Cleanup, PoolWait }
 public enum DmOperationOutcome { NotSent, ServerReported, Unknown }
 public enum DmCancelSource { None, User, Command, TotalDeadline, IdleTimeout }
 

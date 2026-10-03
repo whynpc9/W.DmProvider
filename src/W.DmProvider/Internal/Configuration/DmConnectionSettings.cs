@@ -21,6 +21,9 @@ internal sealed class DmConnectionSettings
     internal TimeSpan ConnectTimeout { get; }
     internal int CommandTimeout { get; }
     internal TimeSpan PoolAcquireTimeout { get; }
+    internal bool Pooling { get; }
+    internal int MaxPoolSize { get; }
+    internal int MaxPoolWaiters { get; }
     internal TimeSpan ReadIdleTimeout { get; }
     internal TimeSpan CleanupTimeout { get; }
     internal DmTransportSecurity TransportSecurity { get; }
@@ -45,6 +48,9 @@ internal sealed class DmConnectionSettings
         ConnectTimeout = builder.ConnectTimeout;
         CommandTimeout = builder.CommandTimeout;
         PoolAcquireTimeout = builder.PoolAcquireTimeout;
+        Pooling = builder.Pooling;
+        MaxPoolSize = builder.MaxPoolSize;
+        MaxPoolWaiters = builder.MaxPoolWaiters;
         ReadIdleTimeout = builder.ReadIdleTimeout;
         CleanupTimeout = builder.CleanupTimeout;
         TransportSecurity = builder.TransportSecurity;
@@ -68,6 +74,9 @@ internal sealed class DmConnectionSettings
         ConnectTimeout = source.ConnectTimeout;
         CommandTimeout = source.CommandTimeout;
         PoolAcquireTimeout = source.PoolAcquireTimeout;
+        Pooling = source.Pooling;
+        MaxPoolSize = source.MaxPoolSize;
+        MaxPoolWaiters = source.MaxPoolWaiters;
         ReadIdleTimeout = source.ReadIdleTimeout;
         CleanupTimeout = source.CleanupTimeout;
         TransportSecurity = source.TransportSecurity;
@@ -107,6 +116,9 @@ internal sealed class DmConnectionSettings
             ["connect_timeout"] = checked((long)ConnectTimeout.TotalMilliseconds),
             ["command_timeout"] = CommandTimeout,
             ["conn_pool_timeout"] = checked((long)PoolAcquireTimeout.TotalMilliseconds),
+            ["conn_pooling"] = Pooling,
+            ["conn_pool_size"] = MaxPoolSize,
+            ["max_pool_waiters"] = MaxPoolWaiters,
             ["socketTimeout"] = checked((long)ReadIdleTimeout.TotalMilliseconds),
             ["cleanup_timeout"] = checked((long)CleanupTimeout.TotalMilliseconds),
             ["transport_security"] = TransportSecurity.ToString(),
@@ -137,6 +149,9 @@ internal sealed class DmConnectionSettings
             [DmConst.PROP_KEY_CONNECTION_TIMEOUT] = checked((int)ConnectTimeout.TotalMilliseconds),
             [DmConst.PROP_KEY_COMMAND_TIMEOUT] = CommandTimeout,
             [DmConst.PROP_KEY_CONN_POOL_TIMEOUT] = checked((int)PoolAcquireTimeout.TotalMilliseconds),
+            // The owned scheduler never activates the unverified legacy pool.
+            [DmConst.PROP_KEY_CONN_POOLING] = false,
+            [DmConst.PROP_KEY_CONN_POOL_SIZE] = MaxPoolSize,
             [DmConst.PROP_KEY_SOCKET_TIMEOUT] = checked((int)ReadIdleTimeout.TotalMilliseconds)
         };
 		result[DmConst.PROP_KEY_DM_SVC_PATH] = string.Empty;

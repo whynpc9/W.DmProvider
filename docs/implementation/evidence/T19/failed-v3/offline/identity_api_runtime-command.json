@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/identity-app/IdentityConsumer.dll",
+    "0.1.0-r3.20261002215249",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/public/identity-api-runtime.json"
+  ],
+  "elapsed_seconds": 0.07443758402951062,
+  "exit_code": 0,
+  "stage": "identity_api_runtime"
+}

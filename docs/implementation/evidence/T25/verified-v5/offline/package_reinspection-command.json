@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v5/source/tools/R2AsyncProbe/package_manifest.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/.private/feed/W.DmProvider.0.1.0-r3.t25.20261002205432.nupkg",
+    "0.1.0-r3.t25.20261002205432",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/public/package-manifest-final.json"
+  ],
+  "elapsed_seconds": 0.043880874989554286,
+  "exit_code": 0,
+  "stage": "package_reinspection"
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -11,6 +12,7 @@ using W.Dm.util;
 using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Execution;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Lobs;
 using W.Dm.Internal.Transport;
 
 namespace W.Dm;
@@ -55,7 +57,153 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private long m_StreamPos;
 
-	private bool skipCol = true;
+	private long lobRowVersion;
+	private DmLobReadCursor activeLobFlow;
+	private int activeLobOrdinal = -1;
+	private bool activeLobText;
+	private int sequentialLobUnitOrdinal = -1;
+	private bool sequentialLobBytes;
+
+	private void InvalidateLobFlows()
+	{
+		Interlocked.Increment(ref lobRowVersion);
+		m_StreamPos = 0;
+		sequentialLobUnitOrdinal = -1;
+		activeLobFlow?.Dispose();
+		activeLobFlow = null;
+		activeLobOrdinal = -1;
+	}
+
+	private Action CaptureLobOwner(int ordinal = -1, bool? bytes = null)
+	{
+		long version = Volatile.Read(ref lobRowVersion);
+		var lease = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
+		var transaction = lease?.Session.ActiveTransaction ?? Volatile.Read(ref commandPlan)?.Transaction;
+		return () =>
+		{
+			if (m_IsClosed || version != Volatile.Read(ref lobRowVersion) || lease == null ||
+				!ReferenceEquals(lease, Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease) ||
+				!ReferenceEquals(m_Conn?.Session, lease.Session) || (lease.IsDisposed || !lease.Session.IsCurrentExecution(lease.Identity)))
+				throw new InvalidOperationException("LOB row or execution owner is stale.");
+			if (is_SequentialAccess && ordinal >= 0 && m_SequentialSeq > ordinal)
+				throw new InvalidOperationException("Sequential access moved past this LOB field.");
+			if (bytes.HasValue) GuardSequentialLobUnit(ordinal, bytes.Value);
+			if (transaction != null && (transaction.Outcome != DmTransactionOutcome.Active ||
+				!ReferenceEquals(transaction, lease.Session.ActiveTransaction)))
+				throw new InvalidOperationException("LOB transaction owner has ended.");
+		};
+	}
+
+	private DmLobReadCursor CreateLobCursor(int ordinal, bool text, bool lengthScan = false)
+	{
+		checkClosed(); CheckIndex(ordinal);
+		int type = m_ColInfo[ordinal].GetCType();
+		if (text ? type is not (0 or 1 or 2 or 19 or 54) : type is not (3 or 12 or 17 or 18 or 54))
+			throw new InvalidCastException("Column does not support the requested LOB flow.");
+		byte[] value = null;
+		GetByteArrayValue(ordinal, ref value, lobPartial: true, lengthScan: lengthScan);
+		if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+		bool isLob = type is 12 or 19;
+		var template = isLob ? new AbstractLob(value, text ? (byte)1 : (byte)0, m_Conn, m_ColInfo[ordinal])
+			: new AbstractLob(text ? (byte)1 : (byte)0, m_Conn);
+		ReadOnlyMemory<byte> inline = value;
+		bool hasInline = !isLob || template.storageType == AbstractLob.STORAGE_IN_ROW;
+		if (isLob && hasInline)
+		{
+			int head = template.getHeadSize();
+			if (template.bytesLength < 0 || head > value.Length || template.bytesLength > value.Length - head)
+				throw new InvalidDataException("Inline LOB exceeds its result frame.");
+			inline = value.AsMemory(head, checked((int)template.bytesLength));
+		}
+		return DmLobReadCursor.Create(template, inline, hasInline, ReaderLease, CaptureLobOwner(ordinal, bytes: lengthScan ? null : !text), text,
+			m_Conn.ConnProperty.ServerEncoding);
+	}
+
+	private void RefreshSequentialLobPosition()
+	{
+		if (is_SequentialAccess && activeLobFlow != null && activeLobOrdinal == m_SequentialSeq)
+		{
+			m_StreamPos = Math.Max(m_StreamPos, activeLobFlow.Position);
+			if (activeLobFlow.Position > 0)
+			{ sequentialLobUnitOrdinal = activeLobOrdinal; sequentialLobBytes = !activeLobText; }
+		}
+	}
+
+	private void GuardSequentialLobUnit(int ordinal, bool bytes)
+	{
+		RefreshSequentialLobPosition();
+		if (is_SequentialAccess && sequentialLobUnitOrdinal == ordinal && sequentialLobBytes != bytes)
+			throw new InvalidOperationException("Sequential LOB access cannot switch byte and UTF-16 units.");
+	}
+
+	private void GuardSequentialRange(int ordinal, long offset)
+	{
+		RefreshSequentialLobPosition();
+		if (is_SequentialAccess && (m_SequentialSeq > ordinal ||
+			(m_SequentialSeq == ordinal && offset < m_StreamPos)))
+			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+	}
+
+	private DmLobReadCursor ActivateLobCursor(int ordinal, bool text, bool rangeResume = false)
+	{
+		GuardSequentialLobUnit(ordinal, bytes: !text);
+		if (is_SequentialAccess && (m_SequentialSeq > ordinal ||
+			(!rangeResume && m_SequentialSeq == ordinal && m_StreamPos > 0)))
+			throw new InvalidOperationException("Sequential access already consumed this LOB field.");
+		if (activeLobFlow != null && !activeLobFlow.IsDisposed)
+			throw new InvalidOperationException("Close the active LOB flow before opening another.");
+		activeLobFlow = CreateLobCursor(ordinal, text);
+		activeLobOrdinal = ordinal;
+		activeLobText = text;
+		return activeLobFlow;
+	}
+
+	public override Stream GetStream(int ordinal)
+	{
+		using var invocation = BeginReaderInvocation();
+		return new DmLobReadStream(ActivateLobCursor(ordinal, false));
+	}
+
+	public override TextReader GetTextReader(int ordinal)
+	{
+		using var invocation = BeginReaderInvocation();
+		return new DmLobTextReader(ActivateLobCursor(ordinal, true));
+	}
+
+	private static void ValidateLobRange<T>(long offset, T[] buffer, int bufferOffset, int length)
+	{
+		if (offset < 0) throw new IndexOutOfRangeException("Field offset must be nonnegative.");
+		if (bufferOffset < 0 || length < 0) throw new ArgumentOutOfRangeException();
+		if (buffer != null) DmLobReadStream.CheckBuffer(buffer, bufferOffset, length);
+		if (offset > long.MaxValue - length) throw new ArgumentOutOfRangeException(nameof(offset));
+	}
+
+	private static void ValidateCharRange(long offset, char[] buffer, int bufferOffset, int length)
+	{
+		if (offset < 0) DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
+		if (buffer != null && (bufferOffset < 0 || bufferOffset > buffer.Length))
+			throw new IndexOutOfRangeException("Buffer index must be a valid index in buffer.");
+		if (length < 0 || (buffer != null && length > buffer.Length - bufferOffset))
+			throw new ArgumentException("Buffer is not large enough to hold the requested data.");
+		if (offset > long.MaxValue - length) throw new ArgumentOutOfRangeException(nameof(offset));
+	}
+
+	private DmLobReadCursor RangeCursor(int ordinal, bool text, out bool temporary)
+	{
+		if (is_SequentialAccess && activeLobFlow != null && !activeLobFlow.IsDisposed && activeLobOrdinal == ordinal)
+		{
+			if (text != activeLobText) throw new InvalidCastException();
+			temporary = false; return activeLobFlow;
+		}
+		if (is_SequentialAccess)
+		{
+			if (m_SequentialSeq > ordinal) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+			activeLobFlow?.Dispose(); activeLobFlow = null;
+			temporary = false; return ActivateLobCursor(ordinal, text, rangeResume: true);
+		}
+		temporary = true; return CreateLobCursor(ordinal, text);
+	}
+
 
 	private ArrayList m_Clobs = new ArrayList();
 
@@ -417,6 +565,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	internal void CloseOwned()
 	{
 		if (m_IsClosed) return;
+		InvalidateLobFlows();
 		m_IsClosed = true;
 		m_DbInfo = null;
 		m_ColInfo = null;
@@ -457,54 +606,67 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal long do_GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
 	{
+		ValidateLobRange(fieldOffset, buffer, bufferoffset, length);
 		using var invocation = BeginInternalInvocation();
-		checkClosed();
-		skipCol = false;
-		byte[] value = null;
-		byte[] array = null;
-		if (m_SequentialSeq == i && fieldOffset < m_StreamPos)
+		checkClosed(); CheckIndex(i);
+		int type = m_ColInfo[i].GetCType();
+		if (type is not (3 or 12 or 17 or 18 or 19 or 54))
+			throw new InvalidCastException("Column does not support a binary value.");
+		if (buffer != null) GuardSequentialLobUnit(i, bytes: true);
+		if (buffer != null) GuardSequentialRange(i, fieldOffset);
+		if (buffer != null && length == 0)
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+			byte[] zero = null; GetByteArrayValue(i, ref zero, lobPartial: true, lengthScan: true);
+			if (zero == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			return 0;
 		}
-		else if (m_SequentialSeq < i)
+		if (type == 19)
 		{
-			m_StreamPos = 0L;
+			// Compatibility: CLOB bytes retain the bounded full-materialization contract.
+			byte[] raw = null; GetByteArrayValue(i, ref raw, lobPartial: true, lengthScan: buffer == null);
+			byte[] encoded = m_GetVal.GetBytes(i, raw, type, m_ColInfo[i].GetPrecision(), m_ColInfo[i].GetScale());
+			if (buffer == null) return encoded.LongLength;
+			int count = fieldOffset >= encoded.LongLength ? 0 : (int)Math.Min(length, encoded.LongLength - fieldOffset);
+			encoded.AsSpan(checked((int)Math.Min(fieldOffset, encoded.LongLength)), count).CopyTo(buffer.AsSpan(bufferoffset, count));
+			if (is_SequentialAccess && count > 0)
+			{
+				m_StreamPos = checked(fieldOffset + count);
+				sequentialLobUnitOrdinal = i; sequentialLobBytes = true;
+			}
+			return count;
 		}
-		GetByteArrayValue(i, ref value);
-		int cType = m_ColInfo[i].GetCType();
-		int precision = m_ColInfo[i].GetPrecision();
-		int scale = m_ColInfo[i].GetScale();
-		array = m_GetVal.GetBytes(i, value, cType, precision, scale);
 		if (buffer == null)
 		{
-			skipCol = true;
-			m_SequentialSeq++;
-			return array.Length;
+			byte[] raw = null; GetByteArrayValue(i, ref raw, lobPartial: true, lengthScan: true);
+			if (raw == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			if (type != 12) return raw.LongLength;
+			var locator = new AbstractLob(raw, 0, m_Conn, m_ColInfo[i]);
+			if (locator.storageType == AbstractLob.STORAGE_IN_ROW)
+			{
+				int head = locator.getHeadSize();
+				if (locator.bytesLength < 0 || locator.bytesLength > raw.LongLength - head)
+					DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
+			}
+			if (locator.bytesLength >= 0) return locator.bytesLength;
+			return m_Conn.GetCsi().A(locator);
 		}
-		if (bufferoffset >= buffer.Length || bufferoffset < 0)
+		var cursor = RangeCursor(i, false, out bool temporary);
+		try
 		{
-			throw new IndexOutOfRangeException("Buffer index must be a valid index in buffer");
+			if (fieldOffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+			byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
+			while (cursor.Position < fieldOffset)
+				if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldOffset - cursor.Position))) == 0) return 0;
+			int total = 0;
+			while (total < length)
+			{
+				int count = cursor.ReadBytes(buffer.AsSpan(bufferoffset + total, length - total));
+				if (count == 0) break;
+				total += count;
+			}
+			m_StreamPos = cursor.Position; return total;
 		}
-		if (buffer.Length < bufferoffset + length)
-		{
-			throw new ArgumentException("Buffer is not large enough to hold the requested data");
-		}
-		if (fieldOffset < 0)
-		{
-			throw new IndexOutOfRangeException("Field offset must be a valid index in the field");
-		}
-		long num = length;
-		if (array.Length - fieldOffset < length)
-		{
-			num = array.Length - fieldOffset;
-		}
-		Array.Copy(array, fieldOffset, buffer, bufferoffset, num);
-		if (is_SequentialAccess)
-		{
-			m_StreamPos += num;
-			skipCol = true;
-		}
-		return num;
+		finally { if (temporary) cursor.Dispose(); }
 	}
 
 	internal char do_GetChar(int i)
@@ -519,106 +681,63 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	internal long do_GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
 	{
+		ValidateCharRange(fieldoffset, buffer, bufferoffset, length);
 		using var invocation = BeginInternalInvocation();
-		string text = null;
-		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "GetChars(int i,long fieldoffset,char[] buffer,int bufferoffset,int length)");
-		checkClosed();
-		CheckIndex(i);
-		skipCol = false;
-		if (is_SequentialAccess && m_SequentialSeq > i)
+		checkClosed(); CheckIndex(i);
+		int type = m_ColInfo[i].GetCType();
+		if (type is not (0 or 1 or 2 or 19 or 28 or 54))
+			throw new InvalidCastException("Column does not support a text value.");
+		if (buffer != null) GuardSequentialLobUnit(i, bytes: false);
+		if (buffer != null) GuardSequentialRange(i, fieldoffset);
+		if (type == 28)
 		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
-		}
-		if ((buffer != null || m_ColInfo[i].GetCType() != 19) && m_SequentialSeq == i && fieldoffset < m_StreamPos)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
-		}
-		else if (m_SequentialSeq < i)
-		{
-			m_StreamPos = 0L;
-		}
-		if (m_ColInfo[i].GetCType() == 19)
-		{
-			if (buffer != null)
+			// ROWID is a fixed binary value rendered by its established local
+			// converter, never server-charset text or a network LOB locator.
+			byte[] raw = null;
+			GetByteArrayValue(i, ref raw, lobPartial: true, lengthScan: buffer == null);
+			if (raw == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			if (raw.Length is not (8 or 12)) throw new InvalidDataException("ROWID payload length is invalid.");
+			string rendered = m_GetVal.GetString(i, raw, type, m_ColInfo[i].GetPrecision(), m_ColInfo[i].GetScale());
+			if (buffer == null) return rendered.Length;
+			int count = fieldoffset >= rendered.Length ? 0 : (int)Math.Min(length, rendered.Length - fieldoffset);
+			rendered.AsSpan(checked((int)Math.Min(fieldoffset, rendered.Length)), count).CopyTo(buffer.AsSpan(bufferoffset, count));
+			if (is_SequentialAccess && count > 0)
 			{
-				if (bufferoffset < 0 || bufferoffset > buffer.Length)
-					throw new IndexOutOfRangeException("Buffer index must be a valid index in buffer");
-				if (length < 0 || length > buffer.Length - bufferoffset)
-					throw new ArgumentException("Buffer is not large enough to hold the requested data");
+				m_StreamPos = checked(fieldoffset + count);
+				sequentialLobUnitOrdinal = i; sequentialLobBytes = false;
 			}
-			DmClob dmClob = (DmClob)m_Clobs[i];
-			if (dmClob == null)
-			{
-				byte[] value = null;
-				GetByteArrayValue(i, ref value);
-				if (value == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-				dmClob = new DmClob(value, m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2);
-				BindLob(dmClob);
-				m_Clobs[i] = dmClob;
-			}
+			return count;
+		}
+		if (buffer != null && length == 0)
+		{
+			byte[] zero = null; GetByteArrayValue(i, ref zero, lobPartial: true, lengthScan: true);
+			if (zero == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
+			return 0;
+		}
+		bool temporary = false;
+		var cursor = buffer == null ? CreateLobCursor(i, true, lengthScan: true) : RangeCursor(i, true, out temporary);
+		if (buffer == null) temporary = true;
+		try
+		{
+			char[] discard = new char[8192];
 			if (buffer == null)
 			{
-				// Count decoded UTF-16 characters, not the locator's encoded byte length.
-				// This follows the existing materializing CLOB path; it is not a streaming API.
-				text = dmClob.MaterializeStringUnderOwner();
-				return text.Length;
+				while (cursor.ReadChars(discard) != 0) { }
+				return cursor.Position;
 			}
-			text = dmClob.GetSubStringUnderOwner(fieldoffset, length);
-			length = Math.Min(length, text.Length);
-			Array.Copy(text.ToCharArray(), 0, buffer, bufferoffset, length);
-			if (is_SequentialAccess)
+			if (fieldoffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+			while (cursor.Position < fieldoffset)
+				if (cursor.ReadChars(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldoffset - cursor.Position))) == 0) return 0;
+			int total = 0;
+			while (total < length)
 			{
-				m_StreamPos = fieldoffset + length;
-				skipCol = true;
+				int count = cursor.ReadChars(buffer.AsSpan(bufferoffset + total, length - total));
+				if (count == 0) break;
+				total += count;
 			}
-			return length;
+			m_StreamPos = cursor.Position; return total;
 		}
-		byte[] value2 = null;
-		GetByteArrayValue(i, ref value2);
-		int cType = m_ColInfo[i].GetCType();
-		int precision = m_ColInfo[i].GetPrecision();
-		int scale = m_ColInfo[i].GetScale();
-		if (value2 == null)
-		{
-			text = "";
-		}
-		text = m_GetVal.GetString(i, value2, cType, precision, scale);
-		if (buffer == null)
-		{
-			skipCol = true;
-			m_SequentialSeq++;
-			return text.Length;
-		}
-		if (bufferoffset >= buffer.Length || bufferoffset < 0)
-		{
-			throw new IndexOutOfRangeException("Buffer index must be a valid index in buffer");
-		}
-		if (buffer.Length < bufferoffset + length)
-		{
-			throw new ArgumentException("Buffer is not large enough to hold the requested data");
-		}
-		if (fieldoffset < 0)
-		{
-			throw new IndexOutOfRangeException("Field offset must be a valid index in the field");
-		}
-		char[] array = text.ToCharArray();
-		int num = length;
-		if (buffer.Length - bufferoffset < length)
-		{
-			num = buffer.Length - bufferoffset;
-		}
-		else if (length > array.Length)
-		{
-			num = array.Length;
-		}
-		num = (int)Math.Min(num, array.Length - fieldoffset);
-		Array.Copy(array, fieldoffset, buffer, bufferoffset, num);
-		if (is_SequentialAccess)
-		{
-			m_StreamPos += num;
-			skipCol = true;
-		}
-		return num;
+		finally { if (temporary) cursor.Dispose(); }
 	}
 
 	internal string do_GetDataTypeName(int i)
@@ -1011,6 +1130,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private bool AdvanceToReadableResultOwned(bool initialSeek)
 	{
+		InvalidateLobFlows();
 		DmInvocation.Current?.ThrowIfTerminated();
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "NextResult()");
 		checkClosed();
@@ -1153,6 +1273,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private async Task<bool> AdvanceToReadableResultOwnedAsync(bool initialSeek, CancellationToken token)
 	{
+		InvalidateLobFlows();
 		DmInvocation.Current?.ThrowIfTerminated();
 		token.ThrowIfCancellationRequested();
 		checkClosed();
@@ -1223,7 +1344,8 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				{ lease.Session.Detach(lease.Identity)?.AbortTransport(); }
 			}
 			if (m_IsClosed) return;
-			m_IsClosed = true;
+			InvalidateLobFlows();
+		m_IsClosed = true;
 			m_DbInfo = null;
 			m_ColInfo = null;
 			m_CurrentRow = -1L;
@@ -1944,7 +2066,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private DmBlob GetBlobOwned(short i)
 	{
 		checkClosed();
-		return BindLob(new DmBlob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2));
+		return BindLob(new DmBlob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2), i);
 	}
 
 	public DmClob GetClob(short i)
@@ -1956,39 +2078,39 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	private DmClob GetClobOwned(short i)
 	{
 		checkClosed();
-		return BindLob(new DmClob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2));
+		return BindLob(new DmClob(GetByteArrayValue(i), m_Conn, m_ColInfo[i], m_Statement.G().ConnProperty.LobMode == 2), i);
 	}
 
-	private T BindLob<T>(T value)
+	private T BindLob<T>(T value, int ordinal = -1)
 	{
 		if (value is AbstractLob lob)
 		{
 			var lease = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
 			if (lease == null) throw new InvalidOperationException("LOB has no reader execution lease.");
 			lob.AttachExecutionLease(lease);
+			lob.AttachRowOwner(CaptureLobOwner(ordinal));
 		}
 		return value;
 	}
 
-	private void GetByteArrayValue(int columnIndex, ref byte[] value)
+	private void GetByteArrayValue(int columnIndex, ref byte[] value, bool lobPartial = false, bool lengthScan = false)
 	{
-		if (columnIndex >= m_RsCache.colNum)
-		{
+		if (columnIndex < 0 || columnIndex >= m_RsCache.colNum)
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_SEQUENCE_NUMBER);
-		}
+		RefreshSequentialLobPosition();
 		if (is_SequentialAccess && m_SequentialSeq > columnIndex)
-		{
-			skipCol = true;
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
-		}
+		if (is_SequentialAccess && !lobPartial && !lengthScan && m_SequentialSeq == columnIndex && m_StreamPos > 0)
+			throw new InvalidOperationException("Sequential access already consumed this field.");
+		// Validate the cached row and field before changing any live flow ownership.
 		m_RsCache.GetBytes((short)columnIndex, ref value);
+		if (lengthScan) return;
+		if (activeLobFlow != null && activeLobOrdinal != columnIndex)
+		{ activeLobFlow.Dispose(); activeLobFlow = null; activeLobOrdinal = -1; }
 		if (is_SequentialAccess)
 		{
-			m_SequentialSeq = columnIndex;
-			if (skipCol)
-			{
-				m_SequentialSeq++;
-			}
+			if (m_SequentialSeq < columnIndex) { m_StreamPos = 0; sequentialLobUnitOrdinal = -1; }
+			m_SequentialSeq = columnIndex + (lobPartial ? 0 : 1);
 		}
 	}
 
@@ -1999,12 +2121,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		{
 			return null;
 		}
-		if (is_SequentialAccess && m_SequentialSeq > columnIndex)
-		{
-			DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
-		}
-		m_RsCache.GetBytes((short)columnIndex, ref data);
-		m_SequentialSeq = columnIndex + 1;
+		GetByteArrayValue(columnIndex, ref data, lobPartial: true);
 		if (m_ColInfo[columnIndex].GetCType() == 1)
 		{
 			int num = ((data != null) ? data.Length : 0);
@@ -2044,6 +2161,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 
 	private void ClearClobs()
 	{
+		InvalidateLobFlows();
 		m_Clobs.Clear();
 		for (int i = 0; i < m_DbInfo.GetColumnCount(); i++)
 		{

@@ -1,0 +1,479 @@
+{
+  "accepted": true,
+  "binary_hashes": {
+    "T19Audit/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": "74bc17c936d66ea090b6a5b4cc4307d2154c9692e57edd4c55d68dd4a99c11b6",
+    "T19Audit/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": "a1e4f36208650b15b75a4b01a5821d61d5be417ac2e86ec3c65e2560a87e0d7d",
+    "T19Audit/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.dll": "f5b1703d608e241314952b2ede8dcdd1b8d8adda8c91a13cb7e6b1007414cef4",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Caching.Abstractions.dll": "eb027242c11808fe0d8faf851bd30d0c6e39944b773713ffb04e17e196bece0f",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Caching.Memory.dll": "dca415c48a9d6af45c7f28f6481a88baa9cb9f09d3090ca5878d1acbd446048d",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll": "fb45286fa39f58b9e74b6346e31034e00031170169ee11fd0a15f99b6dca0b56",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": "da04edc338d5aa0f38a1f5fa5ff3ee7e36affe9c961daf3ea724a428bd746bc6",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.dll": "2d0e268bf76b4ce36a55ebb2767354db956c6660de65d6cccfc35c957fb12cfc",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": "7c242f8ca612fa1acc61f78efd5f8c89e01bd0bd47dc4ecc65e0e6e24f1a1668",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Logging.dll": "05b76234f2a5eb945b268ced706cb4d81446778ea6bd6910298b5e9111170b4a",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Options.dll": "b4ff561da6a7b11b68341f9fd32cab3f8b23cdd8b40332b9fd8bed73a9ee7de3",
+    "T19Audit/bin/Debug/net10.0/Microsoft.Extensions.Primitives.dll": "67642533eb87e8dadeb9026de59ff4b66cc9bf35c0cfbedfef7b79bc6d8b30bc",
+    "T19Audit/bin/Debug/net10.0/T19Audit": "b991149fe759611351d2467d4b7928b372f09f856f1004bfa251c22a4bc522d9",
+    "T19Audit/bin/Debug/net10.0/T19Audit.deps.json": "625b2769ab3cfeb99f08571dcf3210f04bef3d5fa2189a9614d93fd9fc4c98c4",
+    "T19Audit/bin/Debug/net10.0/T19Audit.dll": "786d8f51c4bf969a8ceee2be4a7d0c7bbb825e79ad67d81764f4f48e31a32d78",
+    "T19Audit/bin/Debug/net10.0/T19Audit.pdb": "fb96cd26fbb60c6d24a0c7ac00e11b3ec6cae49f3463ea6b98120ee6f91a778a",
+    "T19Audit/bin/Debug/net10.0/T19Audit.runtimeconfig.json": "7ba757eef0be489e46aa47a9d01db04237b2a188cb536ce494554cbd7c948822",
+    "T19Audit/bin/Debug/net10.0/W.DmProvider.dll": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+    "T19Audit/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.dll": "6bb1991a7b40b009e2c993bbe09dbb24652404772c63a94675d35eed64aee1f8",
+    "T19Audit/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.pdb": "b0d08b0b2cc304d6c982468b84ddff29bebf6102b950c353709cf62a8d04074a",
+    "T19Audit/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.xml": "17fba714267dee7b8ea12991d6ceda5387e98dbdc214a1b07a829ea13208454e",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/.msCoverageSourceRootsMapping_W.EntityFrameworkCore.Dameng.FunctionalTests": "d144834ed0b763c83f21c5fbf16964717b95065b87c25b3b6fb42630e1335cf1",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": "74bc17c936d66ea090b6a5b4cc4307d2154c9692e57edd4c55d68dd4a99c11b6",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": "a1e4f36208650b15b75a4b01a5821d61d5be417ac2e86ec3c65e2560a87e0d7d",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.EntityFrameworkCore.dll": "f5b1703d608e241314952b2ede8dcdd1b8d8adda8c91a13cb7e6b1007414cef4",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Caching.Abstractions.dll": "eb027242c11808fe0d8faf851bd30d0c6e39944b773713ffb04e17e196bece0f",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Caching.Memory.dll": "dca415c48a9d6af45c7f28f6481a88baa9cb9f09d3090ca5878d1acbd446048d",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll": "fb45286fa39f58b9e74b6346e31034e00031170169ee11fd0a15f99b6dca0b56",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": "da04edc338d5aa0f38a1f5fa5ff3ee7e36affe9c961daf3ea724a428bd746bc6",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.dll": "2d0e268bf76b4ce36a55ebb2767354db956c6660de65d6cccfc35c957fb12cfc",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": "7c242f8ca612fa1acc61f78efd5f8c89e01bd0bd47dc4ecc65e0e6e24f1a1668",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Logging.dll": "05b76234f2a5eb945b268ced706cb4d81446778ea6bd6910298b5e9111170b4a",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Options.dll": "b4ff561da6a7b11b68341f9fd32cab3f8b23cdd8b40332b9fd8bed73a9ee7de3",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.Extensions.Primitives.dll": "67642533eb87e8dadeb9026de59ff4b66cc9bf35c0cfbedfef7b79bc6d8b30bc",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.TestPlatform.CommunicationUtilities.dll": "24c3b9f2710340c328db8bc9c37797d15e2cf32e4fca37f60f6f01bd35b6e0ff",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.TestPlatform.CoreUtilities.dll": "ca8cd4a0c394af3cc03c8e83b0377ecf14e6a8c68e4b0b50f732b1370950d7df",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.TestPlatform.CrossPlatEngine.dll": "9cde8a3ed9b3d2bc95f6c351af59ac943ee3495d3c1312950eedf6176a489b5a",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.TestPlatform.PlatformAbstractions.dll": "8bc7faec348a71336af3bfbeecad564ad0f97a8216835ed90cd2ceff621a3697",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.TestPlatform.Utilities.dll": "29d176ae1f87dac87c8064dddf30a5e2439e4f48e28417e8604d71cc9d920ce8",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll": "8d4e1668a9f141d80a2615b946e43a2d64fe3528a1f54c79624a6c217019a646",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.VisualStudio.TestPlatform.Common.dll": "c38efb5cfcceb4cdf0f1fb04eea0b1d17310c6eda839dd3ae31e658e91cc7de6",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll": "ff730c68bebe827f74e2bdcfb571400ab328c00be11c7fe3a1fe01143b483bc6",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.DmProvider.dll": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.deps.json": "61bf10ff59cce4776097565fb10be868468b9aab7d5662ce948a14703f67d0e0",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll": "cf0a6dc8514c7eebc8a7e0efa1d3b11a81b0cab4b49a4b0c2d7bc210e7b8c8ce",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.pdb": "dcf93aca04b1566fe6ce4c4057a6b5fbb10179902af046e650015c12c41c4e84",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.runtimeconfig.json": "2dd25f2ee9034ee94c38a73cdee753c78a8000dcc83776e8780cd7363b2a50d5",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.dll": "6bb1991a7b40b009e2c993bbe09dbb24652404772c63a94675d35eed64aee1f8",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.pdb": "b0d08b0b2cc304d6c982468b84ddff29bebf6102b950c353709cf62a8d04074a",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.xml": "17fba714267dee7b8ea12991d6ceda5387e98dbdc214a1b07a829ea13208454e",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/testhost.dll": "ad339a6279013d6af52dde6bcb8b90a19a395a54c6fcf085ff5a42435c60c4c5",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/xunit.abstractions.dll": "3166dc70323fb30ccf1cedb0fe86f2ad122c46d254542342d90386efc4c9285c",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/xunit.assert.dll": "bcd9711b22d227ac8cd4c1568e72433a0f576d2ec8aae64ac508081892015b1d",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/xunit.core.dll": "2f7feeec8c6dec7df684c25fb80aadb292b963d09723460f03d53c5ad2088acc",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/xunit.execution.dotnet.dll": "e70febe547c15f8155db3e2d95c3ba4445a59cbc21a3e7541ab22ed49d3dcf7b",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/xunit.runner.visualstudio.testadapter.dll": "384aba4bad96399a7fd2205a5a3517b643a16f4d7e843bd0b92e1e42f81fce2a"
+  },
+  "commands": [
+    {
+      "actual_elapsed_seconds": 6.017424332909286,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "restore",
+        "T19Audit/T19Audit.csproj",
+        "--force-evaluate",
+        "--disable-parallel",
+        "--configfile",
+        "[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "160f54e9f0aef31d638df1928f5067d9145fb8df4f6d86fa922a8d384882894d",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:32:52.515660+00:00",
+      "timed_out": false
+    },
+    {
+      "actual_elapsed_seconds": 0.46097033307887614,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "restore",
+        "T19Audit/T19Audit.csproj",
+        "--locked-mode",
+        "--disable-parallel",
+        "--configfile",
+        "[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "549841274244ae0c0c502c3d6302d482c71d80dc5bc8975facb9eafe341ad9e2",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:32:58.533697+00:00",
+      "timed_out": false
+    },
+    {
+      "actual_elapsed_seconds": 1.6692647500894964,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "build",
+        "T19Audit/T19Audit.csproj",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "f4427184573f60bfb6f640fc1a2c142ad28e3592501a48d8bc52263035249968",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:32:58.995008+00:00",
+      "timed_out": false
+    },
+    {
+      "actual_elapsed_seconds": 9.14222141704522,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "restore",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--force-evaluate",
+        "--disable-parallel",
+        "--configfile",
+        "[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "49f940578371f56d09d28492cc88e903f7e2c0c84f50aa55e64dfdf0b69772fb",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:33:00.664607+00:00",
+      "timed_out": false
+    },
+    {
+      "actual_elapsed_seconds": 0.4400876248255372,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "restore",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--locked-mode",
+        "--disable-parallel",
+        "--configfile",
+        "[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "87d047e7617f4facf9a5dccb1b033fbc75048c3911d528cc4a04af3031e1a82a",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:33:09.807143+00:00",
+      "timed_out": false
+    },
+    {
+      "actual_elapsed_seconds": 1.3502919999882579,
+      "argv": [
+        "[user-home]/.dotnet/dotnet",
+        "build",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "execution_phase": "build",
+      "exit_code": 0,
+      "host_exit_code": 0,
+      "host_timeout_seconds": 600,
+      "lane": "r3_tls",
+      "log_sha256": "d8eb333adb01a1932f149ee557c6286965d1d5f76bc532280ee83f80b9b0d131",
+      "policy_id": "t19-shared-functional-host-v2",
+      "profile": "tls",
+      "redaction_applied": false,
+      "started_utc": "2026-10-03T02:33:10.247628+00:00",
+      "timed_out": false
+    }
+  ],
+  "libraries": [
+    {
+      "identity": "Microsoft.EntityFrameworkCore/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "e7OrVN8U5yr4kuwdTHWBHGVQIVsGfMkAr0Ej1/BnrS989Q0XBVANpIzNZ2bc1GvMZ0/XwMt5InTnmKskxGy99Q==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Abstractions/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "kDrux7T6C3V/YYYe2LXr7x6AEsVyq5Y2YoTE9er1SwbDtap3z1g8RgxNh5eKQVyB4T+DKvBBJ4Ezd/VZzJQJZg==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Analyzers/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "Kd4o2oO1A6dfKxjz5LS16QyLtpCFTUiFWwmBABETAXRsSImBdRdWeKjSgbbRhAMiV3a3/nWr95ZtzClT4uaADQ==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Relational/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Caching.Abstractions/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "sI3A6MUAyZwccLnwq0cXuRmC3WBtXieimBWafXSfhRJ4jnM2uGVXrqImDDVyW27u4vVaTOGlJxNJd8d1FGvCNQ==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Caching.Memory/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "fhC3DHcBcFF4bXvHIxFtXJYNut7q7ZItqNFcgWfrIgmpVImlcEKNHhE7ztpNSPJYMHYYStS5QGND2I5mC26yeA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Configuration.Abstractions/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "8xaGcvS/qZ1otoxPQCEJkNva389CVL/plNcvIETZhQTETYdRkYDPEYhUMoAGONo4FU45ufdfE0j29AfWVVj0wA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.DependencyInjection/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "lXyK2O5GoYvfxW8eCFcD16JFbcoSTM1sJkAM0UHS1jZyl9NYMW64Tqm6OQFT0IDBjZi+xHt95/Zg+nxZhGFhZg==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "9/qymSh7hVDMGTGwrLz8MRp5zRyXy9adGDOs4HwRdnLil3oZGYuWeZjbmHgCQ9BL1qBroVfgUK3U/nb61617Cw==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Logging/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "6I46fTPfgYkrjRYfRXbho9WOvOelTnNjWuZws/hzGHDASH1LEJeA4VKK9k3wJvido8o7jJSB5WkMTonX7HM1bA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Logging.Abstractions/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "+24lC4plfbEDNfLAdTV/SWKS7dW+16X4HdydO3R++134kSNTzcbYA4KpR1Hdh6uWisB8Za3AzwyOn+K+NxWIug==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Options/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "TDYD33TSRpXKZWlmTXNlj5kCihxatmv2Ec1u6C+bMYLphCS7PoSLE9Pjd/nunDoE7yETk+LLKjVJX78HYtWjpA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Primitives/10.0.12",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "dYfCLR52UA+3DL7C4I/pvSaRPkNqxrUAQmbFL2u0zvYKKzqgrFCJl08Df+F1aYc8leu9JvpC9bsURUdpExcBXQ==",
+      "type": "package"
+    },
+    {
+      "identity": "W.DmProvider/0.1.0-r3.20261003023000",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": "NXrrsXcwlux3G2Ke3KvbbQ2idvF+vijVP/1FmGQdXFNdOo2KGKyu5ly+9jt+c8lKFy8a8p2ie6aYE+Ww7PloXA==",
+      "type": "package"
+    },
+    {
+      "identity": "W.EntityFrameworkCore.Dameng/0.2.0",
+      "project": "T19Audit/T19Audit.csproj",
+      "sha512": null,
+      "type": "project"
+    },
+    {
+      "identity": "Microsoft.CodeCoverage/18.10.1",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "tV7tCyp/t+DuwQugLkCeUN7NBFFB4fEGRPr0gkMQ2nQgAvQQjmGlZZi1dsLzbyoe/A0mbnKybmkIh8qhT9p4Zw==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "e7OrVN8U5yr4kuwdTHWBHGVQIVsGfMkAr0Ej1/BnrS989Q0XBVANpIzNZ2bc1GvMZ0/XwMt5InTnmKskxGy99Q==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Abstractions/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "kDrux7T6C3V/YYYe2LXr7x6AEsVyq5Y2YoTE9er1SwbDtap3z1g8RgxNh5eKQVyB4T+DKvBBJ4Ezd/VZzJQJZg==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Analyzers/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "Kd4o2oO1A6dfKxjz5LS16QyLtpCFTUiFWwmBABETAXRsSImBdRdWeKjSgbbRhAMiV3a3/nWr95ZtzClT4uaADQ==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.EntityFrameworkCore.Relational/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "OiHmr8XzX96dbgMsYGe8qoqg4KxibdZG2r0QUVJBGktFInOp8IrABe8jvcbo5hrqeWfbwpK7fCEBiEPbY/ik4A==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Caching.Abstractions/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "sI3A6MUAyZwccLnwq0cXuRmC3WBtXieimBWafXSfhRJ4jnM2uGVXrqImDDVyW27u4vVaTOGlJxNJd8d1FGvCNQ==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Caching.Memory/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "fhC3DHcBcFF4bXvHIxFtXJYNut7q7ZItqNFcgWfrIgmpVImlcEKNHhE7ztpNSPJYMHYYStS5QGND2I5mC26yeA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Configuration.Abstractions/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "8xaGcvS/qZ1otoxPQCEJkNva389CVL/plNcvIETZhQTETYdRkYDPEYhUMoAGONo4FU45ufdfE0j29AfWVVj0wA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.DependencyInjection/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "lXyK2O5GoYvfxW8eCFcD16JFbcoSTM1sJkAM0UHS1jZyl9NYMW64Tqm6OQFT0IDBjZi+xHt95/Zg+nxZhGFhZg==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "9/qymSh7hVDMGTGwrLz8MRp5zRyXy9adGDOs4HwRdnLil3oZGYuWeZjbmHgCQ9BL1qBroVfgUK3U/nb61617Cw==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Logging/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "6I46fTPfgYkrjRYfRXbho9WOvOelTnNjWuZws/hzGHDASH1LEJeA4VKK9k3wJvido8o7jJSB5WkMTonX7HM1bA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Logging.Abstractions/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "+24lC4plfbEDNfLAdTV/SWKS7dW+16X4HdydO3R++134kSNTzcbYA4KpR1Hdh6uWisB8Za3AzwyOn+K+NxWIug==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Options/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "TDYD33TSRpXKZWlmTXNlj5kCihxatmv2Ec1u6C+bMYLphCS7PoSLE9Pjd/nunDoE7yETk+LLKjVJX78HYtWjpA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.Extensions.Primitives/10.0.12",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "dYfCLR52UA+3DL7C4I/pvSaRPkNqxrUAQmbFL2u0zvYKKzqgrFCJl08Df+F1aYc8leu9JvpC9bsURUdpExcBXQ==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.NET.Test.Sdk/18.10.1",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "SxCFvJE/2ltUQgCgv6+Ixagohw4sZc9hM7Wid2foaNM7paBscktoHLoRDz91fW8wbHG87Rg9Ku59/8PXumqUrA==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.TestPlatform.ObjectModel/18.10.1",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "o+PuLDRVp1iwiVAPBADZItXgm9Ck23XtPhE4kZtZVi0uYnMiiz1Dx9Cjh75kJ+ijfqnORL3VOTOaQVKi0f/ixg==",
+      "type": "package"
+    },
+    {
+      "identity": "Microsoft.TestPlatform.TestHost/18.10.1",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "KYz2omqkoz9E2mWa4fdgT+Ycie1wi5968EmyJlusjlp87RxxtA2FvDm8tcBEYIDzLnkWGnsKjE4d13Z7/rxkQA==",
+      "type": "package"
+    },
+    {
+      "identity": "W.DmProvider/0.1.0-r3.20261003023000",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "NXrrsXcwlux3G2Ke3KvbbQ2idvF+vijVP/1FmGQdXFNdOo2KGKyu5ly+9jt+c8lKFy8a8p2ie6aYE+Ww7PloXA==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit/2.9.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "TlXQBinK35LpOPKHAqbLY4xlEen9TBafjs0V5KnA4wZsoQLQJiirCR4CbIXvOH8NzkW4YeJKP5P/Bnrodm0h9Q==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.abstractions/2.0.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "pot1I4YOxlWjIb5jmwvvQNbTrZ3lJQ+jUGkGjWE3hEFM0l5gOnBWS+H3qsex68s5cO52g+44vpGzhAt+42vwKg==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.analyzers/1.18.0",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "OtFMHN8yqIcYP9wcVIgJrq01AfTxijjAqVDy/WeQVSyrDC1RzBWeQPztL49DN2syXRah8TYnfvk035s7L95EZQ==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.assert/2.9.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "/Kq28fCE7MjOV42YLVRAJzRF0WmEqsmflm0cfpMjGtzQ2lR5mYVj1/i0Y8uDAOLczkL3/jArrwehfMD0YogMAA==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.core/2.9.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "BiAEvqGvyme19wE0wTKdADH+NloYqikiU0mcnmiNyXaF9HyHmE6sr/3DC5vnBkgsWaE6yPyWszKSPSApWdRVeQ==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.extensibility.core/2.9.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "kf3si0YTn2a8J8eZNb+zFpwfoyvIrQ7ivNk5ZYA5yuYk1bEtMe4DxJ2CF/qsRgmEnDr7MnW1mxylBaHTZ4qErA==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.extensibility.execution/2.9.3",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "yMb6vMESlSrE3Wfj7V6cjQ3S4TXdXpRqYeNEI3zsX31uTsGMJjEw6oD5F5u1cHnMptjhEECnmZSsPxB6ChZHDQ==",
+      "type": "package"
+    },
+    {
+      "identity": "xunit.runner.visualstudio/3.1.5",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": "tKi7dSTwP4m5m9eXPM2Ime4Kn7xNf4x4zT9sdLO/G4hZVnQCRiMTWoSZqI/pYTVeI27oPPqHBKYI/DjJ9GsYgA==",
+      "type": "package"
+    },
+    {
+      "identity": "W.EntityFrameworkCore.Dameng/0.2.0",
+      "project": "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+      "sha512": null,
+      "type": "project"
+    }
+  ],
+  "locks": {
+    "T19Audit/packages.lock.json": "5465d6700f98a827ac6154e82a96944547b23ad4fcdf5950e0b839b38971973b",
+    "src/W.EntityFrameworkCore.Dameng/packages.lock.json": "ea9a5f3a83da99b71aa3b926d0eed8423d59539d485346d7887463ed907b86e4",
+    "test/W.EntityFrameworkCore.Dameng.FunctionalTests/packages.lock.json": "f5f7b45d53b5b73c6c9bc7683f2ca67d275598257a1daeeb0a701033f4e7241d"
+  },
+  "sdk": "10.0.401"
+}
