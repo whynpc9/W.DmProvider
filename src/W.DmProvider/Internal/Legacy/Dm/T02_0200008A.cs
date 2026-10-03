@@ -1,9 +1,21 @@
+using System;
+using System.IO;
+using System.Threading;
 using W.Dm.Internal.Legacy.A;
+using W.Dm.Internal.Protocol;
 
 namespace W.Dm;
 
 internal class GET_LOB_DATA : MSG<Data>
 {
+	// Fixed encoded-byte client policy; opaque request units do not establish a charset expansion ratio.
+	internal const int TextPayloadBudget = 4 * DmConnectionSettings.DefaultLobChunkSize;
+	internal const int MaxSuccessBodyOverhead = 19 + 4 + 4;
+	internal override int MaxResponseBodyLength => (int)Math.Min(DmFrameReader.MaxFrameSize - DmFrameReader.HeaderSize,
+		Math.Max((long)TextPayloadBudget, lob.lobFlag == AbstractLob.LOB_FLAG_BYTE ? length : TextPayloadBudget) + MaxSuccessBodyOverhead);
+
+	internal static readonly AsyncLocal<Action<int>> PayloadAllocationObserver = new();
+
 	private const int REQ_GET_LOB_DATA_TYPE = 20;
 
 	private const int REQ_GET_LOB_LONG_FLAG = 21;
@@ -17,6 +29,9 @@ internal class GET_LOB_DATA : MSG<Data>
 	public GET_LOB_DATA(B access, AbstractLob lob, long offset, int length)
 		: base(access, (short)32)
 	{
+		if (offset < 0 || length < 0) throw new ArgumentOutOfRangeException();
+		if (!access.a().LongLobFlag && (offset > int.MaxValue || lob.totalOffset > int.MaxValue || lob.totalOffset < 0))
+			throw new NotSupportedException("LOB offset exceeds this protocol version.");
 		this.lob = lob;
 		this.offset = offset;
 		this.length = length;
@@ -59,21 +74,32 @@ internal class GET_LOB_DATA : MSG<Data>
 
 	protected override Data doDecode()
 	{
-		lob.readOver = access.__t02_field_04000AB9.__t02_method_06000ABD() == 1;
-		long num = access.__t02_field_04000AB9.E();
-		lob.curFileId = access.__t02_field_04000AB9.C();
-		lob.curPageNo = access.__t02_field_04000AB9.d();
-		lob.totalOffset = (access.a().LongLobFlag ? access.__t02_field_04000AB9.e() : access.__t02_field_04000AB9.d());
-		if (num <= 0)
-		{
-			return new Data(0L, new byte[0]);
-		}
-		byte[] value = access.__t02_field_04000AB9.F((int)num);
-		long len = -1L;
-		if (access.__t02_field_04000AB9.a(false) > 0)
-		{
-			len = access.__t02_field_04000AB9.E();
-		}
-		return new Data(len, value);
+		var buffer = access.__t02_field_04000AB9;
+		int prefix = access.a().LongLobFlag ? 19 : 15;
+		if (buffer.a(false) < prefix) throw new InvalidDataException("Truncated LOB response metadata.");
+		byte end = buffer.__t02_method_06000ABD();
+		if (end > 1) throw new InvalidDataException("Invalid LOB end marker.");
+		long count = buffer.E();
+		int file = buffer.C();
+		int page = buffer.d();
+		long total = access.a().LongLobFlag ? buffer.e() : buffer.d();
+		if (count > int.MaxValue || count > DmConnectionSettings.DefaultMaxMessageSize || count > buffer.a(false))
+			throw new InvalidDataException("LOB payload length exceeds the response bounds.");
+		if (lob.lobFlag == AbstractLob.LOB_FLAG_CHAR && count > TextPayloadBudget)
+			throw new InvalidDataException("Text LOB payload exceeds the fixed encoded-byte client budget.");
+		// Binary request units are bytes. Text units are opaque and have no guessed multiplier.
+		if (lob.lobFlag == AbstractLob.LOB_FLAG_BYTE && count > length)
+			throw new InvalidDataException("Binary LOB response exceeds the requested bytes.");
+		int trailing = buffer.a(false) - checked((int)count);
+		if (trailing != 0 && trailing != 4) throw new InvalidDataException("Invalid LOB response suffix.");
+		if (total < 0) throw new InvalidDataException("Negative LOB locator offset.");
+		PayloadAllocationObserver.Value?.Invoke(checked((int)count));
+		byte[] value = buffer.F(checked((int)count));
+		long units = trailing == 4 ? buffer.E() : -1;
+		lob.readOver = end == 1;
+		lob.curFileId = file;
+		lob.curPageNo = page;
+		lob.totalOffset = total;
+		return new Data(units, value);
 	}
 }

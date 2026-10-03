@@ -8,11 +8,18 @@ namespace W.Dm.Internal.Sessions;
 internal sealed class DmExecutionLease : IDisposable, IAsyncDisposable
 {
     private int disposed;
+    internal bool IsDisposed => Volatile.Read(ref disposed) != 0 || (owner != null && owner.IsDisposed);
     private readonly DmExecutionLease owner;
     private int invocationStarted;
     private readonly CancellationTokenSource commandCancellation = new();
     private readonly CancellationToken commandToken;
     private volatile bool sendAttempted;
+    private bool outerOwnsConnectDiagnostic;
+    internal bool OuterOwnsConnectDiagnostic
+    {
+        get => (owner ?? this).outerOwnsConnectDiagnostic;
+        set => (owner ?? this).outerOwnsConnectDiagnostic = value;
+    }
     internal bool SendAttempted { get => (owner ?? this).sendAttempted; set => (owner ?? this).sendAttempted = value; }
     internal DmCancelSource TerminalCause;
     internal CancellationToken CommandCancellationToken => (owner ?? this).commandToken;

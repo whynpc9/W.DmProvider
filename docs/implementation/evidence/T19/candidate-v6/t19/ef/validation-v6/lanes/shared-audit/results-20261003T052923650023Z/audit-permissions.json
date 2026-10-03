@@ -1,0 +1,13 @@
+{
+  "task": "T19",
+  "mode": "permissions",
+  "accepted": true,
+  "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+  "identity_verified": true,
+  "current_schema_verified": true,
+  "server_version": "8.1.5.60",
+  "owned_history_absent": true,
+  "history_catalog_readable": true,
+  "original_lock_acquired": true,
+  "original_lock_released": true
+}

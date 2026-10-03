@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "[repo]/tools/R3ResourceProbe/validate.py",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/probe.json",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/package-manifest.json",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/.private/app/W.DmProvider.dll",
+    "tls"
+  ],
+  "elapsed_seconds": 0.09028395800851285,
+  "exit_code": 0,
+  "stage": "consumer_validation"
+}

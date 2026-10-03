@@ -152,7 +152,7 @@ public sealed class ConfigurationTests
         // A base setter may leave partial state; only validated consumption is prohibited.
         b.ConnectionString = Safe;
         Assert.True(b.ToRedactedString().Length > 0);
-        Assert.Throws<NotSupportedException>(() => baseView.ConnectionString = "conn_pooling=true");
+        Assert.Throws<NotSupportedException>(() => baseView.ConnectionString = "stmt_pooling=true");
         Assert.Throws<InvalidOperationException>(() => b.ToRedactedString());
         b.Clear();
         Assert.True(b.ToRedactedString().Length > 0);
@@ -189,7 +189,7 @@ public sealed class ConfigurationTests
     [Fact]
     public void UnsupportedAndAdvancedEntrypointsReject()
     {
-        Assert.Throws<NotSupportedException>(() => new DmConnectionStringBuilder("conn_pooling=true"));
+        Assert.True(new DmConnectionStringBuilder("conn_pooling=true").Pooling);
         Assert.Throws<NotSupportedException>(() => new DmConnectionStringBuilder("enlist=true"));
         Assert.Throws<NotSupportedException>(() => new DmConnectionStringBuilder("initial catalog=other"));
         Assert.Throws<NotSupportedException>(() => new DmConnectionStringBuilder("unknown_t04_option=1"));
@@ -285,6 +285,8 @@ public sealed class ConfigurationTests
             CheckInt(expected, "pool_timeout_ms", b.ConnPoolTimeout);
             CheckInt(expected, "socket_timeout_ms", b.SocketTimeout);
             CheckInt(expected, "command_timeout_seconds", b.CommandTimeout);
+            CheckInt(expected, "max_pool_size", b.MaxPoolSize);
+            if (expected.TryGetProperty("pooling", out var pooling)) Assert.Equal(pooling.GetBoolean(), b.Pooling);
             CheckString(expected, "transport_security", b.TransportSecurity.ToString());
         }
         foreach (var item in root.GetProperty("parse_rejected").EnumerateArray())

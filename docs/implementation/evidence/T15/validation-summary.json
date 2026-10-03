@@ -1,0 +1,584 @@
+{
+  "task": "T15",
+  "status": "discard_verified_two_profiles",
+  "window": "released",
+  "sdk": "10.0.203",
+  "source_count": 559,
+  "source_manifest_sha256": "4ad6374fe03898a66bf5bd3fab54ae46ad7f4fd6a4100f1a473558e9199ce0e5",
+  "history_count": 94,
+  "history_before_after_unchanged": true,
+  "source_before_after_unchanged": true,
+  "commands": [
+    {
+      "stage": "sdk",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "stage": "pack",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "pack",
+        "src/W.DmProvider/W.DmProvider.csproj",
+        "-c",
+        "Release",
+        "-o",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:Version=0.1.0-r3.t15.20261002125216",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "cwd": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/frozen-source-v1/source",
+      "exit_code": 0
+    },
+    {
+      "stage": "package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest.json"
+      ]
+    },
+    {
+      "stage": "consumer_build",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "build",
+        "tools/R3ResetProbe/R3ResetProbe.csproj",
+        "--configuration",
+        "Release",
+        "--output",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/app",
+        "/p:R3PackageVersion=0.1.0-r3.t15.20261002125216",
+        "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/obj/",
+        "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/obj/",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ]
+    },
+    {
+      "stage": "runtime_probe",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/run_probe.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/probe-stdout.json",
+        "/usr/local/share/dotnet/dotnet",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/app/R3ResetProbe.dll",
+        "offline",
+        "/Users/wanghongyi/Projects/W.DmProvider",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/probe.json"
+      ]
+    },
+    {
+      "stage": "envelope_validation",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/validate.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/probe.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/app/W.DmProvider.dll",
+        "offline"
+      ]
+    },
+    {
+      "stage": "final_package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest-final.json"
+      ]
+    },
+    {
+      "stage": "immutable_package_compare",
+      "exit_code": 0,
+      "argv": [
+        "cmp",
+        "-s",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477/package-manifest-final.json"
+      ]
+    },
+    {
+      "stage": "package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest.json"
+      ]
+    },
+    {
+      "stage": "consumer_build",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "build",
+        "tools/R3ResetProbe/R3ResetProbe.csproj",
+        "--configuration",
+        "Release",
+        "--output",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/app",
+        "/p:R3PackageVersion=0.1.0-r3.t15.20261002125216",
+        "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/obj/",
+        "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/obj/",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ]
+    },
+    {
+      "stage": "runtime_probe",
+      "exit_code": 0,
+      "argv": [
+        "scripts/with-dameng-tls-test.sh",
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/run_probe.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/probe-stdout.json",
+        "/usr/local/share/dotnet/dotnet",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/app/R3ResetProbe.dll",
+        "tls",
+        "/Users/wanghongyi/Projects/W.DmProvider",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/probe.json"
+      ]
+    },
+    {
+      "stage": "envelope_validation",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/validate.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/probe.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/app/W.DmProvider.dll",
+        "tls"
+      ]
+    },
+    {
+      "stage": "final_package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest-final.json"
+      ]
+    },
+    {
+      "stage": "immutable_package_compare",
+      "exit_code": 0,
+      "argv": [
+        "cmp",
+        "-s",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159/package-manifest-final.json"
+      ]
+    },
+    {
+      "stage": "package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest.json"
+      ]
+    },
+    {
+      "stage": "consumer_build",
+      "exit_code": 0,
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "build",
+        "tools/R3ResetProbe/R3ResetProbe.csproj",
+        "--configuration",
+        "Release",
+        "--output",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/app",
+        "/p:R3PackageVersion=0.1.0-r3.t15.20261002125216",
+        "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed",
+        "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/obj/",
+        "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/obj/",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ]
+    },
+    {
+      "stage": "runtime_probe",
+      "exit_code": 0,
+      "argv": [
+        "scripts/with-dameng-test.sh",
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/run_probe.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/probe-stdout.json",
+        "/usr/local/share/dotnet/dotnet",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/app/R3ResetProbe.dll",
+        "shared",
+        "/Users/wanghongyi/Projects/W.DmProvider",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/probe.json"
+      ]
+    },
+    {
+      "stage": "envelope_validation",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResetProbe/validate.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/probe.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/app/W.DmProvider.dll",
+        "shared"
+      ]
+    },
+    {
+      "stage": "final_package_inspection",
+      "exit_code": 0,
+      "argv": [
+        "python3",
+        "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/validation-v1/feed/W.DmProvider.0.1.0-r3.t15.20261002125216.nupkg",
+        "0.1.0-r3.t15.20261002125216",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest-final.json"
+      ]
+    },
+    {
+      "stage": "immutable_package_compare",
+      "exit_code": 0,
+      "argv": [
+        "cmp",
+        "-s",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest.json",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482/package-manifest-final.json"
+      ]
+    }
+  ],
+  "profiles": {
+    "offline": {
+      "exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125244Z-7702-9477",
+      "runtime": ".NET 10.0.7",
+      "rid": "osx-arm64",
+      "loaded_assembly_sha256": "d5753b404b294cb8a598915af5568818b049fc7b65cc22093690e8d5688013b6",
+      "loaded_assembly_mvid": "8c42346e-f66b-4959-ab2c-08b596e63e7c",
+      "package_sha256": "eb9d87057542defd79c78f542fab8e9ecc3059ebf0ca1a11a3e65cecc210216d",
+      "capability_ledger": {
+        "transaction": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "autocommit": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "isolation": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "schema": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "role_authorization": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "nls_language": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "timezone": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "temporary_objects": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "session_variables": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "session_locks": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "open_reader": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "prepared_statement": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "package_procedure_state": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        }
+      },
+      "server_version": null,
+      "physical_created": null,
+      "physical_disposed": null,
+      "cleanup_verified": null,
+      "final_state": null
+    },
+    "tls": {
+      "exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125256Z-7958-159",
+      "runtime": ".NET 10.0.7",
+      "rid": "osx-arm64",
+      "loaded_assembly_sha256": "d5753b404b294cb8a598915af5568818b049fc7b65cc22093690e8d5688013b6",
+      "loaded_assembly_mvid": "8c42346e-f66b-4959-ab2c-08b596e63e7c",
+      "package_sha256": "eb9d87057542defd79c78f542fab8e9ecc3059ebf0ca1a11a3e65cecc210216d",
+      "capability_ledger": {
+        "transaction": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "old_uncommitted_rows": 1,
+          "fresh_rows_before_close": 0,
+          "fresh_rows_after_close": 0,
+          "disposed_tcp_sockets": 1,
+          "transaction_lock_released": true
+        },
+        "autocommit": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "committed_rows": 1
+        },
+        "isolation": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "requested_isolation": "ReadCommitted"
+        },
+        "schema": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "expected": "WDM_PROVIDER_TEST",
+          "cross_schema_mutation_attempted": false
+        },
+        "role_authorization": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "nls_language": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "language_not_probed",
+          "date_format_subset": {
+            "status": "discard_verified",
+            "mutation_effect_observed": true,
+            "fresh_matches_baseline": true,
+            "disposed_tcp_sockets": 1
+          }
+        },
+        "timezone": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "mutation_effect_observed": true,
+          "fresh_matches_baseline": true,
+          "disposed_tcp_sockets": 1
+        },
+        "temporary_objects": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "object_kind": "global_temporary_table_preserve_rows",
+          "old_rows": 1,
+          "fresh_rows": 0,
+          "definition_persists_until_owned_cleanup": true,
+          "disposed_tcp_sockets": 1
+        },
+        "session_variables": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "session_locks": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "open_reader": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "positive_control": true,
+          "old_object_rejected": true,
+          "post_close_new_sends": 0,
+          "post_close_new_sockets": 0
+        },
+        "prepared_statement": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "positive_control": true,
+          "old_object_rejected": true,
+          "post_close_new_sends": 0,
+          "post_close_new_sockets": 0
+        },
+        "package_procedure_state": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        }
+      },
+      "server_version": "8.1.4.6",
+      "physical_created": 16,
+      "physical_disposed": 16,
+      "cleanup_verified": true,
+      "final_state": "unique_owned_objects_absent"
+    },
+    "shared": {
+      "exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t15/runs/20261002T125308Z-8029-21482",
+      "runtime": ".NET 10.0.7",
+      "rid": "osx-arm64",
+      "loaded_assembly_sha256": "d5753b404b294cb8a598915af5568818b049fc7b65cc22093690e8d5688013b6",
+      "loaded_assembly_mvid": "8c42346e-f66b-4959-ab2c-08b596e63e7c",
+      "package_sha256": "eb9d87057542defd79c78f542fab8e9ecc3059ebf0ca1a11a3e65cecc210216d",
+      "capability_ledger": {
+        "transaction": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "old_uncommitted_rows": 1,
+          "fresh_rows_before_close": 0,
+          "fresh_rows_after_close": 0,
+          "disposed_tcp_sockets": 1,
+          "transaction_lock_released": true
+        },
+        "autocommit": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "committed_rows": 1
+        },
+        "isolation": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "requested_isolation": "ReadCommitted"
+        },
+        "schema": {
+          "status": "fresh_baseline_observed",
+          "same_session_reset_proven": false,
+          "expected": "WDM_PROVIDER_TEST",
+          "cross_schema_mutation_attempted": false
+        },
+        "role_authorization": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "nls_language": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "language_not_probed",
+          "date_format_subset": {
+            "status": "discard_verified",
+            "mutation_effect_observed": true,
+            "fresh_matches_baseline": true,
+            "disposed_tcp_sockets": 1
+          }
+        },
+        "timezone": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "mutation_effect_observed": true,
+          "fresh_matches_baseline": true,
+          "disposed_tcp_sockets": 1
+        },
+        "temporary_objects": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "object_kind": "global_temporary_table_preserve_rows",
+          "old_rows": 1,
+          "fresh_rows": 0,
+          "definition_persists_until_owned_cleanup": true,
+          "disposed_tcp_sockets": 1
+        },
+        "session_variables": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "session_locks": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        },
+        "open_reader": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "positive_control": true,
+          "old_object_rejected": true,
+          "post_close_new_sends": 0,
+          "post_close_new_sockets": 0
+        },
+        "prepared_statement": {
+          "status": "discard_verified",
+          "same_session_reset_proven": false,
+          "positive_control": true,
+          "old_object_rejected": true,
+          "post_close_new_sends": 0,
+          "post_close_new_sockets": 0
+        },
+        "package_procedure_state": {
+          "status": "not_proven",
+          "same_session_reset_proven": false,
+          "reason": "no_verified_full_session_reset"
+        }
+      },
+      "server_version": "8.1.5.60",
+      "physical_created": 16,
+      "physical_disposed": 16,
+      "cleanup_verified": true,
+      "final_state": "unique_owned_objects_absent"
+    }
+  },
+  "production_release_accepted": false,
+  "session_reset_verified": false,
+  "reuse_policy": "discard_all",
+  "original_shared_crosspage_gate": "integration_pending_unchanged",
+  "package_version": "0.1.0-r3.t15.20261002125216",
+  "package_sha256": "eb9d87057542defd79c78f542fab8e9ecc3059ebf0ca1a11a3e65cecc210216d",
+  "dll_sha256": "d5753b404b294cb8a598915af5568818b049fc7b65cc22093690e8d5688013b6",
+  "mvid": "8c42346e-f66b-4959-ab2c-08b596e63e7c"
+}

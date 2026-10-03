@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "[repo]/eng/t17.sh",
+    "shared",
+    "0.1.0-r3.20261003023000",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed"
+  ],
+  "elapsed_seconds": 327.0624062079005,
+  "exit_code": 1,
+  "stage": "t17_shared"
+}

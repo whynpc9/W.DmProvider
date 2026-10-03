@@ -1,0 +1,40 @@
+{
+  "task": "T17",
+  "status": "targeted_tests_failed",
+  "window": "released",
+  "targeted_exit_code": 1,
+  "targeted_counters": {
+    "total": 95,
+    "executed": 95,
+    "passed": 94,
+    "failed": 1,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "failures": [
+    {
+      "name": "W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength",
+      "message": "System.IO.InvalidDataException : Invalid LOB length response.",
+      "stack": "   at W.Dm.Internal.Lobs.DmLobReadCursor.Read(Span`1 destination, CancellationToken token) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/src/W.DmProvider/Internal/Lobs/DmLobReadCursor.cs:line 202\n   at W.Dm.Internal.Lobs.DmLobReadCursor.ReadBytes(Span`1 destination) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/src/W.DmProvider/Internal/Lobs/DmLobReadCursor.cs:line 190\n   at W.Dm.DmBlob.do_getBytes(Int64 pos, Int32 len) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs:line 102\n   at W.Dm.DmBlob.GetBytes(Int64 pos, Int32 len) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs:line 69\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 87\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v3/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 92\n--- End of stack trace from previous location ---"
+    }
+  ],
+  "source_count": 624,
+  "history_count": 157,
+  "source_manifest_sha256": "fbe2544e8358e4919d67ceb3ae14e7b0c769ec94e7ecf3583f05a2fb1ac41d52",
+  "source_history_before_after_unchanged": true,
+  "sdk": "10.0.203",
+  "full_offline": "not_executed",
+  "package": "not_built",
+  "integration": "not_executed",
+  "production_release_accepted": false
+}

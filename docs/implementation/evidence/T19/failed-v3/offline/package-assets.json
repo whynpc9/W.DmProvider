@@ -1,0 +1,68 @@
+{
+  "assets": [
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "size": 11358
+    },
+    {
+      "path": "README.md",
+      "sha256": "951864e489c465eb7f13b7e5ab22e612fea07b709df384c36df78004d07e18eb",
+      "size": 9598
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "d3ed55a028c36ab2f68c6ceee6da9696a073eccc471e689b739f22897ae7b826",
+      "size": 1712
+    },
+    {
+      "path": "W.DmProvider.nuspec",
+      "sha256": "19e5a6c927f23dd0b186fcd14e84ad2424f90f3703629ca131202b983d552c41",
+      "size": 1027
+    },
+    {
+      "path": "[Content_Types].xml",
+      "sha256": "f6963a1ca4a1f5814447c2259f7420d13f80c2b549c56974d626c923a1de6ad8",
+      "size": 588
+    },
+    {
+      "path": "_rels/.rels",
+      "sha256": "96c86974b2ee21df35ae4e2cd3b4c539b2d3305585d760d235a368d848d393fc",
+      "size": 502
+    },
+    {
+      "path": "lib/net10.0/W.DmProvider.dll",
+      "sha256": "58e1bc1c7c52d96e3a5bf2090f09750e8e3642c38f4396b14c8b5f9c716cb4cd",
+      "size": 1359872
+    },
+    {
+      "path": "lib/net10.0/en/W.DmProvider.resources.dll",
+      "sha256": "2e9c0a9dc993aac9282d038c06bccaeea0139a1897ff6110c96ae4af5bea314c",
+      "size": 24576
+    },
+    {
+      "path": "lib/net10.0/zh-CN/W.DmProvider.resources.dll",
+      "sha256": "eccb27d003428c8003c69afbe7854680189d77405b243d0381f68d37a40c7d26",
+      "size": 25088
+    },
+    {
+      "path": "lib/net10.0/zh-HK/W.DmProvider.resources.dll",
+      "sha256": "44b15d7f9fd58c63b18688e46d767dfd2c0d086e2010d210350a7bd003955790",
+      "size": 25088
+    },
+    {
+      "path": "lib/net10.0/zh-TW/W.DmProvider.resources.dll",
+      "sha256": "9edb9cd76d98b3aaf2f62c0f9a0b55fa523068707f73672056811395777900e4",
+      "size": 25088
+    },
+    {
+      "path": "package/services/metadata/core-properties/4c4cd60f76344441bb5f86344fa52b0e.psmdcp",
+      "sha256": "765bf110dd490d4cbd4088ef298340e1433ec0046bba142d2bf252156a2d8e14",
+      "size": 985
+    }
+  ],
+  "package_sha256": "0f175a80f2d1ba0dc76e07de3499dc063e5fc83235f9a6e48b4164364a03758f",
+  "runtime_nuspec_dependencies": [],
+  "source_link": false,
+  "version": "0.1.0-r3.20261002215249"
+}

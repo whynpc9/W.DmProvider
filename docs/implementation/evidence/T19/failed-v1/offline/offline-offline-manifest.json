@@ -1,0 +1,63 @@
+{
+  "classification_policy": "preserve_existing_traits; new Diagnostics Category=Contract Feature=Diagnostics; no official-driver characterization claim",
+  "exact_sdk": "10.0.203",
+  "no_skip_or_abort": true,
+  "phase": "implementation_offline_TLS_scoped",
+  "schema_version": 1,
+  "suites": [
+    {
+      "name": "Configuration",
+      "project": "tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj"
+    },
+    {
+      "name": "Session",
+      "project": "tests/W.DmProvider.SessionTests/W.DmProvider.SessionTests.csproj"
+    },
+    {
+      "name": "Transport",
+      "project": "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj"
+    },
+    {
+      "name": "Security",
+      "project": "tests/W.DmProvider.SecurityTests/W.DmProvider.SecurityTests.csproj"
+    },
+    {
+      "name": "Command",
+      "project": "tests/W.DmProvider.CommandTests/W.DmProvider.CommandTests.csproj"
+    },
+    {
+      "name": "Type",
+      "project": "tests/W.DmProvider.TypeTests/W.DmProvider.TypeTests.csproj"
+    },
+    {
+      "name": "Transaction",
+      "project": "tests/W.DmProvider.TransactionTests/W.DmProvider.TransactionTests.csproj"
+    },
+    {
+      "name": "Isolation",
+      "project": "tests/W.DmProvider.IsolationTests/W.DmProvider.IsolationTests.csproj"
+    },
+    {
+      "name": "Async",
+      "project": "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj"
+    },
+    {
+      "name": "Pool",
+      "project": "tests/W.DmProvider.PoolTests/W.DmProvider.PoolTests.csproj"
+    },
+    {
+      "name": "Lob",
+      "project": "tests/W.DmProvider.LobTests/W.DmProvider.LobTests.csproj"
+    },
+    {
+      "name": "Diagnostics",
+      "project": "tests/W.DmProvider.DiagnosticsTests/W.DmProvider.DiagnosticsTests.csproj"
+    }
+  ],
+  "task": "T18",
+  "upstream_pending": [
+    "T17_shared_large_value",
+    "shared_cleanup_recovery",
+    "complete_R3_matrix"
+  ]
+}

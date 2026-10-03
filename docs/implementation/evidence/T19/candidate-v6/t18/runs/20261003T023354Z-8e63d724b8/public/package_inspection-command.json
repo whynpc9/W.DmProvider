@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "[repo]/tools/R2AsyncProbe/package_manifest.py",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed/W.DmProvider.0.1.0-r3.20261003023000.nupkg",
+    "0.1.0-r3.20261003023000",
+    "[repo]/.local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/package-manifest.json"
+  ],
+  "elapsed_seconds": 0.0451722911093384,
+  "exit_code": 0,
+  "stage": "package_inspection"
+}

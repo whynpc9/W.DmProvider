@@ -147,6 +147,8 @@ internal sealed class DmParameterInternal : DmField
 		return m_Val[i].GetStreamLen();
 	}
 
+	internal W.Dm.Internal.Lobs.DmLobInput GetStreamingInput(int row) => m_Val[row].StreamingInput;
+
 	public int GetBytes(ref byte[] val, int val_off, int off, int len, int i)
 	{
 		return m_Val[i].GetBytes(ref val, val_off, off, len);

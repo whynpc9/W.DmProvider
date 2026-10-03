@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/source/tools/R3ResourceProbe/validate.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/audit/20261002T220120Z-c206ae0b0e/public/probe.json",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/audit/20261002T220120Z-c206ae0b0e/public/package-manifest.json",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/audit/20261002T220120Z-c206ae0b0e/.private/app/W.DmProvider.dll",
+    "offline"
+  ],
+  "elapsed_seconds": 0.04620962496846914,
+  "exit_code": 0,
+  "stage": "consumer_validation"
+}

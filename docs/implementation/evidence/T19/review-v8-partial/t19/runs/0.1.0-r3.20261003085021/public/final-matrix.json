@@ -1,0 +1,33 @@
+{
+  "candidate": {
+    "driver_dll_sha256": "50248befd1f4ea2910c95c59dad6d1133f57fbf8f6a85cfb81d3e044d28c3333",
+    "driver_mvid": "1488fa35-0160-45f6-9756-bbae92e5c770",
+    "package_sha256": "a6f317caeef29a282288c13c838325569c82a114909127a6ef8ccc3169411c1d",
+    "source_manifest_sha256": "348f38b8c8c0d7ec44a92f67a1aebdd1627b1078ba71976767e7ac1861fbb137",
+    "version": "0.1.0-r3.20261003085021"
+  },
+  "gates": {
+    "ef_final": "missing",
+    "r2_shared_original": "missing",
+    "r2_tls_original": "missing",
+    "shared_exact_cleanup": "missing",
+    "t16_offline": "missing",
+    "t16_shared": "missing",
+    "t16_tls": "missing",
+    "t17_offline": "missing",
+    "t17_shared": "missing",
+    "t17_tls": "missing",
+    "t18_tls_resource": "missing"
+  },
+  "production_release_accepted": false,
+  "schema_version": 1,
+  "shared_resource": "not_verified_not_required",
+  "status": "matrix_pending",
+  "task": "T19",
+  "upstream_pending": [
+    "shared_stream_and_original_R2",
+    "shared_exact_cleanup",
+    "final_EF",
+    "final_matrix_root_readback"
+  ]
+}

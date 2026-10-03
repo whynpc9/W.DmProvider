@@ -808,8 +808,8 @@ public class FldrStatement
 		else if (x is DmClob)
 		{
 			DmClob dmClob = (DmClob)x;
-			string subString = dmClob.getSubString(0L, (int)dmClob.do_length());
-			setBlob(parameterIndex, DmBlob.newInstanceOfLocal(ByteUtil.fromString(subString, connection.GetConnInstance().ConnProperty.ServerEncoding), connection));
+			byte[] bytes = dmClob.MaterializeBytesUnderOwner(connection.GetConnInstance().ConnProperty.ServerEncoding);
+			setBlob(parameterIndex, DmBlob.newInstanceOfLocal(bytes, connection));
 		}
 		else
 		{

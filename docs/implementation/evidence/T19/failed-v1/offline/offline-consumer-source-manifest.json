@@ -1,0 +1,23 @@
+{
+  "consumer_source_sha256": "6a08d5f1ae56bed76442a159626ff9e57a68b73cee25cd450c8cb6b2e8c315e7",
+  "files": {
+    "eng/T18.md": "093cbb33f4973a4c4e865d7d3223376809ced552166f22a576790d69e913055c",
+    "eng/t18.sh": "b877682822f2ad1c1f9fbabaab69a2953b09f38b1d1de5b199ebc948d65fecd9",
+    "global.json": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d",
+    "tests/W.DmProvider.DiagnosticsTests/ScriptedTransactionFixture.cs": "f2428f0cb067d7043a306078d7b2c51a7c6b343115926d3b4cacd4e9ebf6bcc7",
+    "tests/fixtures/r3-lob/generate_vectors.py": "d7ccb3f5863c92b435bf7c4740be9215ada32908aa509a7117338bc898698308",
+    "tests/fixtures/r3-lob/vectors.json": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+    "tools/R3ResourceProbe/Program.cs": "892716fb79ea1c7a0a74d3b6a2b38e0abf77995ff65c6bbb7fd1e022e3280315",
+    "tools/R3ResourceProbe/R3ResourceProbe.csproj": "7106dc42925de0b16e2f6b1040a64a4c3e625bdba8e889daa3b4518ab3a37326",
+    "tools/R3ResourceProbe/README.md": "5e40f252fbba55ba3fd079888f738b3fcbeb50334425945c1e118aed6f086a0b",
+    "tools/R3ResourceProbe/run_probe.py": "a0606540acb1493e1e3a2d665c9ee99d8c316907202ba34951cb5dab924d3e0d",
+    "tools/R3ResourceProbe/source_identity.py": "fd88ec50d1cd50a81f1897873d92c940faac2aaca1928e83b428e9e8799a0fbb",
+    "tools/R3ResourceProbe/validate.py": "f08720c1fa0a5991ca6a349f9d1b85c701e98f0be85acee37bd061822ab21d4f"
+  },
+  "identity_scope": "consumer_source_only",
+  "observed_git_head": "ed0c8a19d2a3d275eb469960ae56778e6280b5b0",
+  "product_source_mapping": "root_frozen_candidate_manifest_required",
+  "schema_version": 1,
+  "sourcelink_claimed": false,
+  "task": "T18"
+}

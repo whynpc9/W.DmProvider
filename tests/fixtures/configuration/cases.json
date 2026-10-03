@@ -2,6 +2,11 @@
   "schema_version": 1,
   "parse_success": [
     {
+      "id": "connection_pooling_enabled",
+      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;conn_pooling=true",
+      "expected": { "pooling": true, "max_pool_size": 100 }
+    },
+    {
       "id": "canonical_keys_case_insensitive",
       "connection_string": "SeRvEr=example.invalid;UsEr=TEST_SYNTH;PaSsWoRd=CANARY_T04;ScHeMa=MixedCase;Port=5236;Connect_Timeout=1250;Command_Timeout=45;Conn_Pool_Timeout=2500;SocketTimeout=3000;TransportSecurity=PlaintextAllowed",
       "expected": {
@@ -215,10 +220,6 @@
     }
   ],
   "unsupported_nondefault": [
-    {
-      "id": "connection_pooling_enabled",
-      "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;conn_pooling=true"
-    },
     {
       "id": "ambient_enlistment_enabled",
       "connection_string": "server=example.invalid;user=TEST_SYNTH;password=CANARY_T04;enlist=true"

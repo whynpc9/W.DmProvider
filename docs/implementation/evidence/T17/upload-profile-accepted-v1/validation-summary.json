@@ -1,0 +1,647 @@
+{
+  "task": "T17-upload-profile",
+  "status": "ack_shape_characterized_two_profiles",
+  "window": "released",
+  "source_count": 620,
+  "source_manifest_sha256": "ab8184f33c2da8cb952059939c7901be4ae2bab748eb2ee939c4b49638634305",
+  "history_count": 143,
+  "source_history_before_after_unchanged": true,
+  "accepted_T16_package_unchanged": true,
+  "new_product_compiled": false,
+  "streaming_api_acceptance_claimed": false,
+  "profiles": {
+    "offline": {
+      "runner_exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940",
+      "probe": {
+        "schema_version": 1,
+        "task": "T17-upload-profile",
+        "phase": "capability_characterization",
+        "implementation": "W-package",
+        "accepted": true,
+        "exit_code": 0,
+        "streaming_api_acceptance_claimed": false,
+        "runtime": ".NET 10.0.7",
+        "runtime_identifier": "osx-arm64",
+        "mode": "offline",
+        "checkpoint_stage": "accepted_package_identity",
+        "package_version": "0.1.0-r3.t16.20261002143244",
+        "package_sha256": "a15d5009659e1f78f00a49efe7c1caf0cd43974b69169e405dfc794ef5275a44",
+        "loaded_assembly_sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f",
+        "loaded_assembly_mvid": "654b6ddd-b0ff-4408-8e1b-b93bd075c1da",
+        "reference_kind": "exact_PackageReference",
+        "fixture_sha256": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+        "input_manifest": {
+          "blob_bytes": 131089,
+          "blob_seed": 17,
+          "blob_stride": 131,
+          "blob_sha256": "f6b14474b871f858b21e113fd14f7416d00fea532a08325bd2cd126fe1b25492",
+          "clob_utf16_chars": 115813,
+          "clob_utf8_bytes": 174495,
+          "clob_utf8_sha256": "158962106a0c3edf27c33da5b0065d7f57e11421f4643f3ada95dbacedd89792",
+          "parameter_inputs": "existing_byte_array_and_string",
+          "command_seconds": 30,
+          "connect_seconds": 15,
+          "process_seconds": 90
+        },
+        "status": "offline_verified",
+        "integration": "integration_pending"
+      },
+      "commands": [
+        {
+          "stage": "package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_source_identity",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/source_identity.py",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/consumer-source-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_build",
+          "exit_code": 0,
+          "argv": [
+            "/usr/local/share/dotnet/dotnet",
+            "build",
+            "tools/R3UploadProfileProbe/R3UploadProfileProbe.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/app",
+            "/p:R3PackageVersion=0.1.0-r3.t16.20261002143244",
+            "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/obj/",
+            "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/obj/",
+            "-m:1",
+            "/nodeReuse:false",
+            "/p:UseSharedCompilation=false",
+            "--disable-build-servers"
+          ]
+        },
+        {
+          "stage": "runtime_probe",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/run_probe.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/probe-stdout.json",
+            "/usr/local/share/dotnet/dotnet",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/app/R3UploadProfileProbe.dll",
+            "offline",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/probe.json"
+          ]
+        },
+        {
+          "stage": "envelope_validation",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/validate.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/probe.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/app/W.DmProvider.dll",
+            "offline"
+          ]
+        },
+        {
+          "stage": "final_package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest-final.json"
+          ]
+        },
+        {
+          "stage": "immutable_package_compare",
+          "exit_code": 0,
+          "argv": [
+            "cmp",
+            "-s",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160757Z-63380-3940/package-manifest-final.json"
+          ]
+        }
+      ]
+    },
+    "tls": {
+      "runner_exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248",
+      "probe": {
+        "schema_version": 1,
+        "task": "T17-upload-profile",
+        "phase": "capability_characterization",
+        "implementation": "W-package",
+        "accepted": true,
+        "exit_code": 0,
+        "streaming_api_acceptance_claimed": false,
+        "runtime": ".NET 10.0.7",
+        "runtime_identifier": "osx-arm64",
+        "mode": "tls",
+        "checkpoint_stage": "fresh_exact_cleanup",
+        "package_version": "0.1.0-r3.t16.20261002143244",
+        "package_sha256": "a15d5009659e1f78f00a49efe7c1caf0cd43974b69169e405dfc794ef5275a44",
+        "loaded_assembly_sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f",
+        "loaded_assembly_mvid": "654b6ddd-b0ff-4408-8e1b-b93bd075c1da",
+        "reference_kind": "exact_PackageReference",
+        "fixture_sha256": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+        "input_manifest": {
+          "blob_bytes": 131089,
+          "blob_seed": 17,
+          "blob_stride": 131,
+          "blob_sha256": "f6b14474b871f858b21e113fd14f7416d00fea532a08325bd2cd126fe1b25492",
+          "clob_utf16_chars": 115813,
+          "clob_utf8_bytes": 174495,
+          "clob_utf8_sha256": "158962106a0c3edf27c33da5b0065d7f57e11421f4643f3ada95dbacedd89792",
+          "parameter_inputs": "existing_byte_array_and_string",
+          "command_seconds": 30,
+          "connect_seconds": 15,
+          "process_seconds": 90
+        },
+        "tls_revocation_policy": "NoCheck_for_isolated_ephemeral_CA_without_CRL",
+        "explicit_transport": "RequireTls",
+        "owned_objects": [
+          "T17U_0348FA9EC2F7411C900E"
+        ],
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "server_version": "8.1.4.6",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "opcode26_sent_count": 11,
+        "opcode26_ack_header_count": 11,
+        "opcode26_before_decode_count": 11,
+        "ack_headers": [
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          }
+        ],
+        "response_opcodes_observed": [
+          261
+        ],
+        "body_lengths_observed": [
+          21
+        ],
+        "positive_statuses_observed": true,
+        "physical_connections_created": 3,
+        "physical_connections_disposed": 3,
+        "negotiated_encrypt_modes": [
+          1,
+          1,
+          1
+        ],
+        "network_io_counts": {
+          "async_connect": 3,
+          "sync_connect": 0,
+          "async_tls": 3,
+          "sync_tls": 0,
+          "async_send": 73,
+          "sync_send": 0,
+          "async_receive": 144,
+          "sync_receive": 0
+        },
+        "case": {
+          "category": "state_evidence",
+          "status": "characterized",
+          "request_opcode": 26,
+          "one_ack_header_per_sent_chunk": true,
+          "before_decode_coverage": true,
+          "opaque_body_read": false,
+          "response_opcode_policy": "observed_not_assumed",
+          "streaming_input_claimed": false
+        },
+        "status": "upload_ack_characterized",
+        "integration": "real_test_schema"
+      },
+      "commands": [
+        {
+          "stage": "package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_source_identity",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/source_identity.py",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/consumer-source-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_build",
+          "exit_code": 0,
+          "argv": [
+            "/usr/local/share/dotnet/dotnet",
+            "build",
+            "tools/R3UploadProfileProbe/R3UploadProfileProbe.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/app",
+            "/p:R3PackageVersion=0.1.0-r3.t16.20261002143244",
+            "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/obj/",
+            "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/obj/",
+            "-m:1",
+            "/nodeReuse:false",
+            "/p:UseSharedCompilation=false",
+            "--disable-build-servers"
+          ]
+        },
+        {
+          "stage": "runtime_probe",
+          "exit_code": 0,
+          "argv": [
+            "scripts/with-dameng-tls-test.sh",
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/run_probe.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/probe-stdout.json",
+            "/usr/local/share/dotnet/dotnet",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/app/R3UploadProfileProbe.dll",
+            "tls",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/probe.json"
+          ]
+        },
+        {
+          "stage": "envelope_validation",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/validate.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/probe.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/app/W.DmProvider.dll",
+            "tls"
+          ]
+        },
+        {
+          "stage": "final_package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest-final.json"
+          ]
+        },
+        {
+          "stage": "immutable_package_compare",
+          "exit_code": 0,
+          "argv": [
+            "cmp",
+            "-s",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160813Z-63428-248/package-manifest-final.json"
+          ]
+        }
+      ]
+    },
+    "shared": {
+      "runner_exit_code": 0,
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007",
+      "probe": {
+        "schema_version": 1,
+        "task": "T17-upload-profile",
+        "phase": "capability_characterization",
+        "implementation": "W-package",
+        "accepted": true,
+        "exit_code": 0,
+        "streaming_api_acceptance_claimed": false,
+        "runtime": ".NET 10.0.7",
+        "runtime_identifier": "osx-arm64",
+        "mode": "shared",
+        "checkpoint_stage": "fresh_exact_cleanup",
+        "package_version": "0.1.0-r3.t16.20261002143244",
+        "package_sha256": "a15d5009659e1f78f00a49efe7c1caf0cd43974b69169e405dfc794ef5275a44",
+        "loaded_assembly_sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f",
+        "loaded_assembly_mvid": "654b6ddd-b0ff-4408-8e1b-b93bd075c1da",
+        "reference_kind": "exact_PackageReference",
+        "fixture_sha256": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+        "input_manifest": {
+          "blob_bytes": 131089,
+          "blob_seed": 17,
+          "blob_stride": 131,
+          "blob_sha256": "f6b14474b871f858b21e113fd14f7416d00fea532a08325bd2cd126fe1b25492",
+          "clob_utf16_chars": 115813,
+          "clob_utf8_bytes": 174495,
+          "clob_utf8_sha256": "158962106a0c3edf27c33da5b0065d7f57e11421f4643f3ada95dbacedd89792",
+          "parameter_inputs": "existing_byte_array_and_string",
+          "command_seconds": 30,
+          "connect_seconds": 15,
+          "process_seconds": 90
+        },
+        "explicit_transport": "PlaintextAllowed",
+        "owned_objects": [
+          "T17U_6D00D8D456934F3CB735"
+        ],
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "server_version": "8.1.5.60",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "opcode26_sent_count": 11,
+        "opcode26_ack_header_count": 11,
+        "opcode26_before_decode_count": 11,
+        "ack_headers": [
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          },
+          {
+            "RequestOpcode": 26,
+            "ResponseOpcode": 261,
+            "SqlStatus": 0,
+            "BodyLength": 21
+          }
+        ],
+        "response_opcodes_observed": [
+          261
+        ],
+        "body_lengths_observed": [
+          21
+        ],
+        "positive_statuses_observed": true,
+        "physical_connections_created": 3,
+        "physical_connections_disposed": 3,
+        "negotiated_encrypt_modes": [
+          0,
+          0,
+          0
+        ],
+        "network_io_counts": {
+          "async_connect": 3,
+          "sync_connect": 0,
+          "async_tls": 0,
+          "sync_tls": 0,
+          "async_send": 73,
+          "sync_send": 0,
+          "async_receive": 144,
+          "sync_receive": 0
+        },
+        "case": {
+          "category": "state_evidence",
+          "status": "characterized",
+          "request_opcode": 26,
+          "one_ack_header_per_sent_chunk": true,
+          "before_decode_coverage": true,
+          "opaque_body_read": false,
+          "response_opcode_policy": "observed_not_assumed",
+          "streaming_input_claimed": false
+        },
+        "status": "upload_ack_characterized",
+        "integration": "real_test_schema"
+      },
+      "commands": [
+        {
+          "stage": "package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_source_identity",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/source_identity.py",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/consumer-source-manifest.json"
+          ]
+        },
+        {
+          "stage": "consumer_build",
+          "exit_code": 0,
+          "argv": [
+            "/usr/local/share/dotnet/dotnet",
+            "build",
+            "tools/R3UploadProfileProbe/R3UploadProfileProbe.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app",
+            "/p:R3PackageVersion=0.1.0-r3.t16.20261002143244",
+            "/p:R3PackageSource=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:RestoreSources=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed",
+            "/p:BaseIntermediateOutputPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/obj/",
+            "/p:MSBuildProjectExtensionsPath=/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/obj/",
+            "-m:1",
+            "/nodeReuse:false",
+            "/p:UseSharedCompilation=false",
+            "--disable-build-servers"
+          ]
+        },
+        {
+          "stage": "runtime_probe",
+          "exit_code": 0,
+          "argv": [
+            "scripts/with-dameng-test.sh",
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/run_probe.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe-stdout.json",
+            "/usr/local/share/dotnet/dotnet",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app/R3UploadProfileProbe.dll",
+            "shared",
+            "/Users/wanghongyi/Projects/W.DmProvider",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe.json"
+          ]
+        },
+        {
+          "stage": "envelope_validation",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R3UploadProfileProbe/validate.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/probe.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/app/W.DmProvider.dll",
+            "shared"
+          ]
+        },
+        {
+          "stage": "final_package_inspection",
+          "exit_code": 0,
+          "argv": [
+            "python3",
+            "/Users/wanghongyi/Projects/W.DmProvider/tools/R2AsyncProbe/package_manifest.py",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+            "0.1.0-r3.t16.20261002143244",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest-final.json"
+          ]
+        },
+        {
+          "stage": "immutable_package_compare",
+          "exit_code": 0,
+          "argv": [
+            "cmp",
+            "-s",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest.json",
+            "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/upload-profile/runs/20261002T160826Z-63491-2007/package-manifest-final.json"
+          ]
+        }
+      ]
+    }
+  },
+  "artifact_sensitive_pattern_scan": {
+    "files_scanned": 36,
+    "hits": [],
+    "real_secrets_not_loaded_into_scan": true
+  }
+}

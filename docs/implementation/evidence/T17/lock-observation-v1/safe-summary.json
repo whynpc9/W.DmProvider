@@ -1,0 +1,18 @@
+{
+  "classification": "exact_TEST_object_readonly_lock_observation",
+  "final_database_state": "unverified",
+  "loaded_dll_sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f",
+  "mvid": "654b6ddd-b0ff-4408-8e1b-b93bd075c1da",
+  "stage": "exact_test_object_lock_query",
+  "verified_identity": "WDM_PROVIDER_TEST",
+  "verified_schema": "WDM_PROVIDER_TEST",
+  "error_type": "W.Dm.DmException",
+  "hresult": -2147467259,
+  "number": -5504,
+  "server_number": -5504,
+  "failure_kind": "Server",
+  "failure_phase": "Receive",
+  "operation_outcome": "ServerReported",
+  "exit_code": 1,
+  "state_counts": {}
+}

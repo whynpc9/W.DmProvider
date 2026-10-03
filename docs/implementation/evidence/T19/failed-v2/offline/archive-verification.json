@@ -1,0 +1,7 @@
+{
+  "files": 1234,
+  "source_archive_sha256": "134f99568888ad16c5ac1b363e0bdc59c2414c33de5e5918a75c6e6ac958fc79",
+  "source_manifest_sha256": "9e66ddba3e148ab163f1792a605e0eac5eb43f3687e8a4a6f4a7c47b0a256901",
+  "status": "byte_reconstruction_verified",
+  "tree_sha256": "939c140e9ffb5f1fb0d90f128b8f9117bb1208083c6ff60014da4be1127f66ed"
+}

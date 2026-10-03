@@ -1,0 +1,194 @@
+[
+  {
+    "lane": "audit",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "audit"
+    ]
+  },
+  {
+    "lane": "audit",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "audit"
+    ]
+  },
+  {
+    "lane": "functional",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "functional"
+    ]
+  },
+  {
+    "lane": "functional",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "functional"
+    ]
+  },
+  {
+    "lane": "cli",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "cli"
+    ]
+  },
+  {
+    "lane": "cli",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "cli"
+    ]
+  },
+  {
+    "lane": "scripts",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "scripts"
+    ]
+  },
+  {
+    "lane": "scripts",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "scripts"
+    ]
+  },
+  {
+    "lane": "specification",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "specification"
+    ]
+  },
+  {
+    "lane": "specification",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "specification"
+    ]
+  },
+  {
+    "lane": "r3_shared",
+    "action": "build",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "build",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "r3_shared"
+    ]
+  },
+  {
+    "lane": "r3_shared",
+    "action": "run",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "tools/DownstreamAcceptance/T19/run.py",
+      "run",
+      "--output",
+      ".local/verification/r3/t19/ef/validation-v6",
+      "--profile",
+      "shared",
+      "--lane",
+      "r3_shared"
+    ]
+  }
+]

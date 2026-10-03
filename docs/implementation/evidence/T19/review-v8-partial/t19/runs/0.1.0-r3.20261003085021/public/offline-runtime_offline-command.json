@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/source/tools/R3ResourceProbe/run_probe.py",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/audit/20261003T085023Z-2e0d333bbf/public/probe-stdout.json",
+    "/usr/local/share/dotnet/dotnet",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/audit/20261003T085023Z-2e0d333bbf/.private/app/R3ResourceProbe.dll",
+    "offline",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/source",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/audit/20261003T085023Z-2e0d333bbf/public/package-manifest.json",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/audit/20261003T085023Z-2e0d333bbf/public/probe.json"
+  ],
+  "elapsed_seconds": 0.8505204170942307,
+  "exit_code": 0,
+  "stage": "runtime_offline"
+}

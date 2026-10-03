@@ -1,0 +1,39 @@
+{
+  "classification": "diagnostic_observation_not_acceptance",
+  "window": "released",
+  "test_exit_code": 1,
+  "counters": {
+    "total": "2",
+    "executed": "2",
+    "passed": "1",
+    "failed": "1",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "source_count": 581,
+  "history_count": 102,
+  "hashes_before_after_unchanged": true,
+  "tests": [
+    {
+      "name": "W.DmProvider.PoolTests.ServerErrorClassificationTests.ActualDataSourceShortcutKeepsServerFailureAndClosesTransportBeforeReturningPermit(asynchronous: True)",
+      "outcome": "Passed",
+      "diagnostic_stdout": null
+    },
+    {
+      "name": "W.DmProvider.PoolTests.ServerErrorClassificationTests.ActualDataSourceShortcutKeepsServerFailureAndClosesTransportBeforeReturningPermit(asynchronous: False)",
+      "outcome": "Failed",
+      "diagnostic_stdout": "synthetic_nre_first_chance: W.Dm.Internal.Legacy.A.B.Wire line=147 il=0\nsynthetic_channel_counts: sync_sends=2 async_sends=0\nsynthetic_nre_first_chance: W.Dm.DmCommand.ExecuteReaderOwned line=929 il=1022\nsynthetic_channel_counts: sync_sends=2 async_sends=0\nsynthetic_nre_first_chance: W.Dm.DmCommand.ExecuteNonQueryComplete line=582 il=121\nsynthetic_channel_counts: sync_sends=2 async_sends=0\nsynthetic_nre_first_chance: W.Dm.DmCommand.ExecuteNonQueryComplete line=582 il=121 | W.Dm.DmCommand.do_ExecuteNonQuery line=552 il=16 | W.Dm.DmCommand.ExecuteNonQuery line=1319 il=8 | W.Dm.DmDataSourceCommand.ExecuteNonQuery line=93 il=20\nsynthetic_channel_counts: sync_sends=2 async_sends=0"
+    }
+  ],
+  "setup_failed_before_dotnet_once": "initial relative root caused file not found; corrected absolute root before actual single test execution"
+}

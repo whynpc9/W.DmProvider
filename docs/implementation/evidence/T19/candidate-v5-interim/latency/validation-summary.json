@@ -1,0 +1,92 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "source_count": 670,
+  "history_count": 791,
+  "hashes_unchanged": true,
+  "measurements": {
+    "sync": {
+      "execute": {
+        "n": 24,
+        "min_ms": 375.872125,
+        "median_ms": 386.3999375,
+        "p95_ms": 392.917166,
+        "max_ms": 549.270125,
+        "mean_ms": 392.773427125
+      },
+      "dispose": {
+        "n": 24,
+        "min_ms": 0.003166,
+        "median_ms": 0.0061665,
+        "p95_ms": 0.021208,
+        "max_ms": 0.047458,
+        "mean_ms": 0.011654416666666667
+      },
+      "response_ready": {
+        "n": 120,
+        "min_ms": 72.383333,
+        "median_ms": 75.248437,
+        "p95_ms": 86.644833,
+        "max_ms": 244.593875,
+        "mean_ms": 78.39799333333333
+      },
+      "opcode_counts": {
+        "None": 120
+      },
+      "opcode_coverage_missing_explicit": true
+    },
+    "async": {
+      "execute": {
+        "n": 24,
+        "min_ms": 372.830125,
+        "median_ms": 384.82514549999996,
+        "p95_ms": 411.714833,
+        "max_ms": 427.372459,
+        "mean_ms": 389.3251475833333
+      },
+      "dispose": {
+        "n": 24,
+        "min_ms": 0.002333,
+        "median_ms": 0.0038955,
+        "p95_ms": 0.006041,
+        "max_ms": 0.009166,
+        "mean_ms": 0.004218625
+      },
+      "response_ready": {
+        "n": 120,
+        "min_ms": 72.18125,
+        "median_ms": 74.981729,
+        "p95_ms": 87.42283300000001,
+        "max_ms": 107.746833,
+        "mean_ms": 77.76568885833333
+      },
+      "opcode_counts": {
+        "3": 24,
+        "5": 24,
+        "13": 24,
+        "44": 24,
+        "4": 24
+      },
+      "opcode_coverage_missing_explicit": false
+    }
+  },
+  "owned_final_state": [
+    {
+      "mode": "sync",
+      "create_attempted": true,
+      "create_ack": true,
+      "fresh_absent_after": true
+    },
+    {
+      "mode": "async",
+      "create_attempted": true,
+      "create_ack": true,
+      "fresh_absent_after": true
+    }
+  ],
+  "original_full_76_not_accepted": true,
+  "NoDelay_observed_false_not_modified": true,
+  "raw_numeric_report": ".local/verification/r3/t19/latency-probe-v2/runtime/report.json"
+}

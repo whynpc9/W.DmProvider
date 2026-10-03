@@ -1,0 +1,19 @@
+{
+  "candidate": {
+    "driver_dll_sha256": "32eb58f8e90feb8ab32010d001565dc20b59b6d6d259c970e2ccf3358b342b5a",
+    "driver_mvid": "e759b373-2c59-4370-a01c-ea35091c3199",
+    "package_sha256": "81392b0e1f5b8f8eb99cd085054283f02582d94dcad0bee496ca149f528922ca",
+    "source_manifest_sha256": "05c415fcd04c2980f04d8be34d1f83a7b4e2faabf89bcdd0aa605cb231c6593c",
+    "version": "0.1.0-r3.20261003075844"
+  },
+  "integration": "final_matrix_pending",
+  "os": "Ubuntu 24.04.5 LTS",
+  "production_release_accepted": false,
+  "rid": "linux-x64",
+  "run_dir": "[runner-temp]/r3-candidate/0.1.0-r3.20261003075844",
+  "runtime": ".NET 10.0.12",
+  "sdk": "10.0.203",
+  "source_link": false,
+  "status": "offline_candidate_verified",
+  "total_passed": 892
+}

@@ -24,13 +24,16 @@ internal static class DmFrameReader
         return value == header[19];
     }
 
-    internal static int ValidateLength(int bodyLength)
+    internal static int ValidateLength(int bodyLength, int maxResponseBodyLength = MaxFrameSize - HeaderSize)
     {
+        if (maxResponseBodyLength < 0 || maxResponseBodyLength > MaxFrameSize - HeaderSize)
+            throw new ArgumentOutOfRangeException(nameof(maxResponseBodyLength));
         if (bodyLength < 0) throw new InvalidDataException("Negative frame body length.");
         int total;
         try { total = checked(HeaderSize + bodyLength); }
         catch (OverflowException ex) { throw new InvalidDataException("Frame length overflow.", ex); }
         if (total > MaxFrameSize) throw new InvalidDataException("Frame exceeds the configured limit.");
+        if (bodyLength > maxResponseBodyLength) throw new InvalidDataException("Frame exceeds the current message response budget.");
         return total;
     }
 
@@ -73,7 +76,8 @@ internal static class DmFrameReader
     // The supplied checksum callback is the negotiated legacy algorithm. It is also
     // called for heartbeat frames, before they can be skipped.
     internal static int Read(Action<byte[], int, int> readExactly, b destination,
-        Func<b, int, bool> validateFrame, DmDeadline deadline, Func<byte[], bool> validateHeader = null)
+        Func<b, int, bool> validateFrame, DmDeadline deadline, Func<byte[], bool> validateHeader = null,
+        int maxResponseBodyLength = MaxFrameSize - HeaderSize)
     {
         if (readExactly == null) throw new ArgumentNullException(nameof(readExactly));
         if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -85,7 +89,7 @@ internal static class DmFrameReader
             destination.B(HeaderSize);
             readExactly(destination.A(), 0, HeaderSize);
             destination.A(HeaderSize);
-            int total = ValidateLength(BodyLength(destination.A()));
+            int total = ValidateLength(BodyLength(destination.A()), maxResponseBodyLength);
             if (destination.A()[18] != 0) throw new NotSupportedException("Compressed protocol frames are not supported.");
             if (validateHeader != null && !validateHeader(destination.A()))
                 throw new InvalidDataException("Frame header checksum failed.");
@@ -104,7 +108,8 @@ internal static class DmFrameReader
 
     internal static async ValueTask<int> ReadAsync(Func<byte[], int, int, CancellationToken, ValueTask> readExactly,
         b destination, Func<b, int, bool> validateFrame, DmDeadline deadline,
-        CancellationToken cancellationToken = default, Func<byte[], bool> validateHeader = null)
+        CancellationToken cancellationToken = default, Func<byte[], bool> validateHeader = null,
+        int maxResponseBodyLength = MaxFrameSize - HeaderSize)
     {
         ArgumentNullException.ThrowIfNull(readExactly);
         ArgumentNullException.ThrowIfNull(destination);
@@ -119,7 +124,7 @@ internal static class DmFrameReader
             cancellationToken.ThrowIfCancellationRequested();
             deadline.ThrowIfExpired();
             destination.A(HeaderSize);
-            int total = ValidateLength(BodyLength(destination.A()));
+            int total = ValidateLength(BodyLength(destination.A()), maxResponseBodyLength);
             if (destination.A()[18] != 0) throw new NotSupportedException("Compressed protocol frames are not supported.");
             if (validateHeader != null && !validateHeader(destination.A()))
                 throw new InvalidDataException("Frame header checksum failed.");
@@ -140,7 +145,7 @@ internal static class DmFrameReader
     }
 
     internal static ValueTask<int> ReadAsync(Stream stream, b destination, bool crcBody, DmDeadline deadline,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, int maxResponseBodyLength = MaxFrameSize - HeaderSize)
     {
         ArgumentNullException.ThrowIfNull(stream);
         return ReadAsync(async (buffer, offset, count, token) =>
@@ -157,10 +162,11 @@ internal static class DmFrameReader
                 read += progress;
             }
         }, destination, (buffer, total) => ValidateChecksum(buffer, total, crcBody), deadline, cancellationToken,
-           header => (crcBody && Command(header) != 200) || ValidateHeaderChecksum(header));
+           header => (crcBody && Command(header) != 200) || ValidateHeaderChecksum(header), maxResponseBodyLength);
     }
 
-    internal static int Read(Stream stream, b destination, bool crcBody, DmDeadline deadline)
+    internal static int Read(Stream stream, b destination, bool crcBody, DmDeadline deadline,
+        int maxResponseBodyLength = MaxFrameSize - HeaderSize)
     {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         return Read((buffer, offset, count) =>
@@ -174,7 +180,7 @@ internal static class DmFrameReader
                 read += current;
             }
         }, destination, (buffer, total) => ValidateChecksum(buffer, total, crcBody), deadline,
-           header => (crcBody && Command(header) != 200) || ValidateHeaderChecksum(header));
+           header => (crcBody && Command(header) != 200) || ValidateHeaderChecksum(header), maxResponseBodyLength);
     }
 
     internal static bool ValidateChecksum(b buffer, int total, bool crcBody)

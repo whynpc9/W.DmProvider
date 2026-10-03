@@ -1,0 +1,142 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "metrics": {
+    "26": {
+      "n": 13,
+      "median_ms": 78.172958,
+      "mean_ms": 84.05361515384615,
+      "p95_ms": 79.751458,
+      "reply_shapes": [
+        [
+          261,
+          0,
+          21
+        ]
+      ]
+    },
+    "29": {
+      "n": 0,
+      "median_ms": null,
+      "mean_ms": null,
+      "p95_ms": null,
+      "reply_shapes": []
+    },
+    "32": {
+      "n": 13,
+      "median_ms": 151.12954200000001,
+      "mean_ms": 130.5756313076923,
+      "p95_ms": 153.888834,
+      "reply_shapes": [
+        [
+          187,
+          0,
+          4679
+        ],
+        [
+          187,
+          0,
+          31635
+        ]
+      ]
+    }
+  },
+  "upload_seconds": 1.605180083,
+  "sample_length": 384000,
+  "hash_verified": true,
+  "public_read_calls": [
+    {
+      "Index": 1,
+      "Started": 1238450937203791,
+      "Returned": 1238451100333250,
+      "Bytes": 31612
+    },
+    {
+      "Index": 2,
+      "Started": 1238451100568958,
+      "Returned": 1238451400715791,
+      "Bytes": 31612
+    },
+    {
+      "Index": 3,
+      "Started": 1238451400767416,
+      "Returned": 1238451554765958,
+      "Bytes": 31612
+    },
+    {
+      "Index": 4,
+      "Started": 1238451554801375,
+      "Returned": 1238451708010291,
+      "Bytes": 31612
+    },
+    {
+      "Index": 5,
+      "Started": 1238451708038708,
+      "Returned": 1238451859323250,
+      "Bytes": 31612
+    },
+    {
+      "Index": 6,
+      "Started": 1238451859359666,
+      "Returned": 1238452013657750,
+      "Bytes": 31612
+    },
+    {
+      "Index": 7,
+      "Started": 1238452013703625,
+      "Returned": 1238452166514083,
+      "Bytes": 31612
+    },
+    {
+      "Index": 8,
+      "Started": 1238452166548375,
+      "Returned": 1238452247824583,
+      "Bytes": 31612
+    },
+    {
+      "Index": 9,
+      "Started": 1238452247852500,
+      "Returned": 1238452329015791,
+      "Bytes": 31612
+    },
+    {
+      "Index": 10,
+      "Started": 1238452329077833,
+      "Returned": 1238452409293208,
+      "Bytes": 31612
+    },
+    {
+      "Index": 11,
+      "Started": 1238452409317333,
+      "Returned": 1238452491150833,
+      "Bytes": 31612
+    },
+    {
+      "Index": 12,
+      "Started": 1238452491175250,
+      "Returned": 1238452572029291,
+      "Bytes": 31612
+    },
+    {
+      "Index": 13,
+      "Started": 1238452572063125,
+      "Returned": 1238452647696500,
+      "Bytes": 4656
+    },
+    {
+      "Index": 14,
+      "Started": 1238452647703666,
+      "Returned": 1238452647710333,
+      "Bytes": 0
+    }
+  ],
+  "created_tcp": 4,
+  "disposed_tcp": 4,
+  "fresh_exact_absent": true,
+  "whole_empty_after": true
+}

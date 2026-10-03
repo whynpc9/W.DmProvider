@@ -1,0 +1,8 @@
+{
+  "assets": {
+    "lib/net10.0/W.DmProvider.dll": "d5753b404b294cb8a598915af5568818b049fc7b65cc22093690e8d5688013b6"
+  },
+  "package_sha256": "eb9d87057542defd79c78f542fab8e9ecc3059ebf0ca1a11a3e65cecc210216d",
+  "schema_version": 1,
+  "version": "0.1.0-r3.t15.20261002125216"
+}

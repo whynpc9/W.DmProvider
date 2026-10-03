@@ -1,0 +1,147 @@
+{
+  "task": "T19_CLI_retention_overlay",
+  "status": "shared_TLS_aggregates_verified",
+  "window": "released",
+  "pure_tests": 35,
+  "source_full_count": 1675,
+  "history_count": 903,
+  "bytes_modes_hashes_unchanged": true,
+  "new_CLI_lane": {
+    "exit": 0,
+    "counts": {
+      "aborted": 0,
+      "completed": 0,
+      "disconnected": 0,
+      "error": 0,
+      "executed": 1,
+      "failed": 0,
+      "inProgress": 0,
+      "inconclusive": 0,
+      "notExecuted": 0,
+      "notRunnable": 0,
+      "passed": 1,
+      "passedButRunAborted": 0,
+      "pending": 0,
+      "timeout": 0,
+      "total": 1,
+      "warning": 0
+    },
+    "evidence": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z",
+    "after_audit": {
+      "accepted": true,
+      "current_schema_verified": true,
+      "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "identity_verified": true,
+      "independent_final_inventory_matches": true,
+      "inventory_count": 0,
+      "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "mode": "after",
+      "new_object_hash_count": 0,
+      "removed_object_hash_count": 0,
+      "server_version": "8.1.5.60",
+      "task": "T19"
+    }
+  },
+  "shared_validation": {
+    "schema_version": 1,
+    "task": "T19",
+    "status": "accepted_profile_scope",
+    "profile": "shared",
+    "candidate": {
+      "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "driver_mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "package_sha256": "8fb616decd1053cff6a81a7f3533b22891fab7074bd76bd632d535c55b4c4594",
+      "source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+      "version": "0.1.0-r3.20261003023000"
+    },
+    "ef_commit": "113014cc74dd1f751ef97226a78d2ec855b32c8c",
+    "ef_archive_sha256": "9dead07c1de4220bd13bdadab0ed2713f43008af5e7c0cf7a629549a6739096d",
+    "efcore_version": "10.0.12",
+    "sdk": "10.0.401",
+    "production_release_accepted": false,
+    "upstream_pending": [
+      "T17_shared_large_value",
+      "shared_cleanup_recovery",
+      "R2_shared_crosspage",
+      "complete_R3_matrix"
+    ],
+    "shared_long_resource": "not_verified_not_required_by_T18_TLS_design"
+  },
+  "TLS_validation": {
+    "schema_version": 1,
+    "task": "T19",
+    "status": "accepted_profile_scope",
+    "profile": "tls",
+    "candidate": {
+      "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "driver_mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "package_sha256": "8fb616decd1053cff6a81a7f3533b22891fab7074bd76bd632d535c55b4c4594",
+      "source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+      "version": "0.1.0-r3.20261003023000"
+    },
+    "ef_commit": "113014cc74dd1f751ef97226a78d2ec855b32c8c",
+    "ef_archive_sha256": "9dead07c1de4220bd13bdadab0ed2713f43008af5e7c0cf7a629549a6739096d",
+    "efcore_version": "10.0.12",
+    "sdk": "10.0.401",
+    "production_release_accepted": false,
+    "upstream_pending": [
+      "T17_shared_large_value",
+      "shared_cleanup_recovery",
+      "R2_shared_crosspage",
+      "complete_R3_matrix"
+    ],
+    "shared_long_resource": "not_verified_not_required_by_T18_TLS_design"
+  },
+  "retained_assets_independent_PE": [
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-8fa4d42e2a42482f87493e1d0e7ed41e.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-46047d6a0aab4663817054134be58891.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-c675c8459fd74e05a27a3808631c43fc.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-662a45ff1d4c4ec1bfb89d5c869ec9c5.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-b793fcfb7ea94fdb9aad732aa4666852.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-4eaedc31eb7c475f874ac0a9e5de5f70.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-b5f20b090d324151b4b659ea3304572f.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    },
+    {
+      "path": "[repo]/.local/verification/r3/t19/ef/cli-retention-v1/lanes/shared-cli/results-20261003T065851324208Z/loaded-drivers/loaded-26553a5c0471471daf3588b1ed6af4e0.dll",
+      "sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+      "mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+      "mode": "0o600"
+    }
+  ],
+  "old_non_CLI_base_immutable": true,
+  "production_release_accepted": false
+}

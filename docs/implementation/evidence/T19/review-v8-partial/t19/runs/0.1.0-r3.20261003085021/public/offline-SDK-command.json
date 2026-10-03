@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "--version"
+  ],
+  "elapsed_seconds": 0.08167833392508328,
+  "exit_code": 0,
+  "stage": "SDK"
+}

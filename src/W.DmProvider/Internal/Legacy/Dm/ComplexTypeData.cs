@@ -283,9 +283,9 @@ public class ComplexTypeData
 		case 19:
 		{
 			DmClob obj = (DmClob)value;
-			int num = (int)obj.do_length();
-			byte[] bytes = DmConvertion.GetBytes(obj.getSubString(0L, num), serverEncoding);
-			byte[] array = new byte[bytes.Length + 4];
+			byte[] bytes = obj.MaterializeBytesUnderOwner(serverEncoding);
+			int num = bytes.Length;
+			byte[] array = new byte[checked(num + 4)];
 			DmConvertion.SetInt(array, 0, num);
 			Array.Copy(bytes, 0, array, 4, num);
 			return array;

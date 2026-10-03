@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "approved_by": "Astra High design and root scope review",
+  "utc": "2026-10-03T06:15:49.368048+00:00",
+  "candidate": "0.1.0-r3.20261003023000",
+  "previous_qualification": "failed",
+  "previous_U_seconds": 394.0296,
+  "startup_cause_or_bound_proven": false,
+  "new_admission": "one_original_gate_after_controlled_position_experiment",
+  "maximum_attempts": 1,
+  "automatic_retry": false,
+  "original_blob_bytes": 67109888,
+  "original_contract_cases": 16,
+  "upload_command_timeout_seconds": 300,
+  "process_timeout_seconds": 1800,
+  "NoDelay_changed": false,
+  "source_or_tool_changed": false,
+  "on_failure": "preserve and stop this admission strategy; no further automatic prefix or full retry",
+  "overall_R3_complete": false
+}

@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v5/source/tools/R3ResourceProbe/source_identity.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v5/source",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/validation-v5/runs/20261002T205514Z-67b0c28700/public/consumer-source-manifest.json"
+  ],
+  "elapsed_seconds": 0.04801129084080458,
+  "exit_code": 0,
+  "stage": "consumer_source_identity"
+}

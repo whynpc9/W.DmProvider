@@ -895,7 +895,7 @@ internal class N2DB
 			case 0:
 			case 1:
 			case 2:
-				result = ByteUtil.fromString(x.getSubString(0L, (int)x.do_length()), connection.GetConnInstance().ConnProperty.ServerEncoding);
+				result = x.MaterializeBytesUnderOwner(connection.GetConnInstance().ConnProperty.ServerEncoding);
 				break;
 			case 19:
 				result = toClob(x, paraInternal, connection);
@@ -1134,7 +1134,7 @@ internal class N2DB
 			if (val is DmClob)
 			{
 				DmClob dmClob = (DmClob)val;
-				return ByteUtil.fromString(dmClob.getSubString(0L, (int)dmClob.do_length()), connection.GetConnInstance().ConnProperty.ServerEncoding);
+				return dmClob.MaterializeBytesUnderOwner(connection.GetConnInstance().ConnProperty.ServerEncoding);
 			}
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_UNSUPPORTED_TYPE);
 			return null;
@@ -1375,7 +1375,7 @@ internal class N2DB
 
 	public static byte[] toClob(DmClob x, DmField paraInternal, DmConnection connection)
 	{
-		return ByteUtil.fromString(x.getSubString(0L, (int)x.do_length()), connection.GetConnInstance().ConnProperty.ServerEncoding);
+		return x.MaterializeBytesUnderOwner(connection.GetConnInstance().ConnProperty.ServerEncoding);
 	}
 
 	public static byte[] toClob(string val, DmField paraInternal, DmConnection connection)

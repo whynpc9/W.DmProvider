@@ -4,16 +4,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using W.Dm.util;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Lobs;
 
 namespace W.Dm;
 
 public class DmBlob : AbstractLob
 {
 	private byte[] data;
+	private AbstractLob readTemplate;
+
+	private void RebaseReadTemplate(bool knownLength)
+	{
+		if (!knownLength) m_length = -1;
+		bytesLength = knownLength ? m_length : -1;
+		readTemplate = SnapshotForRead();
+		readTemplate.curFileId = readTemplate.fileId;
+		readTemplate.curPageNo = readTemplate.pageNo;
+		readTemplate.totalOffset = 0;
+		readTemplate.curOffset = 0;
+		readTemplate.readOver = false;
+	}
 
 	internal DmBlob(byte[] value, DmConnInstance connInstance, DmField column, bool fetchAll, bool hexPayload = false)
 		: base(value, 0, connInstance, column)
 	{
+		readTemplate = SnapshotForRead();
 		m_length = bytesLength;
 		if (hexPayload && m_length != -1) DmLobMaterialization.HexInput(m_length);
 		if (storageType == 1)
@@ -74,7 +89,21 @@ public class DmBlob : AbstractLob
 			ByteUtil.setBytes(array, 0, data, checked((int)pos), array.Length);
 			return array;
 		}
-		return ConnInstance.GetCsi().A(this, pos, len);
+		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
+		cursor.SetKnownWireLength(do_length());
+		byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
+		while (cursor.Position < pos)
+			if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, pos - cursor.Position))) == 0)
+				throw new InvalidDataException("Binary LOB ended before the requested offset.");
+		byte[] result = new byte[len];
+		int copied = 0;
+		while (copied < len)
+		{
+			int count = cursor.ReadBytes(result.AsSpan(copied));
+			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
+			copied += count;
+		}
+		return result;
 	}
 
 	internal async Task<byte[]> do_getBytesAsync(long pos, int len, CancellationToken cancellationToken)
@@ -93,7 +122,21 @@ public class DmBlob : AbstractLob
 			ByteUtil.setBytes(result, 0, data, checked((int)pos), result.Length);
 			return result;
 		}
-		return await ConnInstance.GetCsi().ReadLobAsync(this, pos, len, cancellationToken).ConfigureAwait(false);
+		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
+		cursor.SetKnownWireLength(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
+		byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
+		while (cursor.Position < pos)
+			if (await cursor.ReadBytesAsync(discard.AsMemory(0, (int)Math.Min(discard.Length, pos - cursor.Position)), cancellationToken).ConfigureAwait(false) == 0)
+				throw new InvalidDataException("Binary LOB ended before the requested offset.");
+		byte[] remoteResult = new byte[len];
+		int copied = 0;
+		while (copied < len)
+		{
+			int count = await cursor.ReadBytesAsync(remoteResult.AsMemory(copied), cancellationToken).ConfigureAwait(false);
+			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
+			copied += count;
+		}
+		return remoteResult;
 	}
 
 	public int SetBytes(long pos, byte[] bytes)
@@ -136,6 +179,7 @@ public class DmBlob : AbstractLob
 			return len;
 		}
 		int num2 = ConnInstance.GetCsi().A(this, pos, bytes, offset, len);
+		if (storageType != STORAGE_IN_ROW) RebaseReadTemplate(knownLength: false);
 		if (storageType == 1)
 		{
 			setLocalData((int)pos, bytes, offset, num2);
@@ -179,6 +223,7 @@ public class DmBlob : AbstractLob
 		else
 		{
 			m_length = ConnInstance.GetCsi().A(this, (int)len);
+			RebaseReadTemplate(knownLength: true);
 			if (storageType == 1)
 			{
 				byte[] array2 = new byte[(int)do_length()];

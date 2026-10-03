@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "task": "R3",
+  "status": "implementation_and_defined_integration_matrix_accepted",
+  "candidate": {
+    "version": "0.1.0-r3.20261003023000",
+    "package_sha256": "8fb616decd1053cff6a81a7f3533b22891fab7074bd76bd632d535c55b4c4594",
+    "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+    "driver_mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+    "source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f"
+  },
+  "execution_overlay": {
+    "revision": "t19-cli-retention-v1",
+    "execution_overlay_manifest_path": "[repo]/.local/verification/r3/t19/cli-retention-execution-v2/execution-overlay.json",
+    "execution_overlay_sha256": "3667013853ac25775e13b3429255ade0bbe49681be19ca30c565c9d9bed7d708",
+    "producer_source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+    "execution_source_manifest_sha256": "15591a8ffe0f73e6eadd9972cace8a350c04541bae998f4c1d989b5149d7f5ab",
+    "execution_source_archive_sha256": "2fdbcf6dcc280e4c47f88583b8be06bc8cd6896243e547a6f97c1791edce5981",
+    "execution_tree_sha256": "ed706d96c2b0e4394dd7f409b5ce0753d97cb8446cd42bcef245d3be9caf90ec",
+    "producer_source_dir": "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/source",
+    "execution_source_dir": "[repo]",
+    "producer_tool_root": "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/source/tools/DownstreamAcceptance/T19",
+    "execution_tool_root": "[repo]/tools/DownstreamAcceptance/T19"
+  },
+  "runtime_gate_readbacks": [
+    {
+      "gate": "exact_final_pkg_runtime_T13_shared_20261003T052625Z-37064-15691",
+      "path": ".local/verification/r2/t13/runs/20261003T052625Z-37064-15691/probe.json",
+      "sha256": "1dff06237571b161feefc7668813bf66e084c98bf99439f48ce04689d6c44ec8",
+      "status": "package_async_verified",
+      "validator": {
+        "path": ".local/verification/r2/t13/runs/20261003T052625Z-37064-15691/validation.json",
+        "sha256": "dc5e6d05e49514dee87c2bef762dcf6db6e84327923e5ed014a4c97d167adcde",
+        "bytes": 543,
+        "actual_status": "package_async_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T13_tls_20261003T023340Z-95630-8303",
+      "path": ".local/verification/r2/t13/runs/20261003T023340Z-95630-8303/probe.json",
+      "sha256": "047c483c0db307153aa3a159f00ec4f1a0beb84a525acfeebc5b6b9a737f857e",
+      "status": "package_async_verified",
+      "validator": {
+        "path": ".local/verification/r2/t13/runs/20261003T023340Z-95630-8303/validation.json",
+        "sha256": "609ad488d9165946c8a64b8145f6b2109e1721c61c5fe005274e6e808090f45e",
+        "bytes": 541,
+        "actual_status": "package_async_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T13_security-shared_20261003T052808Z-37618-2874",
+      "path": ".local/verification/r2/t13/runs/20261003T052808Z-37618-2874/probe.json",
+      "sha256": "7dabb16b96f92261155da5c7025e33486035d7f5ef4d059c807511b6a6ccbe3f",
+      "status": "security_rejection_verified",
+      "validator": {
+        "path": ".local/verification/r2/t13/runs/20261003T052808Z-37618-2874/validation.json",
+        "sha256": "69f2d73a3e326b4154f5ca66a0d10e3e2e535b9d628007a9c75169e36cecd50e",
+        "bytes": 566,
+        "actual_status": "security_rejection_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T13_security-tls_20261003T023351Z-95686-22358",
+      "path": ".local/verification/r2/t13/runs/20261003T023351Z-95686-22358/probe.json",
+      "sha256": "82c14d80f7d5562cae4ba0faf410d023605ee4c9cd5404d65b42203a49343ac5",
+      "status": "security_rejection_verified",
+      "validator": {
+        "path": ".local/verification/r2/t13/runs/20261003T023351Z-95686-22358/validation.json",
+        "sha256": "8023152d5533cf748028a9b81847338afad15b2b14758ecc99f664864cf4823e",
+        "bytes": 552,
+        "actual_status": "security_rejection_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T14_tls_20261003T023344Z-95656-21932",
+      "path": ".local/verification/r2/t14/runs/20261003T023344Z-95656-21932/probe.json",
+      "sha256": "13bc5b3d56b4ccf508145aec72e6b2235ce3bce58702ee5ff803e2318fb77428",
+      "status": "package_cancellation_verified",
+      "validator": {
+        "path": ".local/verification/r2/t14/runs/20261003T023344Z-95656-21932/validation.json",
+        "sha256": "e17b5ef876ec6c4ca8ba286ad69b992e5fdbbfc96dcf7338b1ad4dd632b5a34c",
+        "bytes": 330,
+        "actual_status": "package_cancellation_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T14_shared_20261003T052651Z-37149-16967",
+      "path": ".local/verification/r2/t14/runs/20261003T052651Z-37149-16967/probe.json",
+      "sha256": "bec79e0f494bc5e104ad71e4daa859962c36aeb0d55db142aec5e04cf7ae5aa2",
+      "status": "package_cancellation_verified",
+      "validator": {
+        "path": ".local/verification/r2/t14/runs/20261003T052651Z-37149-16967/validation.json",
+        "sha256": "76117bd937a3d3a892942b66ccefe48b3beaed4afd686f0729f9d20f184822e4",
+        "bytes": 334,
+        "actual_status": "package_cancellation_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T16_shared_20261003T024619Z-98359-20060",
+      "path": ".local/verification/r3/t16/runs/20261003T024619Z-98359-20060/probe.json",
+      "sha256": "6b19e891bd46675af34eacc09691d04095611fcb98d3f03b6341606a80eff62a",
+      "status": "pool_discard_verified",
+      "validator": {
+        "path": ".local/verification/r3/t16/runs/20261003T024619Z-98359-20060/validation.json",
+        "sha256": "ef8bc397f0e6741bbf0ef18d8aba0d8b5c4ef1df8c62f86aa792355f7aaeb3e8",
+        "bytes": 287,
+        "actual_status": "pool_discard_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T16_offline_20261003T023125Z-94936-8515",
+      "path": ".local/verification/r3/t16/runs/20261003T023125Z-94936-8515/probe.json",
+      "sha256": "6d47f99cb3effa048cda51b26abb7a3f984e32022afd84e7f21dfc9b09db9ef1",
+      "status": "offline_verified",
+      "validator": {
+        "path": ".local/verification/r3/t16/runs/20261003T023125Z-94936-8515/validation.json",
+        "sha256": "f55cd141ae0031a7d86010d880b150cb25147612a7ecb1dcb2d89ab97aaa2fff",
+        "bytes": 291,
+        "actual_status": "offline_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T16_tls_20261003T023323Z-95499-6602",
+      "path": ".local/verification/r3/t16/runs/20261003T023323Z-95499-6602/probe.json",
+      "sha256": "0aa77564d2cefc1fb28a1141249802c96f56d9f3f04c6af08139e2c57d1998f6",
+      "status": "pool_discard_verified",
+      "validator": {
+        "path": ".local/verification/r3/t16/runs/20261003T023323Z-95499-6602/validation.json",
+        "sha256": "b9265e364b71f623a676258b1081689b447c05343854ca62e06ff5cf58f3d2c2",
+        "bytes": 284,
+        "actual_status": "pool_discard_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T17_shared_20261003T061631Z-49987-26993",
+      "path": ".local/verification/r3/t17/full/runs/20261003T061631Z-49987-26993/probe.json",
+      "sha256": "abb2986d6eef5b9eeeca347e3d73ca144becb3549c5e1b1466a62a6155c66f3d",
+      "status": "streaming_verified",
+      "validator": {
+        "path": ".local/verification/r3/t17/full/runs/20261003T061631Z-49987-26993/validation.json",
+        "sha256": "1c8c5467e2f1d8e77126a23b4a3b5747bbd85891f52d7922db7f006f2d7d6ce3",
+        "bytes": 305,
+        "actual_status": "streaming_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T17_offline_20261003T023127Z-94962-21236",
+      "path": ".local/verification/r3/t17/full/runs/20261003T023127Z-94962-21236/probe.json",
+      "sha256": "25160a2f0f193895051c1f418b5442f27ddea14dfbee09f60fdc389085414e31",
+      "status": "offline_verified",
+      "validator": {
+        "path": ".local/verification/r3/t17/full/runs/20261003T023127Z-94962-21236/validation.json",
+        "sha256": "05438a9c9dbc6fa61d129452548969023a8a47d0178a6a95472d26e49d43c2f0",
+        "bytes": 309,
+        "actual_status": "offline_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T17_tls_20261003T023332Z-95548-184",
+      "path": ".local/verification/r3/t17/full/runs/20261003T023332Z-95548-184/probe.json",
+      "sha256": "ce001a01c5a3eb6475a980b8b0452bee3cca384089917686db8cd61e23bcfd1e",
+      "status": "streaming_verified",
+      "validator": {
+        "path": ".local/verification/r3/t17/full/runs/20261003T023332Z-95548-184/validation.json",
+        "sha256": "c1dbe3d30530c8aac496f80091fea272617b4d09fc4091eb8d85194d03807a8a",
+        "bytes": 302,
+        "actual_status": "streaming_verified",
+        "safe_copy_candidate": true
+      }
+    },
+    {
+      "gate": "exact_final_pkg_runtime_T18_tls_20261003T023354Z-8e63d724b8",
+      "path": ".local/verification/r3/t18/runs/20261003T023354Z-8e63d724b8/public/probe.json",
+      "sha256": "cf279295b59bb219a0fc4a136898209854ac208e480b52b9418e67fb39c441ab",
+      "status": "tls_resource_scope_verified",
+      "validator": null
+    }
+  ],
+  "EF_lineage_readbacks": [
+    {
+      "profile": "shared",
+      "lanes": 7,
+      "path": ".local/verification/r3/t19/ef/cli-retention-v1/aggregate-cli-retention-shared.json",
+      "sha256": "ee647f319fd9c4528043cadc167b327c9ba18d88a255dc9ca0763e5c6855a98d"
+    },
+    {
+      "profile": "tls",
+      "lanes": 2,
+      "path": ".local/verification/r3/t19/ef/cli-retention-v1/aggregate-cli-retention-tls.json",
+      "sha256": "955cc15aa30db391208070c76879cea933f42fc9dc306aaf46df86f482e29341"
+    }
+  ],
+  "offline_dotnet_cases": 892,
+  "first_init_children": 7,
+  "tool_python_cases": 35,
+  "isolated_retention_helper_cases": 9,
+  "new_CLI_retained_actual_assets": 8,
+  "history_unchanged": 903,
+  "administrator_credentials_used": false,
+  "old_failures_preserved": true,
+  "production_release_accepted": false,
+  "delivery": "PR_review_and_merge_pending",
+  "R4_started": false
+}

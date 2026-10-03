@@ -1,0 +1,19 @@
+{
+  "candidate": {
+    "driver_dll_sha256": "922fa03026690a9ee3490d7a4236e01dc1a40d0d4bb81a4ab2c0d9ac320ed067",
+    "driver_mvid": "93d453c0-e86f-49c5-83f6-8b1f91903cba",
+    "package_sha256": "ab655a71b5270e6d98f9ba5c8923f4c3bf54b0f3dbdedff9e2d36a521a0621fc",
+    "source_manifest_sha256": "8bd2330cc047999d1783a3c11c7193f0b4c00b18e4f2c5e54d67cb5997c674fb",
+    "version": "0.1.0-r3.20261002220119"
+  },
+  "integration": "final_matrix_pending",
+  "os": "macOS 26.6.2",
+  "production_release_accepted": false,
+  "rid": "osx-arm64",
+  "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119",
+  "runtime": ".NET 10.0.7",
+  "sdk": "10.0.203",
+  "source_link": false,
+  "status": "offline_candidate_verified",
+  "total_passed": 875
+}

@@ -132,7 +132,7 @@ internal partial class B
 		A().ConfigureReadTimeout(CurrentMessageIdleTimeout());
 		await DmFrameReader.ReadAsync(A().ReceiveExactlyAsync,__t02_field_04000AB9,
 			(frame,total)=>DmFrameReader.ValidateChecksum(frame,total,a().crcBody),DmInvocation.Current.Deadline,cancellationToken,
-			header=>(a().crcBody && DmFrameReader.Command(header)!=200)||DmFrameReader.ValidateHeaderChecksum(header)).ConfigureAwait(false);
+			header=>(a().crcBody && DmFrameReader.Command(header)!=200)||DmFrameReader.ValidateHeaderChecksum(header),message.MaxResponseBodyLength).ConfigureAwait(false);
 		message.checkCRC();
 		DmResultProtocolTrace.RecordFrame(message.cmd,__t02_field_04000AB9);
 		C(message);

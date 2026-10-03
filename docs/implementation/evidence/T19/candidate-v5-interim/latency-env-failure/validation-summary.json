@@ -1,0 +1,46 @@
+{
+  "window": "released",
+  "runtime": {
+    "schema_version": 1,
+    "diagnostic_only": true,
+    "accepted_final": false,
+    "original_76_accepted": false,
+    "original_1266_seed_accepted": false,
+    "exit_code": 1,
+    "package_version": "0.1.0-r3.20261002223702",
+    "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+    "driver_dll_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+    "driver_mvid": "0c33d48b-4d42-46e1-99db-b53fe2f170f1",
+    "source_manifest_sha256": "c904079e7fa69fb656c57486f22c88d742e21e7e0f0e39fb0b5217da69d38b85",
+    "server_version": "8.1.5.60",
+    "timestamp_frequency": 1000000000,
+    "work_seconds": 200,
+    "cleanup_seconds": 80,
+    "outer_seconds": 300,
+    "modes": [],
+    "rows": [],
+    "exchanges": null,
+    "missing": null,
+    "unmatched": null,
+    "overflow": null,
+    "missing_frame_hook": null,
+    "missing_send_hook": null,
+    "missing_response_hook": null,
+    "row_dispose_failure": null,
+    "owned_final_state": [],
+    "failure": {
+      "phase": "package_identity",
+      "error": {
+        "type": "Guard",
+        "code": "ISOLATED_CACHE_REQUIRED",
+        "number": null
+      }
+    },
+    "cleanup_failure": null
+  },
+  "source_count": 670,
+  "history_count": 791,
+  "source_history_hashes_unchanged": true,
+  "build_exit": 0,
+  "latency_runtime_preDB_environment_mismatch": "NUGET_PACKAGES not passed"
+}

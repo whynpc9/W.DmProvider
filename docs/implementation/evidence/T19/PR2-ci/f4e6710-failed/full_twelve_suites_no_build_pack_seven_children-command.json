@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "[runner-temp]/r3-candidate/0.1.0-r3.20261003071135/private/source/tools/R3ReleaseAudit/audit.py",
+    "offline"
+  ],
+  "elapsed_seconds": 108.19823466600008,
+  "exit_code": 1,
+  "stage": "full_twelve_suites_no_build_pack_seven_children"
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/frozen-source-v2/source/tools/R3ResourceProbe/run_probe.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/validation-v2/runs/20261002T191833Z-8b0edd46ba/public/probe-stdout.json",
+    "/usr/local/share/dotnet/dotnet",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/validation-v2/runs/20261002T191833Z-8b0edd46ba/.private/app/R3ResourceProbe.dll",
+    "offline",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/frozen-source-v2/source",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/validation-v2/runs/20261002T191833Z-8b0edd46ba/public/package-manifest.json",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/validation-v2/runs/20261002T191833Z-8b0edd46ba/public/probe.json"
+  ],
+  "elapsed_seconds": 0.7281191248912364,
+  "exit_code": 0,
+  "stage": "runtime_offline"
+}

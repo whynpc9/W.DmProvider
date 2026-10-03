@@ -1,0 +1,13 @@
+{
+  "task": "T25",
+  "classification": "diagnostic_observation_not_acceptance",
+  "window": "released",
+  "exit_code": 1,
+  "source_count": 652,
+  "history_count": 271,
+  "hashes_unchanged": true,
+  "message": "{\"TraceStateEmpty\":true,\"BaggageEmpty\":true,\"EventsEmpty\":true,\"LinksEmpty\":true,\"TagKeysAllowed\":true,\"TagValuesExpected\":false}",
+  "stdout": null,
+  "stack": "   at W.DmProvider.DiagnosticsTests.T25ReentrantDiagnosticsTests.CommitStoppedCallbackCanClearAndDisposeItsSourceWhileASecondOpenIsQueued() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v4/source/tests/W.DmProvider.DiagnosticsTests/T25ReentrantDiagnosticsTests.cs:line 80\n   at W.DmProvider.DiagnosticsTests.T25ReentrantDiagnosticsTests.CommitStoppedCallbackCanClearAndDisposeItsSourceWhileASecondOpenIsQueued() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v4/source/tests/W.DmProvider.DiagnosticsTests/T25ReentrantDiagnosticsTests.cs:line 109\n   at W.DmProvider.DiagnosticsTests.T25ReentrantDiagnosticsTests.CommitStoppedCallbackCanClearAndDisposeItsSourceWhileASecondOpenIsQueued() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t25/frozen-source-v4/source/tests/W.DmProvider.DiagnosticsTests/T25ReentrantDiagnosticsTests.cs:line 109\n--- End of stack trace from previous location ---",
+  "product_version": "local_version_T18_not_package_acceptance"
+}

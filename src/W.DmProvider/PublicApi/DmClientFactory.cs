@@ -30,6 +30,8 @@ public class DmClientFactory : DbProviderFactory, IServiceProvider
 		return new DmConnection();
 	}
 
+	public override DbDataSource CreateDataSource(string connectionString) => new DmDataSource(connectionString);
+
 	public override DbConnectionStringBuilder CreateConnectionStringBuilder()
 	{
 		return new DmConnectionStringBuilder();

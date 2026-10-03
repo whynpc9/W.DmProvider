@@ -1,0 +1,178 @@
+{
+  "classification": "diagnostic_not_final_acceptance",
+  "status": "original_process_budget_timeout",
+  "window": "released",
+  "accepted_final": false,
+  "runtime": {
+    "accepted_final": false,
+    "classification": "diagnostic_only",
+    "commands": [
+      {
+        "argv": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          ".local/verification/r3/t19/shared-functional-progress-prep/source-v4/W/T19Audit/bin/Debug/net10.0/T19Audit.dll",
+          "before",
+          ".local/verification/r3/t19/shared-functional-progress-v2/audit-before.json",
+          ".local/verification/r3/t19/shared-functional-progress-v2/inventory.json",
+          "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c"
+        ],
+        "exit_code": 0,
+        "started_utc": "2026-10-03T00:30:38.991373+00:00",
+        "log_sha256": "719af7962852cd8843e5cb81f3e984bb045bd322244bfb03e66998cfa6c64275",
+        "redaction_applied": false
+      },
+      {
+        "argv": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          "test",
+          "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+          "--no-build",
+          "--no-restore",
+          "-m:1",
+          "/nodeReuse:false",
+          "/p:UseSharedCompilation=false",
+          "--disable-build-servers",
+          "--logger",
+          "trx;LogFileName=tests.trx",
+          "--results-directory",
+          ".local/verification/r3/t19/shared-functional-progress-v2",
+          "--filter",
+          "FullyQualifiedName!~DamengMigrationScriptFunctionalTests&Category!~CapabilityProbe&FullyQualifiedName!~DamengDotNetEfCliFunctionalTests&FullyQualifiedName!~DamengCurrentSchemaScriptFunctionalTests&Category!~OfficialCharacterization&FullyQualifiedName!~R3DriverContractTests"
+        ],
+        "exit_code": 124,
+        "started_utc": "2026-10-03T00:30:40.633281+00:00",
+        "log_sha256": "4ac5cfd96be1b1a920d5f89141d71e58cb928fb1ad1011082ab38c5a92ff5747",
+        "redaction_applied": false
+      },
+      {
+        "argv": [
+          "/Users/wanghongyi/.dotnet/dotnet",
+          ".local/verification/r3/t19/shared-functional-progress-prep/source-v4/W/T19Audit/bin/Debug/net10.0/T19Audit.dll",
+          "after",
+          ".local/verification/r3/t19/shared-functional-progress-v2/audit-after.json",
+          ".local/verification/r3/t19/shared-functional-progress-v2/inventory.json",
+          "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c"
+        ],
+        "exit_code": 1,
+        "started_utc": "2026-10-03T00:45:40.652719+00:00",
+        "log_sha256": "f38ec1361b5b11b9550644a8b46d37e90431c896e1616fd9a237346a8c173878",
+        "redaction_applied": false
+      }
+    ],
+    "before": {
+      "task": "T19",
+      "mode": "before",
+      "accepted": true,
+      "driver_dll_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "identity_verified": true,
+      "current_schema_verified": true,
+      "server_version": "8.1.5.60",
+      "inventory_count": 0,
+      "inventory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "test_exit_code": 124,
+    "after": {
+      "task": "T19",
+      "mode": "after",
+      "accepted": false,
+      "driver_dll_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "identity_verified": true,
+      "current_schema_verified": true,
+      "server_version": "8.1.5.60",
+      "inventory_count": 1,
+      "inventory_sha256": "f796e07c6fb46402d71bc63a64365de0707b9058d7c12dab080900abd8ba088a",
+      "independent_final_inventory_matches": false,
+      "new_object_hash_count": 1,
+      "removed_object_hash_count": 0,
+      "failed_stage": "owned_schema_inventory",
+      "error": [
+        {
+          "type": "AuditFailure",
+          "probe_kind": "owned_schema_inventory_changed",
+          "number": null,
+          "methods": [
+            "Program+<Main>d__0.MoveNext",
+            "System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw",
+            "Program+<Main>d__0.MoveNext"
+          ]
+        }
+      ]
+    }
+  },
+  "event_counts": {
+    "diagnostic_start": 1,
+    "case_begin": 71,
+    "sample": 320,
+    "case_end": 70,
+    "fixture_stage": 51
+  },
+  "last_case": {
+    "kind": "case_begin",
+    "declaring_type": "W.EntityFrameworkCore.Dameng.FunctionalTests.DamengTrimCharacterFunctionalTests",
+    "method": "ConstantCharacterTrimRunsInFiltersAndServerProjections",
+    "monotonic": 1224015055570791
+  },
+  "last_sample": {
+    "kind": "sample",
+    "monotonic": 1224020247820291,
+    "phase": 19,
+    "phase_monotonic": 1223952658206666,
+    "seed_attempted": 422,
+    "seed_completed": 422,
+    "command_dispose_begun": 422,
+    "command_dispose_ended": 422,
+    "sockets_created": 388,
+    "sockets_closed": 387,
+    "snapshot_values": [
+      388,
+      387,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      4096,
+      14,
+      0,
+      1865765,
+      2183403,
+      10,
+      0,
+      6376
+    ],
+    "io_counts": [
+      4,
+      0,
+      174,
+      399,
+      384,
+      0,
+      10829,
+      21583
+    ],
+    "last_io": 8,
+    "last_opcode": 4,
+    "opcode_counts": {
+      "1": 384,
+      "3": 2194,
+      "4": 2167,
+      "5": 2194,
+      "8": 47,
+      "9": 6,
+      "13": 1502,
+      "26": 8,
+      "44": 1940,
+      "90": 3,
+      "200": 384
+    },
+    "log_dropped": 0,
+    "log_write_failures": 0
+  },
+  "source_count": 670,
+  "history_count": 791,
+  "source_helper_history_hashes_unchanged": true,
+  "diagnostic_source_count": 160,
+  "runtime_directory_private": ".local/verification/r3/t19/shared-functional-progress-prep/source-v4/runtime-private",
+  "original_SQL_inputs_assertions_budget_unchanged": true
+}

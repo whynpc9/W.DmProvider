@@ -414,16 +414,9 @@ internal partial class A
 			}
 			if (list.Count > 0)
 			{
-				try
-				{
-					__t02_field_04000924.A(this, list);
-				}
-				catch (Exception)
-				{
-					C(P_0);
-					K();
-					__t02_field_04000924.A(__t02_field_04000925, __t02_field_04000926, this, C(), true, 0);
-				}
+                // Parsing above is local and may fall back. Once this execution
+                // enters the wire, its failure must propagate without replay.
+                __t02_field_04000924.A(this, list);
 			}
 			else
 			{
@@ -475,16 +468,9 @@ internal partial class A
 			}
 			if (list.Count > 0)
 			{
-				try
-				{
-					__t02_field_04000924.A(this, list);
-				}
-				catch (Exception)
-				{
-					B(P_0);
-					K();
-					__t02_field_04000924.A(__t02_field_04000925, __t02_field_04000926, this, C(), true, 0);
-				}
+                // Parsing above is local and may fall back. Once this execution
+                // enters the wire, its failure must propagate without replay.
+                __t02_field_04000924.A(this, list);
 			}
 			else
 			{

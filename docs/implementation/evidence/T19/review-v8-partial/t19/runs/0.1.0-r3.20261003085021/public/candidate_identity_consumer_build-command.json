@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "build",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/source/tools/R3CandidateGate/IdentityConsumer.csproj",
+    "-c",
+    "Release",
+    "--output",
+    "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/identity-app",
+    "/p:R3PackageVersion=0.1.0-r3.20261003085021",
+    "/p:R3PackageSource=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/feed",
+    "/p:RestoreSources=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/feed",
+    "/p:BaseIntermediateOutputPath=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/identity-obj/",
+    "/p:MSBuildProjectExtensionsPath=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003085021/private/identity-obj/",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 1.8006525000091642,
+  "exit_code": 0,
+  "stage": "candidate_identity_consumer_build"
+}

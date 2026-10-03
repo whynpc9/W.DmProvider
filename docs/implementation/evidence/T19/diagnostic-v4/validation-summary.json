@@ -1,0 +1,168 @@
+{
+  "task": "T19",
+  "classification": "diagnostic_observation_not_final_acceptance",
+  "accepted_final": false,
+  "window": "released",
+  "source_count": 669,
+  "history_count": 775,
+  "hashes_unchanged": true,
+  "old_immutable_package": "0.1.0-r3.20261002220119",
+  "prepare_exit": 0,
+  "build_exit": 0,
+  "run_exit": 1,
+  "cases": [
+    {
+      "schema_version": 1,
+      "case": "tls_crud_lob_concurrency_supported_subset",
+      "profile": "tls",
+      "owned_table": "T19R3_B2A43EE445CC469B",
+      "pooling": true,
+      "owner_kind": "explicit_datasource",
+      "automatic_savepoints_disabled": false,
+      "final_database_state": "exact_owned_table_absent",
+      "savepoint_scope": "tls_supported_subset_without_savepoint_claim",
+      "pending_ownership_ledger_written_before_create": true,
+      "create_verified": true,
+      "key_before_save": {
+        "value_generated": 1,
+        "is_temporary": true,
+        "generation_strategy": 1,
+        "before_save_behavior": 0,
+        "after_save_behavior": 2,
+        "readwrite_save_behavior": false,
+        "id_positive": false
+      },
+      "failed_stage": "crud_insert_before_save",
+      "work_failure": {
+        "classification": "failure",
+        "hresult": -2146233088,
+        "server_number": null,
+        "causes": [
+          {
+            "depth": 0,
+            "type": "Microsoft.EntityFrameworkCore.DbUpdateException",
+            "hresult": -2146233088,
+            "number": null,
+            "failure_kind": null,
+            "failure_phase": null,
+            "operation_outcome": null,
+            "transaction_outcome": null,
+            "cancel_source": null,
+            "connection_reusable": null,
+            "server_number": null,
+            "driver_code": "Unavailable"
+          },
+          {
+            "depth": 1,
+            "type": "System.InvalidOperationException",
+            "hresult": -2146233079,
+            "number": null,
+            "failure_kind": null,
+            "failure_phase": null,
+            "operation_outcome": null,
+            "transaction_outcome": null,
+            "cancel_source": null,
+            "connection_reusable": null,
+            "server_number": null,
+            "driver_code": "Unavailable"
+          }
+        ],
+        "causes_truncated": false,
+        "trusted_frames": [
+          {
+            "cause_depth": 0,
+            "assembly": "ef_relational",
+            "declaring_type": "Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch+<ExecuteAsync>d__50",
+            "method": "MoveNext"
+          },
+          {
+            "cause_depth": 0,
+            "assembly": "runtime_framework",
+            "declaring_type": "System.Runtime.ExceptionServices.ExceptionDispatchInfo",
+            "method": "Throw"
+          },
+          {
+            "cause_depth": 0,
+            "assembly": "runtime_framework",
+            "declaring_type": "System.Runtime.CompilerServices.TaskAwaiter",
+            "method": "ThrowForNonSuccess"
+          },
+          {
+            "cause_depth": 0,
+            "assembly": "runtime_framework",
+            "declaring_type": "System.Runtime.CompilerServices.TaskAwaiter",
+            "method": "HandleNonSuccessAndDebuggerNotification"
+          },
+          {
+            "cause_depth": 1,
+            "assembly": "candidate_driver",
+            "declaring_type": "W.Dm.DmParameter",
+            "method": "ValidateTypeConfiguration"
+          },
+          {
+            "cause_depth": 1,
+            "assembly": "candidate_driver",
+            "declaring_type": "W.Dm.Internal.Execution.DmCommandPlan",
+            "method": "Capture"
+          },
+          {
+            "cause_depth": 1,
+            "assembly": "candidate_driver",
+            "declaring_type": "W.Dm.DmCommand",
+            "method": "<EnterPlan>b__32_0"
+          },
+          {
+            "cause_depth": 1,
+            "assembly": "candidate_driver",
+            "declaring_type": "W.Dm.Internal.Execution.DmCommandPlanGate",
+            "method": "Enter"
+          }
+        ],
+        "trusted_frames_truncated": true
+      },
+      "work_failure_command_counts": {
+        "asynchronous": 1,
+        "synchronous": 0,
+        "candidate_types_only": true,
+        "categories": {
+          "2": 1
+        }
+      },
+      "work_failure_last_verified_client": {
+        "scope": "last_verified_client_after_work_unwind_not_server_transaction_proof",
+        "connection_state": 0,
+        "session_state": 7,
+        "transaction_state": 6,
+        "active_transaction_outcome": null
+      },
+      "cleanup_verified": true,
+      "fresh_test_identity_checks": 4,
+      "accepted": false
+    },
+    {
+      "schema_version": 1,
+      "case": "tls_savepoint_explicitly_unsupported",
+      "profile": "tls",
+      "owned_table": "T19R3_DB450D9BEA764E73",
+      "pooling": true,
+      "owner_kind": "explicit_datasource",
+      "automatic_savepoints_disabled": false,
+      "final_database_state": "exact_owned_table_absent",
+      "savepoint_scope": "tls_supported_subset_without_savepoint_claim",
+      "pending_ownership_ledger_written_before_create": true,
+      "create_verified": true,
+      "unsupported_savepoint_send_attempts": 0,
+      "ef_async_commands": 1,
+      "ef_sync_commands": 0,
+      "ef_command_categories": {
+        "1": 1
+      },
+      "ef_candidate_command_types_only": true,
+      "work_verified": true,
+      "cleanup_verified": true,
+      "fresh_test_identity_checks": 5,
+      "accepted": true
+    }
+  ],
+  "EF_result_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/ef/diagnostic-v4/lanes/tls-r3_tls/results-20261002T222615442827Z"
+}
