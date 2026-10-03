@@ -33,7 +33,7 @@ EF_ARCHIVE_SHA256 = '9dead07c1de4220bd13bdadab0ed2713f43008af5e7c0cf7a629549a673
 
 
 class Reject(Exception):
-    def __init__(self, reason, code=1): self.reason, self.code = reason, code
+    def __init__(self, reason, code=1, details=None): self.reason, self.code, self.details = reason, code, details
 
 
 def require(condition, reason, code=1):
@@ -247,6 +247,91 @@ def scan_public(run):
     write(run / 'public/artifact-hashes.json', rows)
 
 
+AUDIT_SUITES = ('Configuration', 'Session', 'Transport', 'Security', 'Command', 'Type', 'Transaction', 'Isolation', 'Async', 'Pool', 'Lob', 'Diagnostics')
+AUDIT_STAGE_ORDER = ('SDK',) + tuple(name + suffix for name in AUDIT_SUITES for suffix in ('_restore', '_test')) + (
+    'exact_package_pack', 'package_inspection', 'consumer_build', 'consumer_source_identity', 'runtime_offline',
+    'consumer_validation', 'package_reinspection')
+AUDIT_STAGES = frozenset(AUDIT_STAGE_ORDER)
+AUDIT_REASONS = frozenset(stage + '_failed' for stage in AUDIT_STAGES) | frozenset((
+    'dotnet_missing', 'sdk_pin_changed', 'sdk_version_mismatch', 'version_invalid', 'package_missing',
+    'immutable_package_changed', 'suite_manifest_changed', 'candidate_version_invalid',
+    'suite_product_identity_mismatch', 'frozen_source_changed', 'safe_artifact_marker_leak', 'strict_gate_failed'))
+
+
+def audit_safe_bytes(raw):
+    require(not any(marker.encode() in raw for marker in MARKERS), 'inner_audit_public_evidence_rejected')
+    require(not re.search(rb'(?m)^-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----', raw), 'inner_audit_public_evidence_rejected')
+    require(not re.search(rb'(?i)(?:password|pwd|user\s*id|connection[\s_-]*string)\s*=', raw), 'inner_audit_public_evidence_rejected')
+
+
+def retain_audit_evidence(run):
+    """Preflight the entire selected public batch before publishing any byte."""
+    publics = list((run / 'private/audit').glob('*/public'))
+    if not publics:
+        return {'evidence_status': 'report_missing', 'reject_reason': 'inner_audit_report_missing', 'retained_files': []}
+    require(len(publics) == 1 and publics[0].is_dir() and not any(path.is_symlink() for path in
+            (publics[0], publics[0].parent, publics[0].parent.parent)), 'inner_audit_public_evidence_rejected')
+    public = publics[0]; pending = []; summary = None; failed_commands = []; recorded_stages = set()
+    names = {'summary.json'} | {stage + '-command.json' for stage in AUDIT_STAGES} | {name + '.trx' for name in AUDIT_SUITES}
+    for path in sorted(public.iterdir()):
+        if path.name not in names: continue  # Never private logs, stdout, arbitrary attachments or source controls.
+        require(path.is_file() and not path.is_symlink() and path.stat().st_size <= 8 * 1024 * 1024, 'inner_audit_public_evidence_rejected')
+        raw = path.read_bytes(); audit_safe_bytes(raw)
+        try:
+            if path.suffix == '.json':
+                value = json.loads(raw); require(type(value) is dict, 'inner_audit_public_evidence_rejected')
+                audit_safe_bytes(encoded(value))  # Also reject JSON-escaped sensitive controls.
+                if path.name == 'summary.json':
+                    require(value.get('status') in ('rejected', 'offline_verified') and value.get('production_release_accepted') is False,
+                            'inner_audit_public_evidence_rejected')
+                    allowed = {'status', 'reason', 'production_release_accepted'} if value['status'] == 'rejected' else {
+                        'status', 'scope', 'integration', 'production_release_accepted', 'candidate_version', 'suites', 'total_passed',
+                        'product_sha256', 'run_dir', 'upstream_pending'}
+                    require(set(value) <= allowed, 'inner_audit_public_evidence_rejected'); summary = value
+                    require('reason' not in value or value['reason'] in AUDIT_REASONS, 'inner_audit_public_evidence_rejected')
+                else:
+                    stage = path.name.removesuffix('-command.json')
+                    require(set(value) == {'argv', 'exit_code', 'elapsed_seconds', 'stage'} and value['stage'] == stage and
+                            type(value['exit_code']) is int and type(value['elapsed_seconds']) in (int, float) and
+                            0 <= value['elapsed_seconds'] < float('inf') and type(value['argv']) is list and
+                            all(type(arg) is str for arg in value['argv']), 'inner_audit_public_evidence_rejected')
+                    recorded_stages.add(stage)
+                    if value['exit_code'] != 0: failed_commands.append({'stage': stage, 'exit_code': value['exit_code']})
+            else:
+                root = ET.fromstring(raw)
+                forbidden = {'Output', 'StdOut', 'StdErr', 'ErrorInfo', 'CollectorDataEntries', 'ResultFiles', 'Attachments', 'RunInfos'}
+                require(root.tag.split('}')[-1] == 'TestRun' and not any(node.tag.split('}')[-1] in forbidden for node in root.iter()),
+                        'inner_audit_public_evidence_rejected')
+                audit_safe_bytes(encoded([(node.text, node.tail, node.attrib) for node in root.iter()]))
+        except (ValueError, ET.ParseError, TypeError):
+            raise Reject('inner_audit_public_evidence_rejected') from None
+        pending.append((path.name, raw))
+    reason = summary.get('reason') if summary else None
+    if reason is None and len(failed_commands) == 1: reason = failed_commands[0]['stage'] + '_failed'
+    if reason is None: reason = 'inner_audit_report_missing' if summary is None else 'inner_audit_reason_unavailable'
+    for name, raw in pending:
+        destination = run / 'public' / ('offline-' + name)
+        require(not destination.exists(), 'inner_audit_evidence_destination_exists')
+        with destination.open('xb') as stream: stream.write(raw)
+    return {'evidence_status': 'safe_published' if summary is not None else 'summary_missing', 'reject_reason': reason,
+            'last_recorded_stage': next((stage for stage in reversed(AUDIT_STAGE_ORDER) if stage in recorded_stages), None),
+            'failed_commands': failed_commands, 'retained_files': [name for name, _ in pending]}
+
+
+def run_audit_with_evidence(argv, run, env, frozen):
+    failure = None
+    try:
+        run_command(argv, run, 'full_twelve_suites_no_build_pack_seven_children', env, frozen, 3600)
+    except Exception as error:
+        failure = error
+    evidence = retain_audit_evidence(run)  # Success or failure, same safe public-only boundary.
+    if failure is not None:
+        code = failure.code if isinstance(failure, Reject) else 1
+        raise Reject('inner_audit_' + evidence['reject_reason'] if evidence['reject_reason'] in AUDIT_REASONS else evidence['reject_reason'],
+                     code, evidence) from None
+    return evidence
+
+
 def offline():
     version = candidate_version()
     base = Path(os.environ.get('R19_RESULTS_DIR', ROOT / '.local/verification/r3/t19/runs')).resolve()
@@ -256,13 +341,14 @@ def offline():
         frozen, manifest = make_snapshot(run); env = environment(run, version)
         dotnet = shutil.which(os.environ.get('DOTNET_COMMAND', 'dotnet')); require(dotnet, 'dotnet_missing')
         require(json.loads((frozen / 'global.json').read_text()) == {'sdk': {'version': '10.0.203', 'rollForward': 'disable'}}, 'SDK_pin_changed')
-        run_command([sys.executable, frozen / 'tools/R3ReleaseAudit/audit.py', 'offline'], run, 'full_twelve_suites_no_build_pack_seven_children', env, frozen, 3600)
+        run_audit_with_evidence([sys.executable, frozen / 'tools/R3ReleaseAudit/audit.py', 'offline'], run, env, frozen)
         summaries = list((run / 'private/audit').glob('*/public/summary.json')); require(len(summaries) == 1, 'offline_audit_summary_count')
         audit = json.loads(summaries[0].read_text())
         require(audit['status'] == 'offline_verified' and audit['candidate_version'] == version and len(audit['suites']) == 12, 'candidate_audit_not_verified')
         audit_run = summaries[0].parent.parent
         for source in summaries[0].parent.iterdir():
-            if source.is_file(): shutil.copy2(source, run / 'public' / ('offline-' + source.name))
+            if source.is_file() and not (run / 'public' / ('offline-' + source.name)).exists():
+                audit_safe_bytes(source.read_bytes()); shutil.copy2(source, run / 'public' / ('offline-' + source.name))
         feed = run / 'private/feed'; feed.mkdir()
         package = feed / f'W.DmProvider.{version}.nupkg'
         with package.open('xb') as output: output.write((audit_run / '.private/feed' / package.name).read_bytes())
@@ -294,7 +380,8 @@ def offline():
         package.chmod(0o400); emit(summary)
     except Exception as error:
         write(run / 'public/summary.json', {'status': 'rejected', 'reason': error.reason if isinstance(error, Reject) else 'candidate_gate_failed',
-              'candidate_version': version, 'production_release_accepted': False})
+              'candidate_version': version, 'production_release_accepted': False,
+              **({'inner_audit': error.details} if isinstance(error, Reject) and error.details is not None else {})})
         raise
 
 
@@ -382,5 +469,6 @@ def main():
 if __name__ == '__main__':
     try: main()
     except Exception as error:
-        emit({'status': 'rejected', 'reason': error.reason if isinstance(error, Reject) else 'candidate_gate_failed', 'production_release_accepted': False})
+        emit({'status': 'rejected', 'reason': error.reason if isinstance(error, Reject) else 'candidate_gate_failed', 'production_release_accepted': False,
+              **({'inner_audit': error.details} if isinstance(error, Reject) and error.details is not None else {})})
         sys.exit(error.code if isinstance(error, Reject) else 1)
