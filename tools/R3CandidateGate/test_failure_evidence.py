@@ -26,6 +26,23 @@ class AuditFailureEvidenceTests(unittest.TestCase):
         gate.write(self.audit / (stage + '-command.json'), {'stage': stage, 'argv': ['dotnet', 'test', 'frozen.csproj'],
             'exit_code': code, 'elapsed_seconds': 2.0})
 
+    def success_batch(self):
+        for stage in gate.AUDIT_STAGE_ORDER: self.command(stage, 0)
+        for name in gate.AUDIT_SUITES:
+            (self.audit / (name + '.trx')).write_text('<TestRun><Results><UnitTestResult outcome="Passed"/></Results></TestRun>')
+            gate.write(self.audit / (name + '-dependencies.json'), {'project': 'frozen.csproj', 'libraries': []})
+        for name in gate.AUDIT_JSON_LISTS: gate.write(self.audit / name, [])
+        gate.write(self.audit / 'SDK.json', {'sdk': '10.0.203', 'os': 'Linux', 'architecture': 'x64'})
+        gate.write(self.audit / 'offline-manifest.json', {'schema_version': 1, 'task': 'T18', 'phase': 'offline',
+            'exact_sdk': '10.0.203', 'suites': [], 'no_skip_or_abort': True, 'classification_policy': 'fixed', 'upstream_pending': []})
+        for name in ('package-manifest.json', 'package-manifest-final.json'):
+            gate.write(self.audit / name, {'schema_version': 1, 'version': '0.1.0-r3.20261003000000', 'package_sha256': 'a' * 64, 'assets': []})
+        gate.write(self.audit / 'consumer-source-manifest.json', {'schema_version': 1, 'task': 'T18', 'files': {}})
+        for name in ('probe.json', 'probe-stdout.json', *(('probe.json.' + point + '.json') for point in gate.AUDIT_CHILD_POINTS)):
+            gate.write(self.audit / name, {'schema_version': 1, 'task': 'T18', 'accepted': True, 'status': 'offline_verified'})
+        gate.write(self.audit / 'summary.json', {'status': 'offline_verified', 'production_release_accepted': False,
+            'candidate_version': '0.1.0-r3.20261003000000', 'suites': []})
+
     def run_failed(self, code=1):
         with patch.object(gate, 'run_command', side_effect=gate.Reject('full_twelve_suites_no_build_pack_seven_children_failed', code)):
             return gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
@@ -108,12 +125,57 @@ class AuditFailureEvidenceTests(unittest.TestCase):
         self.assertEqual('inner_audit_runtime_offline_failed', caught.exception.reason)
 
     def test_summary_copy_is_exact_and_verified_success_keeps_parent_success_route(self):
-        gate.write(self.audit / 'summary.json', {'status': 'offline_verified', 'production_release_accepted': False,
-                                               'candidate_version': '0.1.0-r3.20261003000000', 'suites': []})
+        self.success_batch()
         with patch.object(gate, 'run_command', return_value=self.run / 'private/log'):
             result = gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
         self.assertEqual('safe_published', result['evidence_status'])
         self.assertEqual((self.audit / 'summary.json').read_bytes(), (self.run / 'public/offline-summary.json').read_bytes())
+
+    def test_known_success_retains_every_mandatory_proof_and_no_unknown_attachment_or_private_cache(self):
+        self.success_batch()
+        (self.audit / 'unexpected-stdout.json').write_text('{"opaque":"unknown attachment"}')
+        (self.audit / 'auth.log').write_text('not public evidence')
+        cache = self.audit.parent / '.private/cache'; cache.mkdir(parents=True)
+        (cache / 'opaque.bin').write_bytes(b'not exported')
+        value = gate.retain_audit_evidence(self.run, success=True)
+        self.assertEqual(gate.AUDIT_SUCCESS_FILES, set(value['retained_files']))
+        self.assertEqual({'offline-' + name for name in gate.AUDIT_SUCCESS_FILES}, {p.name for p in (self.run / 'public').iterdir()})
+
+    def test_success_known_symlink_or_oversize_file_rejects_entire_batch(self):
+        self.success_batch(); path = self.audit / 'source-after.json'; original = path.read_bytes()
+        other = self.audit / 'outside.json'; other.write_bytes(original); path.unlink(); path.symlink_to(other)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+        path.unlink()
+        with path.open('wb') as stream: stream.truncate(8 * 1024 * 1024 + 1)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_late_escaped_marker_and_decoded_credential_reject_without_partial_batch(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for payload in ['SYNTHETIC_USER_SECRET', 'Password=untrusted', '-----BEGIN PRIVATE KEY-----']:
+            value = [{'suite': 'Diagnostics', 'counts': {'fixture': payload}, 'product_sha256': 'a' * 64, 'status': 'passed'}]
+            raw = json.dumps(value).replace('SYNTHETIC', 'SYN\\u0054HETIC').replace('=', '\\u003d').replace('BEGIN', 'BEG\\u0049N')
+            path.write_text(raw)
+            with self.subTest(payload=payload), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+            self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_missing_required_child_and_raw_stdout_under_known_name_rejected(self):
+        self.success_batch(); path = self.audit / 'probe.json.measurement.json'; original = path.read_bytes(); path.unlink()
+        with self.assertRaisesRegex(gate.Reject, 'success_evidence_missing'): gate.retain_audit_evidence(self.run, success=True)
+        path.write_bytes(original); gate.write(self.audit / 'probe-stdout.json', {'raw_stdout': 'unstructured opaque data'})
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_valid_large_cursor_and_base64_sha512_suffix_are_not_credentials(self):
+        self.success_batch()
+        gate.write(self.audit / 'Diagnostics-dependencies.json', {'project': 'frozen.csproj',
+            'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': 'ABCDEFpwd='}]})
+        gate.write(self.audit / 'probe.json', {'schema_version': 1, 'task': 'T18', 'accepted': True,
+            'resource_budget': {'numeric_cursor': 4172199544}})
+        gate.retain_audit_evidence(self.run, success=True)
+        self.assertTrue((self.run / 'public/offline-probe.json').is_file())
 
 
 if __name__ == '__main__':

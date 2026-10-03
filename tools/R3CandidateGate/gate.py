@@ -258,15 +258,47 @@ AUDIT_REASONS = frozenset(stage + '_failed' for stage in AUDIT_STAGES) | frozens
     'dotnet_missing', 'sdk_pin_changed', 'sdk_version_mismatch', 'version_invalid', 'package_missing',
     'immutable_package_changed', 'suite_manifest_changed', 'candidate_version_invalid',
     'suite_product_identity_mismatch', 'frozen_source_changed', 'safe_artifact_marker_leak', 'strict_gate_failed'))
+AUDIT_CHILD_POINTS = ('normal', 'should_listen', 'instrument_published', 'sample', 'started', 'stopped', 'measurement')
+AUDIT_JSON_LISTS = frozenset(('artifact-hashes.json', 'source-before.json', 'source-after.json', 'suites.json'))
+AUDIT_JSON_DICTS = frozenset(('SDK.json', 'offline-manifest.json', 'consumer-source-manifest.json',
+    'package-manifest.json', 'package-manifest-final.json', 'probe-stdout.json', 'probe.json')) | \
+    frozenset(name + '-dependencies.json' for name in AUDIT_SUITES) | \
+    frozenset('probe.json.' + point + '.json' for point in AUDIT_CHILD_POINTS)
+AUDIT_FAILURE_FILES = frozenset(('summary.json',)) | frozenset(stage + '-command.json' for stage in AUDIT_STAGES) | \
+    frozenset(name + '.trx' for name in AUDIT_SUITES)
+AUDIT_SUCCESS_FILES = AUDIT_FAILURE_FILES | AUDIT_JSON_LISTS | AUDIT_JSON_DICTS
+AUDIT_PROBE_KEYS = frozenset(('schema_version', 'task', 'accepted', 'implementation', 'reference_kind', 'production_release_accepted',
+    'resource_budget', 'runtime', 'runtime_identifier', 'upstream_pending', 'mode', 'checkpoint_stage', 'status', 'exit_code',
+    'package_version', 'package_sha256', 'loaded_assembly_sha256', 'loaded_assembly_mvid', 'integration', 'first_init_cases', 'case'))
 
 
 def audit_safe_bytes(raw):
     require(not any(marker.encode() in raw for marker in MARKERS), 'inner_audit_public_evidence_rejected')
-    require(not re.search(rb'(?m)^-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----', raw), 'inner_audit_public_evidence_rejected')
-    require(not re.search(rb'(?i)(?:password|pwd|user\s*id|connection[\s_-]*string)\s*=', raw), 'inner_audit_public_evidence_rejected')
+    require(not re.search(rb'-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----', raw), 'inner_audit_public_evidence_rejected')
+    # A credential key is a token, not a substring of a legitimate SHA512/base64 value.
+    require(not re.search(rb'(?i)(?<![a-z0-9_+/])(?:password|pwd|user\s*id|connection[\s_-]*string)\s*=', raw), 'inner_audit_public_evidence_rejected')
 
 
-def retain_audit_evidence(run):
+def audit_success_json_schema(name, value):
+    valid = True
+    if name == 'SDK.json': valid = set(value) == {'sdk', 'os', 'architecture'}
+    elif name == 'offline-manifest.json':
+        valid = set(value) == {'schema_version', 'task', 'phase', 'exact_sdk', 'suites', 'no_skip_or_abort', 'classification_policy', 'upstream_pending'} and value.get('schema_version') == 1 and value.get('task') == 'T18'
+    elif name in ('package-manifest.json', 'package-manifest-final.json'):
+        valid = set(value) == {'schema_version', 'version', 'package_sha256', 'assets'} and value.get('schema_version') == 1
+    elif name == 'consumer-source-manifest.json':
+        valid = set(value) <= {'schema_version', 'task', 'identity_scope', 'source_origin', 'observed_git_head', 'producer_git_head',
+            'producer_source_manifest_sha256', 'consumer_source_sha256', 'files', 'file_metadata', 'product_source_mapping', 'sourcelink_claimed'} and value.get('schema_version') == 1 and value.get('task') == 'T18'
+    elif name.endswith('-dependencies.json'): valid = set(value) == {'project', 'libraries'} and type(value['libraries']) is list
+    elif name in ('probe.json', 'probe-stdout.json') or name.startswith('probe.json.'):
+        valid = set(value) <= AUDIT_PROBE_KEYS and value.get('schema_version') == 1 and value.get('task') == 'T18' and type(value.get('accepted')) is bool
+    elif name in ('source-before.json', 'source-after.json', 'artifact-hashes.json'):
+        valid = all(type(row) is dict and set(row) == {'path', 'sha256'} for row in value)
+    elif name == 'suites.json': valid = all(type(row) is dict and set(row) == {'suite', 'counts', 'product_sha256', 'status'} for row in value)
+    require(valid, 'inner_audit_public_evidence_rejected')
+
+
+def retain_audit_evidence(run, success=False):
     """Preflight the entire selected public batch before publishing any byte."""
     publics = list((run / 'private/audit').glob('*/public'))
     if not publics:
@@ -274,14 +306,17 @@ def retain_audit_evidence(run):
     require(len(publics) == 1 and publics[0].is_dir() and not any(path.is_symlink() for path in
             (publics[0], publics[0].parent, publics[0].parent.parent)), 'inner_audit_public_evidence_rejected')
     public = publics[0]; pending = []; summary = None; failed_commands = []; recorded_stages = set()
-    names = {'summary.json'} | {stage + '-command.json' for stage in AUDIT_STAGES} | {name + '.trx' for name in AUDIT_SUITES}
+    names = AUDIT_SUCCESS_FILES if success else AUDIT_FAILURE_FILES
+    if success:
+        require(names <= {path.name for path in public.iterdir()}, 'inner_audit_success_evidence_missing')
     for path in sorted(public.iterdir()):
         if path.name not in names: continue  # Never private logs, stdout, arbitrary attachments or source controls.
         require(path.is_file() and not path.is_symlink() and path.stat().st_size <= 8 * 1024 * 1024, 'inner_audit_public_evidence_rejected')
         raw = path.read_bytes(); audit_safe_bytes(raw)
         try:
             if path.suffix == '.json':
-                value = json.loads(raw); require(type(value) is dict, 'inner_audit_public_evidence_rejected')
+                value = json.loads(raw, parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite_json')))
+                require(type(value) is (list if path.name in AUDIT_JSON_LISTS else dict), 'inner_audit_public_evidence_rejected')
                 audit_safe_bytes(encoded(value))  # Also reject JSON-escaped sensitive controls.
                 if path.name == 'summary.json':
                     require(value.get('status') in ('rejected', 'offline_verified') and value.get('production_release_accepted') is False,
@@ -291,7 +326,7 @@ def retain_audit_evidence(run):
                         'product_sha256', 'run_dir', 'upstream_pending'}
                     require(set(value) <= allowed, 'inner_audit_public_evidence_rejected'); summary = value
                     require('reason' not in value or value['reason'] in AUDIT_REASONS, 'inner_audit_public_evidence_rejected')
-                else:
+                elif path.name.endswith('-command.json'):
                     stage = path.name.removesuffix('-command.json')
                     require(set(value) == {'argv', 'exit_code', 'elapsed_seconds', 'stage'} and value['stage'] == stage and
                             type(value['exit_code']) is int and type(value['elapsed_seconds']) in (int, float) and
@@ -299,6 +334,8 @@ def retain_audit_evidence(run):
                             all(type(arg) is str for arg in value['argv']), 'inner_audit_public_evidence_rejected')
                     recorded_stages.add(stage)
                     if value['exit_code'] != 0: failed_commands.append({'stage': stage, 'exit_code': value['exit_code']})
+                else:
+                    audit_success_json_schema(path.name, value)
             else:
                 root = ET.fromstring(raw)
                 forbidden = {'Output', 'StdOut', 'StdErr', 'ErrorInfo', 'CollectorDataEntries', 'ResultFiles', 'Attachments', 'RunInfos'}
@@ -308,12 +345,16 @@ def retain_audit_evidence(run):
         except (ValueError, ET.ParseError, TypeError):
             raise Reject('inner_audit_public_evidence_rejected') from None
         pending.append((path.name, raw))
+    if success:
+        require(summary is not None and summary['status'] == 'offline_verified', 'inner_audit_success_evidence_missing')
     reason = summary.get('reason') if summary else None
     if reason is None and len(failed_commands) == 1: reason = failed_commands[0]['stage'] + '_failed'
     if reason is None: reason = 'inner_audit_report_missing' if summary is None else 'inner_audit_reason_unavailable'
+    for name, _ in pending:
+        destination = run / 'public' / ('offline-' + name)
+        require(not destination.exists() and not destination.is_symlink(), 'inner_audit_evidence_destination_exists')
     for name, raw in pending:
         destination = run / 'public' / ('offline-' + name)
-        require(not destination.exists(), 'inner_audit_evidence_destination_exists')
         with destination.open('xb') as stream: stream.write(raw)
     return {'evidence_status': 'safe_published' if summary is not None else 'summary_missing', 'reject_reason': reason,
             'last_recorded_stage': next((stage for stage in reversed(AUDIT_STAGE_ORDER) if stage in recorded_stages), None),
@@ -326,7 +367,7 @@ def run_audit_with_evidence(argv, run, env, frozen):
         run_command(argv, run, 'full_twelve_suites_no_build_pack_seven_children', env, frozen, 3600)
     except Exception as error:
         failure = error
-    evidence = retain_audit_evidence(run)  # Success or failure, same safe public-only boundary.
+    evidence = retain_audit_evidence(run, success=failure is None)  # Same batch preflight, explicit names in both modes.
     if failure is not None:
         code = failure.code if isinstance(failure, Reject) else 1
         raise Reject('inner_audit_' + evidence['reject_reason'] if evidence['reject_reason'] in AUDIT_REASONS else evidence['reject_reason'],
@@ -348,9 +389,6 @@ def offline():
         audit = json.loads(summaries[0].read_text())
         require(audit['status'] == 'offline_verified' and audit['candidate_version'] == version and len(audit['suites']) == 12, 'candidate_audit_not_verified')
         audit_run = summaries[0].parent.parent
-        for source in summaries[0].parent.iterdir():
-            if source.is_file() and not (run / 'public' / ('offline-' + source.name)).exists():
-                audit_safe_bytes(source.read_bytes()); shutil.copy2(source, run / 'public' / ('offline-' + source.name))
         feed = run / 'private/feed'; feed.mkdir()
         package = feed / f'W.DmProvider.{version}.nupkg'
         with package.open('xb') as output: output.write((audit_run / '.private/feed' / package.name).read_bytes())
