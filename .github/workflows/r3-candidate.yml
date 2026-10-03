@@ -25,6 +25,8 @@ jobs:
         run: printf 'R19_RESULTS_DIR=%s/r3-candidate\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Candidate failure evidence contracts
         run: python3 -B -m unittest discover -s tools/R3CandidateGate -p test_failure_evidence.py
+      - name: Source identity contracts
+        run: python3 -B -m unittest discover -s tools/R3ResourceProbe -p test_source_identity.py
       - name: Freeze full current source and audit immutable offline candidate
         run: bash eng/t19.sh offline
       - name: Missing release database environment fails closed

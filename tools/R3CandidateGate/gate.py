@@ -164,7 +164,9 @@ def environment(run, version):
         if key.startswith('DAMENG'): env.pop(key)
     for name in ('cli-home', 'cache'): (run / 'private' / name).mkdir()
     env.update(DOTNET_CLI_HOME=str(run / 'private/cli-home'), DOTNET_SKIP_FIRST_TIME_EXPERIENCE='1', DOTNET_CLI_TELEMETRY_OPTOUT='1',
-               NUGET_PACKAGES=str(run / 'private/cache'), R3_CANDIDATE_VERSION=version, R3_RESULTS_DIR=str(run / 'private/audit'))
+               NUGET_PACKAGES=str(run / 'private/cache'), R3_CANDIDATE_VERSION=version, R3_RESULTS_DIR=str(run / 'private/audit'),
+               R3_PRODUCER_SOURCE_MANIFEST=str((run / 'public/source-manifest.json').resolve()),
+               R3_PRODUCER_SOURCE_MANIFEST_SHA256=sha(run / 'public/source-manifest.json'))
     return env
 
 
