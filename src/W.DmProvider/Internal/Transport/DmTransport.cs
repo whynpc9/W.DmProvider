@@ -56,8 +56,10 @@ internal static class DmTransportTestHooks
     }
     internal static void Attempted() => Interlocked.Increment(ref attemptedTcpConnections);
     internal static void Connected() => Interlocked.Increment(ref successfulTcpConnections);
-    internal static void Created() { Interlocked.Increment(ref createdTcpSockets); DmDiagnosticsCore.ConnectionCreated(); }
-    internal static void Disposed() { Interlocked.Increment(ref disposedTcpSockets); DmDiagnosticsCore.ConnectionClosed(); }
+    // Socket candidate lifecycle for tests only. The public connection metric is
+    // counted by the transport at establishment and at that same lifecycle's close.
+    internal static void Created() { Interlocked.Increment(ref createdTcpSockets); }
+    internal static void Disposed() { Interlocked.Increment(ref disposedTcpSockets); }
     internal static void TlsUpgraded(SslProtocols protocol)
     {
         Volatile.Write(ref lastNegotiatedTlsProtocol, (int)protocol);
@@ -92,6 +94,7 @@ internal sealed class DmTransport : IDisposable
     private Socket connectingSocket;
     private SslStreamByteChannel pendingTls;
     private bool closed;
+    private bool established;
     private bool openStarted;
     private bool tlsUpgradeStarted;
 
@@ -165,7 +168,9 @@ internal sealed class DmTransport : IDisposable
                         channel = new SocketByteChannel(candidate);
                         connectingSocket = null;
                         transferred = true;
+                        established = true;
                         DmTransportTestHooks.Connected();
+                        DmDiagnosticsCore.ConnectionCreated();
                     }
                     return;
                 }
@@ -264,7 +269,9 @@ internal sealed class DmTransport : IDisposable
                         channel = new SocketByteChannel(candidate);
                         connectingSocket = null;
                         transferred = true;
+                        established = true;
                         DmTransportTestHooks.Connected();
+                        DmDiagnosticsCore.ConnectionCreated();
                     }
                     return;
                 }
@@ -640,6 +647,13 @@ internal sealed class DmTransport : IDisposable
             connectingSocket = null;
             upgrading = pendingTls;
             pendingTls = null;
+            // The connection metric pairs with the establishment above; a connect
+            // that never established has no create and records no close either.
+            if (established)
+            {
+                established = false;
+                DmDiagnosticsCore.ConnectionClosed();
+            }
         }
         ExceptionDispatchInfo failure = null;
         try
