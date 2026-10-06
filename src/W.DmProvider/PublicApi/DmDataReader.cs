@@ -668,6 +668,14 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		try
 		{
 			if (fieldOffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
+			if (fieldOffset > 0 && cursor.Position == 0 && cursor.IsRemoteBinary)
+			{
+				// Binary wire units are bytes: a fresh remote flow starts at the
+				// requested offset instead of transferring and discarding the prefix.
+				if (cursor.KnownWireLength >= 0 && fieldOffset >= cursor.KnownWireLength)
+					return CompleteReaderInvocationIfSent(invocation, 0L);
+				cursor.SeekBinaryTo(fieldOffset);
+			}
 			byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
 			while (cursor.Position < fieldOffset)
 				if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldOffset - cursor.Position))) == 0)

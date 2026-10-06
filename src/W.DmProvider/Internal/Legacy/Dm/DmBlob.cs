@@ -92,12 +92,15 @@ public class DmBlob : AbstractLob
 			invocation?.CompleteIfSent();
 			return array;
 		}
+		if (len == 0)
+		{
+			// A validated empty range returns without transferring the prefix.
+			invocation?.CompleteIfSent();
+			return Array.Empty<byte>();
+		}
 		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
 		cursor.SetKnownWireLength(do_length());
-		byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
-		while (cursor.Position < pos)
-			if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, pos - cursor.Position))) == 0)
-				throw new InvalidDataException("Binary LOB ended before the requested offset.");
+		if (pos > 0) cursor.SeekBinaryTo(pos);
 		byte[] result = new byte[len];
 		int copied = 0;
 		while (copied < len)
@@ -127,12 +130,15 @@ public class DmBlob : AbstractLob
 			invocation?.CompleteIfSent();
 			return result;
 		}
+		if (len == 0)
+		{
+			// A validated empty range returns without transferring the prefix.
+			invocation?.CompleteIfSent();
+			return Array.Empty<byte>();
+		}
 		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
 		cursor.SetKnownWireLength(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
-		byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
-		while (cursor.Position < pos)
-			if (await cursor.ReadBytesAsync(discard.AsMemory(0, (int)Math.Min(discard.Length, pos - cursor.Position)), cancellationToken).ConfigureAwait(false) == 0)
-				throw new InvalidDataException("Binary LOB ended before the requested offset.");
+		if (pos > 0) cursor.SeekBinaryTo(pos);
 		byte[] remoteResult = new byte[len];
 		int copied = 0;
 		while (copied < len)

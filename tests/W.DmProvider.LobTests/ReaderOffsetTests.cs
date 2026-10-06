@@ -196,11 +196,46 @@ public sealed class ReaderOffsetTests
     }
 
     [Fact]
-    public async Task BlobRangeUsesBoundedSkipAndRandomCallsRestartAtZero()
+    public async Task BlobRangeBeyondKnownLengthReturnsZeroWithoutNetwork()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(4));
+        byte[] target = new byte[1];
+        Assert.Equal(0, reader.GetBytes(0, 4, target, 0, 1));
+        Assert.Empty(fixture.Channel.Commands);
+    }
+
+    [Fact]
+    public async Task LegacyBlobRangeStartsAtRequestedOffsetAndEmptyRangeSkipsNetwork()
+    {
+        await using var fixture = new OutputLobFixture();
+        var blob = fixture.Blob(8);
+        fixture.Channel.AddData([5, 6], -1);
+        fixture.Channel.AddData([7], -1, true);
+        fixture.ReleaseAll();
+        Assert.Equal(new byte[] { 5, 6, 7 }, blob.GetBytes(5, 3));
+        Assert.Equal(new long[] { 5, 7 }, fixture.Channel.ReadPositions);
+        int commands = fixture.Channel.Commands.Count;
+        Assert.Empty(blob.GetBytes(5, 0));
+        Assert.Equal(commands, fixture.Channel.Commands.Count);
+    }
+
+    [Fact]
+    public async Task LegacyBlobRangeAsyncStartsAtRequestedOffset()
+    {
+        await using var fixture = new OutputLobFixture();
+        var blob = fixture.Blob(4);
+        fixture.Channel.AddData([2, 3], -1, true);
+        fixture.ReleaseAll();
+        Assert.Equal(new byte[] { 2, 3 }, await blob.do_getBytesAsync(3, 2, default));
+        Assert.Equal(new long[] { 2 }, fixture.Channel.ReadPositions);
+    }
+
+    [Fact]
+    public async Task BlobRangeStartsAtRequestedOffsetAndRandomCallsRestartAtZero()
     {
         await using var fixture = new OutputLobFixture();
         var reader = fixture.Reader(12);
-        fixture.Channel.AddData([10, 11], -1);
         fixture.Channel.AddData([12, 13], -1);
         fixture.Channel.AddData([10, 11], -1); fixture.ReleaseAll();
         byte[] target = new byte[2];
@@ -208,7 +243,7 @@ public sealed class ReaderOffsetTests
         Assert.Equal(new byte[] { 12, 13 }, target);
         Assert.Equal(2, reader.GetBytes(0, 0, target, 0, 2));
         Assert.Equal(new byte[] { 10, 11 }, target);
-        Assert.Equal(new long[] { 0, 2, 0 }, fixture.Channel.ReadPositions);
+        Assert.Equal(new long[] { 2, 0 }, fixture.Channel.ReadPositions);
     }
 
     [Fact]

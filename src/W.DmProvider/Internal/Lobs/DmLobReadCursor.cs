@@ -27,6 +27,7 @@ internal sealed class DmLobReadCursor : IDisposable
     private ReadOnlyMemory<byte> bytes;
     private int bytePosition;
     private bool wireEnd;
+    private readonly bool inlineOnly;
     private bool decoderEnd;
     private readonly char[] chars;
     private int charPosition;
@@ -37,6 +38,21 @@ internal sealed class DmLobReadCursor : IDisposable
     internal long Position { get; private set; }
     internal bool IsDisposed => disposed;
     internal int BufferedBytes => bytes.Length + (text ? chars.Length * sizeof(char) : 0);
+    internal bool IsRemoteBinary => !text && !inlineOnly;
+    internal long KnownWireLength => knownWireLength;
+
+    // Binary wire units are bytes, so a remote range read can start directly at
+    // the requested offset instead of transferring and discarding the prefix.
+    internal void SeekBinaryTo(long offset)
+    {
+        if (text) throw new InvalidOperationException("Text LOB wire units are opaque.");
+        if (inlineOnly) throw new InvalidOperationException("An inline LOB has no remote wire offset.");
+        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+        if (Position != 0 || wirePosition != 0 || bytePosition != 0 || wireEnd)
+            throw new InvalidOperationException("The LOB flow has already started.");
+        wirePosition = offset;
+        Position = offset;
+    }
 
     // Test injection still exercises this cursor's unit/decoder/lifetime contract.
     internal DmLobReadCursor(AbstractLob locator, ReadOnlyMemory<byte> inline, bool hasInline,
@@ -52,6 +68,7 @@ internal sealed class DmLobReadCursor : IDisposable
         this.fetchAsync = fetchAsync;
         bytes = hasInline ? inline : default;
         wireEnd = hasInline;
+        inlineOnly = hasInline;
         this.text = text;
         chars = text ? new char[8192] : Array.Empty<char>();
         decoder = text ? DmTextCodec.CreateStrictEncoding(encoding).GetDecoder() : null;
