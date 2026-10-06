@@ -49,6 +49,105 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	// intermediate value such as a deliberately suppressed Broken.
 	private ConnectionState lastPublishedState = ConnectionState.Closed;
 
+	// StateChange events publish in state-transition order through this queue.
+	// The transition and its queue slot reserve atomically under settingsGate;
+	// handlers always run outside the gate, so a handler that dispatches work to
+	// another thread cannot deadlock against it. The first publisher on an idle
+	// queue drains synchronously, keeping event delivery synchronous for callers.
+	private readonly Queue<StateChangeTicket> stateEventQueue = new();
+	private bool stateEventDraining;
+	private Thread stateEventDrainer;
+	private StateChangeTicket connectingTicket;
+
+	private sealed class StateChangeTicket
+	{
+		internal readonly StateChangeEventArgs Args;
+		private readonly TaskCompletionSource done = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		internal StateChangeTicket(StateChangeEventArgs args) { Args = args; }
+		internal void Complete(Exception error)
+		{
+			if (error == null) done.TrySetResult(); else done.TrySetException(error);
+		}
+		internal void Wait() => done.Task.GetAwaiter().GetResult();
+	}
+
+	// Caller holds settingsGate: the queue slot and the published marker reserve
+	// atomically with the state write, and the event prior chains from the last
+	// published state.
+	private StateChangeTicket QueueStateChange(ConnectionState current)
+	{
+		var ticket = new StateChangeTicket(new StateChangeEventArgs(lastPublishedState, current));
+		lastPublishedState = current;
+		stateEventQueue.Enqueue(ticket);
+		return ticket;
+	}
+
+	// Caller must not hold settingsGate. A publisher that dispatches its own
+	// event (as the active drainer, or reentrantly on the drainer thread) waits
+	// for it and observes its handler failures. Any other publisher only enqueues:
+	// it never blocks behind user handlers, so a handler that dispatches work to
+	// another thread and waits for it cannot deadlock against the gate.
+	private void PublishStateChange(StateChangeTicket ticket)
+	{
+		bool reentrant;
+		bool drain;
+		lock (settingsGate)
+		{
+			reentrant = stateEventDraining && ReferenceEquals(stateEventDrainer, Thread.CurrentThread);
+			if (reentrant) drain = false;
+			else if (!stateEventDraining)
+			{
+				stateEventDraining = true;
+				stateEventDrainer = Thread.CurrentThread;
+				drain = true;
+			}
+			else drain = false;
+		}
+		if (reentrant) DrainStateEventsUntil(ticket);
+		else if (drain) DrainStateEvents();
+		if (reentrant || drain) ticket.Wait();
+	}
+
+	private void DispatchStateEvent(StateChangeTicket ticket)
+	{
+		try { OnStateChange(ticket.Args); ticket.Complete(null); }
+		catch (Exception error) { ticket.Complete(error); }
+	}
+
+	private void DrainStateEvents()
+	{
+		while (true)
+		{
+			StateChangeTicket next;
+			lock (settingsGate)
+			{
+				if (stateEventQueue.Count == 0)
+				{
+					stateEventDraining = false;
+					stateEventDrainer = null;
+					return;
+				}
+				next = stateEventQueue.Dequeue();
+			}
+			DispatchStateEvent(next);
+		}
+	}
+
+	private void DrainStateEventsUntil(StateChangeTicket target)
+	{
+		while (true)
+		{
+			StateChangeTicket next;
+			lock (settingsGate)
+			{
+				if (stateEventQueue.Count == 0) return;
+				next = stateEventQueue.Dequeue();
+			}
+			DispatchStateEvent(next);
+			if (ReferenceEquals(next, target)) return;
+		}
+	}
+
 	private readonly object settingsGate = new object();
 	private volatile DmConnectionSettings settings;
 	private volatile bool redactCredentials;
@@ -70,21 +169,21 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	internal DmSession Session => Volatile.Read(ref session);
 	private void OnSessionBroken(DmSession broken)
 	{
+		StateChangeTicket ticket = null;
 		lock (settingsGate)
 		{
 			if (!ReferenceEquals(session, broken) || connectionState is ConnectionState.Broken or ConnectionState.Closed) return;
-			ConnectionState prior = connectionState;
 			connectionState = ConnectionState.Broken;
 			// A creating permit belongs to the outer pending workflow. Notify after
 			// its cleanup returns that permit, so a callback can synchronously reopen.
 			if (pendingOpen != null && ReferenceEquals(pendingOpen.Session, broken)) return;
-			// The Broken transition and its event stay atomic with the state write,
-			// so a concurrent close cannot publish first and leave a stale prior.
-			// Handlers may reenter on this thread (the lock is reentrant).
-			lastPublishedState = ConnectionState.Broken;
-			try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
-			catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
+			// The Broken transition and its queue slot reserve atomically with the
+			// state write, so a concurrent close cannot publish first and leave a
+			// stale prior. The handler itself runs after the gate is released.
+			ticket = QueueStateChange(ConnectionState.Broken);
 		}
+		try { PublishStateChange(ticket); }
+		catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
 	}
 	internal DmExecutionLease BeginExecution(DmOperationPurpose purpose)
 		=> BeginExecution(purpose, default, 0);
@@ -219,15 +318,15 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		set
 		{
-			ConnectionState originalState;
+			StateChangeTicket ticket;
 			lock (settingsGate)
 			{
-				originalState = connectionState;
+				ConnectionState originalState = connectionState;
 				if (originalState == value) return;
 				connectionState = value;
+				ticket = QueueStateChange(value);
 			}
-			lastPublishedState = value;
-			OnStateChange(new StateChangeEventArgs(originalState, value));
+			PublishStateChange(ticket);
 		}
 	}
 
@@ -803,17 +902,17 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private void NotifyClosedIfCurrent(ConnectionState prior, long generation)
 	{
 		if (prior == ConnectionState.Closed) return;
-		// The generation validation and the event publication must stay atomic:
-		// a concurrent reopen advances the generation under the same gate, so
-		// publishing under the gate keeps the Closed event ahead of any later
-		// Connecting. Handlers may still reenter on this thread (the lock is
-		// reentrant) and synchronously reopen, which then publishes after this.
+		StateChangeTicket ticket;
 		lock (settingsGate)
 		{
+			// The generation validation and the queue slot stay atomic: a concurrent
+			// reopen advances the generation under the same gate, so the Closed event
+			// always lands ahead of any later Connecting in transition order.
 			if (openGeneration != generation || connectionState != ConnectionState.Closed || session != null) return;
-			lastPublishedState = ConnectionState.Closed;
-			OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
+			if (lastPublishedState == ConnectionState.Closed) return;
+			ticket = QueueStateChange(ConnectionState.Closed);
 		}
+		PublishStateChange(ticket);
 	}
 
 	internal void RunAfterPhysicalClose(Action completion)
@@ -1167,10 +1266,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			openingInProgress = true;
 			session = physical;
 			connectionState = ConnectionState.Connecting;
-			// The Connecting transition and its published marker stay atomic with the
-			// state write; the event itself still fires from the open workflow. A
-			// close in between then chains its deferred Closed event from Connecting.
-			lastPublishedState = ConnectionState.Connecting;
+			// The Connecting transition and its queue slot reserve atomically with the
+			// state write; the event itself still publishes from the open workflow. A
+			// close in between queues its Closed event behind this one in order.
+			connectingTicket = QueueStateChange(ConnectionState.Connecting);
 			return pending;
 		}
 	}
@@ -1233,7 +1332,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		try
 		{
 			DmPendingOpenTestHooks.AfterInstalled?.Invoke(this);
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
+			StateChangeTicket connecting = Interlocked.Exchange(ref connectingTicket, null);
+			if (connecting != null) PublishStateChange(connecting);
 			RequireCurrentPending(pending);
 			if (pending.Settings.Pooling)
 			{
@@ -1282,19 +1382,17 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			pending.Candidate.handshakeInvocation = null;
 			DmPendingOpenTestHooks.BeforePublish?.Invoke(this);
 			PublishPending(pending);
-			// The Open transition and its event publish atomically under the gate, so
-			// a concurrent close cannot linearize between them and leave a stale
-			// prior. Handlers may reenter on this thread (the lock is reentrant); a
-			// close or reopen from the Open notification keeps the replacement
-			// generation intact, and no state writes happen after user callbacks.
+			// The Open transition and its queue slot reserve atomically under the
+			// gate; a concurrent close then queues behind it. Handlers run after the
+			// gate is released and may reenter or synchronously reopen, and there are
+			// no state writes after user callbacks.
+			StateChangeTicket opened = null;
 			lock (settingsGate)
 			{
 				if (openGeneration == pending.Generation && connectionState == ConnectionState.Open)
-				{
-					lastPublishedState = ConnectionState.Open;
-					OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
-				}
+					opened = QueueStateChange(ConnectionState.Open);
 			}
+			if (opened != null) PublishStateChange(opened);
 			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)

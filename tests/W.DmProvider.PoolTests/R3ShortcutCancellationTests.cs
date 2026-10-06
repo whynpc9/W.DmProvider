@@ -58,6 +58,31 @@ public sealed class R3ShortcutCancellationTests
     }
 
     [Fact]
+    public async Task ConnectingHandlerDispatchingCloseToAnotherThreadCannotDeadlock()
+    {
+        using var handshake = new SyntheticPoolHandshake();
+        await using var connection = new DmConnection(PoolApiSettings.Text + ";conn_pool_timeout=0");
+        var events = new List<(System.Data.ConnectionState Original, System.Data.ConnectionState Current)>();
+        connection.StateChange += (_, change) =>
+        {
+            lock (events) events.Add((change.OriginalState, change.CurrentState));
+            if (change.CurrentState != System.Data.ConnectionState.Connecting) return;
+            // Handlers never run under the connection gate, so dispatching Close to
+            // another thread and waiting for it must complete instead of deadlocking.
+            Task.Run(() => connection.Close()).Wait();
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => connection.OpenAsync().WaitAsync(Timeout));
+        Assert.Equal(System.Data.ConnectionState.Closed, connection.State);
+        (System.Data.ConnectionState Original, System.Data.ConnectionState Current)[] snapshot;
+        lock (events) snapshot = events.ToArray();
+        Assert.Equal(new[]
+        {
+            (System.Data.ConnectionState.Closed, System.Data.ConnectionState.Connecting),
+            (System.Data.ConnectionState.Connecting, System.Data.ConnectionState.Closed)
+        }, snapshot);
+    }
+
+    [Fact]
     public async Task CloseAfterInstallBeforeConnectingEventStillNotifiesClosedFromConnecting()
     {
         using var handshake = new SyntheticPoolHandshake();
