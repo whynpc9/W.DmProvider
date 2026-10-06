@@ -66,7 +66,9 @@ public class DmBlob : AbstractLob
 	public byte[] GetBytes(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return do_getBytes(pos + 1, len);
+		byte[] result = do_getBytes(pos + 1, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal byte[] do_getBytes(long pos, int len)
@@ -87,6 +89,7 @@ public class DmBlob : AbstractLob
 		{
 			byte[] array = new byte[len];
 			ByteUtil.setBytes(array, 0, data, checked((int)pos), array.Length);
+			invocation?.CompleteIfSent();
 			return array;
 		}
 		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
@@ -103,6 +106,7 @@ public class DmBlob : AbstractLob
 			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
 			copied += count;
 		}
+		invocation?.CompleteIfSent();
 		return result;
 	}
 
@@ -120,6 +124,7 @@ public class DmBlob : AbstractLob
 		{
 			byte[] result = new byte[len];
 			ByteUtil.setBytes(result, 0, data, checked((int)pos), result.Length);
+			invocation?.CompleteIfSent();
 			return result;
 		}
 		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
@@ -136,23 +141,26 @@ public class DmBlob : AbstractLob
 			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
 			copied += count;
 		}
+		invocation?.CompleteIfSent();
 		return remoteResult;
 	}
 
 	public int SetBytes(long pos, byte[] bytes)
 	{
 		using var invocation = BeginPublicOperation();
-		if (bytes == null)
-		{
-			return do_setBytes(pos + 1, new byte[0], 0, 0);
-		}
-		return do_setBytes(pos + 1, bytes, 0, bytes.Length);
+		int result = bytes == null
+			? do_setBytes(pos + 1, new byte[0], 0, 0)
+			: do_setBytes(pos + 1, bytes, 0, bytes.Length);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public int SetBytes(long pos, ref byte[] bytes, int offset, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return do_setBytes(pos + 1, bytes, offset, len);
+		int result = do_setBytes(pos + 1, bytes, offset, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal int do_setBytes(long pos, byte[] bytes, int offset, int len)
@@ -176,6 +184,7 @@ public class DmBlob : AbstractLob
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 			}
 			setLocalData((int)pos, bytes, offset, len);
+			invocation?.CompleteIfSent();
 			return len;
 		}
 		int num2 = ConnInstance.GetCsi().A(this, pos, bytes, offset, len);
@@ -184,6 +193,7 @@ public class DmBlob : AbstractLob
 		{
 			setLocalData((int)pos, bytes, offset, num2);
 		}
+		invocation?.CompleteIfSent();
 		return num2;
 	}
 
@@ -191,12 +201,14 @@ public class DmBlob : AbstractLob
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	public void do_truncate(long len)
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	private void TruncateOwned(long len)
@@ -231,12 +243,14 @@ public class DmBlob : AbstractLob
 				data = array2;
 			}
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	public void loadAllData()
 	{
 		using var invocation = BeginPublicOperation();
 		LoadAllDataOwned();
+		invocation?.CompleteIfSent();
 	}
 
 	private void LoadAllDataOwned()
@@ -247,6 +261,7 @@ public class DmBlob : AbstractLob
 			data = do_getBytes(1L, DmLobMaterialization.Bytes(do_length()));
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	internal async Task LoadAllDataUnderOwnerAsync(CancellationToken cancellationToken)
@@ -260,6 +275,7 @@ public class DmBlob : AbstractLob
 			data = await do_getBytesAsync(1L, length, cancellationToken).ConfigureAwait(false);
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	private void setLocalData(int pos, byte[] bytes, int offset, int len)
@@ -286,6 +302,8 @@ public class DmBlob : AbstractLob
 	public long Length()
 	{
 		using var invocation = BeginPublicOperation();
-		return do_length();
+		long result = do_length();
+		invocation?.CompleteIfSent();
+		return result;
 	}
 }

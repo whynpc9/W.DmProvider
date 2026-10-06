@@ -73,13 +73,17 @@ public class DmClob : AbstractLob
 	public string getSubString(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return GetSubStringOwned(pos + 1, len);
+		string result = GetSubStringOwned(pos + 1, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public string do_getSubString(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return GetSubStringOwned(pos, len);
+		string result = GetSubStringOwned(pos, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	private DmLobReadCursor NewReadCursor()
@@ -98,15 +102,25 @@ public class DmClob : AbstractLob
 		{
 			if (pos > data.Length) throw new ArgumentOutOfRangeException(nameof(pos));
 			int returned = DmLobMaterialization.Characters(Math.Min((long)len, data.Length - pos));
-			return data.Substring(checked((int)pos), returned);
+			string localResult = data.Substring(checked((int)pos), returned);
+			invocation?.CompleteIfSent();
+			return localResult;
 		}
-		if (pos == 0 && len == 0) return "";
+		if (pos == 0 && len == 0)
+		{
+			invocation?.CompleteIfSent();
+			return "";
+		}
 		using var cursor = NewReadCursor();
 		char[] chunk = new char[8192];
 		while (cursor.Position < pos)
 			if (cursor.ReadChars(chunk.AsSpan(0, (int)Math.Min(chunk.Length, pos - cursor.Position))) == 0)
 				throw new ArgumentOutOfRangeException(nameof(pos));
-		if (len == 0) return "";
+		if (len == 0)
+		{
+			invocation?.CompleteIfSent();
+			return "";
+		}
 		var result = new StringBuilder();
 		while (result.Length < len)
 		{
@@ -115,6 +129,7 @@ public class DmClob : AbstractLob
 			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
+		invocation?.CompleteIfSent();
 		return result.ToString();
 	}
 
@@ -132,15 +147,25 @@ public class DmClob : AbstractLob
 		{
 			if (pos > data.Length) throw new ArgumentOutOfRangeException(nameof(pos));
 			int returned = DmLobMaterialization.Characters(Math.Min((long)len, data.Length - pos));
-			return data.Substring(checked((int)pos), returned);
+			string localResult = data.Substring(checked((int)pos), returned);
+			invocation?.CompleteIfSent();
+			return localResult;
 		}
-		if (pos == 0 && len == 0) return "";
+		if (pos == 0 && len == 0)
+		{
+			invocation?.CompleteIfSent();
+			return "";
+		}
 		using var cursor = NewReadCursor();
 		char[] chunk = new char[8192];
 		while (cursor.Position < pos)
 			if (await cursor.ReadCharsAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, pos - cursor.Position)), cancellationToken).ConfigureAwait(false) == 0)
 				throw new ArgumentOutOfRangeException(nameof(pos));
-		if (len == 0) return "";
+		if (len == 0)
+		{
+			invocation?.CompleteIfSent();
+			return "";
+		}
 		var result = new StringBuilder();
 		while (result.Length < len)
 		{
@@ -149,6 +174,7 @@ public class DmClob : AbstractLob
 			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
+		invocation?.CompleteIfSent();
 		return result.ToString();
 	}
 
@@ -156,7 +182,7 @@ public class DmClob : AbstractLob
 	{
 		using var invocation = BeginInternalOperation();
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
-		{ DmLobMaterialization.Characters(data.Length); return data; }
+		{ DmLobMaterialization.Characters(data.Length); invocation?.CompleteIfSent(); return data; }
 		// Remote locator lengths are opaque wire units; bound the decoded UTF-16 below.
 		using var cursor = NewReadCursor();
 		cursor.SetKnownWireLength(do_length());
@@ -169,6 +195,7 @@ public class DmClob : AbstractLob
 			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
+		invocation?.CompleteIfSent();
 		return result.ToString();
 	}
 
@@ -176,7 +203,7 @@ public class DmClob : AbstractLob
 	{
 		using var invocation = BeginInternalOperation(cancellationToken);
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
-		{ DmLobMaterialization.Characters(data.Length); return data; }
+		{ DmLobMaterialization.Characters(data.Length); invocation?.CompleteIfSent(); return data; }
 		// Remote locator lengths are opaque wire units; bound the decoded UTF-16 below.
 		using var cursor = NewReadCursor();
 		cursor.SetKnownWireLength(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
@@ -189,29 +216,34 @@ public class DmClob : AbstractLob
 			DmLobMaterialization.Characters(checked((long)result.Length + count));
 			result.Append(chunk, 0, count);
 		}
+		invocation?.CompleteIfSent();
 		return result.ToString();
 	}
 
 	public int SetString(long pos, string str)
 	{
 		using var invocation = BeginPublicOperation();
-		if (str == null)
-		{
-			return SetStringOwned(pos + 1, "", 0, 0);
-		}
-		return SetStringOwned(pos + 1, str, 0, str.length());
+		int result = str == null
+			? SetStringOwned(pos + 1, "", 0, 0)
+			: SetStringOwned(pos + 1, str, 0, str.length());
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public int SetString(long pos, string str, int offset, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return SetStringOwned(pos + 1, str, offset, len);
+		int result = SetStringOwned(pos + 1, str, offset, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public int do_setString(long pos, string str, int offset, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return SetStringOwned(pos, str, offset, len);
+		int result = SetStringOwned(pos, str, offset, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	private int SetStringOwned(long pos, string str, int offset, int len)
@@ -235,6 +267,7 @@ public class DmClob : AbstractLob
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 			}
 			setLocalData((int)pos, str);
+			invocation?.CompleteIfSent();
 			return str.length();
 		}
 		int result = ConnInstance.GetCsi().A(this, pos, str, serverEncoding);
@@ -243,6 +276,7 @@ public class DmClob : AbstractLob
 		{
 			setLocalData((int)pos, str);
 		}
+		invocation?.CompleteIfSent();
 		return result;
 	}
 
@@ -250,12 +284,14 @@ public class DmClob : AbstractLob
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	public void do_truncate(long len)
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	private void TruncateOwned(long len)
@@ -286,12 +322,14 @@ public class DmClob : AbstractLob
 				data = data.Substring(0, (int)m_length);
 			}
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	public void loadAllData()
 	{
 		using var invocation = BeginPublicOperation();
 		LoadAllDataOwned();
+		invocation?.CompleteIfSent();
 	}
 
 	private void LoadAllDataOwned()
@@ -303,6 +341,7 @@ public class DmClob : AbstractLob
 			m_length = data.length();
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	internal async Task LoadAllDataUnderOwnerAsync(CancellationToken cancellationToken)
@@ -314,6 +353,7 @@ public class DmClob : AbstractLob
 			m_length = data.length();
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	private void setLocalData(int pos, string str)
@@ -332,7 +372,9 @@ public class DmClob : AbstractLob
 	public byte[] GetBytes(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return EncodeBounded(GetSubStringOwned(checked(pos + 1), len));
+		byte[] result = EncodeBounded(GetSubStringOwned(checked(pos + 1), len));
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal byte[] MaterializeBytesUnderOwner() => MaterializeBytesUnderOwner(serverEncoding);
@@ -356,12 +398,16 @@ public class DmClob : AbstractLob
 	public string GetString(long pos, int length)
 	{
 		using var invocation = BeginPublicOperation();
-		return GetSubStringOwned(pos + 1, length);
+		string result = GetSubStringOwned(pos + 1, length);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public long length()
 	{
 		using var invocation = BeginPublicOperation();
-		return do_length();
+		long result = do_length();
+		invocation?.CompleteIfSent();
+		return result;
 	}
 }

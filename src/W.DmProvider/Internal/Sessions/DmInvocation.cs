@@ -127,6 +127,14 @@ internal sealed class DmInvocation : IDisposable
     {
         if (SendAttempted) diagnosticCleanupSucceeded = true;
     }
+    // A successful legacy LOB operation completes its own outer invocation only
+    // when the operation actually reached the wire. Cached no-I/O paths keep the
+    // deliberate no-span behavior, and a reused ambient invocation stays the
+    // responsibility of its own public method.
+    internal void CompleteIfSent()
+    {
+        if (SendAttempted) Complete();
+    }
     internal DmInvocation(DmSession session, DmExecutionLease lease, OperationIdentity identity, DmDeadline deadline, CancellationToken cancellationToken = default)
     {
         operationToken = operationCancellation.Token;

@@ -189,6 +189,7 @@ public class AbstractLob
 		{
 			m_length = ConnInstance.GetCsi().A(this);
 		}
+		invocation?.CompleteIfSent();
 		return m_length;
 	}
 
@@ -197,6 +198,7 @@ public class AbstractLob
 		using var invocation = BeginInternalOperation(cancellationToken);
 		if (m_length == -1)
 			m_length = await ConnInstance.GetCsi().GetLobLengthAsync(this, cancellationToken).ConfigureAwait(false);
+		invocation?.CompleteIfSent();
 		return m_length;
 	}
 
