@@ -688,10 +688,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				}
 				cursor.SeekBinaryTo(fieldOffset);
 			}
-			byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
+			byte[] discard = null;
 			while (cursor.Position < fieldOffset)
+			{
+				discard ??= new byte[DmConnectionSettings.DefaultLobChunkSize];
 				if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldOffset - cursor.Position))) == 0)
 					return CompleteReaderInvocationIfSent(invocation, 0L);
+			}
 			int total = 0;
 			while (total < length)
 			{
@@ -754,16 +757,21 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		if (buffer == null) temporary = true;
 		try
 		{
-			char[] discard = new char[8192];
+			char[] discard = null;
 			if (buffer == null)
 			{
+				// The length scan consumes the whole value, so it needs the buffer.
+				discard = new char[8192];
 				while (cursor.ReadChars(discard) != 0) { }
 				return CompleteReaderInvocationIfSent(invocation, cursor.Position);
 			}
 			if (fieldoffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
 			while (cursor.Position < fieldoffset)
+			{
+				discard ??= new char[8192];
 				if (cursor.ReadChars(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldoffset - cursor.Position))) == 0)
 					return CompleteReaderInvocationIfSent(invocation, 0L);
+			}
 			int total = 0;
 			while (total < length)
 			{
