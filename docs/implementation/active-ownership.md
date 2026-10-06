@@ -260,3 +260,54 @@ Astra High/root批准shared-functional外层宿主护栏1500秒的明确设计�
 ## R3 最终窗口结束与交付
 
 2026-10-03：Astra High八工具来源链只读审查通过；Sol Low独占执行35项Python合同、独立9项guard合同、新CLI原实库1项及shared/TLS原证据聚合均通过。Root复核13运行时门、两profile九个下游lane及903历史证据后释放窗口；当前所有编码agent停写。Root负责验证后公共证据、报告、最小CI合同步骤、提交/PR及bot闭环。PR merge前不开始R4，发行仍未授权。
+
+## 2026-10-05：PR #2 当前 HEAD 后续修复
+
+用户「继续」保留 R3 任务及 Astra High 设计、Sol High 编码、Sol Low 验收分工。HEAD `cb1a587` 的 v12 验收已在共享 T17 后停止并释放窗口；1020 项离线、TLS 矩阵、两 profile EF Unit、TLS EF 合同和共享 T16/T17 结果只读。共享 T13/T14/security 与完整 EF 尚未执行，不计通过。新增历史快照为 `.local/verification/r3/t19/historical-baselines/v13/manifest.json`，1693 项含原 1586 项证据；旧候选不覆盖。
+
+| owner | 唯一写入范围 |
+| --- | --- |
+| r3_review_design（Astra High） | 只读设计与复审，无构建或实库 |
+| r3_shortcut_code（Sol High） | DmDataSourceCommand、DmCommand、DmConnection、新 shortcut execution context、新 PoolTests/R3ShortcutCancellationTests |
+| r3_abort_core_code（Sol High） | DmSession（含 DmDetachedTransport）、DmTransport、新关闭 completion helper；legacy D/B 的物理关闭转发及 DmConnInstance 的实际 transport 引用；新 PoolTests/R3DetachedTransportCompletionTests |
+| r3_clob_code（Sol High） | DmClob、新 LobTests/R3ClobOpaqueLengthMaterializationTests；TypeTests/LobMaterializationReviewTests、AsyncTests/LobMaterializationAsyncTests 仅纠正 CLOB 的 locator 长度 oracle，保留 BLOB 提前拒绝 |
+| r3_gate_code（Sol High） | R3CandidateGate/gate.py、test_failure_evidence.py 的重复键、凭据扫描、原进程状态保留 |
+| r3_cleanup_diag_code（Sol High） | DmInvocation、DmCommand、DmDataReader 的独立清理诊断成功 receipt；新 DiagnosticsTests/R3CleanupDiagnosticOutcomeTests |
+| r3_resource_diag_code（Sol High） | R3ResourceProbe/Program.cs、validate.py、新 test_diagnostic_health.py 的健康零假错误门 |
+| r3_window_recovery（Sol Low） | ignored 安全恢复记录与验收计划，已结束，无 build/test/DB |
+| r3_v19_verify（T3-owned Sol Low） | 新冻结后独占 build/test/DB，ignored 结果，不改实现或断言；完成通知回本 thread；v13–v18 窗口已结束 |
+| root | 范围、review、历史快照与最终报告/Git/PR 收口 |
+
+编码期间不执行 dotnet 或实库；全部停写并通过 root/Astra 审阅后生成新唯一候选。取消必须绑定本轮 execution/plan，覆盖 Open 到 plan 的空隙；不得旧 Cancel 误伤下一轮或提前释放物理容量。CLOB 保留有界响应、严格解码和实际 UTF-16 append 预算。失败保留并释放窗口后定点修复，不修改已冻结输入。R4 不启动，发行未授权。
+
+新 shortcut 确定性测试的静态追踪确认 P1：Cancel 取走 transport 并在物理 Dispose 中等待时，并发 Close 对 Broken session 的第二次 Detach 得到 null，旧 finally 可提前返还 pool lease。Astra/root 批准共享关闭句柄设计：Session 保留相同句柄，区分 detach 与物理关闭完成；重复或重入 Abort 不等待自身，真实 completion 在锁外且 exactly once 通知。Connection 的 published lease 与 shortcut Release 绑定该 completion；pending 创建许可仍由原创建工作流结束后安排返还，不能仅靠空关闭句柄提前释放。新增普通连接、独立等待者和两处重入屏障测试；此发现尚未运行验收，不作为已修复或已通过。
+
+Astra 复审进一步确认 legacy 握手 flag 可使高层 Abort 返回而底层尚未关闭，且直接 D.C 已先关闭时 DmTransport 的 logical closed 不能证明 Dispose 已结束。真实 completion 因而下沉至 DmTransport，经实际 D/instance 引用转发；session 关闭句柄须等全部已捕获底层 completion 后通知。允许的 legacy 窄修改为 `A/T02_02000090.cs`、`A/T02_02000091.cs`、`Dm/T02_0200002E.cs`；协议编码、认证、TLS 策略与 SQL 行为不扩展。新增直接关闭先进入屏障、随后句柄 Abort 的负控制及握手进行中的物理关闭测试，仍由 Low 冻结后执行。
+
+所有编码者现已停写，root/Astra 最终整体静态复审通过，运行验收仍 pending。新增 .NET 用例为 core 17、shortcut 64、CLOB 35；候选门工具测试共 25。此前发现的 P1/P2 在源码中闭合不代表已运行通过。新 v13 全窗输入冻结后，由 T3-owned Sol Low 按独立计划执行 target、完整离线与新唯一同包矩阵，首个失败停止、保留并释放窗口交回 root；R3 未收口，PR #2 未合并。
+
+v13 独立首门在 shortcut suite 观察到 10 项失败后停止；人为 SIGTERM、非自然退出、未生成完整 TRX，因此不声明正式通过数量。源码 686、历史 1693、补充 265 离窗核验不变，无新包、无 DB，窗口 released。失败 sources/安全 evidence 和 99 份 binary 留存后，v14 历史基线为 2881 项。Astra/root 定点授权 shortcut owner 仅修 DmConnection catch 的已发送证据 snapshot，以及新 shortcut tests 的合法 opcode91/列元数据/reader 出版后物理屏障与首错观测；64 项原容量、no-frame、token 和 Unknown 强断言保留，其他 owner 停写。Low 新冻结后重新验收，不修改 v13 失败材料。
+
+v14 两文件定点修复已停写并通过 root/Astra 静态复审。新增三项 raw cancellation fallback 对照后 shortcut 共 67，core 17、CLOB 35 不变，完整离线预期 1139 仅以正式 TRX 为准。产品 catch 首部只 OR 当前 invocation/root execution 的实际发送事实，不从 token、Completed 或局部 ACK 推测整体握手结果；原 token/来源及 Unknown 断言不改。无新运行结果；v14 冻结后重新执行所有门，不能继承 v13 的非自然退出码或任何旧包通过记录。
+
+v14 首门正式 TRX 为 67 执行、65 passed、2 failed，自然 exit 1、无 skip/abort；其他门未运行、无包或 DB，窗口 released，哈希不变。两项为握手 outcome 的另一条 callback-lag 分类竞态，以及将第二个非阻塞 Cancel 的正常提前返回误判成未达关闭屏障。v15 历史基线 4073 保存 v14 输入、TRX/日志、安全 evidence 和 99 binary。Root/Astra 授权 shortcut owner 仅 DmConnection、新 ShortcutTests、额外 DmPendingOpen 三文件：raw 用户取消通过 guarded CAS 补记 winner 0→User，不覆盖 Close2；raw Close 按明确 winner，typed timeout/server/transport 不改写；添加真实阻塞回调的 sent/unsent 及 Close 赢家负对照。Cancel 观察可提前成功但仍等真实关闭入口，普通 execution 的首错与异常仍严格检查。其他 owner 停写，Low 等新冻结，v14 材料只读。
+
+v15 三文件已停写并经 root/Astra 静态接受，无运行通过声明。Shortcut 74、core 17、CLOB 35，完整离线预期 1146（正式 TRX 才是依据）；工具 test_failure_evidence.py 仍 25。新增原始取消回调滞后、Close 赢家及 helper 因果对照保留真实关闭、容量、原 token、phase/code/outcome 断言。v15 冻结后 Low 独占重跑全部门，首失败保留并释放；R3/PR #2 仍未收口。
+
+v15 已实际通过五组 target 155/155 和 Python 82/82，完整离线前两套 23/23 后在 Transport 112/113 停止，自然 exit1/no skip/abort。失败为原 `CapturedAbortPausedAtBarrierCannotCloseAReplacementPhysicalSession`：终态 Detach(expected) 被改为返回 retained handle，旧 wire cleanup 重复触发暂停中的 abort hook。无包/DB，窗口 released，686/4073/265 及候选 2329 inputs 不变。v16 历史基线 7632 保留 v15 候选完整输入、目标/失败 TRX 与 480 binary；不覆盖失败版本 `0.1.0-r3.20261005025811`。
+
+v16 定点仅 Session 与新 CoreTests，经 root/Astra 静态接受并停写：private Break 终态返回 null；expected Closed 恢复原 early-null，expected Broken 保原 owner 清理/Discard/通知且返回 null；无 expected 的关闭仍取同一 physical completion 句柄。原 Transport 测试未改，新 Broken/Closed 两项后 core19，shortcut74/CLOB35 保持，完整离线预期1148仅正式TRX为准。Low 新窗口先验证旧 CancellationCoreTests 与新增 core，再所有 targets/Python/完整新包矩阵；此前通过仍仅归 v15，不继承为 v16 接受。
+
+v16 正式 CancellationCore10/10、五 targets157/157、Python82/82；完整离线1111执行/1110passed/1failed，无skip/abort，原Transport113/113通过。唯一失败为 ReaderOffset 的第四处旧 CLOB oracle（locator=64MiB+1、没有GETLEN响应却期待提前NotSupported），并非实际编码上限坏；Diagnostics 尚未执行、无包/EF/DB、窗口released，所有源/历史/补充及候选2329 inputs不变。v17历史11354保留v16输入/TRX和575binary，失败版本`0.1.0-r3.20261005031303`不覆盖。目标顺序 Shortcut/Core 的偏差已记录，未并行，不改写原证据。
+
+v17 唯一差异为 ReaderOffsetTests 原方法：inline字节断言不变，huge opaque locator加入两组实际29/32多字节短值响应，验证public GetBytes字节长度、复制、内容、offset0与请求数。实际encoded/decoded负例已有真实覆盖且本轮不动；无产品修改或新增case，完整预期1148不变。root/Astra静态接受后已停写，Low新冻结首ReaderOffset类，再CancellationCore、Core19、Shortcut74、其它targets及Python/完整新同包矩阵；运行仍pending。
+
+v17 Low 全部原必要门通过并 released：targets185/185、Python82/82、offline1148/1148、first-init7/7，精确同包TLS/shared及600秒资源、EF九lane双严格validator、external11门missing=[]，686/11354/265及2329producer inputs不变。候选`0.1.0-r3.20261005032642`全部结果保持原样；root/Astra实际包/DLL/MVID、源码tar、加载资产与清理已回读一致。但root追加读回确认P2诊断：成功statement/reader清理未记诊断成功，出现execute false transport_error10082及fetch20151；健康资源门原先没有拒绝该语义。功能、资源平衡与清理结果不改标失败，整体产品接受因此暂缓，未提交/推送/merge。
+
+v18历史16412项保存原v17包、源、runtime/EF/正式结果及root deferred readback。新范围仅上述两个owner：业务 Complete、取消/token/ACK/事务Outcome和物理permit不改；仅整个独立cleanup scope成功且有发送后记录诊断receipt，主/借用invocation不记录，失败优先。资源原负载与600秒预算不变，新增完整80桶健康零transport_error和connect唯一计数闭合，合法pool cancel/rejected不禁用。High只编码/静态检查，Low仍等新冻结；发行未授权，R4未启动。
+
+v18 所有编码者已停止，root/Astra整体静态接受，相对v17仅8项运行输入变化：Invocation/Command/Reader、额外Connection两处事务初始化独立清理receipt；ResourceProbe Program/validator；新诊断32case与新Python健康门38case。11receipt只在整个独立清理末尾且SendAttempted=true记，不调用业务Complete、不写借用主调用，保所有error/txnUnknown优先与noIO无span。最终快照strictfalse flags、正Int64活动/测量、finite0..128、80桶齐全/全transport_error0、connectsuccess==创建/其余0；重复JSON拒绝。完整离线预期1180、Python预期120，仅正式日志/TRX为准。新冻结后Low首诊断32和健康门38（并针对旧v17真实假错误作拒绝负对照），再全targets/Python/新唯一包全部门，不继承旧v17。根最终接受与PR修复推送均待v18独立验收。
+
+v18 新诊断首门正式32执行/26passed/6failed，自然exit1/no timeout/skip/abort，source688/history16412/supp265不变，无pkg/DB、窗口released。独立triage确认：公开不支持的statement pooling导致fixture两例失败；三个Rollback回复须为opcode0/sql0而非9；同步保留型verified servererror裸抛未附FailureInfo是产品缺口，异步已翻译。v19历史17605保留v18失败输入/TRX/日志与99binary。Root/Astra定点仅授权Command共享同步ExecuteReaderOwned verified分支补原翻译，以及新DiagTests：合法Prepare→Close→重复Dispose无新wire/span、正确controlACK、六种NonQuery/Scalar/Reader同步异步结构元数据对照。原error/ACK/Complete/Txn/cleanup守卫不变，其他owner停写，Low待新冻结。
+
+v19 两文件已停写并正式静态接受，只有Command verified分支一行补原Translate再裸重抛，以及新DiagTests合法fixture/六API对照。异常同对象/原stack、ACK保留条件、事务与独立清理路径不改。新诊断36case，完整预期1184、Python120，仅实际TRX/日志为准。Low新冻结首诊断36和健康38/旧v17拒绝负对照，再旧185targets、全部新包离线/EF/TLSshared600资源与external门，运行仍pending，PR #2未收口。

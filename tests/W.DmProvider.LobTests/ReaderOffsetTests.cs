@@ -23,7 +23,7 @@ public sealed class ReaderOffsetTests
     }
 
     [Fact]
-    public async Task ClobBytesKeepEncodedPayloadAndFullMaterializationCap()
+    public async Task ClobBytesUseActualEncodedPayloadForInlineAndHugeOpaqueLocators()
     {
         await using var fixture = new OutputLobFixture();
         byte[] encoded = Encoding.UTF8.GetBytes("A🙂中");
@@ -36,9 +36,22 @@ public sealed class ReaderOffsetTests
         Assert.Equal(encoded, copy);
         Assert.Empty(fixture.Channel.Commands);
         fixture.Instance.ConnProperty.NewLobFlag = false;
-        var huge = fixture.Reader(19, OutputLobFixture.Locator((long)DmConnectionSettings.DefaultMaxMaterializedLobSize + 1));
-        Assert.Throws<NotSupportedException>(() => huge.GetBytes(0, 0, null!, 0, 0));
-        Assert.Empty(fixture.Channel.Commands);
+        long units = (long)DmConnectionSettings.DefaultMaxMaterializedLobSize + 1;
+        var huge = fixture.Reader(19, OutputLobFixture.Locator(units));
+        // Locator units are opaque, so they cannot establish the encoded payload size.
+        // Actual cap rejection remains covered by WholeTargetEncodingRejectsActualByteCountBeforeAllocatingEncodedPayload
+        // and ActualDecodedPayloadOverCapRejectsBeforeTheNextFrameAndDoesNotCacheSuccess.
+        fixture.Channel.AddLength(units);
+        fixture.Channel.AddData(encoded, 97, true);
+        fixture.Channel.AddLength(units);
+        fixture.Channel.AddData(encoded, 97, true);
+        fixture.ReleaseAll();
+        Assert.Equal(encoded.Length, huge.GetBytes(0, 0, null!, 0, 0));
+        byte[] remoteCopy = new byte[encoded.Length];
+        Assert.Equal(remoteCopy.Length, huge.GetBytes(0, 0, remoteCopy, 0, remoteCopy.Length));
+        Assert.Equal(encoded, remoteCopy);
+        Assert.Equal(new short[] { 29, 32, 29, 32 }, fixture.Channel.Commands);
+        Assert.Equal(new long[] { 0, 0 }, fixture.Channel.ReadPositions);
     }
 
     [Fact]

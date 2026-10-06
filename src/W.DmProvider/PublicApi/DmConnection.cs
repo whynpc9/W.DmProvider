@@ -59,6 +59,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private DmPendingOpen pendingOpen;
 	private long openGeneration;
 	private DmPoolLease poolLease;
+	private DmDetachedTransport physicalClose;
+	private readonly Dictionary<DmPendingOpen, Action> pendingCloseNotifications = new();
 	private DmDataSource dataSourceOwner;
 	internal DmPoolOwner PoolOwner { get; private set; }
 	internal DmSession Session => Volatile.Read(ref session);
@@ -477,6 +479,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
 					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
 				controlStatement.p();
+				cleanup.RecordDiagnosticCleanupSuccess();
 			}
 			// Cleanup has its own budget so resources can be released after timeout;
 			// it must not renew Begin's budget or permit a late Active result.
@@ -581,6 +584,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
 					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
 				await controlStatement.pAsync(CancellationToken.None).ConfigureAwait(false);
+				cleanup.RecordDiagnosticCleanupSuccess();
 			}
 			// Cleanup has its own budget so resources can be released after timeout;
 			// it must not renew Begin's budget or permit a late Active result.
@@ -725,18 +729,27 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		DmPendingOpen closingPending;
 		DmPoolLease closingLease;
 		ConnectionState prior;
+		long closedGeneration;
 		lock (settingsGate)
 		{
 			if (expected != null && !ReferenceEquals(session, expected)) return;
+			// A repeated logical close must retain the first close's notification
+			// identity while its physical abort or pending workflow is still ending.
+			if (connectionState == ConnectionState.Closed && session == null && pendingOpen == null &&
+				poolLease == null && m_ConnInst == null) return;
 			prior = connectionState;
 			oldSession = session;
 			closingPending = pendingOpen;
 			pendingOpen = null;
 			if (openGeneration != long.MaxValue) openGeneration++;
+			closedGeneration = openGeneration;
+			if (closingPending != null && prior != ConnectionState.Closed)
+				pendingCloseNotifications[closingPending] = () => NotifyClosedIfCurrent(prior, closedGeneration);
 			openingInProgress = false;
 			closingLease = poolLease;
 			poolLease = null;
 			captured = oldSession?.Detach();
+			if (captured != null) physicalClose = captured;
 			orphan = oldSession == null ? m_ConnInst : null;
 			m_ConnInst = null;
 			session = null;
@@ -761,9 +774,35 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			oldSession?.MarkClosed();
 			// Pending workflow retains its own permit until its unpublished candidate
 			// has stopped creating. Only an already-published lease completes here.
-			closingLease?.CompleteAfterTransportClosed();
-			if (prior != ConnectionState.Closed) OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
+			if (closingPending == null)
+			{
+				void CompleteClosed()
+				{
+					closingLease?.CompleteAfterTransportClosed();
+					NotifyClosedIfCurrent(prior, closedGeneration);
+				}
+				if (captured == null) CompleteClosed();
+				else captured.RunAfterClosed(CompleteClosed);
+			}
 		}
+	}
+
+	private void NotifyClosedIfCurrent(ConnectionState prior, long generation)
+	{
+		if (prior == ConnectionState.Closed) return;
+		lock (settingsGate)
+		{
+			if (openGeneration != generation || connectionState != ConnectionState.Closed || session != null) return;
+		}
+		OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
+	}
+
+	internal void RunAfterPhysicalClose(Action completion)
+	{
+		DmDetachedTransport captured;
+		lock (settingsGate) captured = physicalClose;
+		if (captured == null) completion();
+		else captured.RunAfterClosed(completion);
 	}
 
 	internal DmCommand do_CreateDbCommand()
@@ -1071,6 +1110,12 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	internal void Connect() => ConnectCoreAsync(false, CancellationToken.None).GetAwaiter().GetResult();
 
+	internal void OpenForDataSource(CancellationToken cancellationToken)
+	{
+		if (m_AlreadyDisposed) throw new ObjectDisposedException(nameof(DmConnection));
+		ConnectCoreAsync(false, cancellationToken).GetAwaiter().GetResult();
+	}
+
 	private Task ConnectAsync(CancellationToken cancellationToken) => ConnectCoreAsync(true, cancellationToken);
 
 	private DmPendingOpen InstallPending(CancellationToken userToken)
@@ -1159,6 +1204,9 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		DmDiagnosticStamp? connectDiagnostic = null;
 		DmDiagnosticResult connectResult = DmDiagnosticResult.Rejected;
 		bool connectFailed = false;
+		DmDetachedTransport failedTransport = null;
+		ConnectionState pendingFailurePrior = ConnectionState.Closed;
+		long pendingFailureGeneration = 0;
 		try
 		{
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
@@ -1217,6 +1265,13 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		catch (Exception error)
 		{
+			// A raw canceled handshake may win its continuation before the
+			// invocation's cancellation callback. Preserve actual send evidence
+			// before translation or cleanup can retire the captured invocation.
+			pending.HandshakeSendAttempted |= invocation?.SendAttempted == true || execution?.SendAttempted == true;
+			if (error is OperationCanceledException rawCancellation && error is not DmOperationCanceledException &&
+				(rawCancellation.CancellationToken == pending.UserToken || pending.UserToken.IsCancellationRequested))
+				pending.ObserveUserCancellation();
 			Exception translated = invocation?.TranslateFailure(error) ?? error;
 			if (translated is DmOperationCanceledException canceled && canceled.CancellationToken == pending.LifetimeToken)
 			{
@@ -1226,7 +1281,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			}
 			else if (translated is OperationCanceledException && translated is not DmOperationCanceledException)
 			{
-				if (!pending.UserCancellationWon && pending.LifetimeToken.IsCancellationRequested)
+				if (pending.CloseCancellationWon)
 					translated = new InvalidOperationException("Connection was closed during opening.");
 				else if (pending.UserCancellationWon)
 					translated = new DmOperationCanceledException(new DmFailureInfo(DmErrorKind.Canceled,
@@ -1253,23 +1308,22 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			}
 			else
 			{
-				ConnectionState prior = ConnectionState.Closed;
+				failedTransport = pending.Session.Detach();
 				lock (settingsGate)
 				{
 					if (ReferenceEquals(pendingOpen, pending))
 					{
 						pendingOpen = null;
 						openingInProgress = false;
-						prior = connectionState;
+						pendingFailurePrior = connectionState;
+						pendingFailureGeneration = openGeneration;
 						connectionState = ConnectionState.Closed;
+						physicalClose = failedTransport;
 						session = null;
 					}
 				}
 				pending.PoolLease?.BeginClosing();
 				try { pending.Candidate.CloseExpectedSession(pending.Session); } catch { }
-				finally { pending.PoolLease?.CompleteAfterTransportClosed(); }
-				if (prior != ConnectionState.Closed)
-					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
 			}
 			throw translated;
 		}
@@ -1280,6 +1334,26 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				Exception cleanupFailure = null;
 				try { pending.Dispose(); } catch (Exception error) { cleanupFailure = error; }
 				try { pending.Candidate.Dispose(); } catch (Exception error) { cleanupFailure ??= error; }
+				if (connectFailed && !pending.Published)
+				{
+					Action publicCloseNotification;
+					lock (settingsGate)
+					{
+						pendingCloseNotifications.Remove(pending, out publicCloseNotification);
+					}
+					void CompletePendingFailure()
+					{
+						pending.PoolLease?.CompleteAfterTransportClosed();
+						try
+						{
+							if (publicCloseNotification != null) publicCloseNotification();
+							else NotifyClosedIfCurrent(pendingFailurePrior, pendingFailureGeneration);
+						}
+						catch { /* Preserve the original opening failure after notification. */ }
+					}
+					if (failedTransport == null) CompletePendingFailure();
+					else failedTransport.RunAfterClosed(CompletePendingFailure);
+				}
 				// Preserve the original translated failure, while still attempting
 				// both releases. A standalone cleanup failure remains observable.
 				if (!connectFailed && cleanupFailure != null)

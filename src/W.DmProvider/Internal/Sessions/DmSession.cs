@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ExceptionServices;
 using W.Dm.Internal.Diagnostics;
 using System.Threading;
 using W.Dm.Internal.Legacy.A;
@@ -21,6 +22,7 @@ internal sealed class DmSession
     private OperationIdentity activeReaderIdentity;
     private DmConnInstance transport;
     private D pendingTransport;
+    private DmDetachedTransport detachedTransport;
     private DmPhysicalSessionState state = DmPhysicalSessionState.New;
     private DmLocalTransactionState transactionState;
     private DmTransaction activeTransaction;
@@ -798,7 +800,8 @@ internal sealed class DmSession
     // Atomic identity check, state change and transport detachment. Caller closes the captured instance outside the gate.
     private DmDetachedTransport CaptureTransportUnderLock()
     {
-        var captured = new DmDetachedTransport(transport, pendingTransport);
+        if (detachedTransport != null) return detachedTransport;
+        var captured = detachedTransport = new DmDetachedTransport(transport, pendingTransport);
         transport = null;
         pendingTransport = null;
         return captured;
@@ -827,13 +830,17 @@ internal sealed class DmSession
                 (id.SessionId != SessionId || id.LeaseGeneration != leaseGeneration ||
                  activeLease?.Identity.ExecutionId != id.ExecutionId ||
                  (id.InvocationId != 0 && activeInvocation?.Identity.InvocationId != id.InvocationId))) return null;
-            if (state == DmPhysicalSessionState.Closed) return null;
+            if (state == DmPhysicalSessionState.Closed) return expected == null ? CaptureTransportUnderLock() : null;
             activeInvocation = null;
             activeLease = null;
             activeWire = null;
             activeReader = null;
             activeReaderIdentity = default;
-            captured = BreakAndCaptureUnderLock();
+            // Identity-bound cleanup claims only a new abort. A connection close
+            // also needs the retained handle of an already broken session to
+            // observe physical completion without claiming another abort.
+            captured = state == DmPhysicalSessionState.Broken && expected == null
+                ? CaptureTransportUnderLock() : BreakAndCaptureUnderLock();
         }
         if (Interlocked.Exchange(ref diagnosticDiscarded, 1) == 0) DmDiagnosticsCore.Discard(diagnosticReason);
         if (expected != null)
@@ -871,15 +878,58 @@ internal sealed class DmSession
 
 internal sealed class DmDetachedTransport
 {
+    private readonly object gate = new();
     private DmConnInstance instance;
     private D pending;
+    private bool abortStarted;
+    private readonly DmPhysicalCloseCompletion physicalClose = new();
     internal DmDetachedTransport(DmConnInstance instance, D pending) { this.instance = instance; this.pending = pending; }
+
+    internal void RunAfterClosed(Action completion) => physicalClose.RunAfterClosed(completion);
+
     internal void AbortTransport()
     {
+        lock (gate)
+        {
+            // A reentrant close must not wait for the owner executing callbacks
+            // inside channel disposal. Resource capture alone is not completion.
+            if (abortStarted) return;
+            abortStarted = true;
+        }
         DmConnInstance capturedInstance = Interlocked.Exchange(ref instance, null);
         D capturedPending = Interlocked.Exchange(ref pending, null);
-        try { capturedInstance?.AbortTransport(); }
-        finally { capturedPending?.C(); }
+        ExceptionDispatchInfo failure = null;
+        try
+        {
+            try { capturedInstance?.AbortTransport(); }
+            finally { capturedPending?.C(); }
+        }
+        catch (Exception error) { failure = ExceptionDispatchInfo.Capture(error); }
+
+        // Another Close may already own disposal. Its logical closed flag and
+        // these high-level abort returns cannot establish physical completion.
+        // Keep a sentinel until every registration has been attempted so inline
+        // completions cannot publish before the other resource is registered.
+        int pendingClosures = 1;
+        void PartClosed()
+        {
+            if (Interlocked.Decrement(ref pendingClosures) == 0) physicalClose.Complete();
+        }
+        if (capturedInstance != null)
+        {
+            Interlocked.Increment(ref pendingClosures);
+            try { capturedInstance.RunAfterPhysicalClosed(PartClosed); }
+            catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        }
+        if (capturedPending != null)
+        {
+            Interlocked.Increment(ref pendingClosures);
+            try { capturedPending.RunAfterPhysicalClosed(PartClosed); }
+            catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        }
+        try { PartClosed(); }
+        catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        failure?.Throw();
     }
 }
 

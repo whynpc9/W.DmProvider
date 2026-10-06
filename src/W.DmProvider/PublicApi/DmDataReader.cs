@@ -539,7 +539,10 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				lease.Session.Detach(lease.Identity)?.AbortTransport();
 			}
 		}
-		try { CloseOwned(); }
+		try
+		{
+			if (CloseOwned()) invocation?.RecordDiagnosticCleanupSuccess();
+		}
 		catch
 		{
 			lease?.Session.Detach(lease.Identity)?.AbortTransport();
@@ -562,9 +565,9 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 	}
 
-	internal void CloseOwned()
+	internal bool CloseOwned()
 	{
-		if (m_IsClosed) return;
+		if (m_IsClosed) return false;
 		InvalidateLobFlows();
 		m_IsClosed = true;
 		m_DbInfo = null;
@@ -576,10 +579,12 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		var lease = Volatile.Read(ref executionLease) ?? DmInvocation.Current?.Lease;
 		bool sameSession = lease != null && lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration)
 			&& ReferenceEquals(m_Conn?.Session, lease.Session);
-		if (sameSession && statement != null && !statement.P()) statement.p();
+		bool closedStatement = sameSession && statement != null && !statement.P();
+		if (closedStatement) statement.p();
 		else statement?.o();
 		if (sameSession && (m_Behavior & CommandBehavior.CloseConnection) != 0)
 			m_Conn.Conn?.CloseExpectedSession(lease.Session);
+		return closedStatement;
 	}
 
 	internal bool do_GetBoolean(int i)
@@ -1354,11 +1359,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			m_Statement = null;
 			bool sameSession = lease != null && lease.Session.IsCurrent(lease.Identity.SessionId, lease.Identity.LeaseGeneration)
 				&& ReferenceEquals(m_Conn?.Session, lease.Session);
-			if (sameSession && invocation != null && statement != null && !statement.P())
+			bool closedStatement = sameSession && invocation != null && statement != null && !statement.P();
+			if (closedStatement)
 				await statement.CloseAsync(CancellationToken.None).ConfigureAwait(false);
 			else statement?.o();
 			if (sameSession && (m_Behavior & CommandBehavior.CloseConnection) != 0)
 				await m_Conn.Conn.CloseExpectedSessionAsync(lease.Session).ConfigureAwait(false);
+			if (closedStatement) invocation.RecordDiagnosticCleanupSuccess();
 		}
 		catch { lease?.Session.Detach(lease.Identity)?.AbortTransport(); throw; }
 		finally

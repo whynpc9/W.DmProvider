@@ -21,6 +21,14 @@ internal sealed class DmPendingOpen : IDisposable
     private int cancellationWinner;
     internal CancellationToken LifetimeToken => lifetime.Token;
     internal bool UserCancellationWon => Volatile.Read(ref cancellationWinner) == 1;
+    internal bool CloseCancellationWon => Volatile.Read(ref cancellationWinner) == 2;
+
+    internal void ObserveUserCancellation()
+    {
+        // A canceled operation may resume before this token's registration.
+        // Supplement an unclaimed winner; an earlier Close remains authoritative.
+        if (UserToken.IsCancellationRequested) Interlocked.CompareExchange(ref cancellationWinner, 1, 0);
+    }
     internal DmPoolOwner Owner;
     internal DmPoolOwnerReference OwnerReference;
     internal DmPoolLease PoolLease;
@@ -35,7 +43,7 @@ internal sealed class DmPendingOpen : IDisposable
         Generation = generation; Settings = settings; Session = session; Candidate = candidate;
         UserToken = userToken; PoolDeadline = deadline;
         lifetime = CancellationTokenSource.CreateLinkedTokenSource(userToken, close.Token);
-        userRegistration = userToken.Register(() => Interlocked.CompareExchange(ref cancellationWinner, 1, 0));
+        userRegistration = userToken.Register(ObserveUserCancellation);
     }
 
     internal void CancelClose()

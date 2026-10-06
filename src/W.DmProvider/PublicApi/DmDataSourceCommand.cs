@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using W.Dm.Internal.Execution;
 
 namespace W.Dm;
 
@@ -15,6 +16,9 @@ internal sealed class DmDataSourceCommand : DbCommand
     private readonly DmCommand command;
     private DmConnection activeConnection;
     private DmDataSourceReader activeReader;
+    private DmDataSourceExecution activeExecution;
+    internal static Action AfterOpen;
+    internal static Action AfterCancelCaptured;
     private int active, disposed;
     private readonly object lifecycleGate = new();
     internal DmDataSourceCommand(DmDataSource source, string text, DmCommand command = null)
@@ -30,12 +34,19 @@ internal sealed class DmDataSourceCommand : DbCommand
     { get => null; set => throw new NotSupportedException("Use a data source connection for transactions."); }
     protected override DbParameterCollection DbParameterCollection => command.Parameters;
     protected override DbParameter CreateDbParameter() => command.CreateParameter();
-    public override void Cancel() => command.Cancel();
+    public override void Cancel()
+    {
+        DmDataSourceExecution captured;
+        lock (lifecycleGate) captured = activeExecution;
+        Volatile.Read(ref AfterCancelCaptured)?.Invoke();
+        captured?.RequestCancellation();
+    }
 
-    private DmConnection Begin(CancellationToken token)
+    private DmDataSourceExecution Begin(CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         DmConnection connection = null;
+        var execution = new DmDataSourceExecution(token);
         try
         {
             lock (lifecycleGate)
@@ -46,39 +57,42 @@ internal sealed class DmDataSourceCommand : DbCommand
                 // and every Dispose/reader cleanup stay outside this gate.
                 connection = source.CreateConnection();
                 command.Connection = connection;
+                execution.Connection = connection;
+                command.BindDataSourceExecution(execution);
+                activeExecution = execution;
                 activeConnection = connection;
                 active = 1;
-                return connection;
+                return execution;
             }
         }
-        catch { connection?.Dispose(); throw; }
+        catch { execution.Dispose(); connection?.Dispose(); throw; }
     }
 
-    private DbDataReader PublishReader(DbDataReader reader, DmConnection connection)
+    private DbDataReader PublishReader(DbDataReader reader, DmDataSourceExecution execution)
     {
         lock (lifecycleGate)
         {
             if (disposed != 0) throw new ObjectDisposedException(nameof(DmDataSourceCommand));
-            return activeReader = new DmDataSourceReader(reader, () => End(connection), () => EndAsync(connection));
+            return activeReader = new DmDataSourceReader(reader, () => End(execution), () => EndAsync(execution));
         }
     }
 
-    private void End(DmConnection connection)
+    private void End(DmDataSourceExecution execution)
     {
-        try { connection.Dispose(); }
-        finally { Release(connection); }
+        try { execution.Connection.Dispose(); }
+        finally { execution.Connection.RunAfterPhysicalClose(() => Release(execution)); }
     }
-    private async ValueTask EndAsync(DmConnection connection)
+    private async ValueTask EndAsync(DmDataSourceExecution execution)
     {
-        try { await connection.DisposeAsync().ConfigureAwait(false); }
-        finally { Release(connection); }
+        try { await execution.Connection.DisposeAsync().ConfigureAwait(false); }
+        finally { execution.Connection.RunAfterPhysicalClose(() => Release(execution)); }
     }
-    private void Release(DmConnection connection)
+    private void Release(DmDataSourceExecution execution)
     {
         bool skipSetter;
         lock (lifecycleGate)
         {
-            if (!ReferenceEquals(activeConnection, connection)) return;
+            if (!ReferenceEquals(activeExecution, execution)) return;
             skipSetter = disposed != 0;
         }
         try
@@ -97,115 +111,120 @@ internal sealed class DmDataSourceCommand : DbCommand
         {
             lock (lifecycleGate)
             {
-                if (ReferenceEquals(activeConnection, connection))
-                { activeConnection = null; activeReader = null; active = 0; }
+                if (ReferenceEquals(activeExecution, execution))
+                { command.UnbindDataSourceExecution(execution); activeExecution = null; activeConnection = null; activeReader = null; active = 0; }
             }
+            execution.Dispose();
         }
     }
 
     public override int ExecuteNonQuery()
     {
-        DmConnection connection = Begin(CancellationToken.None);
+        DmDataSourceExecution execution = Begin(CancellationToken.None);
         Exception primary = null;
-        try { connection.Open(); return command.ExecuteNonQuery(); }
+        try { execution.Open(); Volatile.Read(ref AfterOpen)?.Invoke(); return command.ExecuteNonQuery(); }
         catch (Exception error) { primary = error; throw; }
-        finally { if (primary == null) End(connection); else try { End(connection); } catch { } }
+        finally { if (primary == null) End(execution); else try { End(execution); } catch { } }
     }
     public override object ExecuteScalar()
     {
-        DmConnection connection = Begin(CancellationToken.None);
+        DmDataSourceExecution execution = Begin(CancellationToken.None);
         Exception primary = null;
-        try { connection.Open(); return command.ExecuteScalar(); }
+        try { execution.Open(); Volatile.Read(ref AfterOpen)?.Invoke(); return command.ExecuteScalar(); }
         catch (Exception error) { primary = error; throw; }
-        finally { if (primary == null) End(connection); else try { End(connection); } catch { } }
+        finally { if (primary == null) End(execution); else try { End(execution); } catch { } }
     }
     public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
     {
-        DmConnection connection = Begin(cancellationToken);
+        DmDataSourceExecution execution = Begin(cancellationToken);
         Exception primary = null;
         try
         {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await execution.OpenAsync().ConfigureAwait(false);
+            Volatile.Read(ref AfterOpen)?.Invoke();
             return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception error) { primary = error; throw; }
         finally
         {
-            if (primary == null) await EndAsync(connection).ConfigureAwait(false);
-            else try { await EndAsync(connection).ConfigureAwait(false); } catch { }
+            if (primary == null) await EndAsync(execution).ConfigureAwait(false);
+            else try { await EndAsync(execution).ConfigureAwait(false); } catch { }
         }
     }
     public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
     {
-        DmConnection connection = Begin(cancellationToken);
+        DmDataSourceExecution execution = Begin(cancellationToken);
         Exception primary = null;
         try
         {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await execution.OpenAsync().ConfigureAwait(false);
+            Volatile.Read(ref AfterOpen)?.Invoke();
             return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception error) { primary = error; throw; }
         finally
         {
-            if (primary == null) await EndAsync(connection).ConfigureAwait(false);
-            else try { await EndAsync(connection).ConfigureAwait(false); } catch { }
+            if (primary == null) await EndAsync(execution).ConfigureAwait(false);
+            else try { await EndAsync(execution).ConfigureAwait(false); } catch { }
         }
     }
     public override void Prepare()
     {
-        DmConnection connection = Begin(CancellationToken.None);
+        DmDataSourceExecution execution = Begin(CancellationToken.None);
         Exception primary = null;
-        try { connection.Open(); command.Prepare(); }
+        try { execution.Open(); Volatile.Read(ref AfterOpen)?.Invoke(); command.Prepare(); }
         catch (Exception error) { primary = error; throw; }
-        finally { if (primary == null) End(connection); else try { End(connection); } catch { } }
+        finally { if (primary == null) End(execution); else try { End(execution); } catch { } }
     }
     public override async Task PrepareAsync(CancellationToken cancellationToken = default)
     {
-        DmConnection connection = Begin(cancellationToken);
+        DmDataSourceExecution execution = Begin(cancellationToken);
         Exception primary = null;
         try
         {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await execution.OpenAsync().ConfigureAwait(false);
+            Volatile.Read(ref AfterOpen)?.Invoke();
             await command.PrepareAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception error) { primary = error; throw; }
         finally
         {
-            if (primary == null) await EndAsync(connection).ConfigureAwait(false);
-            else try { await EndAsync(connection).ConfigureAwait(false); } catch { }
+            if (primary == null) await EndAsync(execution).ConfigureAwait(false);
+            else try { await EndAsync(execution).ConfigureAwait(false); } catch { }
         }
     }
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
-        DmConnection connection = Begin(CancellationToken.None);
+        DmDataSourceExecution execution = Begin(CancellationToken.None);
         DbDataReader reader = null;
         try
         {
-            connection.Open();
+            execution.Open(); Volatile.Read(ref AfterOpen)?.Invoke();
             reader = command.ExecuteReader(behavior);
-            return PublishReader(reader, connection);
+            return PublishReader(reader, execution);
         }
         catch
         {
             try { reader?.Dispose(); } catch { }
-            try { End(connection); } catch { }
+            try { End(execution); } catch { }
             throw;
         }
     }
     protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
     {
-        DmConnection connection = Begin(cancellationToken);
+        DmDataSourceExecution execution = Begin(cancellationToken);
         DbDataReader reader = null;
         try
         {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await execution.OpenAsync().ConfigureAwait(false);
+            Volatile.Read(ref AfterOpen)?.Invoke();
             reader = await command.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
-            return PublishReader(reader, connection);
+            return PublishReader(reader, execution);
         }
         catch
         {
             try { if (reader != null) await reader.DisposeAsync().ConfigureAwait(false); } catch { }
-            try { await EndAsync(connection).ConfigureAwait(false); } catch { }
+            try { await EndAsync(execution).ConfigureAwait(false); } catch { }
             throw;
         }
     }

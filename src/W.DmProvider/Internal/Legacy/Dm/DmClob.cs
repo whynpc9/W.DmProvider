@@ -157,7 +157,7 @@ public class DmClob : AbstractLob
 		using var invocation = BeginInternalOperation();
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
 		{ DmLobMaterialization.Characters(data.Length); return data; }
-		if (bytesLength >= 0) DmLobMaterialization.Characters(bytesLength);
+		// Remote locator lengths are opaque wire units; bound the decoded UTF-16 below.
 		using var cursor = NewReadCursor();
 		cursor.SetKnownWireLength(do_length());
 		char[] chunk = new char[8192];
@@ -177,7 +177,7 @@ public class DmClob : AbstractLob
 		using var invocation = BeginInternalOperation(cancellationToken);
 		if (local || storageType == STORAGE_IN_ROW || fetchAll)
 		{ DmLobMaterialization.Characters(data.Length); return data; }
-		if (bytesLength >= 0) DmLobMaterialization.Characters(bytesLength);
+		// Remote locator lengths are opaque wire units; bound the decoded UTF-16 below.
 		using var cursor = NewReadCursor();
 		cursor.SetKnownWireLength(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
 		char[] chunk = new char[8192];

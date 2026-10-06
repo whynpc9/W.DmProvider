@@ -67,6 +67,9 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 	private bool running;
 	private readonly DmCommandPlanGate commandPlanGate = new();
 	private DmCommandPlan activePlan;
+	private DmDataSourceExecution dataSourceExecution;
+	internal void BindDataSourceExecution(DmDataSourceExecution execution) => Volatile.Write(ref dataSourceExecution, execution);
+	internal void UnbindDataSourceExecution(DmDataSourceExecution execution) => Interlocked.CompareExchange(ref dataSourceExecution, null, execution);
 	internal static Action<DmExecutionLease> AfterExecutionCaptured;
 	internal static Action AfterPlanCaptured;
 	private DmParameterCollection ExecutionParameters => activePlan?.Parameters ?? m_Paras;
@@ -92,6 +95,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		Volatile.Write(ref activePlan, plan);
 		try
 		{
+			Volatile.Read(ref dataSourceExecution)?.BindPlan(plan);
 			foreach (DmParameter parameter in plan.Parameters)
 				if (parameter.do_Value is DmLobInput && (plan.Connection?.GetConnInstance()?.ConnProperty.msgVersion ?? 0) < 10)
 					throw new NotSupportedException("Streaming LOB input requires a negotiated modern parameter upload profile.");
@@ -625,7 +629,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 				if (m_Stmt != null)
 				{
 					using var cleanup = borrowed.BeginCleanupInvocation(plan.CleanupTimeout);
-					CleanupCurrentStatement(suppressFailure: !succeeded);
+					if (CleanupCurrentStatement(suppressFailure: !succeeded)) cleanup.RecordDiagnosticCleanupSuccess();
 				}
 			}
 			catch when (!succeeded) { /* Preserve the execution failure. */ }
@@ -927,6 +931,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		catch (DmException error) when (IsOwnedVerifiedServerError(error, DmInvocation.Current?.Lease))
 		{
 			AfterExecute();
+			_ = TranslateCurrentFailure(error);
 			throw;
 		}
 		catch (Exception error)
@@ -1111,7 +1116,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 				else if (m_Stmt != null)
 				{
 					using var cleanup = borrowed.BeginCleanupInvocation(plan.CleanupTimeout);
-					await CleanupCurrentStatementAsync(!succeeded, CancellationToken.None).ConfigureAwait(false);
+					if (await CleanupCurrentStatementAsync(!succeeded, CancellationToken.None).ConfigureAwait(false))
+						cleanup.RecordDiagnosticCleanupSuccess();
 				}
 			}
 			catch when (!succeeded) { }
@@ -1207,7 +1213,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		catch { lease.Dispose(); throw; }
 	}
 
-	private async Task CleanupCurrentStatementAsync(bool suppressFailure, CancellationToken token)
+	private async Task<bool> CleanupCurrentStatementAsync(bool suppressFailure, CancellationToken token)
 	{
 		var statement = m_Stmt;
 		m_Stmt = null;
@@ -1215,13 +1221,14 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		var owner = statementSession;
 		statementSession = null;
 		statementConnection = null;
-		if (statement == null || statement.P()) return;
+		if (statement == null || statement.P()) return false;
 		try
 		{
 			if (owner != null && ReferenceEquals(DmInvocation.Current?.Lease.Session, owner))
 			{
 				executeId = statement.H()?.Execid ?? -1L;
 				await statement.CloseAsync(token).ConfigureAwait(false);
+				return true;
 			}
 			else statement.o();
 		}
@@ -1232,6 +1239,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			statement.o();
 			if (!suppressFailure) throw;
 		}
+		return false;
 	}
 
 	private void AbortStatementAfterFailedExecutionAsync(Exception error = null)
@@ -1257,7 +1265,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			if (lease == null || m_Stmt == null || m_Stmt.P() || !ReferenceEquals(statementSession, lease.Session))
 				throw new InvalidOperationException("Verified server error has no current statement to close.");
 			using var cleanup = lease.BeginCleanupInvocation(plan.CleanupTimeout);
-			await CleanupCurrentStatementAsync(false, CancellationToken.None).ConfigureAwait(false);
+			if (await CleanupCurrentStatementAsync(false, CancellationToken.None).ConfigureAwait(false))
+				cleanup.RecordDiagnosticCleanupSuccess();
 		}
 		catch { lease?.Session.Detach(lease.Identity)?.AbortTransport(); }
 	}
@@ -1288,6 +1297,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 				DmDeadline.Start(connection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5), connection?.OperationClock));
 			using var invocation = lease.BeginInvocation();
 			await statement.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+			invocation.RecordDiagnosticCleanupSuccess();
 		}
 		catch
 		{
@@ -1393,7 +1403,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 	{
 	}
 
-	private void CleanupCurrentStatement(bool suppressFailure)
+	private bool CleanupCurrentStatement(bool suppressFailure)
 	{
 		var statement = m_Stmt;
 		m_Stmt = null;
@@ -1402,13 +1412,14 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		statementSession = null;
 		var ownerConnection = statementConnection;
 		statementConnection = null;
-		if (statement == null || statement.P()) return;
+		if (statement == null || statement.P()) return false;
 		try
 		{
 			if (owner != null && ReferenceEquals(DmInvocation.Current?.Lease.Session, owner))
 			{
 				executeId = statement.H()?.Execid ?? -1L;
 				statement.p();
+				return true;
 			}
 			else statement.o();
 		}
@@ -1418,6 +1429,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			statement.o();
 			if (!suppressFailure) throw;
 		}
+		return false;
 	}
 
 	private void AbortStatementAfterFailedExecution(Exception error = null)
@@ -1468,6 +1480,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout, ownerConnection?.OperationClock));
 			using var invocation = lease.BeginInvocation();
 			statement.p();
+			invocation.RecordDiagnosticCleanupSuccess();
 		}
 		catch
 		{
@@ -1495,7 +1508,7 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 		TimeSpan cleanupTimeout = statementConnection?.Settings?.CleanupTimeout ?? TimeSpan.FromSeconds(5);
 		using var lease = owner.BeginExecution(DmOperationPurpose.Query, DmDeadline.Start(cleanupTimeout, statementConnection?.OperationClock));
 		using var invocation = lease.BeginInvocation();
-		CleanupCurrentStatement(suppressFailure: false);
+		if (CleanupCurrentStatement(suppressFailure: false)) invocation.RecordDiagnosticCleanupSuccess();
 	}
 
 	protected override void Dispose(bool disposing)
@@ -1926,7 +1939,8 @@ public class DmCommand : DbCommand, ICloneable, IFilterInfo
 			if (lease == null || m_Stmt == null || m_Stmt.P() || !ReferenceEquals(statementSession, lease.Session))
 				throw new InvalidOperationException("Verified server error has no current statement to close.");
 			using var cleanup = lease.BeginCleanupInvocation(plan.CleanupTimeout);
-			CleanupCurrentStatement(suppressFailure: false); // STMT_CLOSE response must be fully verified.
+			// STMT_CLOSE response must be fully verified before recording cleanup success.
+			if (CleanupCurrentStatement(suppressFailure: false)) cleanup.RecordDiagnosticCleanupSuccess();
 		}
 		catch
 		{

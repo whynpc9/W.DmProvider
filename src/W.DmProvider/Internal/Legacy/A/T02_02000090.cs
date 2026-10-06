@@ -495,6 +495,8 @@ internal partial class D : a
 		return P_2;
 	}
 
+	internal void RunAfterPhysicalClosed(Action completion) => transport.RunAfterPhysicalClosed(completion);
+
 	public void C()
 	{
 		__t02_field_04000AAD = true;

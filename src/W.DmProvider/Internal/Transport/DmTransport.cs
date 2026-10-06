@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using W.Dm.Internal.Sessions;
@@ -86,6 +87,7 @@ internal sealed class DmTransport : IDisposable
     private readonly Func<Socket, IPEndPoint, CancellationToken, ValueTask> connectSocket;
     private readonly Action<IPAddress, int> beforeAttempt;
     private readonly CancellationTokenSource closeSource = new();
+    private readonly DmPhysicalCloseCompletion physicalClose = new();
     private IDmByteChannel channel;
     private Socket connectingSocket;
     private SslStreamByteChannel pendingTls;
@@ -621,6 +623,8 @@ internal sealed class DmTransport : IDisposable
         finally { DmTransportTestHooks.Disposed(); }
     }
 
+    internal void RunAfterPhysicalClosed(Action completion) => physicalClose.RunAfterClosed(completion);
+
     internal void Close()
     {
         IDmByteChannel captured;
@@ -637,16 +641,24 @@ internal sealed class DmTransport : IDisposable
             upgrading = pendingTls;
             pendingTls = null;
         }
-        try { closeSource.Cancel(); }
-        finally
+        ExceptionDispatchInfo failure = null;
+        try
         {
-            try { if (pending != null) DisposeSocket(pending); }
+            try { closeSource.Cancel(); }
             finally
             {
-                try { captured?.Dispose(); }
-                finally { upgrading?.Dispose(); }
+                try { if (pending != null) DisposeSocket(pending); }
+                finally
+                {
+                    try { captured?.Dispose(); }
+                    finally { upgrading?.Dispose(); }
+                }
             }
         }
+        catch (Exception error) { failure = ExceptionDispatchInfo.Capture(error); }
+        try { physicalClose.Complete(); }
+        catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        failure?.Throw();
     }
 
     public void Dispose() => Close();

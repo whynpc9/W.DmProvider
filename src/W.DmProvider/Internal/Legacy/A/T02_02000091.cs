@@ -934,9 +934,9 @@ internal partial class B
 		}
 	}
 
-	public void E()
+	public void E(bool forcePhysicalAbort = false)
 	{
-		if (__t02_field_04000ABD)
+		if (__t02_field_04000ABD && !forcePhysicalAbort)
 		{
 			return;
 		}

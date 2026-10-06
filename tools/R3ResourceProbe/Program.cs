@@ -56,6 +56,7 @@ internal static partial class Program
             else
             {
                 Stage = "configure_tls"; ConfigureTls(); await RunSoakAsync();
+                Stage = "healthy_final_operation_diagnostics"; VerifyHealthyFinalOperationDiagnostics();
                 Report["status"] = "tls_resource_scope_verified"; Report["integration"] = "TLS_only_upstream_pending";
             }
             Report["accepted"] = true; code = 0;
@@ -148,6 +149,41 @@ internal static partial class Program
         b.TlsClientPrivateKeyPath = Path.Combine(certs, "client-key.pem"); b.TlsRevocationMode = DmTlsRevocationMode.NoCheck;
         Settings = b.ConnectionString; Report["explicit_transport"] = "RequireTls";
         Report["tls_revocation_policy"] = "NoCheck_for_isolated_ephemeral_CA_without_CRL";
+    }
+    private static void VerifyHealthyFinalOperationDiagnostics()
+    {
+        const string failure = "healthy_operation_diagnostics_failed";
+        string[] operations = ["unknown", "connect", "execute", "prepare", "fetch", "commit", "rollback", "reader_close", "metadata", "transaction_begin"];
+        string[] results = ["unknown", "success", "server_error", "canceled", "timeout", "outcome_unknown", "transport_error", "rejected"];
+        var expected = operations.SelectMany(operation => results.Select(result =>
+            "wdm.operation.total|operation=" + operation + ";result=" + result)).ToHashSet(StringComparer.Ordinal);
+        Require(Report.TryGetValue("final_public_diagnostics", out object? snapshot) && snapshot != null &&
+            Report.TryGetValue("physical_connections_created", out object? physical) && physical is long created && created > 0, failure);
+        JsonElement final = JsonSerializer.SerializeToElement(snapshot);
+        Require(final.ValueKind == JsonValueKind.Object && final.TryGetProperty("cumulative_counts", out JsonElement cumulative) &&
+            cumulative.ValueKind == JsonValueKind.Object, failure);
+        Require(final.TryGetProperty("invalid_tag", out JsonElement invalidTag) && invalidTag.ValueKind == JsonValueKind.False &&
+            final.TryGetProperty("caller_context_leaked", out JsonElement contextLeaked) && contextLeaked.ValueKind == JsonValueKind.False &&
+            CountInRange(final, "finite_tag_combinations", 0, 128) && CountInRange(final, "activities", 1, long.MaxValue) &&
+            CountInRange(final, "measurements", 1, long.MaxValue), failure);
+        var buckets = new Dictionary<string, long>(StringComparer.Ordinal);
+        // Require the complete final finite matrix; missing zero buckets are not evidence of health.
+        foreach (JsonProperty property in final.GetProperty("cumulative_counts").EnumerateObject())
+        {
+            Require(property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetInt64(out long count) && count >= 0, failure);
+            if (!property.Name.StartsWith("wdm.operation.total", StringComparison.Ordinal)) continue;
+            Require(expected.Contains(property.Name) && buckets.TryAdd(property.Name, property.Value.GetInt64()), failure);
+        }
+        Require(buckets.Count == expected.Count && expected.All(buckets.ContainsKey), failure);
+        foreach (string operation in operations)
+            Require(buckets["wdm.operation.total|operation=" + operation + ";result=transport_error"] == 0, failure);
+        Require(buckets["wdm.operation.total|operation=connect;result=success"] == (long)Report["physical_connections_created"]!, failure);
+        foreach (string result in results.Where(result => result != "success"))
+            Require(buckets["wdm.operation.total|operation=connect;result=" + result] == 0, failure);
+        // Pool cancellation and rejection belong to the separate acquire control, not physical connect.
+        static bool CountInRange(JsonElement value, string name, long minimum, long maximum) =>
+            value.TryGetProperty(name, out JsonElement item) && item.ValueKind == JsonValueKind.Number &&
+            item.TryGetInt64(out long count) && minimum <= count && count <= maximum;
     }
     private static void Require(bool condition, string kind) { if (!condition) throw new ProbeFailure(kind); }
     private sealed class ProbeFailure(string kind) : Exception { internal string Kind { get; } = kind; }

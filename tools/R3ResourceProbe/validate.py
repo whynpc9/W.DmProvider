@@ -13,6 +13,60 @@ def require(value):
         raise ValueError('invalid_t18_envelope')
 
 
+class DiagnosticHealthError(ValueError):
+    def __init__(self):
+        super().__init__('healthy_operation_diagnostics_failed')
+
+
+def strict_json(text):
+    def unique_object(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError('duplicate_json_key')
+            value[key] = item
+        return value
+    return json.loads(text, object_pairs_hook=unique_object)
+
+
+OPERATIONS = ('unknown', 'connect', 'execute', 'prepare', 'fetch', 'commit', 'rollback',
+              'reader_close', 'metadata', 'transaction_begin')
+RESULTS = ('unknown', 'success', 'server_error', 'canceled', 'timeout', 'outcome_unknown',
+           'transport_error', 'rejected')
+OPERATION_KEYS = frozenset('wdm.operation.total|operation=' + operation + ';result=' + outcome
+                           for operation in OPERATIONS for outcome in RESULTS)
+
+
+def validate_diagnostic_health(result):
+    def healthy(value):
+        if not value:
+            raise DiagnosticHealthError()
+
+    def count(value):
+        return type(value) is int and 0 <= value <= 9223372036854775807
+
+    healthy(type(result) is dict)
+    final = result.get('final_public_diagnostics')
+    healthy(type(final) is dict)
+    healthy(final.get('invalid_tag') is False and final.get('caller_context_leaked') is False)
+    finite = final.get('finite_tag_combinations')
+    activities, measurements = final.get('activities'), final.get('measurements')
+    healthy(count(finite) and finite <= 128 and count(activities) and activities > 0 and
+            count(measurements) and measurements > 0)
+    cumulative = final.get('cumulative_counts')
+    created = result.get('physical_connections_created')
+    healthy(type(cumulative) is dict and count(created) and created > 0)
+    healthy(all(type(key) is str and count(value) for key, value in cumulative.items()))
+    observed = {key for key in cumulative if key.startswith('wdm.operation.total')}
+    healthy(observed == OPERATION_KEYS)
+    healthy(all(cumulative['wdm.operation.total|operation=' + operation + ';result=transport_error'] == 0
+                for operation in OPERATIONS))
+    healthy(cumulative['wdm.operation.total|operation=connect;result=success'] == created)
+    healthy(all(cumulative['wdm.operation.total|operation=connect;result=' + outcome] == 0
+                for outcome in RESULTS if outcome != 'success'))
+    # Wait cancellation/disposal are separate pool-acquire controls, not failed physical connects.
+
+
 def slope_per_100(samples, key):
     pairs = [(sample['CompletedCycles'], sample[key]) for sample in samples if sample.get(key) is not None]
     if not pairs:
@@ -26,8 +80,8 @@ def slope_per_100(samples, key):
 
 
 def main():
-    result = json.loads(Path(sys.argv[1]).read_text())
-    manifest = json.loads(Path(sys.argv[2]).read_text())
+    result = strict_json(Path(sys.argv[1]).read_text())
+    manifest = strict_json(Path(sys.argv[2]).read_text())
     mode = sys.argv[4]
     require(mode in ('offline', 'tls', 'release-environment') and result.get('task') == 'T18' and result.get('schema_version') == 1 and
             result.get('mode') == mode and result.get('accepted') is True and result.get('exit_code') == 0 and
@@ -113,7 +167,8 @@ def main():
         listener = result.get('diagnostic_listener', {})
         require(listener.get('activities', 0) > 0 and listener.get('measurements', 0) > 0 and listener.get('invalid_tag') is False and
                 listener.get('caller_context_leaked') is False and listener.get('finite_tag_combinations', 129) <= 128)
-        cumulative = result.get('final_public_diagnostics', {}).get('cumulative_counts', {})
+        validate_diagnostic_health(result)
+        cumulative = result['final_public_diagnostics']['cumulative_counts']
         def total(name, tag=None):
             return sum(value for key, value in cumulative.items() if key.startswith(name + '|') and (tag is None or tag in key))
         require(total('wdm.connection.created') == final.get('ConnectionsCreated') and total('wdm.connection.closed') == final.get('ConnectionsClosed') and
@@ -137,6 +192,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+    except DiagnosticHealthError:
+        print('{"task":"T18","status":"rejected","classification":"healthy_operation_diagnostics_failed"}')
+        sys.exit(1)
     except Exception:
         print('{"task":"T18","status":"rejected","classification":"envelope_or_resource_budget_failed"}')
         sys.exit(1)

@@ -1,5 +1,6 @@
 """Failure evidence contracts; no builds, credentials or database calls."""
 import json
+import base64
 from pathlib import Path
 import tempfile
 import unittest
@@ -170,12 +171,145 @@ class AuditFailureEvidenceTests(unittest.TestCase):
 
     def test_valid_large_cursor_and_base64_sha512_suffix_are_not_credentials(self):
         self.success_batch()
+        actual_sha512_data = 'A' * 70 + 'connectionstring=='
+        self.assertEqual(64, len(base64.b64decode(actual_sha512_data, validate=True)))
+        self.assertEqual(actual_sha512_data, base64.b64encode(base64.b64decode(actual_sha512_data)).decode())
         gate.write(self.audit / 'Diagnostics-dependencies.json', {'project': 'frozen.csproj',
-            'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': 'ABCDEFpwd='}]})
+            'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': actual_sha512_data}]})
         gate.write(self.audit / 'probe.json', {'schema_version': 1, 'task': 'T18', 'accepted': True,
             'resource_budget': {'numeric_cursor': 4172199544}})
         gate.retain_audit_evidence(self.run, success=True)
         self.assertTrue((self.run / 'public/offline-probe.json').is_file())
+
+    def test_success_nested_duplicate_overwriting_escaped_marker_is_rejected_without_publication(self):
+        self.success_batch()
+        (self.audit / 'suites.json').write_text('[{"suite":"Diagnostics","counts":{"item":"SYN\\u0054HETIC_USER_SECRET","item":"safe"},"product_sha256":"a","status":"passed"}]')
+        with self.assertRaisesRegex(gate.Reject, 'json_duplicate_key'):
+            gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_failure_duplicate_overwriting_escaped_marker_is_rejected_without_publication(self):
+        self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYN\\u0054HETIC_USER_SECRET","reason":"Configuration_test_failed","production_release_accepted":false}')
+        with self.assertRaisesRegex(gate.Reject, 'json_duplicate_key'):
+            self.run_failed()
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_prefixed_and_plus_credentials_rejected_in_fields_strings_and_argv(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for text in ['mypassword=untrusted', '+password=untrusted', 'mypwd=untrusted', '+pwd=untrusted',
+                     'myuser_id=untrusted', '+userid=untrusted', 'myconnectionstring=untrusted', '+connection_string=untrusted']:
+            gate.write(path, [{'suite': 'Diagnostics', 'counts': {'fixture': text}, 'product_sha256': 'a', 'status': 'passed'}])
+            with self.subTest(text=text), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+            self.assertFalse(list((self.run / 'public').iterdir()))
+        gate.write(path, [{'suite': 'Diagnostics', 'counts': {'myPassword': 'value'}, 'product_sha256': 'a', 'status': 'passed'}])
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        gate.write(path, [])
+        value = json.loads((self.audit / 'SDK-command.json').read_text()); value['argv'].append('+password=untrusted')
+        gate.write(self.audit / 'SDK-command.json', value)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+
+    def test_sha512_exemption_is_only_real_canonical_package_hash_in_exact_field(self):
+        self.success_batch(); path = self.audit / 'Diagnostics-dependencies.json'
+        for value in ['ABCDEFpwd=', 'mypassword=untrusted', '+pwd=untrusted']:
+            gate.write(path, {'project': 'frozen.csproj', 'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': value}]})
+            with self.subTest(value=value), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+        real = 'A' * 70 + 'connectionstring=='
+        gate.write(path, {'project': 'frozen.csproj', 'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': real, 'password': 'value'}]})
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        gate.write(path, {'project': 'frozen.csproj', 'libraries': []})
+        gate.write(self.audit / 'suites.json', [{'suite': 'Diagnostics', 'counts': {'sha512': real}, 'product_sha256': 'a', 'status': 'passed'}])
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_decoded_credential_whitespace_and_unicode_escape_in_fixture_rejected(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for text, unicode_tab in [('mypassword\t=untrusted', False), ('+user\tid=untrusted', False),
+                                  ('mypwd\n=untrusted', False), ('+connection\nstring=untrusted', False),
+                                  ('mypassword\t=untrusted', True), ('+user\tid=untrusted', True)]:
+            with self.subTest(text=text, unicode_tab=unicode_tab):
+                raw = json.dumps([{'suite': 'Diagnostics', 'counts': {'fixture': text}, 'product_sha256': 'a', 'status': 'passed'}])
+                if unicode_tab: raw = raw.replace('\\t', '\\u0009')
+                path.write_text(raw)
+                with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                    gate.retain_audit_evidence(self.run, success=True)
+                self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_failure_decoded_credential_whitespace_and_unicode_escape_in_argv_rejected(self):
+        self.summary(); self.command(); path = self.audit / 'Configuration_test-command.json'
+        command = json.loads(path.read_text())
+        for text, unicode_tab in [('mypassword\t=untrusted', False), ('+user\tid=untrusted', False),
+                                  ('mypwd\n=untrusted', False), ('+connection\nstring=untrusted', False),
+                                  ('mypassword\t=untrusted', True), ('+user\tid=untrusted', True)]:
+            with self.subTest(text=text, unicode_tab=unicode_tab):
+                raw = json.dumps({**command, 'argv': [*command['argv'], text]})
+                if unicode_tab: raw = raw.replace('\\t', '\\u0009')
+                path.write_text(raw)
+                with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): self.run_failed()
+                self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_unsafe_retention_keeps_original_timeout_or_other_process_code_separate(self):
+        for code, timeout, attack in [(124, True, 'unsafe'), (17, False, 'symlink'), (124, False, 'duplicate')]:
+            with self.subTest(code=code, attack=attack):
+                self.summary(); self.command()
+                summary = self.audit / 'summary.json'
+                if summary.is_symlink(): summary.unlink(); self.summary()
+                if attack == 'unsafe': summary.write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+                elif attack == 'symlink': summary.unlink(); summary.symlink_to(self.audit / 'Configuration_test-command.json')
+                else: summary.write_text('{"status":"rejected","reason":"strict_gate_failed","reason":"strict_gate_failed","production_release_accepted":false}')
+                outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+                gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': code, 'timed_out': timeout})
+                with self.assertRaises(gate.Reject) as caught: self.run_failed(code)
+                self.assertEqual({'exit_code': code, 'timed_out': timeout, 'command_record_available': True}, caught.exception.details['inner_process_outcome'])
+                self.assertEqual(1, caught.exception.details['evidence_rejection']['exit_code'])
+                self.assertEqual('rejected', caught.exception.details['evidence_status'])
+                self.assertEqual([], caught.exception.details['retained_files'])
+                self.assertEqual({outer.name}, {p.name for p in (self.run / 'public').iterdir()})
+
+    def test_success_host_with_bad_evidence_is_still_failed_and_records_both_layers(self):
+        self.success_batch()
+        (self.audit / 'suites.json').write_text('[{"item":1,"item":2}]')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': 0, 'timed_out': False})
+        with patch.object(gate, 'run_command', return_value=self.run / 'private/log'), self.assertRaises(gate.Reject) as caught:
+            gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
+        self.assertEqual(0, caught.exception.details['inner_process_outcome']['exit_code'])
+        self.assertEqual(1, caught.exception.details['evidence_rejection']['exit_code'])
+        self.assertEqual('inner_audit_json_duplicate_key', caught.exception.reason)
+
+    def test_missing_nonobject_and_corrupt_parent_outcome_keep_explicit_fallback(self):
+        self.summary(); self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        for raw in (None, '[]', 'null', '"safe"', '124', '{', '{"stage":"safe","stage":"safe"}'):
+            with self.subTest(raw=raw):
+                if outer.exists(): outer.unlink()
+                if raw is not None: outer.write_text(raw)
+                with self.assertRaises(gate.Reject) as caught: self.run_failed(124)
+                self.assertEqual({'exit_code': 124, 'timed_out': None, 'command_record_available': False},
+                                 caught.exception.details['inner_process_outcome'])
+                self.assertEqual('rejected', caught.exception.details['evidence_status'])
+                self.assertEqual([], caught.exception.details['retained_files'])
+                self.assertFalse(list((self.run / 'public').glob('offline-*')))
+
+    def test_parent_outcome_read_error_keeps_explicit_fallback(self):
+        self.summary(); self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': 124, 'timed_out': True})
+        original_read_bytes = Path.read_bytes
+        def read_bytes(path):
+            if path == outer: raise OSError('synthetic read failure')
+            return original_read_bytes(path)
+        with patch.object(Path, 'read_bytes', read_bytes), self.assertRaises(gate.Reject) as caught:
+            self.run_failed(17)
+        self.assertEqual({'exit_code': 17, 'timed_out': None, 'command_record_available': False},
+                         caught.exception.details['inner_process_outcome'])
+        self.assertEqual('rejected', caught.exception.details['evidence_status'])
+        self.assertEqual([], caught.exception.details['retained_files'])
+        self.assertFalse(list((self.run / 'public').glob('offline-*')))
 
 
 if __name__ == '__main__':

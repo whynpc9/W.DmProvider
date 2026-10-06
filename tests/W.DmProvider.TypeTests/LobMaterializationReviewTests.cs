@@ -73,13 +73,14 @@ public sealed class LobMaterializationReviewTests
     [InlineData(33554433L)]
     [InlineData(2147483648L)]
     [InlineData(long.MaxValue)]
-    public void ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(long length)
+    public void CachedClobFullGettersUseActualDecodedTextInsteadOfAdvertisedLength(long length)
     {
-        using var fixture = new ReaderReviewTests.ReaderFixture(19, Locator(length));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetString(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetValue(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetFieldValue<string>(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetBytes(0, 0, null!, 0, 0));
+        const string text = "A🚂中Z";
+        using var fixture = new ReaderReviewTests.ReaderFixture(19, [], text, clobLength: length);
+        Assert.Equal(text, fixture.Reader.GetString(0));
+        Assert.Equal(text, fixture.Reader.GetValue(0));
+        Assert.Equal(text, fixture.Reader.GetFieldValue<string>(0));
+        Assert.Equal(Encoding.UTF8.GetByteCount(text), fixture.Reader.GetBytes(0, 0, null!, 0, 0));
     }
 
     [Theory]
@@ -111,12 +112,10 @@ public sealed class LobMaterializationReviewTests
     }
 
     [Fact]
-    public void FetchAllRejectsKnownLengthsBeforeReading()
+    public void BlobFetchAllRejectsKnownByteLengthsBeforeReading()
     {
         using var blob = new ReaderReviewTests.ReaderFixture(12, Locator(Limit + 1));
         Assert.Throws<NotSupportedException>(() => blob.Reader.GetBlob(0).loadAllData());
-        using var clob = new ReaderReviewTests.ReaderFixture(19, Locator(Limit / 2 + 1));
-        Assert.Throws<NotSupportedException>(() => clob.Reader.GetClob(0).loadAllData());
     }
 
     [Fact]

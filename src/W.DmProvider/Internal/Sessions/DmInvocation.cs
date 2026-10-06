@@ -26,6 +26,7 @@ internal sealed class DmInvocation : IDisposable
     internal bool IsTerminated => Lease.Session.GetTerminalCause(this) != DmCancelSource.None;
     internal DmFailurePhase Phase { get; set; }
     private volatile bool completed;
+    private bool diagnosticCleanupSucceeded;
     internal bool Completed { get => completed; set => completed = value; }
     internal bool ServerErrorAccepted { get; set; }
     // An exact caller-read failure receipt belongs to one unsent wire, not to the
@@ -118,6 +119,14 @@ internal sealed class DmInvocation : IDisposable
     internal CancellationToken CancellationToken => operationToken;
     internal void SignalTermination() { try { operationCancellation.Cancel(); } catch (ObjectDisposedException) { } }
     internal void Complete() => Lease.Session.CompleteInvocation(this);
+    // Only the owner of a distinct cleanup invocation records this receipt, after
+    // all cleanup work has returned successfully. It must not complete business
+    // execution or change cancellation/transaction coordination. Cached cleanup
+    // without a wire deliberately has no diagnostic operation to report.
+    internal void RecordDiagnosticCleanupSuccess()
+    {
+        if (SendAttempted) diagnosticCleanupSucceeded = true;
+    }
     internal DmInvocation(DmSession session, DmExecutionLease lease, OperationIdentity identity, DmDeadline deadline, CancellationToken cancellationToken = default)
     {
         operationToken = operationCancellation.Token;
@@ -165,7 +174,7 @@ internal sealed class DmInvocation : IDisposable
                 DmDiagnosticResult result = TerminalCause is DmCancelSource.TotalDeadline or DmCancelSource.IdleTimeout ? DmDiagnosticResult.Timeout :
                     TerminalCause is DmCancelSource.User or DmCancelSource.Command ? DmDiagnosticResult.Canceled :
                     DiagnosticLocalInputFailure ? DmDiagnosticResult.Rejected :
-                    ServerErrorAccepted ? DmDiagnosticResult.ServerError : Completed ? DmDiagnosticResult.Success :
+                    ServerErrorAccepted ? DmDiagnosticResult.ServerError : (Completed || diagnosticCleanupSucceeded) ? DmDiagnosticResult.Success :
                     SendAttempted ? DmDiagnosticResult.TransportError : DmDiagnosticResult.Rejected;
                 if (DiagnosticOperation is DmDiagnosticOperation.Commit or DmDiagnosticOperation.Rollback)
                 {

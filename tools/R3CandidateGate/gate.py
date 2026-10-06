@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Freeze, verify and audit one immutable R3 candidate; never publishes or hides missing release gates."""
 import datetime
+import base64
 import hashlib
 import json
 import os
@@ -134,16 +135,17 @@ def make_snapshot(run):
 
 
 def run_command(argv, run, stage, env, cwd, timeout=1200):
-    log = run / 'private' / (stage + '.log'); began = time.monotonic()
+    log = run / 'private' / (stage + '.log'); began = time.monotonic(); timed_out = False
     with log.open('wb') as output:
         child = subprocess.Popen([str(arg) for arg in argv], cwd=cwd, env=env, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         try: code = child.wait(timeout)
         except subprocess.TimeoutExpired:
+            timed_out = True
             try: os.killpg(child.pid, signal.SIGKILL)
             except ProcessLookupError: pass
             child.wait(); code = 124
     write(run / 'public' / (stage + '-command.json'), {'argv': [str(arg) for arg in argv], 'exit_code': code,
-          'elapsed_seconds': time.monotonic() - began, 'stage': stage})
+          'elapsed_seconds': time.monotonic() - began, 'stage': stage, 'timed_out': timed_out})
     require(code == 0, stage + '_failed', code if 0 < code < 256 else 1)
     return log
 
@@ -272,11 +274,47 @@ AUDIT_PROBE_KEYS = frozenset(('schema_version', 'task', 'accepted', 'implementat
     'package_version', 'package_sha256', 'loaded_assembly_sha256', 'loaded_assembly_mvid', 'integration', 'first_init_cases', 'case'))
 
 
-def audit_safe_bytes(raw):
+def audit_safe_bytes(raw, credentials=True):
     require(not any(marker.encode() in raw for marker in MARKERS), 'inner_audit_public_evidence_rejected')
     require(not re.search(rb'-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----', raw), 'inner_audit_public_evidence_rejected')
-    # A credential key is a token, not a substring of a legitimate SHA512/base64 value.
-    require(not re.search(rb'(?i)(?<![a-z0-9_+/])(?:password|pwd|user\s*id|connection[\s_-]*string)\s*=', raw), 'inner_audit_public_evidence_rejected')
+    if credentials:
+        require(not re.search(rb'(?i)(?:password|pwd|user[\s_-]*id|connection[\s_-]*string)\s*=', raw), 'inner_audit_public_evidence_rejected')
+
+
+def audit_unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        require(key not in result, 'inner_audit_json_duplicate_key')
+        result[key] = value
+    return result
+
+
+def audit_sha512_data(value):
+    if type(value) is not str or len(value) != 88: return False
+    try:
+        decoded = base64.b64decode(value, validate=True)
+        return len(decoded) == 64 and base64.b64encode(decoded).decode('ascii') == value
+    except ValueError:
+        return False
+
+
+def audit_credential_view(name, value, path=()):
+    """Only real SHA512 data in a dependency library's exact sha512 field is exempt."""
+    if type(value) is dict:
+        result = {}
+        for key, item in value.items():
+            require(not re.search(r'(?i)(?:password|pwd|user[\s_-]*id|connection[\s_-]*string)', key),
+                    'inner_audit_public_evidence_rejected')
+            exact_hash_field = name.endswith('-dependencies.json') and len(path) == 2 and path[0] == 'libraries' and \
+                type(path[1]) is int and key == 'sha512' and set(value) == {'identity', 'type', 'sha512'} and value['type'] == 'package'
+            result[key] = '<verified_sha512_data>' if exact_hash_field and audit_sha512_data(item) else audit_credential_view(name, item, path + (key,))
+        return result
+    if type(value) is list: return [audit_credential_view(name, item, path + (index,)) for index, item in enumerate(value)]
+    if type(value) is str:
+        # Inspect decoded whitespace before JSON serialization escapes it again.
+        require(not re.search(r'(?i)(?:password|pwd|user[\s_-]*id|connection[\s_-]*string)\s*=', value),
+                'inner_audit_public_evidence_rejected')
+    return value
 
 
 def audit_success_json_schema(name, value):
@@ -312,12 +350,14 @@ def retain_audit_evidence(run, success=False):
     for path in sorted(public.iterdir()):
         if path.name not in names: continue  # Never private logs, stdout, arbitrary attachments or source controls.
         require(path.is_file() and not path.is_symlink() and path.stat().st_size <= 8 * 1024 * 1024, 'inner_audit_public_evidence_rejected')
-        raw = path.read_bytes(); audit_safe_bytes(raw)
+        raw = path.read_bytes(); audit_safe_bytes(raw, credentials=path.suffix != '.json')
         try:
             if path.suffix == '.json':
-                value = json.loads(raw, parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite_json')))
+                value = json.loads(raw, object_pairs_hook=audit_unique_object,
+                                   parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite_json')))
                 require(type(value) is (list if path.name in AUDIT_JSON_LISTS else dict), 'inner_audit_public_evidence_rejected')
-                audit_safe_bytes(encoded(value))  # Also reject JSON-escaped sensitive controls.
+                audit_safe_bytes(encoded(value), credentials=False)  # Scan decoded controls/PEM before the narrow hash exception.
+                audit_safe_bytes(encoded(audit_credential_view(path.name, value)))
                 if path.name == 'summary.json':
                     require(value.get('status') in ('rejected', 'offline_verified') and value.get('production_release_accepted') is False,
                             'inner_audit_public_evidence_rejected')
@@ -367,7 +407,24 @@ def run_audit_with_evidence(argv, run, env, frozen):
         run_command(argv, run, 'full_twelve_suites_no_build_pack_seven_children', env, frozen, 3600)
     except Exception as error:
         failure = error
-    evidence = retain_audit_evidence(run, success=failure is None)  # Same batch preflight, explicit names in both modes.
+    outcome = {'exit_code': failure.code if isinstance(failure, Reject) else 1 if failure is not None else 0,
+               'timed_out': None, 'command_record_available': False}
+    command_path = run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+    if command_path.is_file() and not command_path.is_symlink():
+        try:
+            recorded = json.loads(command_path.read_bytes(), object_pairs_hook=audit_unique_object)
+            require(type(recorded) is dict, 'inner_audit_command_record_untrusted')
+            if recorded.get('stage') == 'full_twelve_suites_no_build_pack_seven_children' and type(recorded.get('exit_code')) is int and type(recorded.get('timed_out')) is bool:
+                outcome = {'exit_code': recorded['exit_code'], 'timed_out': recorded['timed_out'], 'command_record_available': True}
+        except (ValueError, Reject, TypeError, OSError):
+            pass  # Missing trustworthy outcome is explicit; never infer timeout from code124 alone.
+    try:
+        evidence = retain_audit_evidence(run, success=failure is None)
+    except Reject as error:
+        details = {'inner_process_outcome': outcome, 'evidence_status': 'rejected', 'retained_files': [],
+                   'evidence_rejection': {'reason': error.reason, 'exit_code': error.code}}
+        raise Reject(error.reason, error.code, details) from None
+    evidence['inner_process_outcome'] = outcome
     if failure is not None:
         code = failure.code if isinstance(failure, Reject) else 1
         raise Reject('inner_audit_' + evidence['reject_reason'] if evidence['reject_reason'] in AUDIT_REASONS else evidence['reject_reason'],
