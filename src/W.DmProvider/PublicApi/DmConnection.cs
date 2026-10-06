@@ -70,19 +70,21 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	internal DmSession Session => Volatile.Read(ref session);
 	private void OnSessionBroken(DmSession broken)
 	{
-		ConnectionState prior;
 		lock (settingsGate)
 		{
 			if (!ReferenceEquals(session, broken) || connectionState is ConnectionState.Broken or ConnectionState.Closed) return;
-			prior = connectionState;
+			ConnectionState prior = connectionState;
 			connectionState = ConnectionState.Broken;
 			// A creating permit belongs to the outer pending workflow. Notify after
 			// its cleanup returns that permit, so a callback can synchronously reopen.
 			if (pendingOpen != null && ReferenceEquals(pendingOpen.Session, broken)) return;
+			// The Broken transition and its event stay atomic with the state write,
+			// so a concurrent close cannot publish first and leave a stale prior.
+			// Handlers may reenter on this thread (the lock is reentrant).
+			lastPublishedState = ConnectionState.Broken;
+			try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
+			catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
 		}
-		lastPublishedState = ConnectionState.Broken;
-		try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
-		catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
 	}
 	internal DmExecutionLease BeginExecution(DmOperationPurpose purpose)
 		=> BeginExecution(purpose, default, 0);
@@ -743,7 +745,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			// identity while its physical abort or pending workflow is still ending.
 			if (connectionState == ConnectionState.Closed && session == null && pendingOpen == null &&
 				poolLease == null && m_ConnInst == null) return;
-			prior = connectionState;
+			prior = lastPublishedState;
 			oldSession = session;
 			closingPending = pendingOpen;
 			pendingOpen = null;
@@ -1276,10 +1278,19 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			pending.Candidate.handshakeInvocation = null;
 			DmPendingOpenTestHooks.BeforePublish?.Invoke(this);
 			PublishPending(pending);
-			// There are no state writes after user callbacks. Close/reopen from an
-			// Open notification therefore keeps the replacement generation intact.
-			lastPublishedState = ConnectionState.Open;
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
+			// The Open transition and its event publish atomically under the gate, so
+			// a concurrent close cannot linearize between them and leave a stale
+			// prior. Handlers may reenter on this thread (the lock is reentrant); a
+			// close or reopen from the Open notification keeps the replacement
+			// generation intact, and no state writes happen after user callbacks.
+			lock (settingsGate)
+			{
+				if (openGeneration == pending.Generation && connectionState == ConnectionState.Open)
+				{
+					lastPublishedState = ConnectionState.Open;
+					OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
+				}
+			}
 			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)
