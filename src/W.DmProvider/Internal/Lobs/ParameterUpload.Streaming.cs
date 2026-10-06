@@ -11,6 +11,11 @@ namespace W.Dm.Internal.Legacy.A;
 
 internal partial class B
 {
+    // The upload ACK success body is exactly 21 bytes; the budget keeps bounded
+    // room for a complete server error body instead of the global 64 MiB frame.
+    private const int UploadAckSuccessBodyBytes = 21;
+    private const int UploadAckMaxBodyLength = UploadAckSuccessBodyBytes + 4096;
+
     private static int StreamingInputChunkSize(A statement)
     {
         var settings = statement.G().ConnProperty;
@@ -40,7 +45,7 @@ internal partial class B
             acknowledgement = Wire(() =>
             {
                 global::W.Dm.Internal.Legacy.A.C.A(send, statement.g(), index, cursor.Buffer, count, a(), acknowledgement);
-                A(send, receive, statement.G().ConnProperty.SocketTimeout);
+                A(send, receive, statement.G().ConnProperty.SocketTimeout, UploadAckMaxBodyLength);
                 return AcceptParameterUploadAck(receive, statement);
             });
             // A positive short caller read is not EOF. Cursor fills until capacity
@@ -72,7 +77,7 @@ internal partial class B
             acknowledgement = await WireAsync(async () =>
             {
                 global::W.Dm.Internal.Legacy.A.C.A(send, statement.g(), index, cursor.Buffer, count, a(), acknowledgement);
-                await ExchangeAsync(send, receive, statement.G().ConnProperty.SocketTimeout, cancellationToken).ConfigureAwait(false);
+                await ExchangeAsync(send, receive, statement.G().ConnProperty.SocketTimeout, cancellationToken, UploadAckMaxBodyLength).ConfigureAwait(false);
                 DmResultProtocolTrace.RecordFrame(send.I(), receive);
                 DmWireTestHooks.ResponseReady();
                 decodeOwner = this;

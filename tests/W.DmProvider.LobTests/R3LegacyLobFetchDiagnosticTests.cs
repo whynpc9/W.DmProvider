@@ -147,6 +147,31 @@ public sealed class R3LegacyLobFetchDiagnosticTests
         Assert.True(observer.Counter("success") >= successBaseline + 1);
     }
 
+    [Fact]
+    public async Task StreamReadsServedFromBufferOrEofAddNoFetchSpan()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(3));
+        fixture.Channel.AddData([1, 2], -1);
+        fixture.Channel.AddData([3], -1, true);
+        fixture.ReleaseAll();
+        using var scope = new Activity("synthetic.r3.buffered.fetch").SetIdFormat(ActivityIdFormat.W3C).Start();
+        using var observer = new FetchObserver(scope.TraceId, scope.SpanId);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        long successBaseline = observer.Counter("success");
+        using var stream = reader.GetStream(0);
+        Assert.Equal(1, stream.Read(new byte[1]));
+        Assert.Equal(1, stream.Read(new byte[1]));
+        Assert.Equal(1, stream.Read(new byte[1]));
+        Assert.Equal(0, stream.Read(new byte[1]));
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        // Reads 1 and 3 reached the wire; the buffered read 2 and the EOF read 4
+        // record no span.
+        Assert.Equal(2, observer.Results.Count(value => value.Result == "success"));
+        Assert.DoesNotContain(observer.Results, value => value.Result == "transport_error");
+        Assert.True(observer.Counter("success") >= successBaseline + 2);
+    }
+
     private sealed class FetchObserver : IDisposable
     {
         private readonly ActivityListener activity;

@@ -73,7 +73,7 @@ internal partial class B
 		}
 		finally { parameterUploadOwner = prior; }
 	}
-	private async Task<b> ExchangeAsync(b send,b receive,int timeout,CancellationToken cancellationToken)
+	private async Task<b> ExchangeAsync(b send,b receive,int timeout,CancellationToken cancellationToken,int maxResponseBodyLength = -1)
 	{
 		cancellationToken = AsyncCancellationToken(cancellationToken);
 		C();
@@ -81,7 +81,7 @@ internal partial class B
 		await A().SendFrameAsync(send,timeout,a().crcBody,a().encryptMsg,cancellationToken).ConfigureAwait(false);
 		DmWireTestHooks.FrameSent(send.I());
 		DmWireTestHooks.Sent();
-		await A().ReadFrameAsync(receive,timeout,a().crcBody,a().encryptMsg,cancellationToken).ConfigureAwait(false);
+		await A().ReadFrameAsync(receive,timeout,a().crcBody,a().encryptMsg,cancellationToken,maxResponseBodyLength).ConfigureAwait(false);
 		return receive;
 	}
 	internal async Task OpenAsync(DmDeadline deadline,CancellationToken cancellationToken = default)

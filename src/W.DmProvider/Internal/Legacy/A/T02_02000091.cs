@@ -336,7 +336,7 @@ internal partial class B
 		}
 	}
 
-	private b A(b P_0, b P_1, int P_2)
+	private b A(b P_0, b P_1, int P_2, int maxResponseBodyLength = -1)
 	{
 		try
 		{
@@ -347,7 +347,7 @@ internal partial class B
 			DmWireTestHooks.HandshakeFrameEncoded(P_0.I());
 			A().A(P_0, P_2, a().crcBody, a().encryptMsg);
 			DmWireTestHooks.Sent();
-			A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg);
+			A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg, maxResponseBodyLength);
 			DmResultProtocolTrace.RecordFrame(P_0.I(), P_1);
 			DmWireTestHooks.ResponseReady();
 			decodeOwner = this;

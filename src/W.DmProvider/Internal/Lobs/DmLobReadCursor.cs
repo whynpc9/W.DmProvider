@@ -242,10 +242,10 @@ internal sealed class DmLobReadCursor : IDisposable
         using var invocation = Enter(token);
         try
         {
-            if (destination.IsEmpty) { invocation?.Complete(); return 0; }
+            if (destination.IsEmpty) { invocation?.CompleteIfSent(); return 0; }
             Fetch();
             int count = CopyBytes(destination);
-            Validate(); invocation?.ThrowIfTerminated(); invocation?.Complete(); return count;
+            Validate(); invocation?.ThrowIfTerminated(); invocation?.CompleteIfSent(); return count;
         }
         catch (Exception error) { throw Fail(invocation, error); }
         finally { Volatile.Write(ref entered, 0); if (disposed) bytes = default; }
@@ -257,10 +257,10 @@ internal sealed class DmLobReadCursor : IDisposable
         using var invocation = Enter(token);
         try
         {
-            if (destination.IsEmpty) { invocation?.Complete(); return 0; }
+            if (destination.IsEmpty) { invocation?.CompleteIfSent(); return 0; }
             await FetchAsync(token).ConfigureAwait(false);
             int count = CopyBytes(destination.Span);
-            Validate(); invocation?.ThrowIfTerminated(); invocation?.Complete(); return count;
+            Validate(); invocation?.ThrowIfTerminated(); invocation?.CompleteIfSent(); return count;
         }
         catch (Exception error) { throw Fail(invocation, error); }
         finally { Volatile.Write(ref entered, 0); if (disposed) bytes = default; }
@@ -272,10 +272,10 @@ internal sealed class DmLobReadCursor : IDisposable
         using var invocation = Enter(default);
         try
         {
-            if (destination.IsEmpty) { invocation?.Complete(); return 0; }
+            if (destination.IsEmpty) { invocation?.CompleteIfSent(); return 0; }
             int count;
             do { Fetch(); count = Decode(destination); } while (count == 0 && !decoderEnd);
-            Validate(); invocation?.ThrowIfTerminated(); invocation?.Complete(); return count;
+            Validate(); invocation?.ThrowIfTerminated(); invocation?.CompleteIfSent(); return count;
         }
         catch (Exception error) { throw Fail(invocation, error); }
         finally { Volatile.Write(ref entered, 0); if (disposed) bytes = default; }
@@ -287,11 +287,11 @@ internal sealed class DmLobReadCursor : IDisposable
         using var invocation = Enter(token);
         try
         {
-            if (destination.IsEmpty) { invocation?.Complete(); return 0; }
+            if (destination.IsEmpty) { invocation?.CompleteIfSent(); return 0; }
             int count;
             do { await FetchAsync(token).ConfigureAwait(false); count = Decode(destination.Span); }
             while (count == 0 && !decoderEnd);
-            Validate(); invocation?.ThrowIfTerminated(); invocation?.Complete(); return count;
+            Validate(); invocation?.ThrowIfTerminated(); invocation?.CompleteIfSent(); return count;
         }
         catch (Exception error) { throw Fail(invocation, error); }
         finally { Volatile.Write(ref entered, 0); if (disposed) bytes = default; }

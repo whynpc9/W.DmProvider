@@ -61,6 +61,22 @@ public sealed class R3PreSendInputSourceFailureTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OversizedAckFrameIsRejectedByTheBoundedUploadBudget(bool asynchronous)
+    {
+        await using var fixture = new PublicFixture(asynchronous, 12);
+        await fixture.Open(asynchronous);
+        fixture.Channels[^1].OversizedAck = true;
+        await using var command = fixture.Command(DmDbType.Blob, new MemoryStream(new byte[16]));
+        Exception error = asynchronous
+            ? await Record.ExceptionAsync(() => command.ExecuteNonQueryAsync())!
+            : Record.Exception(() => command.ExecuteNonQuery())!;
+        Assert.Contains("response budget", error!.ToString());
+        Assert.Equal(1, fixture.Channels[^1].PutSends);
+    }
+
+    [Theory]
     [InlineData(false, false, 0)]
     [InlineData(false, false, 3)]
     [InlineData(true, false, 0)]
@@ -426,6 +442,8 @@ public sealed class R3PreSendInputSourceFailureTests
         private bool isolationPending = transaction;
         internal readonly List<short> Opcodes = [];
         internal int MetadataSends, PutSends, PutAcknowledgements, ExecuteSends, PrepareAcknowledgements, CommitSends, SyncCalls, AsyncCalls;
+        // When set, the PUT ACK reply declares a body beyond the upload ACK budget.
+        internal bool OversizedAck;
         public bool IsClosed { get; private set; }
         internal void ClearObservations() { Opcodes.Clear(); MetadataSends = PutSends = PutAcknowledgements = ExecuteSends = PrepareAcknowledgements = CommitSends = SyncCalls = AsyncCalls = 0; }
         private int SendCore(byte[] buffer, int start, int count)
@@ -439,7 +457,7 @@ public sealed class R3PreSendInputSourceFailureTests
                     isolationPending = false; response = Reply(0, [1, 0, 0]); BinaryPrimitives.WriteInt16LittleEndian(response.AsSpan(20), 150); Fix(response); break;
                 case 5: response = Prepare(); break;
                 case 90: MetadataSends++; response = Reply(90, []); break;
-                case 26: PutSends++; response = Reply(261, Convert.FromHexString("020102030405060708090A0B0C0D0E0F1011121314")); break;
+                case 26: PutSends++; response = OversizedAck ? OversizedAckFrame() : Reply(261, Convert.FromHexString("020102030405060708090A0B0C0D0E0F1011121314")); break;
                 case 6:
                 case 13: ExecuteSends++; response = Reply(request, []); BinaryPrimitives.WriteInt16LittleEndian(response.AsSpan(20), 158); BinaryPrimitives.WriteInt64LittleEndian(response.AsSpan(24), 1); Fix(response); break;
                 case 8: CommitSends++; response = Reply(0, []); break;
@@ -481,6 +499,14 @@ public sealed class R3PreSendInputSourceFailureTests
             byte[] frame = new byte[64 + body.Length]; BinaryPrimitives.WriteInt32LittleEndian(frame, 41);
             BinaryPrimitives.WriteInt16LittleEndian(frame.AsSpan(4), opcode); BinaryPrimitives.WriteInt32LittleEndian(frame.AsSpan(6), body.Length);
             BinaryPrimitives.WriteInt32LittleEndian(frame.AsSpan(10), status); body.CopyTo(frame, 64); Fix(frame); return frame;
+        }
+        // A header whose declared body exceeds the ACK budget; the reader must
+        // reject at header validation before allocating or reading the body.
+        private static byte[] OversizedAckFrame()
+        {
+            byte[] frame = new byte[64]; BinaryPrimitives.WriteInt32LittleEndian(frame, 41);
+            BinaryPrimitives.WriteInt16LittleEndian(frame.AsSpan(4), 261);
+            BinaryPrimitives.WriteInt32LittleEndian(frame.AsSpan(6), 5000); Fix(frame); return frame;
         }
         private static void Fix(byte[] frame) { frame[19] = 0; for (int index = 0; index < 19; index++) frame[19] ^= frame[index]; }
         public void Dispose() => IsClosed = true;

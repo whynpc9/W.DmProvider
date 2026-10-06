@@ -64,14 +64,15 @@ internal partial class D
 		byte[] array2 = P_0.A();
 		await SendAllAsync(array2, 0, DmFrameWriter.Validate(P_0), P_1, cancellationToken).ConfigureAwait(false);
 	}
-	internal async Task<b> ReadFrameAsync(b P_0, int P_1, bool P_2, bool P_3, CancellationToken cancellationToken = default)
+	internal async Task<b> ReadFrameAsync(b P_0, int P_1, bool P_2, bool P_3, CancellationToken cancellationToken = default, int maxResponseBodyLength = -1)
 	{
 		cancellationToken = AsyncProtocol.AsyncCancellationToken(cancellationToken);
 		RequireWireExchange();
 		readTimeout = P_1;
 		int num3 = await DmFrameReader.ReadAsync(ReceiveExactlyAsync, P_0,
 			(frame, total) => DmFrameReader.ValidateChecksum(frame, total, P_2), ActiveDeadline(P_1), cancellationToken,
-			header => (P_2 && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header)).ConfigureAwait(false);
+			header => (P_2 && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header),
+			maxResponseBodyLength >= 0 ? maxResponseBodyLength : DmFrameReader.MaxFrameSize - DmFrameReader.HeaderSize).ConfigureAwait(false);
 		if (P_2 && P_0.I() != 200)
 		{
 			int num4 = num3 - 4;
