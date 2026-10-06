@@ -63,6 +63,20 @@ internal sealed class DmLobReadCursor : IDisposable
         return knownWireLength;
     }
 
+    // A validated read at or past the end consumes the flow without a payload
+    // request: a retained sequential cursor must report the resolved end so a
+    // later lower-offset read is still rejected.
+    internal void MarkConsumedToEnd()
+    {
+        if (text) throw new InvalidOperationException("Text LOB wire units are opaque.");
+        if (knownWireLength < 0) throw new InvalidOperationException("The LOB length is not resolved.");
+        bytes = default;
+        bytePosition = 0;
+        wirePosition = knownWireLength;
+        Position = knownWireLength;
+        wireEnd = true;
+    }
+
     // Test injection still exercises this cursor's unit/decoder/lifetime contract.
     internal DmLobReadCursor(AbstractLob locator, ReadOnlyMemory<byte> inline, bool hasInline,
         DmExecutionLease lease, Action validateOwner, int chunkSize, Func<long, int, Data> fetch,

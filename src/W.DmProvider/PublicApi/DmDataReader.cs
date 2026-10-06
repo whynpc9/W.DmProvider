@@ -675,7 +675,17 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				// The offset is compared against the validated length first, so a
 				// range past the end returns zero without issuing GET_LOB_DATA.
 				if (fieldOffset >= cursor.EnsureBinaryWireLength())
+				{
+					// A retained sequential flow must report the resolved end;
+					// otherwise a later lower-offset read would miss the 6097 guard.
+					if (is_SequentialAccess && !temporary)
+					{
+						cursor.MarkConsumedToEnd();
+						m_StreamPos = cursor.Position;
+						sequentialLobUnitOrdinal = i; sequentialLobBytes = true;
+					}
 					return CompleteReaderInvocationIfSent(invocation, 0L);
+				}
 				cursor.SeekBinaryTo(fieldOffset);
 			}
 			byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];

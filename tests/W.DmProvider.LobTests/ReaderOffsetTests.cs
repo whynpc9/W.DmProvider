@@ -232,6 +232,17 @@ public sealed class ReaderOffsetTests
     }
 
     [Fact]
+    public async Task SequentialBlobRangePastResolvedEndConsumesTheFlowBeforeReturningZero()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(4), CommandBehavior.SequentialAccess);
+        byte[] target = new byte[2];
+        Assert.Equal(0, reader.GetBytes(0, 4, target, 0, 2));
+        Assert.Empty(fixture.Channel.Commands);
+        Assert.Equal(6097, Assert.Throws<DmException>(() => reader.GetBytes(0, 2, target, 0, 1)).Number);
+    }
+
+    [Fact]
     public async Task BlobRangeBeyondResolvedUnknownLengthReturnsZeroWithoutDataRequest()
     {
         await using var fixture = new OutputLobFixture();
