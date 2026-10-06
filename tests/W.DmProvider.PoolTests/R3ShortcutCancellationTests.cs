@@ -57,6 +57,35 @@ public sealed class R3ShortcutCancellationTests
         Assert.True(source.Snapshot.IsQuiescent);
     }
 
+    [Fact]
+    public async Task FailedOpenAfterSuppressedBrokenNotifiesClosedFromLastPublishedState()
+    {
+        using var handshake = new SyntheticPoolHandshake();
+        await using var connection = new DmConnection(PoolApiSettings.Text + ";conn_pool_timeout=0");
+        var events = new List<(System.Data.ConnectionState Original, System.Data.ConnectionState Current)>();
+        connection.StateChange += (_, change) => { lock (events) events.Add((change.OriginalState, change.CurrentState)); };
+        DmPendingOpenTestHooks.Handshake = (candidate, _, _) =>
+        {
+            handshake.Install(candidate);
+            var invocation = DmInvocation.Current;
+            invocation.SendAttempted = true;
+            // A wire failure after a sent handshake breaks the pending session; its
+            // Broken event is deliberately deferred until the workflow ends, so the
+            // close notification must chain from the last published state instead.
+            candidate.Session.TerminateInvocation(invocation, DmCancelSource.Command);
+            throw new IOException("Synthetic wire failure after a sent handshake.");
+        };
+        await Assert.ThrowsAsync<DmOperationCanceledException>(() => connection.OpenAsync());
+        Assert.Equal(System.Data.ConnectionState.Closed, connection.State);
+        (System.Data.ConnectionState Original, System.Data.ConnectionState Current)[] snapshot;
+        lock (events) snapshot = events.ToArray();
+        Assert.Equal(new[]
+        {
+            (System.Data.ConnectionState.Closed, System.Data.ConnectionState.Connecting),
+            (System.Data.ConnectionState.Connecting, System.Data.ConnectionState.Closed)
+        }, snapshot);
+    }
+
     [Theory]
     [MemberData(nameof(Methods))]
     public async Task CancelInterruptsHandshakeAndKeepsCapacityUntilPhysicalAbort(bool asynchronous, string method)

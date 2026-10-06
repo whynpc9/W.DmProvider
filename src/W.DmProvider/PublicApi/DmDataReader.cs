@@ -1502,7 +1502,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetByte(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetByte(i));
 		}
 		return filterHead.GetByte(this, i);
 	}
@@ -1552,7 +1552,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetDateTime(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetDateTime(i));
 		}
 		return filterHead.GetDateTime(this, i);
 	}
@@ -1562,7 +1562,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetDecimal(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetDecimal(i));
 		}
 		return filterHead.GetDecimal(this, i);
 	}
@@ -1572,7 +1572,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetDouble(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetDouble(i));
 		}
 		return filterHead.GetDouble(this, i);
 	}
@@ -1602,7 +1602,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetFloat(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetFloat(i));
 		}
 		return filterHead.GetFloat(this, i);
 	}
@@ -1612,7 +1612,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetGuid(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetGuid(i));
 		}
 		return filterHead.GetGuid(this, i);
 	}
@@ -1622,7 +1622,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetInt16(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetInt16(i));
 		}
 		return filterHead.GetInt16(this, i);
 	}
@@ -1632,7 +1632,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetInt32(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetInt32(i));
 		}
 		return filterHead.GetInt32(this, i);
 	}
@@ -1642,7 +1642,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetInt64(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetInt64(i));
 		}
 		return filterHead.GetInt64(this, i);
 	}
@@ -1970,7 +1970,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		bool result = m_RsCache.do_previous();
 		m_CurrentRow = m_RsCache.currentPos;
-		return result;
+		return CompleteReaderInvocationIfSent(invocation, result);
 	}
 
 	public bool First()
@@ -1985,7 +1985,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		bool result = m_RsCache.do_first();
 		m_CurrentRow = m_RsCache.currentPos;
-		return result;
+		return CompleteReaderInvocationIfSent(invocation, result);
 	}
 
 	public bool Last()
@@ -2000,7 +2000,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		bool result = m_RsCache.do_last();
 		m_CurrentRow = m_RsCache.currentPos;
-		return result;
+		return CompleteReaderInvocationIfSent(invocation, result);
 	}
 
 	public bool Absolute(int pos)
@@ -2015,7 +2015,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		bool result = m_RsCache.do_absolute(pos);
 		m_CurrentRow = m_RsCache.currentPos;
-		return result;
+		return CompleteReaderInvocationIfSent(invocation, result);
 	}
 
 	public bool Relative(int pos)
@@ -2030,7 +2030,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		}
 		bool result = m_RsCache.do_relative(pos);
 		m_CurrentRow = m_RsCache.currentPos;
-		return result;
+		return CompleteReaderInvocationIfSent(invocation, result);
 	}
 
 	public new DbDataReader GetData(int i)
@@ -2052,7 +2052,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		int cType = m_ColInfo[i].GetCType();
 		int precision = m_ColInfo[i].GetPrecision();
 		int scale = m_ColInfo[i].GetScale();
-		return m_GetVal.GetTimestampTZ(i, value, cType, precision, scale);
+		return CompleteReaderInvocationIfSent(invocation, m_GetVal.GetTimestampTZ(i, value, cType, precision, scale));
 	}
 
 	public DmXDec GetDmDecimal(int i)
@@ -2065,7 +2065,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		int cType = m_ColInfo[i].GetCType();
 		int precision = m_ColInfo[i].GetPrecision();
 		int scale = m_ColInfo[i].GetScale();
-		return m_GetVal.GetDmDecimal(i, value, cType, precision, scale);
+		return CompleteReaderInvocationIfSent(invocation, m_GetVal.GetDmDecimal(i, value, cType, precision, scale));
 	}
 
 	internal Type GetFieldTypeInner(int i)

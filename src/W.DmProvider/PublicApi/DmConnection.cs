@@ -44,6 +44,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private bool forEFCore;
 
 	private volatile ConnectionState connectionState;
+	// Tracks the last state actually published through a StateChange event. A
+	// deferred close notification must chain from it, never from an unpublished
+	// intermediate value such as a deliberately suppressed Broken.
+	private ConnectionState lastPublishedState = ConnectionState.Closed;
 
 	private readonly object settingsGate = new object();
 	private volatile DmConnectionSettings settings;
@@ -76,6 +80,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			// its cleanup returns that permit, so a callback can synchronously reopen.
 			if (pendingOpen != null && ReferenceEquals(pendingOpen.Session, broken)) return;
 		}
+		lastPublishedState = ConnectionState.Broken;
 		try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
 		catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
 	}
@@ -219,6 +224,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				if (originalState == value) return;
 				connectionState = value;
 			}
+			lastPublishedState = value;
 			OnStateChange(new StateChangeEventArgs(originalState, value));
 		}
 	}
@@ -744,7 +750,12 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			if (openGeneration != long.MaxValue) openGeneration++;
 			closedGeneration = openGeneration;
 			if (closingPending != null && prior != ConnectionState.Closed)
-				pendingCloseNotifications[closingPending] = () => NotifyClosedIfCurrent(prior, closedGeneration);
+			{
+				// The deferred event chains from the last published state; a
+				// suppressed unpublished Broken must not become the event's prior.
+				ConnectionState published = lastPublishedState;
+				pendingCloseNotifications[closingPending] = () => NotifyClosedIfCurrent(published, closedGeneration);
+			}
 			openingInProgress = false;
 			closingLease = poolLease;
 			poolLease = null;
@@ -794,6 +805,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		{
 			if (openGeneration != generation || connectionState != ConnectionState.Closed || session != null) return;
 		}
+		lastPublishedState = ConnectionState.Closed;
 		OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
 	}
 
@@ -1210,6 +1222,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		try
 		{
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
+			lastPublishedState = ConnectionState.Connecting;
 			RequireCurrentPending(pending);
 			if (pending.Settings.Pooling)
 			{
@@ -1261,6 +1274,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			// There are no state writes after user callbacks. Close/reopen from an
 			// Open notification therefore keeps the replacement generation intact.
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
+			lastPublishedState = ConnectionState.Open;
 			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)
@@ -1315,7 +1329,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 					{
 						pendingOpen = null;
 						openingInProgress = false;
-						pendingFailurePrior = connectionState;
+						pendingFailurePrior = lastPublishedState;
 						pendingFailureGeneration = openGeneration;
 						connectionState = ConnectionState.Closed;
 						physicalClose = failedTransport;
