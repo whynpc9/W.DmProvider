@@ -232,6 +232,34 @@ public sealed class ReaderOffsetTests
     }
 
     [Fact]
+    public async Task BlobRangeBeyondResolvedUnknownLengthReturnsZeroWithoutDataRequest()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(-1));
+        fixture.Channel.AddLength(3);
+        fixture.ReleaseAll();
+        byte[] target = new byte[2];
+        Assert.Equal(0, reader.GetBytes(0, 5, target, 0, 2));
+        Assert.Equal(new short[] { 29 }, fixture.Channel.Commands);
+        Assert.NotEqual(W.Dm.Internal.Sessions.DmPhysicalSessionState.Broken, fixture.Session.State);
+    }
+
+    [Fact]
+    public async Task BlobRangeWithUnknownLengthResolvesLengthThenSeeks()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(-1));
+        fixture.Channel.AddLength(4);
+        fixture.Channel.AddData([7, 8], -1, true);
+        fixture.ReleaseAll();
+        byte[] target = new byte[2];
+        Assert.Equal(2, reader.GetBytes(0, 2, target, 0, 2));
+        Assert.Equal(new byte[] { 7, 8 }, target);
+        Assert.Equal(new short[] { 29, 32 }, fixture.Channel.Commands);
+        Assert.Equal(new long[] { 2 }, fixture.Channel.ReadPositions);
+    }
+
+    [Fact]
     public async Task BlobRangeStartsAtRequestedOffsetAndRandomCallsRestartAtZero()
     {
         await using var fixture = new OutputLobFixture();

@@ -54,6 +54,15 @@ internal sealed class DmLobReadCursor : IDisposable
         Position = offset;
     }
 
+    // A seek must compare against a validated length: resolve the deferred
+    // length query before the offset is checked or sent as a GET_LOB_DATA.
+    internal long EnsureBinaryWireLength()
+    {
+        if (text) throw new InvalidOperationException("Text LOB wire units are opaque.");
+        if (knownWireLength < 0 && getBinaryLength != null) SetKnownWireLength(getBinaryLength());
+        return knownWireLength;
+    }
+
     // Test injection still exercises this cursor's unit/decoder/lifetime contract.
     internal DmLobReadCursor(AbstractLob locator, ReadOnlyMemory<byte> inline, bool hasInline,
         DmExecutionLease lease, Action validateOwner, int chunkSize, Func<long, int, Data> fetch,

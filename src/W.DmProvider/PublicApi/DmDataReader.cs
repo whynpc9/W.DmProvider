@@ -672,7 +672,9 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			{
 				// Binary wire units are bytes: a fresh remote flow starts at the
 				// requested offset instead of transferring and discarding the prefix.
-				if (cursor.KnownWireLength >= 0 && fieldOffset >= cursor.KnownWireLength)
+				// The offset is compared against the validated length first, so a
+				// range past the end returns zero without issuing GET_LOB_DATA.
+				if (fieldOffset >= cursor.EnsureBinaryWireLength())
 					return CompleteReaderInvocationIfSent(invocation, 0L);
 				cursor.SeekBinaryTo(fieldOffset);
 			}

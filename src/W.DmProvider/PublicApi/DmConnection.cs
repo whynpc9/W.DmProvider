@@ -801,12 +801,17 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private void NotifyClosedIfCurrent(ConnectionState prior, long generation)
 	{
 		if (prior == ConnectionState.Closed) return;
+		// The generation validation and the event publication must stay atomic:
+		// a concurrent reopen advances the generation under the same gate, so
+		// publishing under the gate keeps the Closed event ahead of any later
+		// Connecting. Handlers may still reenter on this thread (the lock is
+		// reentrant) and synchronously reopen, which then publishes after this.
 		lock (settingsGate)
 		{
 			if (openGeneration != generation || connectionState != ConnectionState.Closed || session != null) return;
+			lastPublishedState = ConnectionState.Closed;
+			OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
 		}
-		lastPublishedState = ConnectionState.Closed;
-		OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
 	}
 
 	internal void RunAfterPhysicalClose(Action completion)
