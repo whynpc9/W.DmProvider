@@ -1221,8 +1221,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		long pendingFailureGeneration = 0;
 		try
 		{
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
 			lastPublishedState = ConnectionState.Connecting;
+			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
 			RequireCurrentPending(pending);
 			if (pending.Settings.Pooling)
 			{
@@ -1273,8 +1273,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			PublishPending(pending);
 			// There are no state writes after user callbacks. Close/reopen from an
 			// Open notification therefore keeps the replacement generation intact.
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
 			lastPublishedState = ConnectionState.Open;
+			OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open));
 			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)

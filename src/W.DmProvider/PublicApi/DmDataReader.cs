@@ -1409,7 +1409,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		try
 		{
 			invocation.ThrowIfTerminated();
-			return CompleteReaderInvocation(invocation, Task.FromResult(GetSchemaTableOwned()));
+			return CompleteReaderInvocationIfSent(invocation, Task.FromResult(GetSchemaTableOwned()));
 		}
 		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
@@ -1425,7 +1425,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			checkClosed();
 			byte[] value = null;
 			GetByteArrayValue(ordinal, ref value); // Already fetched row bytes; no network access.
-			return CompleteReaderInvocation(invocation, Task.FromResult(value == null));
+			return CompleteReaderInvocationIfSent(invocation, Task.FromResult(value == null));
 		}
 		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
@@ -1440,12 +1440,12 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			CheckIndex(ordinal);
 			checkClosed();
 			int type = m_ColInfo[ordinal].GetCType();
-			if (type is not (12 or 19)) return CompleteReaderInvocation(invocation, GetFieldValueOwned<T>(ordinal));
+			if (type is not (12 or 19)) return CompleteReaderInvocationIfSent(invocation, GetFieldValueOwned<T>(ordinal));
 			byte[] bytes = null;
 			GetByteArrayValue(ordinal, ref bytes);
 			if (bytes == null)
 			{
-				if (typeof(T) == typeof(object) || typeof(T) == typeof(DBNull)) return CompleteReaderInvocation(invocation, (T)(object)DBNull.Value);
+				if (typeof(T) == typeof(object) || typeof(T) == typeof(DBNull)) return CompleteReaderInvocationIfSent(invocation, (T)(object)DBNull.Value);
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 			}
 			object value;
@@ -1456,7 +1456,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			else if (typeof(T) == typeof(object))
 				value = await m_GetVal.GetObjectAsync(ordinal, bytes, type, m_ColInfo[ordinal].GetPrecision(), m_ColInfo[ordinal].GetScale(), cancellationToken).ConfigureAwait(false);
 			else throw new NotSupportedException("Asynchronous LOB field conversion supports object, string and byte array values.");
-			return CompleteReaderInvocation(invocation, (T)value);
+			return CompleteReaderInvocationIfSent(invocation, (T)value);
 		}
 		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
@@ -1733,7 +1733,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		try
 		{
 			invocation.ThrowIfTerminated();
-			return CompleteReaderInvocation(invocation, GetFieldValueOwned<T>(ordinal));
+			return CompleteReaderInvocationIfSent(invocation, GetFieldValueOwned<T>(ordinal));
 		}
 		catch (Exception error) { throw invocation.TranslateFailure(error); }
 	}
