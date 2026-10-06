@@ -254,6 +254,15 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		return value;
 	}
 
+	// A getter that reached the wire and returned successfully completes its
+	// invocation; cached no-I/O getters deliberately record no span. Remote LOB
+	// reads reuse the ambient reader invocation, so nothing else completes it.
+	private static T CompleteReaderInvocationIfSent<T>(DmInvocation invocation, T value)
+	{
+		if (invocation != null && invocation.SendAttempted) return CompleteReaderInvocation(invocation, value);
+		return value;
+	}
+
 	private DmInvocation BeginReaderInvocation()
 	{
 		if (m_IsClosed) throw new InvalidOperationException("Reader is closed.");
@@ -345,7 +354,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			using var invocation = BeginReaderInvocation();
 			if (filterHead == null)
 			{
-				return do_this(number);
+				return CompleteReaderInvocationIfSent(invocation, do_this(number));
 			}
 			return filterHead.getThis(this, number);
 		}
@@ -358,7 +367,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			using var invocation = BeginReaderInvocation();
 			if (filterHead == null)
 			{
-				return do_this(name);
+				return CompleteReaderInvocationIfSent(invocation, do_this(name));
 			}
 			return filterHead.getThis(this, name);
 		}
@@ -623,14 +632,14 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		{
 			byte[] zero = null; GetByteArrayValue(i, ref zero, lobPartial: true, lengthScan: true);
 			if (zero == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-			return 0;
+			return CompleteReaderInvocationIfSent(invocation, 0L);
 		}
 		if (type == 19)
 		{
 			// Compatibility: CLOB bytes retain the bounded full-materialization contract.
 			byte[] raw = null; GetByteArrayValue(i, ref raw, lobPartial: true, lengthScan: buffer == null);
 			byte[] encoded = m_GetVal.GetBytes(i, raw, type, m_ColInfo[i].GetPrecision(), m_ColInfo[i].GetScale());
-			if (buffer == null) return encoded.LongLength;
+			if (buffer == null) return CompleteReaderInvocationIfSent(invocation, encoded.LongLength);
 			int count = fieldOffset >= encoded.LongLength ? 0 : (int)Math.Min(length, encoded.LongLength - fieldOffset);
 			encoded.AsSpan(checked((int)Math.Min(fieldOffset, encoded.LongLength)), count).CopyTo(buffer.AsSpan(bufferoffset, count));
 			if (is_SequentialAccess && count > 0)
@@ -638,13 +647,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				m_StreamPos = checked(fieldOffset + count);
 				sequentialLobUnitOrdinal = i; sequentialLobBytes = true;
 			}
-			return count;
+			return CompleteReaderInvocationIfSent(invocation, (long)count);
 		}
 		if (buffer == null)
 		{
 			byte[] raw = null; GetByteArrayValue(i, ref raw, lobPartial: true, lengthScan: true);
 			if (raw == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-			if (type != 12) return raw.LongLength;
+			if (type != 12) return CompleteReaderInvocationIfSent(invocation, raw.LongLength);
 			var locator = new AbstractLob(raw, 0, m_Conn, m_ColInfo[i]);
 			if (locator.storageType == AbstractLob.STORAGE_IN_ROW)
 			{
@@ -652,8 +661,8 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				if (locator.bytesLength < 0 || locator.bytesLength > raw.LongLength - head)
 					DmError.ThrowDmException(DmErrorDefinition.ECNET_LOB_LENGTH_ERROR);
 			}
-			if (locator.bytesLength >= 0) return locator.bytesLength;
-			return m_Conn.GetCsi().A(locator);
+			if (locator.bytesLength >= 0) return CompleteReaderInvocationIfSent(invocation, locator.bytesLength);
+			return CompleteReaderInvocationIfSent(invocation, m_Conn.GetCsi().A(locator));
 		}
 		var cursor = RangeCursor(i, false, out bool temporary);
 		try
@@ -661,7 +670,8 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			if (fieldOffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
 			byte[] discard = new byte[DmConnectionSettings.DefaultLobChunkSize];
 			while (cursor.Position < fieldOffset)
-				if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldOffset - cursor.Position))) == 0) return 0;
+				if (cursor.ReadBytes(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldOffset - cursor.Position))) == 0)
+					return CompleteReaderInvocationIfSent(invocation, 0L);
 			int total = 0;
 			while (total < length)
 			{
@@ -669,7 +679,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				if (count == 0) break;
 				total += count;
 			}
-			m_StreamPos = cursor.Position; return total;
+			m_StreamPos = cursor.Position; return CompleteReaderInvocationIfSent(invocation, (long)total);
 		}
 		finally { if (temporary) cursor.Dispose(); }
 	}
@@ -703,7 +713,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			if (raw == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 			if (raw.Length is not (8 or 12)) throw new InvalidDataException("ROWID payload length is invalid.");
 			string rendered = m_GetVal.GetString(i, raw, type, m_ColInfo[i].GetPrecision(), m_ColInfo[i].GetScale());
-			if (buffer == null) return rendered.Length;
+			if (buffer == null) return CompleteReaderInvocationIfSent(invocation, (long)rendered.Length);
 			int count = fieldoffset >= rendered.Length ? 0 : (int)Math.Min(length, rendered.Length - fieldoffset);
 			rendered.AsSpan(checked((int)Math.Min(fieldoffset, rendered.Length)), count).CopyTo(buffer.AsSpan(bufferoffset, count));
 			if (is_SequentialAccess && count > 0)
@@ -711,13 +721,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				m_StreamPos = checked(fieldoffset + count);
 				sequentialLobUnitOrdinal = i; sequentialLobBytes = false;
 			}
-			return count;
+			return CompleteReaderInvocationIfSent(invocation, (long)count);
 		}
 		if (buffer != null && length == 0)
 		{
 			byte[] zero = null; GetByteArrayValue(i, ref zero, lobPartial: true, lengthScan: true);
 			if (zero == null) DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
-			return 0;
+			return CompleteReaderInvocationIfSent(invocation, 0L);
 		}
 		bool temporary = false;
 		var cursor = buffer == null ? CreateLobCursor(i, true, lengthScan: true) : RangeCursor(i, true, out temporary);
@@ -728,11 +738,12 @@ public class DmDataReader : DbDataReader, IFilterInfo
 			if (buffer == null)
 			{
 				while (cursor.ReadChars(discard) != 0) { }
-				return cursor.Position;
+				return CompleteReaderInvocationIfSent(invocation, cursor.Position);
 			}
 			if (fieldoffset < cursor.Position) DmError.ThrowDmException(DmErrorDefinition.ECNET_SEQUENTIALACCESS_ERROR);
 			while (cursor.Position < fieldoffset)
-				if (cursor.ReadChars(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldoffset - cursor.Position))) == 0) return 0;
+				if (cursor.ReadChars(discard.AsSpan(0, (int)Math.Min(discard.Length, fieldoffset - cursor.Position))) == 0)
+					return CompleteReaderInvocationIfSent(invocation, 0L);
 			int total = 0;
 			while (total < length)
 			{
@@ -740,7 +751,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 				if (count == 0) break;
 				total += count;
 			}
-			m_StreamPos = cursor.Position; return total;
+			m_StreamPos = cursor.Position; return CompleteReaderInvocationIfSent(invocation, (long)total);
 		}
 		finally { if (temporary) cursor.Dispose(); }
 	}
@@ -970,15 +981,15 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginInternalInvocation();
 		CheckIndex(ordinal);
 		int cType = m_ColInfo[ordinal].GetCType();
-		if (cType is not (9 or 24)) return GetValueOwned(ordinal);
+		if (cType is not (9 or 24)) return CompleteReaderInvocationIfSent(invocation, GetValueOwned(ordinal));
 		byte[] value = null;
 		GetByteArrayValue(ordinal, ref value);
-		if (value == null) return DBNull.Value;
+		if (value == null) return CompleteReaderInvocationIfSent(invocation, (object)DBNull.Value);
 		int precision = m_ColInfo[ordinal].GetPrecision();
 		int scale = m_ColInfo[ordinal].GetScale();
-		return cType == 9
-			? DmNumericCodec.DecodeDecimal(value, precision > 0 && scale >= 0 ? scale : null)
-			: DmNumericCodec.DecodeScaledInt64(value, scale);
+		return CompleteReaderInvocationIfSent(invocation, cType == 9
+			? (object)DmNumericCodec.DecodeDecimal(value, precision > 0 && scale >= 0 ? scale : null)
+			: DmNumericCodec.DecodeScaledInt64(value, scale));
 	}
 
 	internal int do_GetProviderSpecificValues(object[] values)
@@ -988,7 +999,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		if (values == null) return 0;
 		int count = Math.Min(values.Length, m_DbInfo.GetColumnCount());
 		for (int i = 0; i < count; i++) values[i] = do_GetProviderSpecificValue(i);
-		return count;
+		return CompleteReaderInvocationIfSent(invocation, count);
 	}
 
 	internal DataTable do_GetSchemaTable()
@@ -1035,13 +1046,13 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		{
 			DmError.ThrowDmException(DmErrorDefinition.ECNET_NULL_VALUE);
 		}
-		return m_GetVal.GetString(i, value, cType, precision, scale);
+		return CompleteReaderInvocationIfSent(invocation, m_GetVal.GetString(i, value, cType, precision, scale));
 	}
 
 	internal object do_GetValue(int i)
 	{
 		using var invocation = BeginInternalInvocation();
-		return GetValueOwned(i);
+		return CompleteReaderInvocationIfSent(invocation, GetValueOwned(i));
 	}
 
 	internal object GetValueOwned(int i)
@@ -1102,7 +1113,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		{
 			values[i] = do_GetValue(i);
 		}
-		return num;
+		return CompleteReaderInvocationIfSent(invocation, num);
 	}
 
 	internal bool do_IsDBNull(int i)
@@ -1481,7 +1492,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetBoolean(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetBoolean(i));
 		}
 		return filterHead.GetBoolean(this, i);
 	}
@@ -1501,7 +1512,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetBytes(i, fieldOffset, buffer, bufferoffset, length);
+			return CompleteReaderInvocationIfSent(invocation, do_GetBytes(i, fieldOffset, buffer, bufferoffset, length));
 		}
 		return filterHead.GetBytes(this, i, fieldOffset, buffer, bufferoffset, length);
 	}
@@ -1511,7 +1522,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetChar(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetChar(i));
 		}
 		return filterHead.GetChar(this, i);
 	}
@@ -1521,7 +1532,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetChars(i, fieldoffset, buffer, bufferoffset, length);
+			return CompleteReaderInvocationIfSent(invocation, do_GetChars(i, fieldoffset, buffer, bufferoffset, length));
 		}
 		return filterHead.GetChars(this, i, fieldoffset, buffer, bufferoffset, length);
 	}
@@ -1671,7 +1682,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetProviderSpecificValue(ordinal);
+			return CompleteReaderInvocationIfSent(invocation, do_GetProviderSpecificValue(ordinal));
 		}
 		return filterHead.GetProviderSpecificValue(this, ordinal);
 	}
@@ -1681,7 +1692,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetProviderSpecificValues(values);
+			return CompleteReaderInvocationIfSent(invocation, do_GetProviderSpecificValues(values));
 		}
 		return filterHead.GetProviderSpecificValues(this, values);
 	}
@@ -1701,7 +1712,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetString(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetString(i));
 		}
 		return filterHead.GetString(this, i);
 	}
@@ -1711,7 +1722,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetValue(i);
+			return CompleteReaderInvocationIfSent(invocation, do_GetValue(i));
 		}
 		return filterHead.GetValue(this, i);
 	}
@@ -1798,7 +1809,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 		using var invocation = BeginReaderInvocation();
 		if (filterHead == null)
 		{
-			return do_GetValues(values);
+			return CompleteReaderInvocationIfSent(invocation, do_GetValues(values));
 		}
 		return filterHead.GetValues(this, values);
 	}
@@ -2067,7 +2078,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	public DmBlob GetBlob(short i)
 	{
 		using var invocation = BeginReaderInvocation();
-		return GetBlobOwned(i);
+		return CompleteReaderInvocationIfSent(invocation, GetBlobOwned(i));
 	}
 
 	private DmBlob GetBlobOwned(short i)
@@ -2079,7 +2090,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	public DmClob GetClob(short i)
 	{
 		using var invocation = BeginReaderInvocation();
-		return GetClobOwned(i);
+		return CompleteReaderInvocationIfSent(invocation, GetClobOwned(i));
 	}
 
 	private DmClob GetClobOwned(short i)

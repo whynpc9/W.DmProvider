@@ -83,6 +83,70 @@ public sealed class R3LegacyLobFetchDiagnosticTests
         Assert.True(observer.Counter("success") >= successBaseline + 2);
     }
 
+    [Fact]
+    public async Task ReaderGetBytesOnRemoteBlobReportsFetchSuccessWithoutTransportError()
+    {
+        await using var fixture = new OutputLobFixture();
+        var reader = fixture.Reader(12, OutputLobFixture.Locator(3));
+        fixture.Channel.AddData([1, 2], -1);
+        fixture.Channel.AddData([3], -1, true);
+        fixture.ReleaseAll();
+        using var scope = new Activity("synthetic.r3.reader.fetch").SetIdFormat(ActivityIdFormat.W3C).Start();
+        using var observer = new FetchObserver(scope.TraceId, scope.SpanId);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        long successBaseline = observer.Counter("success");
+        byte[] buffer = new byte[3];
+        Assert.Equal(3, reader.GetBytes(0, 0, buffer, 0, 3));
+        Assert.Equal(new byte[] { 1, 2, 3 }, buffer);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        var span = Assert.Single(observer.Results);
+        Assert.Equal("success", span.Result);
+        Assert.True(observer.Counter("success") >= successBaseline + 1);
+    }
+
+    [Fact]
+    public async Task ReaderGetCharsOnRemoteClobReportsFetchSuccessWithoutTransportError()
+    {
+        await using var fixture = new OutputLobFixture();
+        byte[] encoded = Encoding.UTF8.GetBytes("A中");
+        var reader = fixture.Reader(19, OutputLobFixture.Locator(encoded.Length));
+        fixture.Channel.AddData(encoded, encoded.Length, true);
+        fixture.ReleaseAll();
+        using var scope = new Activity("synthetic.r3.reader.fetch").SetIdFormat(ActivityIdFormat.W3C).Start();
+        using var observer = new FetchObserver(scope.TraceId, scope.SpanId);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        long successBaseline = observer.Counter("success");
+        char[] buffer = new char[4];
+        Assert.Equal(2, reader.GetChars(0, 0, buffer, 0, 4));
+        Assert.Equal("A中", new string(buffer, 0, 2));
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        var span = Assert.Single(observer.Results);
+        Assert.Equal("success", span.Result);
+        Assert.True(observer.Counter("success") >= successBaseline + 1);
+    }
+
+    [Fact]
+    public async Task ReaderGetValuesMaterializingRemoteClobReportsFetchSuccessAfterWholeRow()
+    {
+        await using var fixture = new OutputLobFixture();
+        byte[] encoded = Encoding.UTF8.GetBytes("A中");
+        var reader = fixture.Reader(19, OutputLobFixture.Locator(encoded.Length));
+        fixture.Channel.AddLength(encoded.Length);
+        fixture.Channel.AddData(encoded, encoded.Length, true);
+        fixture.ReleaseAll();
+        using var scope = new Activity("synthetic.r3.reader.fetch").SetIdFormat(ActivityIdFormat.W3C).Start();
+        using var observer = new FetchObserver(scope.TraceId, scope.SpanId);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        long successBaseline = observer.Counter("success");
+        object[] values = new object[1];
+        Assert.Equal(1, reader.GetValues(values));
+        Assert.Equal("A中", values[0]);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        var span = Assert.Single(observer.Results);
+        Assert.Equal("success", span.Result);
+        Assert.True(observer.Counter("success") >= successBaseline + 1);
+    }
+
     private sealed class FetchObserver : IDisposable
     {
         private readonly ActivityListener activity;
