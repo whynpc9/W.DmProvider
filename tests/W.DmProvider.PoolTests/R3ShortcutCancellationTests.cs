@@ -58,6 +58,28 @@ public sealed class R3ShortcutCancellationTests
     }
 
     [Fact]
+    public async Task CloseAfterInstallBeforeConnectingEventStillNotifiesClosedFromConnecting()
+    {
+        using var handshake = new SyntheticPoolHandshake();
+        await using var connection = new DmConnection(PoolApiSettings.Text + ";conn_pool_timeout=0");
+        var events = new List<(System.Data.ConnectionState Original, System.Data.ConnectionState Current)>();
+        connection.StateChange += (_, change) => { lock (events) events.Add((change.OriginalState, change.CurrentState)); };
+        // Close inside the window after the pending workflow is installed but before
+        // the Connecting event; the deferred notification must still chain from
+        // Connecting, never from the stale pre-open marker.
+        DmPendingOpenTestHooks.AfterInstalled = candidate => connection.Close();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => connection.OpenAsync());
+        Assert.Equal(System.Data.ConnectionState.Closed, connection.State);
+        (System.Data.ConnectionState Original, System.Data.ConnectionState Current)[] snapshot;
+        lock (events) snapshot = events.ToArray();
+        Assert.Equal(new[]
+        {
+            (System.Data.ConnectionState.Closed, System.Data.ConnectionState.Connecting),
+            (System.Data.ConnectionState.Connecting, System.Data.ConnectionState.Closed)
+        }, snapshot);
+    }
+
+    [Fact]
     public async Task FailedOpenAfterSuppressedBrokenNotifiesClosedFromLastPublishedState()
     {
         using var handshake = new SyntheticPoolHandshake();

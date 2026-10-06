@@ -1167,6 +1167,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			openingInProgress = true;
 			session = physical;
 			connectionState = ConnectionState.Connecting;
+			// The Connecting transition and its published marker stay atomic with the
+			// state write; the event itself still fires from the open workflow. A
+			// close in between then chains its deferred Closed event from Connecting.
+			lastPublishedState = ConnectionState.Connecting;
 			return pending;
 		}
 	}
@@ -1228,7 +1232,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		long pendingFailureGeneration = 0;
 		try
 		{
-			lastPublishedState = ConnectionState.Connecting;
+			DmPendingOpenTestHooks.AfterInstalled?.Invoke(this);
 			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
 			RequireCurrentPending(pending);
 			if (pending.Settings.Pooling)

@@ -637,6 +637,7 @@ internal sealed class DmTransport : IDisposable
         IDmByteChannel captured;
         Socket pending;
         SslStreamByteChannel upgrading;
+        bool recordClosed;
         lock (gate)
         {
             if (closed) return;
@@ -647,13 +648,8 @@ internal sealed class DmTransport : IDisposable
             connectingSocket = null;
             upgrading = pendingTls;
             pendingTls = null;
-            // The connection metric pairs with the establishment above; a connect
-            // that never established has no create and records no close either.
-            if (established)
-            {
-                established = false;
-                DmDiagnosticsCore.ConnectionClosed();
-            }
+            recordClosed = established;
+            established = false;
         }
         ExceptionDispatchInfo failure = null;
         try
@@ -670,6 +666,10 @@ internal sealed class DmTransport : IDisposable
             }
         }
         catch (Exception error) { failure = ExceptionDispatchInfo.Capture(error); }
+        // The physical close metric pairs with establishment and records only
+        // after the owned disposal attempts have finished, before any waiter is
+        // released. A connect that never established records neither side.
+        if (recordClosed) DmDiagnosticsCore.ConnectionClosed();
         try { physicalClose.Complete(); }
         catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
         failure?.Throw();

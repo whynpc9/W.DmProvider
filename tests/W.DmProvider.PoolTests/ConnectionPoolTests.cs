@@ -323,6 +323,7 @@ internal sealed class SyntheticPoolHandshake : IDisposable
         DmPendingOpenTestHooks.Handshake = null;
         DmPendingOpenTestHooks.AfterCapacityAcquired = null;
         DmPendingOpenTestHooks.BeforePublish = null;
+        DmPendingOpenTestHooks.AfterInstalled = null;
         DmSessionTestHooks.BeforeConnectionTransportAbort = null;
     }
 }

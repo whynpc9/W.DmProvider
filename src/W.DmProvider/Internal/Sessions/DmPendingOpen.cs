@@ -74,4 +74,7 @@ internal static class DmPendingOpenTestHooks
     internal static Func<DmConnection, bool, CancellationToken, ValueTask> Handshake;
     internal static Action<DmConnection> AfterCapacityAcquired;
     internal static Action<DmConnection> BeforePublish;
+    // Runs inside the open workflow after the pending workflow is installed and
+    // before the Connecting event, so tests can race a close against publication.
+    internal static Action<DmConnection> AfterInstalled;
 }
