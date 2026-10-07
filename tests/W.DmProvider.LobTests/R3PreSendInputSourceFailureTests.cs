@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Data;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -194,18 +195,197 @@ public sealed class R3PreSendInputSourceFailureTests
     }
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task FirstChunkStrictEncoderFailurePreservesStatementAndTransactionUntilExplicitReplacement(bool asynchronous, bool flushFailure)
+    {
+        string invalidText = flushFailure ? "abc\ud83d" : "\udc00";
+        int expectedReads = flushFailure ? 2 : 1;
+        await using var fixture = new PublicFixture(asynchronous, 19, transaction: true);
+        await fixture.Open(asynchronous);
+        await using var transaction = asynchronous ?
+            (DmTransaction)await fixture.Connection.BeginTransactionAsync(IsolationLevel.ReadCommitted) : (DmTransaction)fixture.Connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        var channel = fixture.Channels.Single();
+        channel.ClearObservations();
+        var caller = new StrictFailureText(invalidText, asynchronous);
+        await using var command = fixture.Command(DmDbType.Clob, caller, transaction);
+        using var scope = new Activity("synthetic.r3.encoder.diagnostics").SetIdFormat(ActivityIdFormat.W3C).Start();
+        using var observer = new FailureObserver(scope.TraceId, scope.SpanId);
+        using var original = new EncoderFailureObserver(caller);
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        long baseline = observer.Counter("rejected");
+        EncoderFallbackException error = asynchronous ? await Assert.ThrowsAsync<EncoderFallbackException>(() => command.ExecuteNonQueryAsync()) :
+            Assert.Throws<EncoderFallbackException>(() => command.ExecuteNonQuery());
+        Assert.Same(original.Error, error);
+        original.Dispose();
+        Assert.True(await DmDiagnosticsCore.FlushAsync(TimeSpan.FromSeconds(5)));
+        var span = Assert.Single(observer.Results);
+        Assert.Equal("rejected", span.Result); Assert.Equal(ActivityStatusCode.Error, span.Status);
+        Assert.True(observer.Counter("rejected") >= baseline + 1);
+        Assert.Equal(new short[] { 3, 5 }, channel.Opcodes);
+        Assert.Equal(1, channel.PrepareAcknowledgements);
+        Assert.Equal(0, channel.MetadataSends); Assert.Equal(0, channel.PutSends); Assert.Equal(0, channel.ExecuteSends);
+        Assert.True(caller.SawHistoricalSend); Assert.True(caller.SawUnsentWire);
+        Assert.True(caller.ObservedInvocation!.IsDisposed);
+        Assert.Null(caller.ObservedInvocation.LocalInputFailureException);
+        Assert.Null(caller.ObservedInvocation.LocalInputFailureWire);
+        Assert.False(caller.ObservedInvocation.Completed); Assert.False(caller.ObservedInvocation.ServerErrorAccepted);
+        Assert.NotNull(command.Statement);
+        Assert.False(channel.IsClosed); Assert.Equal(ConnectionState.Open, fixture.Connection.State);
+        Assert.Equal(DmPhysicalSessionState.Ready, fixture.Connection.Session.State);
+        Assert.Equal(DmTransactionOutcome.Active, transaction.Outcome);
+        Assert.Equal(expectedReads, caller.Reads); Assert.Equal(invalidText.Length, caller.Consumed);
+        Assert.Equal(0, caller.Disposals); Assert.Equal(0, caller.Forbidden);
+        Assert.Equal(0, asynchronous ? caller.SyncReads : caller.AsyncReads);
+        Assert.Equal(1, fixture.Source.Snapshot.Leased);
+
+        command.Parameters[0].Value = new UnknownTextInput("A\ud83d\ude80", 1, asynchronous);
+        Assert.Equal(1, asynchronous ? await command.ExecuteNonQueryAsync() : command.ExecuteNonQuery());
+        Assert.Equal(1, channel.PrepareAcknowledgements);
+        Assert.Equal(1, channel.MetadataSends); Assert.True(channel.PutSends > 0); Assert.Equal(1, channel.ExecuteSends);
+        Assert.Equal(DmTransactionOutcome.Active, transaction.Outcome);
+        if (asynchronous) await transaction.CommitAsync(); else transaction.Commit();
+        Assert.Equal(DmTransactionOutcome.Committed, transaction.Outcome); Assert.Equal(1, channel.CommitSends);
+        Assert.Equal(expectedReads, caller.Reads); Assert.Equal(invalidText.Length, caller.Consumed);
+        Assert.Equal(0, caller.Disposals); Assert.Equal(0, caller.Forbidden);
+        Assert.Equal(0, asynchronous ? channel.SyncCalls : channel.AsyncCalls);
+        await fixture.Connection.CloseAsync();
+        Assert.True(fixture.Source.Snapshot.IsQuiescent);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task StrictEncoderFailureIsNotARecoverableCallerReadReceipt(bool asynchronous)
+    public async Task StrictEncoderFailureAfterAcknowledgedFirstChunkBreaksWithoutRetryOrExecute(bool asynchronous)
     {
         await using var fixture = new PublicFixture(asynchronous, 19);
         await fixture.Open(asynchronous);
-        await using var command = fixture.Command(DmDbType.Clob, new UnknownTextInput("\ud83d", 1, asynchronous));
-        if (asynchronous) await Assert.ThrowsAsync<EncoderFallbackException>(() => command.ExecuteNonQueryAsync());
-        else Assert.Throws<EncoderFallbackException>(() => command.ExecuteNonQuery());
+        var caller = new StrictFailureText("xxxxxxxx\udc00", asynchronous);
+        await using var command = fixture.Command(DmDbType.Clob, caller);
+        using var original = new EncoderFailureObserver(caller);
+        EncoderFallbackException error = asynchronous ? await Assert.ThrowsAsync<EncoderFallbackException>(() => command.ExecuteNonQueryAsync()) :
+            Assert.Throws<EncoderFallbackException>(() => command.ExecuteNonQuery());
+        Assert.Same(original.Error, error);
+        original.Dispose();
+        var channel = fixture.Channels.Single();
+        Assert.Equal(1, channel.MetadataSends); Assert.Equal(1, channel.PutSends); Assert.Equal(1, channel.PutAcknowledgements);
+        Assert.Equal(0, channel.ExecuteSends); Assert.False(caller.SawUnsentWire);
+        Assert.Equal(3, caller.Reads); Assert.Equal(9, caller.Consumed);
+        Assert.True(channel.IsClosed); Assert.Equal(DmPhysicalSessionState.Broken, fixture.Connection.Session.State);
+        Assert.Equal(0, caller.Disposals); Assert.Equal(0, caller.Forbidden);
+        await fixture.Connection.CloseAsync();
+        Assert.True(fixture.Source.Snapshot.IsQuiescent);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SecondParameterStrictEncoderFailureAfterEarlierUploadBreaksWithoutRetryOrExecute(bool asynchronous)
+    {
+        await using var fixture = new PublicFixture(asynchronous, 19, parameterCount: 2);
+        await fixture.Open(asynchronous);
+        var caller = new StrictFailureText("\udc00", asynchronous);
+        await using var command = fixture.Command(DmDbType.Clob, new UnknownTextInput("abc", 1, asynchronous));
+        command.CommandText = "INSERT INTO SYNTHETIC VALUES (:p,:q)";
+        command.Parameters.Add(new DmParameter("q", DmDbType.Clob) { Value = caller });
+        using var original = new EncoderFailureObserver(caller);
+        EncoderFallbackException error = asynchronous ? await Assert.ThrowsAsync<EncoderFallbackException>(() => command.ExecuteNonQueryAsync()) :
+            Assert.Throws<EncoderFallbackException>(() => command.ExecuteNonQuery());
+        Assert.Same(original.Error, error);
+        original.Dispose();
+        var channel = fixture.Channels.Single();
+        Assert.Equal(1, channel.MetadataSends); Assert.Equal(1, channel.PutSends); Assert.Equal(1, channel.PutAcknowledgements);
+        Assert.Equal(0, channel.ExecuteSends); Assert.False(caller.SawUnsentWire);
+        Assert.Equal(1, caller.Reads); Assert.Equal(1, caller.Consumed);
+        Assert.True(channel.IsClosed); Assert.Equal(DmPhysicalSessionState.Broken, fixture.Connection.Session.State);
+        Assert.Equal(0, caller.Disposals); Assert.Equal(0, caller.Forbidden);
+        await fixture.Connection.CloseAsync();
+        Assert.True(fixture.Source.Snapshot.IsQuiescent);
+    }
+
+    [Theory]
+    [InlineData("user")]
+    [InlineData("command")]
+    [InlineData("deadline")]
+    public async Task ExistingTerminalCauseWinsBeforeInvalidTextCanReachStrictEncoder(string cause)
+    {
+        await using var fixture = new PublicFixture(true, 19);
+        await fixture.Open(true);
+        using var token = new CancellationTokenSource();
+        var caller = new StrictFailureText("\udc00", true);
+        await using var command = fixture.Command(DmDbType.Clob, caller);
+        caller.BeforeReturn = () =>
+        {
+            if (cause == "user") token.Cancel();
+            else if (cause == "command") command.Cancel();
+            else fixture.Connection.Session.TerminateInvocation(DmInvocation.Current!, DmCancelSource.TotalDeadline);
+        };
+        using var original = new EncoderFailureObserver(caller);
+        Exception error = (await Record.ExceptionAsync(() => command.ExecuteNonQueryAsync(token.Token)))!;
+        if (cause == "deadline") Assert.Equal(DmCancelSource.TotalDeadline, Assert.IsType<DmTimeoutException>(error).FailureInfo.CancelSource);
+        else
+        {
+            var canceled = Assert.IsType<DmOperationCanceledException>(error);
+            Assert.Equal(cause == "user" ? DmCancelSource.User : DmCancelSource.Command, canceled.FailureInfo.CancelSource);
+            if (cause == "user") Assert.Equal(token.Token, canceled.CancellationToken);
+        }
+        Assert.Null(original.Error); // Post-read polling keeps the terminal winner ahead of conversion.
+        original.Dispose();
+        Assert.Null(caller.ObservedInvocation!.LocalInputFailureException);
         var channel = fixture.Channels.Single();
         Assert.Equal(new short[] { 3, 5 }, channel.Opcodes);
+        Assert.Equal(0, channel.MetadataSends); Assert.Equal(0, channel.PutSends); Assert.Equal(0, channel.ExecuteSends);
         Assert.True(channel.IsClosed); Assert.Equal(DmPhysicalSessionState.Broken, fixture.Connection.Session.State);
+        Assert.Equal(1, caller.Reads); Assert.Equal(0, caller.Disposals);
+        await fixture.Connection.CloseAsync();
+        Assert.True(fixture.Source.Snapshot.IsQuiescent);
+    }
+
+    [Fact]
+    public async Task LateInvalidTextAfterCloseReopenCannotPreserveOrBreakReplacementSession()
+    {
+        await using var fixture = new PublicFixture(true, 19);
+        await fixture.Open(true);
+        var caller = new DelayedInvalidText();
+        await using var oldCommand = fixture.Command(DmDbType.Clob, caller);
+        using var original = new EncoderFailureObserver(caller);
+        DmSession oldSession = fixture.Connection.Session;
+        Task<int> pending = oldCommand.ExecuteNonQueryAsync();
+        try
+        {
+            await caller.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(new short[] { 3, 5 }, fixture.Channels[0].Opcodes);
+            await fixture.Connection.CloseAsync();
+            await fixture.Connection.OpenAsync();
+            DmSession replacement = fixture.Connection.Session;
+            Assert.NotSame(oldSession, replacement);
+            await using var fresh = fixture.Command(DmDbType.Clob, new UnknownTextInput("fresh", 1, true));
+            Assert.Equal(1, await fresh.ExecuteNonQueryAsync());
+            int sends = fixture.Channels[1].Opcodes.Count;
+            caller.Release.TrySetResult();
+            EncoderFallbackException error = await Assert.ThrowsAsync<EncoderFallbackException>(() => pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.Same(original.Error, error);
+            original.Dispose();
+            Assert.Null(caller.ObservedInvocation!.LocalInputFailureException);
+            Assert.Equal(DmPhysicalSessionState.Closed, oldSession.State);
+            Assert.Equal(sends, fixture.Channels[1].Opcodes.Count);
+            Assert.Same(replacement, fixture.Connection.Session);
+            Assert.Equal(DmPhysicalSessionState.Ready, replacement.State);
+            Assert.False(fixture.Channels[1].IsClosed); Assert.Equal(1, caller.Reads); Assert.Equal(0, caller.Disposals);
+            await oldCommand.DisposeAsync();
+            Assert.False(fixture.Channels[1].IsClosed);
+            fresh.Parameters[0].Value = new UnknownTextInput("again", 1, true);
+            Assert.Equal(1, await fresh.ExecuteNonQueryAsync());
+            await fixture.Connection.CloseAsync();
+            Assert.True(fixture.Source.Snapshot.IsQuiescent);
+        }
+        finally
+        {
+            caller.Release.TrySetResult();
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+        }
     }
 
     [Theory]
@@ -275,6 +455,66 @@ public sealed class R3PreSendInputSourceFailureTests
         {
             input.Release.TrySetResult();
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+        }
+    }
+
+    private class StrictFailureText(string text, bool asyncOnly) : TextReader
+    {
+        internal int Reads, Consumed, SyncReads, AsyncReads, Disposals, Forbidden;
+        internal bool SawHistoricalSend, SawUnsentWire;
+        internal DmInvocation? ObservedInvocation;
+        internal Action? BeforeReturn;
+        private int Next(Span<char> buffer, bool asynchronous)
+        {
+            if (asynchronous) AsyncReads++; else SyncReads++;
+            if (asyncOnly && !asynchronous) throw new InvalidOperationException("Sync text read forbidden.");
+            Reads++;
+            ObservedInvocation = DmInvocation.Current;
+            SawHistoricalSend = ObservedInvocation?.SendAttempted == true;
+            SawUnsentWire = DmWireExchange.Current?.SendAttempted == false;
+            int count = Math.Min(buffer.Length, text.Length - Consumed);
+            text.AsSpan(Consumed, count).CopyTo(buffer); Consumed += count;
+            BeforeReturn?.Invoke();
+            return count;
+        }
+        public override int Read(char[] buffer, int offset, int count) => Next(buffer.AsSpan(offset, count), false);
+        public override ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken token = default)
+        { token.ThrowIfCancellationRequested(); return ValueTask.FromResult(Next(buffer.Span, true)); }
+        public override string ReadToEnd() { Forbidden++; throw new InvalidOperationException("Full text materialization forbidden."); }
+        protected override void Dispose(bool disposing) { Disposals++; }
+    }
+
+    private sealed class DelayedInvalidText() : StrictFailureText("\udc00", true)
+    {
+        internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public override async ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken token = default)
+        {
+            Entered.TrySetResult(); await Release.Task.ConfigureAwait(false);
+            // The deliberately late caller ignores cancellation and returns invalid text.
+            return await base.ReadAsync(buffer, CancellationToken.None).ConfigureAwait(false);
+        }
+    }
+
+    private sealed class EncoderFailureObserver : IDisposable
+    {
+        private readonly StrictFailureText caller;
+        private int disposed;
+        internal EncoderFallbackException? Error;
+        internal EncoderFailureObserver(StrictFailureText caller)
+        {
+            this.caller = caller;
+            AppDomain.CurrentDomain.FirstChanceException += Observe;
+        }
+        private void Observe(object? sender, FirstChanceExceptionEventArgs eventArgs)
+        {
+            if (eventArgs.Exception is EncoderFallbackException error && caller.ObservedInvocation != null &&
+                ReferenceEquals(caller.ObservedInvocation, DmInvocation.Current))
+                Interlocked.CompareExchange(ref Error, error, null);
+        }
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) == 0) AppDomain.CurrentDomain.FirstChanceException -= Observe;
         }
     }
 

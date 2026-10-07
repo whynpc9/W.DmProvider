@@ -128,8 +128,20 @@ internal sealed class DmLobInput
                         ConsumedCharacters = checked(ConsumedCharacters + read);
                         if (read == 0) sourceEof = true;
                     }
-                    encoder.Convert(characters.AsSpan(characterOffset, characterCount - characterOffset), encoded.AsSpan(), sourceEof,
-                        out int usedCharacters, out int usedBytes, out bool completed);
+                    DmInvocation encoderInvocation = DmInvocation.Current;
+                    DmWireExchange encoderWire = DmWireExchange.Current;
+                    int usedCharacters, usedBytes;
+                    bool completed;
+                    try
+                    {
+                        encoder.Convert(characters.AsSpan(characterOffset, characterCount - characterOffset), encoded.AsSpan(), sourceEof,
+                            out usedCharacters, out usedBytes, out completed);
+                    }
+                    catch (EncoderFallbackException error)
+                    {
+                        encoderInvocation?.Lease.Session.TryAcceptLocalInputFailure(encoderInvocation, encoderWire, error);
+                        throw;
+                    }
                     characterOffset += usedCharacters;
                     encodedOffset = 0; encodedCount = usedBytes;
                     ConsumedBytes = checked(ConsumedBytes + usedBytes);

@@ -1224,7 +1224,7 @@ public class DmDataReader : DbDataReader, IFilterInfo
 	internal bool do_Read()
 	{
 		using var invocation = BeginInternalInvocation();
-		return ReadOwned();
+		return CompleteReaderInvocationIfSent(invocation, ReadOwned());
 	}
 
 	internal bool ReadOwned()

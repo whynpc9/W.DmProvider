@@ -100,8 +100,8 @@
       "candidate_version": "0.1.0-r3.t15.20261002125216",
       "reuse_policy": "discard",
       "session_reset_verified": false,
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "upstream_pending": []
     },
     {
@@ -116,8 +116,8 @@
       "candidate_version": "0.1.0-r3.t16.20261002143244",
       "reuse_policy": "discard",
       "session_reset_verified": false,
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "upstream_pending": []
     },
     {
@@ -132,8 +132,8 @@
       "shared_cleanup": "fresh_exact_objects_absent",
       "candidate_version": "0.1.0-r3.t17.20261002171716",
       "remaining": [],
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "upstream_pending": [],
       "historical_scoped_dependency": "implementation_and_offline_TLS_accepted",
       "validation_scope": "full_defined_R3_matrix",
@@ -152,8 +152,8 @@
       "resource_measurement_seconds": 600,
       "resource_measurement_cycles": 13103,
       "candidate_version": "0.1.0-r3.t18.20261002191803",
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "historical_activation_scope": "implementation_offline_TLS_only",
       "validation_scope": "full_defined_R3_matrix",
       "historical_status": "integration_verified"
@@ -165,8 +165,8 @@
       "report": "reports/T19.md",
       "implementation_completed": true,
       "upstream_pending": [],
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "candidate_version": "0.1.0-r3.20261003023000",
       "execution_revision": "t19-cli-retention-v1",
       "historical_status": "integration_verified"
@@ -213,8 +213,8 @@
       "evidence": "evidence/T25/verified-v5/validation-summary.json",
       "source_manifest": "evidence/T25/verified-v5/accepted-source-manifest.json",
       "tls_status": "integration_verified",
-      "final_candidate_version": "0.1.0-r3.20261007012403",
-      "final_evidence": "evidence/T19/v20/root-final-readback.json",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
       "historical_activation_scope": "accepted_T18_offline_TLS_scope_only",
       "validation_scope": "full_defined_R3_matrix",
       "historical_status": "integration_verified"
@@ -280,9 +280,41 @@
     "historical_evidence_manifest": ".local/verification/r3/historical-baseline/manifest.json",
     "current_task": null,
     "upstream_pending": [
+      "PR_current_head_review_and_checks",
       "PR_merge"
     ],
     "t19_latest_checkpoint": {
+      "status": "v23_full_defined_R3_matrix_accepted",
+      "candidate_version": "0.1.0-r3.20261007143838",
+      "offline_passed": 1224,
+      "target_cases": 48,
+      "python_cases": 120,
+      "first_init_cases": 7,
+      "tls_matrix": "6_gates_accepted",
+      "shared_driver_matrix": "5_gates_accepted",
+      "t17_shared": "full_original_gate_accepted",
+      "EF": "9_lanes_two_validators_accepted",
+      "EF_strict_trx_passed": 710,
+      "external_11_gates": "missing=[]",
+      "TEST_cleanup": "all_profiles_exact_owned_absence",
+      "full_R3_complete": true,
+      "R4_started": false,
+      "evidence": "evidence/T19/v23/root-final-readback.json"
+    },
+    "candidate_version": "0.1.0-r3.20261007143838",
+    "evidence": "evidence/T19/v23/root-final-readback.json",
+    "source_provenance": "v23_immutable_source_archive_and_exact_package_with_same_candidate_EF_continuation",
+    "delivery": {
+      "PR": "https://github.com/whynpc9/W.DmProvider/pull/2",
+      "merge_completed": false,
+      "R4_started": false
+    },
+    "review_findings": [
+      "PRRT_kwDOUvoqbs6pn3Zc",
+      "PRRT_kwDOUvoqbs6pvENO"
+    ],
+    "resolved_tool_review": "4172199544_verified_23b2cc3",
+    "historical_v20_checkpoint": {
       "status": "v20_full_defined_R3_matrix_accepted",
       "candidate_version": "0.1.0-r3.20261007012403",
       "offline_passed": 1204,
@@ -300,22 +332,6 @@
       "full_R3_complete": true,
       "R4_started": false,
       "evidence": "evidence/T19/v20/root-final-readback.json"
-    },
-    "candidate_version": "0.1.0-r3.20261007012403",
-    "evidence": "evidence/T19/v20/root-final-readback.json",
-    "source_provenance": "immutable_v6_producer_plus_explicit_tooling_execution_overlay",
-    "delivery": {
-      "PR": "https://github.com/whynpc9/W.DmProvider/pull/2",
-      "merge_completed": false,
-      "R4_started": false
-    },
-    "review_findings": [
-      "4172130409",
-      "4172130412",
-      "4172153210",
-      "4172258031",
-      "4172258032"
-    ],
-    "resolved_tool_review": "4172199544_verified_23b2cc3"
+    }
   }
 }

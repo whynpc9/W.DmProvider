@@ -315,3 +315,25 @@ v19 两文件已停写并正式静态接受，只有Command verified分支一行
 ## 2026-10-07：v20 完整验收收口
 
 用户「做一轮完整的验收」。HEAD `4ec7853` 经 v20 完整矩阵独立验收通过：唯一候选 `0.1.0-r3.20261007012403`，离线 1204/first-init 7/targets 230/Python 120、同包 T16/T17 离线、EF 三初始 lane、TLS 六门（含 703.6 秒资源门 10099=10099）、**shared 五门首次全部通过（T17 shared 大值门 R3 历史首次 accepted）**、EF 九 lane 与双 validator、external 11 门 `missing=[]`；全部实库门 `WDM_PROVIDER_TEST` 身份与精确 owned 清理，2879 项冻结输入首尾一致。进度与 T19 报告已更新，根 readback 归档 `evidence/T19/v20/root-final-readback.json`。`production_release_accepted=false`；PR #2 merge 待用户决定，R4 未启动。v13–v20 各轮失败与诊断证据保持只读。
+
+## 2026-10-07：PR #2 babysit 新 review 窗口
+
+用户授权持续处理全部 review bot 意见并在门通过后 merge。基线 `2b39fec`，此前 v20 实际通过记录不回写；4947 项 v20 历史文件哈希与基线 source archive 保存在 `.local/verification/r3/pr2-babysit-20261007/`。无活动 build/test 进程。
+
+| agent | 角色及唯一写入范围 |
+| --- | --- |
+| paged_read_design（Astra High） | 只读设计及复审，含 pre-send 严格编码意见的独立判断 |
+| paged_read_code（Sol High） | DmDataReader.do_Read 与新 DiagnosticsTests/R3InternalPagedReadDiagnosticTests.cs |
+| encoder_input_code（Sol High） | DmLobInput 的严格编码异常 receipt 与 LobTests/R3PreSendInputSourceFailureTests.cs |
+| review_verify（Sol Low，待源码冻结） | 唯一隔离构建/测试窗口，新 ignored 输出，不修改产品或测试 |
+| root | 设计及审阅、旧线程证据闭合、新报告、Git/PR/merge |
+
+own 内部分页成功仅按实际 send 完成 invocation；借用外层不提前完成。首块本地编码失败的恢复沿用 exact exception/current unsent wire/当前身份/无终态守卫；后续上传、取消与旧会话不能恢复。High 不运行 dotnet/DB，停写后交独立 Low。旧 v20 接受只归旧候选；本轮新源码另验，公开发行仍未授权，R4 不启动。
+
+本轮两个 High 已停写，Astra/root 核心静态复审接受；分页新类预期10项、输入失败类预期38项。独立 Low 新窗口先验这两类（首失败停止），再新的唯一候选完整离线及受影响的 TEST/TLS 和下游门。实际结果以新 TRX/报告为准，不继承 v20 的通过计数。
+
+v21 首门编译自然退出1：新分页fixture的DbDataReader缺显式转换，无TRX/DB。失败材料保留且Low窗口released，High仅修测试一处cast、10项不变并再次停写；产品未追加修改。v22新冻结由Low重新首门，不能覆盖v21失败。
+
+v22 首门10项执行、9通过1失败，自然exit1：公开GetSchema的C2p execOpt提取SQL literals后实际opcode91，合成fixture未支持。窗口released/无DB；v22失败保留。High仅补同一rowset codec的91响应、精确序列3/91/7/4和数字opcode错误信息，全部原诊断/结果断言及10项不变，root静态复核接受并停写。v23重新冻结、Low重跑全部首门。
+
+v23 两专项48/48、完整离线1224/1224、first-init7/Python120、同包offline/TLS6/shared5通过。EF准备路径失败后仅新ignored runner修合法BASE输出，保留同一候选续验九lane/双validator/710严格TRX/26实际DLL/external11均通过；Astra/root静态接受和root最终原证据读回闭合。Low窗口released，所有High继续停写。root仅验收后证据/进度/文档与Git/PR收口；旧失败与v20/v23执行不回写，公开发行未授权，R4不启动。

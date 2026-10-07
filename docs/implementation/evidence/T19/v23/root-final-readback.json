@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "task": "T19",
+  "status": "v23_full_defined_R3_matrix_accepted",
+  "candidate": {
+    "driver_dll_sha256": "c70f7d4b7bd37187f55483d186d658206232a2e1f60a662530b3a0282e3231e5",
+    "driver_mvid": "69e5632e-75c4-4672-b924-57b8ffb58a52",
+    "package_sha256": "6696a26d89e4caa1b9e7c40a73f024c4df9d8a695da1446bdbecc17757d3bcf9",
+    "source_manifest_sha256": "241e15b52b436a55fe3a299e777b281cee0d6b3c22782a0323de311e1d87d1d5",
+    "version": "0.1.0-r3.20261007143838"
+  },
+  "validated_baseline_head": "2b39fec0fa1bc8974f8e491f9bdb5a6113d14631",
+  "source_freeze_sha256": "5ede0aeacf1c4c6c10376979fcfedfa1719d592b58f0977b1c804a61e07b270e",
+  "source_files": 2335,
+  "offline_dotnet_passed": 1224,
+  "target_cases_passed": 48,
+  "first_init_passed": 7,
+  "python_cases_passed": 120,
+  "runtime_gates": [
+    {
+      "gate": "t14_tls",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261007T144027Z-71730-16057",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261007T144027Z-71730-16057/validation.json",
+      "probe_sha256": "60e752aeef54aa71109cd7d4a989b0c5b5fef480ba672796b04be34eadacf151",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t16_tls",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261007T144004Z-70570-19285",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261007T144004Z-70570-19285/validation.json",
+      "probe_sha256": "31ef4b01012ed044ac634b613921120503328083fb7f8239299bae8d2534a15d",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 13,
+        "physical_connections_disposed": 13
+      }
+    },
+    {
+      "gate": "t13_tls",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T144023Z-71691-12906",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T144023Z-71691-12906/validation.json",
+      "probe_sha256": "0efa185605c160afba94e76ceb7d6576d98b220e4377042774a8cea8811576d4",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t18_tls_resource",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/runs/20261007T144038Z-81e4aadd21/public",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/runs/20261007T144038Z-81e4aadd21/public/consumer_validation-command.json",
+      "probe_sha256": "81178d76a5fc7f4e44a7860d8b98e398eb290d77ca977a8833427841f2c8714a",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 9404,
+        "physical_connections_disposed": 9404
+      }
+    },
+    {
+      "gate": "t13_security_tls",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T144035Z-71780-9639",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T144035Z-71780-9639/validation.json",
+      "probe_sha256": "edb9275ff048823704166d061c7253bfb9f162afb19a8d68093763ef5f0a6704",
+      "server": {
+        "server_identity": null,
+        "server_schema": null,
+        "cleanup_verified": null,
+        "final_database_state": "no_objects_created",
+        "final_verification_identity": null,
+        "final_verification_schema": null,
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t17_tls",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full/runs/20261007T144015Z-71644-4303",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full/runs/20261007T144015Z-71644-4303/validation.json",
+      "probe_sha256": "96e6351717821a1726d51753b01b20b2bd553065e1ab290b4c84e8f12d57e778",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 25,
+        "physical_connections_disposed": 25
+      }
+    },
+    {
+      "gate": "t13_shared",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T145447Z-98632-12830",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T145447Z-98632-12830/validation.json",
+      "probe_sha256": "7ed3dce72d7db2b2b4bd8a815f67ed718b9d53e5625dc2d346fb42d01d43e769",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t14_shared",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261007T145456Z-98700-31428",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t14/runs/20261007T145456Z-98700-31428/validation.json",
+      "probe_sha256": "eff39f3f5e6f2386d3711c5717626ed50ebd4b52bbf22ae2e22397af70b0f9f6",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t17_shared",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full/runs/20261007T145240Z-97337-22166",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full/runs/20261007T145240Z-97337-22166/validation.json",
+      "probe_sha256": "db7f462aa7b9cc16bf0a982dd532c31cbf65e7d634d67bae935ac460863830fe",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 25,
+        "physical_connections_disposed": 25
+      }
+    },
+    {
+      "gate": "t16_shared",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261007T145223Z-96982-17005",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261007T145223Z-96982-17005/validation.json",
+      "probe_sha256": "dd3b9df6cdc95e952d51c5c81ae504d2bd90bd85844b5fdd9f13dda2652d571e",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 15,
+        "physical_connections_disposed": 15
+      }
+    },
+    {
+      "gate": "t13_security_shared",
+      "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T145516Z-99052-3822",
+      "accepted": true,
+      "validator_path": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r2/t13/runs/20261007T145516Z-99052-3822/validation.json",
+      "probe_sha256": "3881b116e7946db89ec24c0c5677408771b620242705a89dcfc61f6e6df49116",
+      "server": {
+        "server_identity": null,
+        "server_schema": null,
+        "cleanup_verified": null,
+        "final_database_state": "no_objects_created",
+        "final_verification_identity": null,
+        "final_verification_schema": null,
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    }
+  ],
+  "EF_lanes": [
+    {
+      "profile": "shared",
+      "lane": "audit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    },
+    {
+      "profile": "shared",
+      "lane": "cli",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "functional",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "r3_shared",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "scripts",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "specification",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "unit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    },
+    {
+      "profile": "tls",
+      "lane": "r3_tls",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "tls",
+      "lane": "unit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    }
+  ],
+  "EF_strict_trx_passed": 710,
+  "retained_DLL_hashes_verified": 26,
+  "external_reports": 11,
+  "missing_gates": [],
+  "prior_v23_execution_reused": true,
+  "EF_runner_path_corrected_only": true,
+  "historical_v20_files_unchanged": 4947,
+  "prior_v23_files_unchanged": 5506,
+  "prior_failures_preserved": true,
+  "window_released": true,
+  "own_processes": [],
+  "production_release_accepted": false,
+  "root_verified_utc": "2026-10-07T15:14:45.492415+00:00",
+  "private_handoffs": {
+    "v23_initial_sha256": "b56387cd4094647a2f3039bff1641a6b19fecb4445e2acbbb7dc7b24687ff114",
+    "EF_continuation_sha256": "d94b7e7259a798652fdafc3b381dc9d63cf6cd8b54a5b4dfd4e0e9ab963d6b4e"
+  }
+}
