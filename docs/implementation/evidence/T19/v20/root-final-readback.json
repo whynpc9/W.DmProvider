@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "task": "T19",
+  "status": "v20_full_defined_R3_matrix_accepted",
+  "candidate": {
+    "driver_dll_sha256": "94339eff635688ec2d84a319e26b8403082ae1ef8593bbb35610a5457236f4f4",
+    "driver_mvid": "5f775740-88c6-4cc6-9806-8cf9a07d43a3",
+    "package_sha256": "46898d79da17dcf7f5b37666852de529cd62edc2595f81df96bdaed25ae261c0",
+    "source_manifest_sha256": "77ce92d7d3d213685fe79393f35468892e8eba1c288c5d595d4f5ac709828e21",
+    "version": "0.1.0-r3.20261007012403"
+  },
+  "head": "4ec78534432557a95fd6d696ea00cfe6e34ea17c",
+  "frozen_source_manifest": {
+    "path": ".local/verification/r3/t19/frozen-source-v20/manifest.json",
+    "files": 2879,
+    "manifest_sha256": "76987d5f7bf5506b9831e1a0ea622ee7b1221041f7aa10f40d8701965687ebbc",
+    "window_integrity": "unchanged_at_readback"
+  },
+  "offline_dotnet_cases": {
+    "twelve_suites_total_passed": 1204,
+    "first_init_cases": 7,
+    "scope": "exact_twelve_suites_plus_isolated_first_init_package_probe"
+  },
+  "target_cases": {
+    "count": 8,
+    "passed": 230,
+    "accepted": true
+  },
+  "tool_python_cases": {
+    "count": 120,
+    "accepted": true
+  },
+  "runtime_gate_readbacks": [
+    {
+      "gate": "t14_tls",
+      "accepted": true,
+      "probe_sha256": "715872f6ea635afaed233558a60d863072aa83d6b64b68a7d11c609896f6d255",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t16_tls",
+      "accepted": true,
+      "probe_sha256": "7e904d4b7a57a883cbc3b6f8a3aafa697ef6ab634b665ad53209bda5b87d9853",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 13,
+        "physical_connections_disposed": 13
+      }
+    },
+    {
+      "gate": "t13_tls",
+      "accepted": true,
+      "probe_sha256": "322316933b231e714cfc5399ddf1ed7d89bd08426f0ae0fdbbc5c9732124b626",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t18_tls_resource",
+      "accepted": true,
+      "probe_sha256": "35727551f832d3323d5e24aac0e6413de82b22b79cf1363caceafc1370fd2614",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 10099,
+        "physical_connections_disposed": 10099
+      }
+    },
+    {
+      "gate": "t13_security_tls",
+      "accepted": true,
+      "probe_sha256": "935c65b57ff116ee8b433b78e8bf426e15689ca9834a1df4c79aa21a883c5708",
+      "server": {
+        "server_identity": null,
+        "server_schema": null,
+        "cleanup_verified": null,
+        "final_database_state": "no_objects_created",
+        "final_verification_identity": null,
+        "final_verification_schema": null,
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t17_tls",
+      "accepted": true,
+      "probe_sha256": "54835bcfbf361edfef031bbbf854a9974509a2d31991cf12828bed0944139f4d",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 25,
+        "physical_connections_disposed": 25
+      }
+    },
+    {
+      "gate": "t13_shared",
+      "accepted": true,
+      "probe_sha256": "d20e8338dee779785348f345f85298e84d97d9da74c87371b91ba3431daa0e43",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t14_shared",
+      "accepted": true,
+      "probe_sha256": "4283b80caa3633448eba9cc99c8caed26c06693204d25c9fb1839d6029a2cb7d",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "random_object_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    },
+    {
+      "gate": "t17_shared",
+      "accepted": true,
+      "probe_sha256": "9e6382c540b6a737c0ffc9865c9d8bdb571130885037884632ef8b8b61122f59",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 25,
+        "physical_connections_disposed": 25
+      }
+    },
+    {
+      "gate": "t16_shared",
+      "accepted": true,
+      "probe_sha256": "1dc690685d92e0a6b1d3ea4b26ba6d2dad7cad7b6b80515f7de80f92e43f1c77",
+      "server": {
+        "server_identity": "WDM_PROVIDER_TEST",
+        "server_schema": "WDM_PROVIDER_TEST",
+        "cleanup_verified": true,
+        "final_database_state": "unique_owned_objects_absent",
+        "final_verification_identity": "WDM_PROVIDER_TEST",
+        "final_verification_schema": "WDM_PROVIDER_TEST",
+        "physical_connections_created": 15,
+        "physical_connections_disposed": 15
+      }
+    },
+    {
+      "gate": "t13_security_shared",
+      "accepted": true,
+      "probe_sha256": "ace47da04cbc13ab07ad3c9a8a29f4782acb48270caec4b2d39b2dc58ed646be",
+      "server": {
+        "server_identity": null,
+        "server_schema": null,
+        "cleanup_verified": null,
+        "final_database_state": "no_objects_created",
+        "final_verification_identity": null,
+        "final_verification_schema": null,
+        "physical_connections_created": null,
+        "physical_connections_disposed": null
+      }
+    }
+  ],
+  "t18_tls_resource": {
+    "accepted": true,
+    "physical_connections": [
+      10099,
+      10099
+    ],
+    "elapsed_seconds": 703.6
+  },
+  "EF_lineage_readbacks": [
+    {
+      "profile": "shared",
+      "lane": "audit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    },
+    {
+      "profile": "shared",
+      "lane": "cli",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "functional",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "r3_shared",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "scripts",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "specification",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "shared",
+      "lane": "unit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    },
+    {
+      "profile": "tls",
+      "lane": "r3_tls",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": true
+    },
+    {
+      "profile": "tls",
+      "lane": "unit",
+      "status": "accepted",
+      "exit_code": 0,
+      "inventory_matches": null
+    }
+  ],
+  "ef_functional_elapsed_seconds": 962.8,
+  "ef_functional_host_budget_seconds": 1500,
+  "external_preflight": {
+    "missing_gates": [],
+    "reports": 11
+  },
+  "notables": [
+    "t17_shared_original_full_gate_first_acceptance_in_R3_history",
+    "shared_t13_t14_security_all_accepted",
+    "shared_exact_cleanup_verified"
+  ],
+  "old_failures_preserved": true,
+  "administrator_credentials_used": false,
+  "production_release_accepted": false,
+  "remaining": [
+    "progress_reports_archival",
+    "PR_merge_decision",
+    "R4_not_started"
+  ],
+  "created_utc": "2026-10-07T02:16:39.928832+00:00"
+}

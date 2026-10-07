@@ -1,0 +1,218 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "pkg:nuget/Microsoft.CodeCoverage@17.14.1",
+      "name": "Microsoft.CodeCoverage",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/Microsoft.CodeCoverage@17.14.1",
+      "scope": "excluded",
+      "type": "library",
+      "version": "17.14.1"
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.NET.Test.Sdk@17.14.1",
+      "name": "Microsoft.NET.Test.Sdk",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/Microsoft.NET.Test.Sdk@17.14.1",
+      "scope": "excluded",
+      "type": "library",
+      "version": "17.14.1"
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.TestPlatform.ObjectModel@17.14.1",
+      "name": "Microsoft.TestPlatform.ObjectModel",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/Microsoft.TestPlatform.ObjectModel@17.14.1",
+      "scope": "excluded",
+      "type": "library",
+      "version": "17.14.1"
+    },
+    {
+      "bom-ref": "pkg:nuget/Microsoft.TestPlatform.TestHost@17.14.1",
+      "name": "Microsoft.TestPlatform.TestHost",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/Microsoft.TestPlatform.TestHost@17.14.1",
+      "scope": "excluded",
+      "type": "library",
+      "version": "17.14.1"
+    },
+    {
+      "bom-ref": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "name": "Newtonsoft.Json",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "scope": "excluded",
+      "type": "library",
+      "version": "13.0.3"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.abstractions@2.0.3",
+      "name": "xunit.abstractions",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.abstractions@2.0.3",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.0.3"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.analyzers@1.16.0",
+      "name": "xunit.analyzers",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.analyzers@1.16.0",
+      "scope": "excluded",
+      "type": "library",
+      "version": "1.16.0"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.assert@2.9.2",
+      "name": "xunit.assert",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.assert@2.9.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.9.2"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.core@2.9.2",
+      "name": "xunit.core",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.core@2.9.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.9.2"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.extensibility.core@2.9.2",
+      "name": "xunit.extensibility.core",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.extensibility.core@2.9.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.9.2"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.extensibility.execution@2.9.2",
+      "name": "xunit.extensibility.execution",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.extensibility.execution@2.9.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.9.2"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit.runner.visualstudio@2.8.2",
+      "name": "xunit.runner.visualstudio",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit.runner.visualstudio@2.8.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.8.2"
+    },
+    {
+      "bom-ref": "pkg:nuget/xunit@2.9.2",
+      "name": "xunit",
+      "properties": [
+        {
+          "name": "wdm.role",
+          "value": "validation_only"
+        }
+      ],
+      "purl": "pkg:nuget/xunit@2.9.2",
+      "scope": "excluded",
+      "type": "library",
+      "version": "2.9.2"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [],
+      "ref": "pkg:nuget/W.DmProvider@0.1.0-r3.20261003085021"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:nuget/W.DmProvider@0.1.0-r3.20261003085021",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "W.DmProvider",
+      "properties": [
+        {
+          "name": "wdm.source_provenance_sha256",
+          "value": "54224ae4cd94c7575177b9145b98595f933b55e3a229f61c490b83964d7e7a7a"
+        }
+      ],
+      "purl": "pkg:nuget/W.DmProvider@0.1.0-r3.20261003085021",
+      "type": "library",
+      "version": "0.1.0-r3.20261003085021"
+    }
+  },
+  "serialNumber": "urn:uuid:0b1e8e39-5a62-4d78-bf68-96c798f0ff16",
+  "specVersion": "1.6",
+  "version": 1
+}

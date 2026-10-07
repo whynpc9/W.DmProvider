@@ -73,7 +73,7 @@ internal partial class B
 		}
 		finally { parameterUploadOwner = prior; }
 	}
-	private async Task<b> ExchangeAsync(b send,b receive,int timeout,CancellationToken cancellationToken)
+	private async Task<b> ExchangeAsync(b send,b receive,int timeout,CancellationToken cancellationToken,int maxResponseBodyLength = -1)
 	{
 		cancellationToken = AsyncCancellationToken(cancellationToken);
 		C();
@@ -81,7 +81,7 @@ internal partial class B
 		await A().SendFrameAsync(send,timeout,a().crcBody,a().encryptMsg,cancellationToken).ConfigureAwait(false);
 		DmWireTestHooks.FrameSent(send.I());
 		DmWireTestHooks.Sent();
-		await A().ReadFrameAsync(receive,timeout,a().crcBody,a().encryptMsg,cancellationToken).ConfigureAwait(false);
+		await A().ReadFrameAsync(receive,timeout,a().crcBody,a().encryptMsg,cancellationToken,maxResponseBodyLength).ConfigureAwait(false);
 		return receive;
 	}
 	internal async Task OpenAsync(DmDeadline deadline,CancellationToken cancellationToken = default)
@@ -132,7 +132,7 @@ internal partial class B
 		A().ConfigureReadTimeout(CurrentMessageIdleTimeout());
 		await DmFrameReader.ReadAsync(A().ReceiveExactlyAsync,__t02_field_04000AB9,
 			(frame,total)=>DmFrameReader.ValidateChecksum(frame,total,a().crcBody),DmInvocation.Current.Deadline,cancellationToken,
-			header=>(a().crcBody && DmFrameReader.Command(header)!=200)||DmFrameReader.ValidateHeaderChecksum(header)).ConfigureAwait(false);
+			header=>(a().crcBody && DmFrameReader.Command(header)!=200)||DmFrameReader.ValidateHeaderChecksum(header),message.MaxResponseBodyLength).ConfigureAwait(false);
 		message.checkCRC();
 		DmResultProtocolTrace.RecordFrame(message.cmd,__t02_field_04000AB9);
 		C(message);

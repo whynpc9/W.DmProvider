@@ -1,3 +1,4 @@
+using System.IO;
 using W.Dm.Internal.Legacy.A;
 
 namespace W.Dm;
@@ -35,10 +36,11 @@ internal class GET_LOB_LEN : MSG<long>
 
 	protected override long doDecode()
 	{
-		if (!access.a().LongLobFlag)
-		{
-			return access.__t02_field_04000AB9.E();
-		}
-		return access.__t02_field_04000AB9.e();
+		var buffer = access.__t02_field_04000AB9;
+		if (buffer.a(false) != (access.a().LongLobFlag ? 8 : 4))
+			throw new InvalidDataException("Invalid LOB length response.");
+		long length = access.a().LongLobFlag ? buffer.e() : buffer.E();
+		if (length < 0) throw new InvalidDataException("Negative LOB length.");
+		return length;
 	}
 }

@@ -438,13 +438,14 @@ internal partial class D : a
 		transport.ReadExactly(buffer, offset, count, ActiveDeadline(readTimeout), readTimeout);
 	}
 
-	internal override b __t02_method_06000A4D(b P_0, int P_1, bool P_2, bool P_3)
+	internal override b __t02_method_06000A4D(b P_0, int P_1, bool P_2, bool P_3, int P_4 = -1)
 	{
 		RequireWireExchange();
 		readTimeout = P_1;
 		int num3 = DmFrameReader.Read(ReceiveExactly, P_0,
 			(frame, total) => DmFrameReader.ValidateChecksum(frame, total, P_2), ActiveDeadline(P_1),
-			header => (P_2 && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header));
+			header => (P_2 && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header),
+			P_4 >= 0 ? P_4 : DmFrameReader.MaxFrameSize - DmFrameReader.HeaderSize);
 		if (P_2 && P_0.I() != 200)
 		{
 			int num4 = num3 - 4;
@@ -494,6 +495,8 @@ internal partial class D : a
 		ReceiveExactly(P_0, P_1, P_2);
 		return P_2;
 	}
+
+	internal void RunAfterPhysicalClosed(Action completion) => transport.RunAfterPhysicalClosed(completion);
 
 	public void C()
 	{

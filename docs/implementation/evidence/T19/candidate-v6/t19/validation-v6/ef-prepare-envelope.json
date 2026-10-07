@@ -1,0 +1,1 @@
+{"schema_version":1,"task":"T19","status":"prepared_not_run","run_dir":"[repo]/.local/verification/r3/t19/ef/validation-v6","lanes":["shared-unit","shared-audit","shared-functional","shared-cli","shared-scripts","shared-specification","shared-r3_shared","tls-unit","tls-r3_tls"]}

@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002220119/private/source/tools/R3ReleaseAudit/audit.py",
+    "offline"
+  ],
+  "elapsed_seconds": 46.03894504182972,
+  "exit_code": 0,
+  "stage": "full_twelve_suites_no_build_pack_seven_children"
+}

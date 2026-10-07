@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "path": ".local/verification/r3/t16/validation-v3/feed/W.DmProvider.0.1.0-r3.t16.20261002143244.nupkg",
+      "sha256": "a15d5009659e1f78f00a49efe7c1caf0cd43974b69169e405dfc794ef5275a44"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/W.DmProvider.deps.json",
+      "sha256": "4b2c3027ca7e97162304c5f70cae84906e23d0ff04163c10232688c9677ce87d"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/W.DmProvider.dll",
+      "sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/W.DmProvider.pdb",
+      "sha256": "6da1b585a5cf4254ccd7aa6304de99a94e84f842b88a325ad69653ad24b47ff3"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/en/W.DmProvider.resources.dll",
+      "sha256": "29ef938260c8055a69a40ecac972de98ce4ec75d185952078c87a42cccedc9d3"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/zh-CN/W.DmProvider.resources.dll",
+      "sha256": "bae85d976483c02edeabea9b73f602e064f88f07878c54d6666be28cb2f8680b"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/zh-HK/W.DmProvider.resources.dll",
+      "sha256": "d4cd4c9ab64829c2242c1387cdf50e188d0f8b0da1b2a2ee2344bfe72fdbeb39"
+    },
+    {
+      "path": ".local/verification/r3/t16/frozen-source-v3/source/src/W.DmProvider/bin/Release/net10.0/zh-TW/W.DmProvider.resources.dll",
+      "sha256": "9b9e6a9367a3b7b01424688ae3f90a5309160a8108ae01b0a6df97724fe8eabc"
+    }
+  ]
+}

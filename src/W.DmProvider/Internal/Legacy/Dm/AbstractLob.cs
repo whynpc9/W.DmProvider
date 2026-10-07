@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using W.Dm.Internal.Sessions;
@@ -53,6 +54,25 @@ public class AbstractLob
 
 	internal DmConnInstance ConnInstance;
 	private DmExecutionLease executionLease;
+	private Action validateOwner;
+	internal DmExecutionLease ReadLease => executionLease ?? DmInvocation.Current?.Lease;
+	internal void ValidateReadOwner()
+	{
+		if (local) return;
+		validateOwner?.Invoke();
+		if (ReadLease == null || !ReferenceEquals(ReadLease.Session, ConnInstance?.Session) || (ReadLease.IsDisposed || !ReadLease.Session.IsCurrentExecution(ReadLease.Identity)))
+			throw new InvalidOperationException("LOB execution owner is stale.");
+	}
+
+	internal void AttachRowOwner(Action validate) => validateOwner = validate;
+
+	internal AbstractLob SnapshotForRead()
+	{
+		var copy = (AbstractLob)MemberwiseClone();
+		copy.rowId = rowId == null ? null : (byte[])rowId.Clone();
+		return copy;
+	}
+
 
 	internal void AttachExecutionLease(DmExecutionLease lease)
 	{
@@ -64,6 +84,7 @@ public class AbstractLob
 	internal DmInvocation BeginPublicOperation()
 	{
 		if (local) return null;
+		validateOwner?.Invoke();
 		if (executionLease != null) return executionLease.BeginInvocation();
 		// A freshly decoded LOB can be consumed by the command that is still decoding it.
 		if (DmInvocation.Current?.Lease.Session == ConnInstance?.Session) return null;
@@ -74,6 +95,7 @@ public class AbstractLob
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		if (local) return null;
+		validateOwner?.Invoke();
 		if (executionLease != null)
 		{
 			if (DmInvocation.Current?.Lease == executionLease) return null;
@@ -98,6 +120,7 @@ public class AbstractLob
 	internal AbstractLob(byte[] value, byte lobFlag, DmConnInstance connInstance, DmField column)
 		: this(lobFlag, connInstance)
 	{
+		if (value == null || value.Length < NBLOB_HEAD_SIZE_INROW) throw new InvalidDataException("Truncated LOB locator.");
 		this.lobFlag = lobFlag;
 		local = false;
 		updateable = !column.Readonly;
@@ -105,12 +128,16 @@ public class AbstractLob
 		colId = column.GetColID();
 		int num = 0;
 		storageType = DmConvertion.GetByte(value, num);
+		if (storageType is not (STORAGE_IN_ROW or STORAGE_OUT_ROW or STORAGE_LONG_ROW))
+			throw new InvalidDataException("Unsupported LOB storage kind.");
+		int requiredHead = getHeadSize();
+		if (value.Length < requiredHead) throw new InvalidDataException("Truncated LOB locator metadata.");
 		num++;
 		id = DmConvertion.GetLong(value, num);
 		num += 8;
 		bytesLength = DmConvertion.GetInt(value, num);
 		num += 4;
-		if (num == value.Length)
+		if (num == value.Length || (storageType == STORAGE_IN_ROW && !ConnInstance.ConnProperty.NewLobFlag))
 		{
 			return;
 		}
@@ -142,6 +169,7 @@ public class AbstractLob
 			}
 			if (num != value.Length && storageType == 4)
 			{
+				if (value.Length - num < 8) throw new InvalidDataException("Truncated long LOB locator.");
 				bytesLength = DmConvertion.GetLong(value, num);
 				num += 8;
 			}
@@ -161,6 +189,7 @@ public class AbstractLob
 		{
 			m_length = ConnInstance.GetCsi().A(this);
 		}
+		invocation?.CompleteIfSent();
 		return m_length;
 	}
 
@@ -169,6 +198,7 @@ public class AbstractLob
 		using var invocation = BeginInternalOperation(cancellationToken);
 		if (m_length == -1)
 			m_length = await ConnInstance.GetCsi().GetLobLengthAsync(this, cancellationToken).ConfigureAwait(false);
+		invocation?.CompleteIfSent();
 		return m_length;
 	}
 

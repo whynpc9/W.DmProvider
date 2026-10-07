@@ -1,0 +1,12 @@
+{
+  "classification": "current_T17_readonly_health_comparison",
+  "final_database_state": "unverified",
+  "loaded_dll_sha256": "7cb755fd2d851b819520e207659b61845648f89ac176f7ff11b86a0c8a4cf183",
+  "mvid": "bf69b01b-12b3-47e2-9ee0-1fb1cbb277bf",
+  "stage": "select_one",
+  "verified_identity": "WDM_PROVIDER_TEST",
+  "verified_schema": "WDM_PROVIDER_TEST",
+  "select_one_verified": true,
+  "connection_closed": true,
+  "exit_code": 0
+}

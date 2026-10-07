@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "status": "failed_transport_test_helper_double_count",
+  "version": "0.1.0-r3.20261003095144",
+  "package_created": false,
+  "DB_executed": false,
+  "actual_Transport_cases": 113,
+  "actual_passed": 104,
+  "actual_failed": 9,
+  "product_double_read_proven": false,
+  "files": [
+    {
+      "source": ".local/verification/r3/t19/validation-v9/validation-summary.json",
+      "source_sha256": "b03884b14f20349c75ff1da81bd93bada2a2a4caa1d66b7babb28dde0d475325",
+      "archive": "validation-summary.json",
+      "archive_sha256": "b7584f591e26c07bc8cef4573b10dda33d628f33a735f5d8e693926ec9260760",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/archive-verification.json",
+      "source_sha256": "40f033f06f0fae8052f1835264540e56def4fcf2191ae821455314a01fca0252",
+      "archive": "producer/archive-verification.json",
+      "archive_sha256": "40f033f06f0fae8052f1835264540e56def4fcf2191ae821455314a01fca0252",
+      "sanitized": false
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/source-manifest.json",
+      "source_sha256": "d5a0f8d18f0fea3094c7fb07a5aa379c8151ff3f3e3472b64d2b28515cdbb203",
+      "archive": "producer/source-manifest.json",
+      "archive_sha256": "d5a0f8d18f0fea3094c7fb07a5aa379c8151ff3f3e3472b64d2b28515cdbb203",
+      "sanitized": false
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/summary.json",
+      "source_sha256": "b40fc12f87ea3e8e6b6d2c44a3fcf7c4025d589ffee4ab213697f66efcf7a95e",
+      "archive": "producer/summary.json",
+      "archive_sha256": "b40fc12f87ea3e8e6b6d2c44a3fcf7c4025d589ffee4ab213697f66efcf7a95e",
+      "sanitized": false
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-SDK-command.json",
+      "source_sha256": "7728f910ef15399db3eb58341c4b95f249810e5955ffaa3cf736f1bd94d4ef0a",
+      "archive": "producer/offline-SDK-command.json",
+      "archive_sha256": "7728f910ef15399db3eb58341c4b95f249810e5955ffaa3cf736f1bd94d4ef0a",
+      "sanitized": false
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Session.trx",
+      "source_sha256": "223c4798acbe74b536ba9b797853a1f0deafb285bbce303e753c496812320341",
+      "archive": "producer/offline-Session.trx",
+      "archive_sha256": "5fc3e8d285d0fe9c61ce253acedaf2a2e690af7497a61a9777928321500a3004",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Configuration_restore-command.json",
+      "source_sha256": "751e7bba11ed7e4456b2c2dc5c9e6ed2e91aa985dd635c262e554f4bc64cd05d",
+      "archive": "producer/offline-Configuration_restore-command.json",
+      "archive_sha256": "9aa377112fb325c9ad9e91197b5cfa363c355e2effc2b44973f9f89d61e25f92",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Configuration.trx",
+      "source_sha256": "f8f74d01adc2d0e8b595a27cad4b88a56c5a55826080076fe76d280b051ba5b1",
+      "archive": "producer/offline-Configuration.trx",
+      "archive_sha256": "c9a4d21e1aff8cc2b60499a40d938ef628609a8368407bc85acfb920ee8a259f",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/full_twelve_suites_no_build_pack_seven_children-command.json",
+      "source_sha256": "aa8b7d5b59d657fe9df0c29d16587bb43309ceb97ff06a2ce674c30cfc4c7447",
+      "archive": "producer/full_twelve_suites_no_build_pack_seven_children-command.json",
+      "archive_sha256": "511095ccc92ab171124fc9901cc84eb08b908ecc07c5d4951498afc58bc34e93",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-summary.json",
+      "source_sha256": "f5315910fb6b3e138a25cc44ac4329587d77c218dacd94e36568fa8b446f50e5",
+      "archive": "producer/offline-summary.json",
+      "archive_sha256": "f5315910fb6b3e138a25cc44ac4329587d77c218dacd94e36568fa8b446f50e5",
+      "sanitized": false
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Configuration_test-command.json",
+      "source_sha256": "b2fb1e4a20ef4cb3fe7667d49b9da8afdf9d19180c8c201bdfbcd47236369287",
+      "archive": "producer/offline-Configuration_test-command.json",
+      "archive_sha256": "a3523d0dfa8080e1f2269853868db547b2a62aa4f3bea57ebca340bda877ae0f",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Session_restore-command.json",
+      "source_sha256": "8be8de171ed328f6972dbc8b4816388e9abf092b17407ce7a14f5f4818d3cc9c",
+      "archive": "producer/offline-Session_restore-command.json",
+      "archive_sha256": "7dd5b8baaf17c564eb49b21619b39d099a5bd26783e32caf4c4a54a4965d97f1",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Session_test-command.json",
+      "source_sha256": "e3912a0413848829f2cb97d77ef875713fcc347c6359b9b311d47c3922475f45",
+      "archive": "producer/offline-Session_test-command.json",
+      "archive_sha256": "b629549a701fc373cdcc4cdd07d7c87e476c32139f470c3f6db9dfc04f534018",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Transport_test-command.json",
+      "source_sha256": "a6260ead621735f3285dfafb1ffd819be8d77ea94938202f3b43e8451d12b61e",
+      "archive": "producer/offline-Transport_test-command.json",
+      "archive_sha256": "d2d5416a71919409d3b183aae5194b0140f038f477afd5feca1f4cf896fe54b6",
+      "sanitized": true
+    },
+    {
+      "source": ".local/verification/r3/t19/runs/0.1.0-r3.20261003095144/public/offline-Transport_restore-command.json",
+      "source_sha256": "0b37b2bf1bce108d7c8e47d8478908be20e74d1ccc72133c2eefac22f3630203",
+      "archive": "producer/offline-Transport_restore-command.json",
+      "archive_sha256": "450a71981839265a229beebf03743cf0cb3309c96acbd9cc3e3864dbaa9822c8",
+      "sanitized": true
+    }
+  ]
+}

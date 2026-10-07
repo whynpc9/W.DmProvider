@@ -1,0 +1,80 @@
+{
+  "task": "T17",
+  "status": "targeted_tests_failed",
+  "window": "released",
+  "targeted_exit_code": 1,
+  "targeted_counters": {
+    "total": 95,
+    "executed": 95,
+    "passed": 86,
+    "failed": 9,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "failures": [
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: True, length: 0)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: True, length: 19)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: False, length: 8)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.OneGiBProtocolUploadRetainsOnlyCountersOneTokenAndIncrementalHash",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.OneGiBProtocolUploadRetainsOnlyCountersOneTokenAndIncrementalHash() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 95\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: False, length: 19)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.Dm.Internal.Legacy.A.b.A(Byte[] P_0) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000092.cs:line 471\n   at W.Dm.SET_LOB_DATA.doEncode() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/T02_0200008E.cs:line 45\n   at W.Dm.MSG`1.encode() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/T02_0200008D.cs:line 195\n   at W.Dm.Internal.Legacy.A.B.<>c__DisplayClass72_0`1.<A>b__0() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 272\n   at W.Dm.Internal.Legacy.A.B.Wire[T](Func`1 operation) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 138\n   at W.Dm.Internal.Legacy.A.B.A[A](MSG`1 P_0) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 268\n   at W.Dm.Internal.Legacy.A.B.A(AbstractLob P_0, Byte P_1, Int64 P_2, Byte[] P_3, Int32 P_4, Int32 P_5) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 812\n   at W.Dm.Internal.Legacy.A.B.A(AbstractLob P_0, Int64 P_1, Byte[] P_2, Int32 P_3, Int32 P_4) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 797\n   at W.Dm.DmBlob.do_setBytes(Int64 pos, Byte[] bytes, Int32 offset, Int32 len) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs:line 181\n   at W.Dm.DmBlob.SetBytes(Int64 pos, Byte[] bytes) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs:line 149\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 84\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedBlobWriteRebasesThePrivateReadLocatorAndQueriesFreshLength() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 90\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: True, length: 8)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.LobLifecycleTests.ConfirmedClobTruncateReadsTheUpdatedLocatorAtZero",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.Dm.Internal.Legacy.A.b.A(Byte[] P_0) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000092.cs:line 471\n   at W.Dm.LOB_TRUNCATE.doEncode() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/T02_0200008C.cs:line 27\n   at W.Dm.MSG`1.encode() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/T02_0200008D.cs:line 195\n   at W.Dm.Internal.Legacy.A.B.<>c__DisplayClass72_0`1.<A>b__0() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 272\n   at W.Dm.Internal.Legacy.A.B.Wire[T](Func`1 operation) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 138\n   at W.Dm.Internal.Legacy.A.B.A[A](MSG`1 P_0) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 268\n   at W.Dm.Internal.Legacy.A.B.A(AbstractLob P_0, Int32 P_1) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs:line 656\n   at W.Dm.DmClob.TruncateOwned(Int64 len) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/DmClob.cs:line 278\n   at W.Dm.DmClob.Truncate(Int64 len) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/src/W.DmProvider/Internal/Legacy/Dm/DmClob.cs:line 248\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedClobTruncateReadsTheUpdatedLocatorAtZero() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 103\n   at W.DmProvider.LobTests.LobLifecycleTests.ConfirmedClobTruncateReadsTheUpdatedLocatorAtZero() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/LobLifecycleTests.cs:line 106\n--- End of stack trace from previous location ---"
+    },
+    {
+      "name": "W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(asynchronous: False, length: 0)",
+      "message": "Assert.True() Failure\nExpected: True\nActual:   False",
+      "stack": "   at W.DmProvider.LobTests.UploadProtocolTests.EmptyExactFullAndFinalShortHaveSourceEofSequenceAndLatestAckToken(Boolean asynchronous, Int32 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v2/source/tests/W.DmProvider.LobTests/UploadProtocolTests.cs:line 41\n--- End of stack trace from previous location ---"
+    }
+  ],
+  "source_count": 624,
+  "history_count": 157,
+  "source_manifest_sha256": "5950e207c56c4958bf3d761b3f27f3e50cbc6ff498e2b97dd58ab4c508ac608f",
+  "source_history_before_after_unchanged": true,
+  "sdk": "10.0.203",
+  "full_offline": "not_executed",
+  "package": "not_built",
+  "integration": "not_executed",
+  "production_release_accepted": false
+}

@@ -47,10 +47,19 @@ public sealed class LobMaterializationReviewTests
         using var fixture = new ReaderReviewTests.ReaderFixture(12, Locator(length));
         Assert.Throws<NotSupportedException>(() => fixture.Reader.GetValue(0));
         Assert.Throws<NotSupportedException>(() => fixture.Reader.GetFieldValue<byte[]>(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetBytes(0, 0, null!, 0, 0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetBytes(0, 0, new byte[1], 0, 1));
         Assert.Throws<NotSupportedException>(() => fixture.Reader.GetString(0));
         // The fake connection has no transport: attempting a read would fail differently.
+    }
+
+    [Theory]
+    [InlineData(67108865L)]
+    [InlineData(2147483648L)]
+    [InlineData(long.MaxValue)]
+    public void BlobLengthMetadataCanExceedMaterializationCapWithoutTransport(long length)
+    {
+        using var fixture = new ReaderReviewTests.ReaderFixture(12, Locator(length));
+        Assert.Equal(length, fixture.Reader.GetBytes(0, 0, null!, 0, 0));
+        // No transport is installed: a GETLEN or payload request cannot succeed.
     }
 
     [Fact]
@@ -64,14 +73,14 @@ public sealed class LobMaterializationReviewTests
     [InlineData(33554433L)]
     [InlineData(2147483648L)]
     [InlineData(long.MaxValue)]
-    public void ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(long length)
+    public void CachedClobFullGettersUseActualDecodedTextInsteadOfAdvertisedLength(long length)
     {
-        using var fixture = new ReaderReviewTests.ReaderFixture(19, Locator(length));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetString(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetValue(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetFieldValue<string>(0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetBytes(0, 0, null!, 0, 0));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetChars(0, 0, null!, 0, 0));
+        const string text = "A🚂中Z";
+        using var fixture = new ReaderReviewTests.ReaderFixture(19, [], text, clobLength: length);
+        Assert.Equal(text, fixture.Reader.GetString(0));
+        Assert.Equal(text, fixture.Reader.GetValue(0));
+        Assert.Equal(text, fixture.Reader.GetFieldValue<string>(0));
+        Assert.Equal(Encoding.UTF8.GetByteCount(text), fixture.Reader.GetBytes(0, 0, null!, 0, 0));
     }
 
     [Theory]
@@ -103,22 +112,20 @@ public sealed class LobMaterializationReviewTests
     }
 
     [Fact]
-    public void FetchAllRejectsKnownLengthsBeforeReading()
+    public void BlobFetchAllRejectsKnownByteLengthsBeforeReading()
     {
         using var blob = new ReaderReviewTests.ReaderFixture(12, Locator(Limit + 1));
         Assert.Throws<NotSupportedException>(() => blob.Reader.GetBlob(0).loadAllData());
-        using var clob = new ReaderReviewTests.ReaderFixture(19, Locator(Limit / 2 + 1));
-        Assert.Throws<NotSupportedException>(() => clob.Reader.GetClob(0).loadAllData());
     }
 
     [Fact]
-    public void LargeLocalClobAllowsBoundedSliceButRejectsFullLengthProbe()
+    public void InlineClobBoundedSliceAndIndependentUtf16ScanUseTheActualPayload()
     {
         using var fixture = new ReaderReviewTests.ReaderFixture(19, [], "A中🙂", clobLength: long.MaxValue);
         char[] prefix = new char[2];
         Assert.Equal(2, fixture.Reader.GetChars(0, 0, prefix, 0, 2));
         Assert.Equal("A中", new string(prefix));
-        Assert.Throws<NotSupportedException>(() => fixture.Reader.GetChars(0, 0, null!, 0, 0));
+        Assert.Equal(4, fixture.Reader.GetChars(0, 0, null!, 0, 0));
     }
 
     [Theory]

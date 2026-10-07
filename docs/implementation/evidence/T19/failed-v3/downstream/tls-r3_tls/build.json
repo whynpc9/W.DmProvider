@@ -1,0 +1,115 @@
+{
+  "accepted": false,
+  "binary_hashes": {},
+  "commands": [
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "restore",
+        "T19Audit/T19Audit.csproj",
+        "--force-evaluate",
+        "--disable-parallel",
+        "--configfile",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/ef/validation-v3/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "log_sha256": "7201ba06dc64b42b553e5db06c21c1ceaf3dce72bfa0be9e150600c7106e4eae",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:55:55.782584+00:00"
+    },
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "restore",
+        "T19Audit/T19Audit.csproj",
+        "--locked-mode",
+        "--disable-parallel",
+        "--configfile",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/ef/validation-v3/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "log_sha256": "2a64915221aa12c7fd94e91a59043501fddfabc9bf3ad3a1393485a384b1c845",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:56:01.857950+00:00"
+    },
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "build",
+        "T19Audit/T19Audit.csproj",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e7640aac60fa845092528f87a80912f962b4b4ee1e5d5db9aad4d645e3d5a45b",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:56:02.318300+00:00"
+    },
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "restore",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--force-evaluate",
+        "--disable-parallel",
+        "--configfile",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/ef/validation-v3/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "log_sha256": "0bcc497b7faf98d31b34e13f016e9075213bfdc678ed5f4060f27d26ea04ccab",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:56:04.094787+00:00"
+    },
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "restore",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--locked-mode",
+        "--disable-parallel",
+        "--configfile",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/ef/validation-v3/lanes/tls-r3_tls/W/NuGet.Config",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "log_sha256": "0a84ddf4c3294b6fb687fe73dd8682cf96ddade1d7bc166aa231f8a80aea8f03",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:56:10.262333+00:00"
+    },
+    {
+      "argv": [
+        "/Users/wanghongyi/.dotnet/dotnet",
+        "build",
+        "test/W.EntityFrameworkCore.Dameng.FunctionalTests/W.EntityFrameworkCore.Dameng.FunctionalTests.csproj",
+        "--no-restore",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 1,
+      "log_sha256": "634a5327d60c2e70bd818236ca8d3c8e283c19b2ce34c9d0ee254ed433896ba6",
+      "redaction_applied": false,
+      "started_utc": "2026-10-02T21:56:10.692811+00:00"
+    }
+  ],
+  "locks": {}
+}

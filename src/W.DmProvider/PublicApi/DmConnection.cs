@@ -7,8 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.IO;
+using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
+using W.Dm.Internal.Diagnostics;
 using W.Dm.Internal.Sessions;
 using W.Dm.Internal.Transport;
+using W.Dm.Internal.Pooling;
 using W.Dm.Config;
 using W.Dm.filter;
 using W.Dm.util;
@@ -39,6 +44,109 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	private bool forEFCore;
 
 	private volatile ConnectionState connectionState;
+	// Tracks the last state actually published through a StateChange event. A
+	// deferred close notification must chain from it, never from an unpublished
+	// intermediate value such as a deliberately suppressed Broken.
+	private ConnectionState lastPublishedState = ConnectionState.Closed;
+
+	// StateChange events publish in state-transition order through this queue.
+	// The transition and its queue slot reserve atomically under settingsGate;
+	// handlers always run outside the gate, so a handler that dispatches work to
+	// another thread cannot deadlock against it. The first publisher on an idle
+	// queue drains synchronously, keeping event delivery synchronous for callers.
+	private readonly Queue<StateChangeTicket> stateEventQueue = new();
+	private bool stateEventDraining;
+	private Thread stateEventDrainer;
+	private StateChangeTicket connectingTicket;
+
+	private sealed class StateChangeTicket
+	{
+		internal readonly StateChangeEventArgs Args;
+		private readonly TaskCompletionSource done = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		internal StateChangeTicket(StateChangeEventArgs args) { Args = args; }
+		internal void Complete(Exception error)
+		{
+			if (error == null) done.TrySetResult(); else done.TrySetException(error);
+		}
+		internal void Wait() => done.Task.GetAwaiter().GetResult();
+	}
+
+	// Caller holds settingsGate: the queue slot and the published marker reserve
+	// atomically with the state write, and the event prior chains from the last
+	// published state.
+	private StateChangeTicket QueueStateChange(ConnectionState current)
+	{
+		var ticket = new StateChangeTicket(new StateChangeEventArgs(lastPublishedState, current));
+		lastPublishedState = current;
+		stateEventQueue.Enqueue(ticket);
+		return ticket;
+	}
+
+	// Caller must not hold settingsGate. A publisher that dispatches its own
+	// event (as the active drainer, or reentrantly on the drainer thread) waits
+	// for it and observes its handler failures. Any other publisher only enqueues:
+	// it never blocks behind user handlers, so a handler that dispatches work to
+	// another thread and waits for it cannot deadlock against the gate.
+	private void PublishStateChange(StateChangeTicket ticket)
+	{
+		bool reentrant;
+		bool drain;
+		lock (settingsGate)
+		{
+			reentrant = stateEventDraining && ReferenceEquals(stateEventDrainer, Thread.CurrentThread);
+			if (reentrant) drain = false;
+			else if (!stateEventDraining)
+			{
+				stateEventDraining = true;
+				stateEventDrainer = Thread.CurrentThread;
+				drain = true;
+			}
+			else drain = false;
+		}
+		if (reentrant) DrainStateEventsUntil(ticket);
+		else if (drain) DrainStateEvents();
+		if (reentrant || drain) ticket.Wait();
+	}
+
+	private void DispatchStateEvent(StateChangeTicket ticket)
+	{
+		try { OnStateChange(ticket.Args); ticket.Complete(null); }
+		catch (Exception error) { ticket.Complete(error); }
+	}
+
+	private void DrainStateEvents()
+	{
+		while (true)
+		{
+			StateChangeTicket next;
+			lock (settingsGate)
+			{
+				if (stateEventQueue.Count == 0)
+				{
+					stateEventDraining = false;
+					stateEventDrainer = null;
+					return;
+				}
+				next = stateEventQueue.Dequeue();
+			}
+			DispatchStateEvent(next);
+		}
+	}
+
+	private void DrainStateEventsUntil(StateChangeTicket target)
+	{
+		while (true)
+		{
+			StateChangeTicket next;
+			lock (settingsGate)
+			{
+				if (stateEventQueue.Count == 0) return;
+				next = stateEventQueue.Dequeue();
+			}
+			DispatchStateEvent(next);
+			if (ReferenceEquals(next, target)) return;
+		}
+	}
 
 	private readonly object settingsGate = new object();
 	private volatile DmConnectionSettings settings;
@@ -51,17 +159,30 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	internal TimeProvider OperationClock { get; set; } = TimeProvider.System;
 	internal TimeProvider TransactionClock { get => OperationClock; set => OperationClock = value; }
 	private DmInvocation handshakeInvocation;
+	private DmPendingOpen pendingOpen;
+	private long openGeneration;
+	private DmPoolLease poolLease;
+	private DmDetachedTransport physicalClose;
+	private readonly Dictionary<DmPendingOpen, Action> pendingCloseNotifications = new();
+	private DmDataSource dataSourceOwner;
+	internal DmPoolOwner PoolOwner { get; private set; }
 	internal DmSession Session => Volatile.Read(ref session);
 	private void OnSessionBroken(DmSession broken)
 	{
-		ConnectionState prior;
+		StateChangeTicket ticket = null;
 		lock (settingsGate)
 		{
 			if (!ReferenceEquals(session, broken) || connectionState is ConnectionState.Broken or ConnectionState.Closed) return;
-			prior = connectionState;
 			connectionState = ConnectionState.Broken;
+			// A creating permit belongs to the outer pending workflow. Notify after
+			// its cleanup returns that permit, so a callback can synchronously reopen.
+			if (pendingOpen != null && ReferenceEquals(pendingOpen.Session, broken)) return;
+			// The Broken transition and its queue slot reserve atomically with the
+			// state write, so a concurrent close cannot publish first and leave a
+			// stale prior. The handler itself runs after the gate is released.
+			ticket = QueueStateChange(ConnectionState.Broken);
 		}
-		try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Broken)); }
+		try { PublishStateChange(ticket); }
 		catch { /* A callback must not resurrect a broken transport or hide the protocol failure. */ }
 	}
 	internal DmExecutionLease BeginExecution(DmOperationPurpose purpose)
@@ -179,6 +300,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			{
 				EnsureConfigurationMutable();
 				DmConnectionSettings replacement = DmConnectionSettings.Parse(value);
+				if (dataSourceOwner != null && !string.Equals(settings.ToConnectionString(true), replacement.ToConnectionString(true), StringComparison.Ordinal))
+					throw new InvalidOperationException("A data source connection has immutable configuration.");
 				ConnProperty.BindSettings(replacement);
 				settings = replacement;
 				hasExplicitSettings = !string.IsNullOrEmpty(value);
@@ -195,14 +318,15 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		set
 		{
-			ConnectionState originalState;
+			StateChangeTicket ticket;
 			lock (settingsGate)
 			{
-				originalState = connectionState;
+				ConnectionState originalState = connectionState;
 				if (originalState == value) return;
 				connectionState = value;
+				ticket = QueueStateChange(value);
 			}
-			OnStateChange(new StateChangeEventArgs(originalState, value));
+			PublishStateChange(ticket);
 		}
 	}
 
@@ -339,6 +463,8 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 			{
 				EnsureConfigurationMutable();
 				var replacement = (settings ?? DmConnectionSettings.Parse(string.Empty)).WithSchema(value);
+				if (dataSourceOwner != null && !string.Equals(settings.Schema, replacement.Schema, StringComparison.Ordinal))
+					throw new InvalidOperationException("A data source connection has immutable configuration.");
 				ConnProperty.BindSettings(replacement);
 				settings = replacement;
 				hasExplicitSettings = true;
@@ -364,7 +490,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	public string getConnPoolKey()
 	{
-		throw new NotSupportedException("Connection pooling is unsupported.");
+		throw new NotSupportedException("Legacy string pool keys are unsupported; use owned connection pooling.");
 	}
 
 	public DmConnection()
@@ -460,6 +586,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
 					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
 				controlStatement.p();
+				cleanup.RecordDiagnosticCleanupSuccess();
 			}
 			// Cleanup has its own budget so resources can be released after timeout;
 			// it must not renew Begin's budget or permit a late Active result.
@@ -564,6 +691,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 				using var cleanup = failureInvocation = lease.BeginCleanupInvocation(
 					DmDeadline.Start(cleanupTimeout, lease.Deadline.Clock));
 				await controlStatement.pAsync(CancellationToken.None).ConfigureAwait(false);
+				cleanup.RecordDiagnosticCleanupSuccess();
 			}
 			// Cleanup has its own budget so resources can be released after timeout;
 			// it must not renew Begin's budget or permit a late Active result.
@@ -705,13 +833,35 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		DmDetachedTransport captured;
 		DmConnInstance orphan;
 		DmSession oldSession;
+		DmPendingOpen closingPending;
+		DmPoolLease closingLease;
 		ConnectionState prior;
+		long closedGeneration;
 		lock (settingsGate)
 		{
 			if (expected != null && !ReferenceEquals(session, expected)) return;
-			prior = connectionState;
+			// A repeated logical close must retain the first close's notification
+			// identity while its physical abort or pending workflow is still ending.
+			if (connectionState == ConnectionState.Closed && session == null && pendingOpen == null &&
+				poolLease == null && m_ConnInst == null) return;
+			prior = lastPublishedState;
 			oldSession = session;
+			closingPending = pendingOpen;
+			pendingOpen = null;
+			if (openGeneration != long.MaxValue) openGeneration++;
+			closedGeneration = openGeneration;
+			if (closingPending != null && prior != ConnectionState.Closed)
+			{
+				// The deferred event chains from the last published state; a
+				// suppressed unpublished Broken must not become the event's prior.
+				ConnectionState published = lastPublishedState;
+				pendingCloseNotifications[closingPending] = () => NotifyClosedIfCurrent(published, closedGeneration);
+			}
+			openingInProgress = false;
+			closingLease = poolLease;
+			poolLease = null;
 			captured = oldSession?.Detach();
+			if (captured != null) physicalClose = captured;
 			orphan = oldSession == null ? m_ConnInst : null;
 			m_ConnInst = null;
 			session = null;
@@ -719,8 +869,10 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		}
 		try
 		{
+			closingLease?.BeginClosing();
 			try
 			{
+				closingPending?.CancelClose(); // Never cancel/dispose registrations under settingsGate.
 				if (captured != null) DmSessionTestHooks.BeforeConnectionTransportAbort?.Invoke(oldSession.SessionId);
 			}
 			finally
@@ -732,8 +884,43 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		finally
 		{
 			oldSession?.MarkClosed();
-			if (prior != ConnectionState.Closed) OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed));
+			// Pending workflow retains its own permit until its unpublished candidate
+			// has stopped creating. Only an already-published lease completes here.
+			if (closingPending == null)
+			{
+				void CompleteClosed()
+				{
+					closingLease?.CompleteAfterTransportClosed();
+					NotifyClosedIfCurrent(prior, closedGeneration);
+				}
+				if (captured == null) CompleteClosed();
+				else captured.RunAfterClosed(CompleteClosed);
+			}
 		}
+	}
+
+	private void NotifyClosedIfCurrent(ConnectionState prior, long generation)
+	{
+		if (prior == ConnectionState.Closed) return;
+		StateChangeTicket ticket;
+		lock (settingsGate)
+		{
+			// The generation validation and the queue slot stay atomic: a concurrent
+			// reopen advances the generation under the same gate, so the Closed event
+			// always lands ahead of any later Connecting in transition order.
+			if (openGeneration != generation || connectionState != ConnectionState.Closed || session != null) return;
+			if (lastPublishedState == ConnectionState.Closed) return;
+			ticket = QueueStateChange(ConnectionState.Closed);
+		}
+		PublishStateChange(ticket);
+	}
+
+	internal void RunAfterPhysicalClose(Action completion)
+	{
+		DmDetachedTransport captured;
+		lock (settingsGate) captured = physicalClose;
+		if (captured == null) completion();
+		else captured.RunAfterClosed(completion);
 	}
 
 	internal DmCommand do_CreateDbCommand()
@@ -1039,167 +1226,293 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 		Connect();
 	}
 
-	internal void Connect()
+	internal void Connect() => ConnectCoreAsync(false, CancellationToken.None).GetAwaiter().GetResult();
+
+	internal void OpenForDataSource(CancellationToken cancellationToken)
 	{
-		DmSession openingSession = null;
-		DmExecutionLease lease = null;
-		DmInvocation invocation = null;
-		bool connectingNotified = false;
-		DmDeadline connectDeadline = default;
-		try
+		if (m_AlreadyDisposed) throw new ObjectDisposedException(nameof(DmConnection));
+		ConnectCoreAsync(false, cancellationToken).GetAwaiter().GetResult();
+	}
+
+	private Task ConnectAsync(CancellationToken cancellationToken) => ConnectCoreAsync(true, cancellationToken);
+
+	private DmPendingOpen InstallPending(CancellationToken userToken)
+	{
+		lock (settingsGate)
 		{
-			lock (settingsGate)
+			if (m_AlreadyDisposed) throw new ObjectDisposedException(nameof(DmConnection));
+			if (openingInProgress) throw new InvalidOperationException("Connection is opening.");
+			if (connectionState == ConnectionState.Open) return null;
+			EnsureConfigurationMutable();
+			CheckProperty();
+			dataSourceOwner?.ThrowIfDisposed();
+			long nextGeneration = checked(openGeneration + 1);
+			var physical = new DmSession(OnSessionBroken);
+			physical.BeginConnecting();
+			// Each opening has separate mutable handshake/codec configuration. A
+			// closed old handshake cannot modify a subsequent logical connection.
+			var candidate = new DmConnection
 			{
-				if (openingInProgress)
-					throw new InvalidOperationException("Connection is opening.");
-				if (connectionState == ConnectionState.Open)
-					return;
-				EnsureConfigurationMutable();
-				CheckProperty();
-				openingSession = new DmSession(OnSessionBroken);
-				openingSession.BeginConnecting();
-				openingInProgress = true;
-				session = openingSession;
-				connectionState = ConnectionState.Connecting;
-			}
-			connectingNotified = true;
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
-			connectDeadline = DmDeadline.Start(settings.ConnectTimeout, OperationClock);
-			lease = openingSession.BeginExecution(DmOperationPurpose.Handshake, connectDeadline);
-			invocation = lease.BeginInvocation();
-			handshakeInvocation = invocation;
-			ConnProperty.EPGroup.connect(this);
-			invocation.Dispose();
-			invocation = lease.BeginInvocation();
-			invocation.ThrowIfTerminated();
-			if (!ReferenceEquals(Session, openingSession) || do_State != ConnectionState.Open)
-				throw new InvalidOperationException("Connection did not open.");
-			openingSession.CompleteHandshake();
-			invocation.Complete();
-			invocation.Dispose();
-			lease.Dispose();
-			lock (settingsGate)
-			{
-				if (!ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Open)
-					throw new InvalidOperationException("Connection was closed during opening.");
-				handshakeInvocation = null;
-			}
-			try { OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open)); }
-			finally { lock (settingsGate) openingInProgress = false; }
-		}
-		catch (Exception error)
-		{
-			Exception translated = invocation?.TranslateFailure(error) ?? error;
-			if (openingSession != null)
-			{
-				try { invocation?.Dispose(); } catch { }
-				try { lease?.Dispose(); } catch { }
-				DmDetachedTransport captured = null;
-				DmConnInstance orphan = null;
-				ConnectionState prior = ConnectionState.Closed;
-				lock (settingsGate)
-				{
-					if (ReferenceEquals(session, openingSession))
-					{
-						captured = openingSession.Detach();
-						orphan = m_ConnInst;
-						m_ConnInst = null;
-						session = null;
-						prior = connectionState;
-						connectionState = ConnectionState.Closed;
-					}
-					openingInProgress = false;
-					handshakeInvocation = null;
-				}
-				try { captured?.AbortTransport(); orphan?.AbortTransport(); } catch { }
-				openingSession.MarkClosed();
-				if (prior != ConnectionState.Closed && connectingNotified)
-					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
-			}
-			throw translated;
+				settings = settings, hasExplicitSettings = true, session = physical,
+				connectionState = ConnectionState.Connecting, openingInProgress = true,
+				OperationClock = OperationClock, forEFCore = forEFCore
+			};
+			candidate.ConnProperty.BindSettings(settings);
+			var pending = new DmPendingOpen(nextGeneration, settings, physical, candidate, userToken,
+				settings.Pooling ? DmDeadline.Start(settings.PoolAcquireTimeout, OperationClock) : DmDeadline.Infinite);
+			pending.Owner = dataSourceOwner?.Owner;
+			openGeneration = nextGeneration;
+			pendingOpen = pending;
+			openingInProgress = true;
+			session = physical;
+			connectionState = ConnectionState.Connecting;
+			// The Connecting transition and its queue slot reserve atomically with the
+			// state write; the event itself still publishes from the open workflow. A
+			// close in between queues its Closed event behind this one in order.
+			connectingTicket = QueueStateChange(ConnectionState.Connecting);
+			return pending;
 		}
 	}
 
-	private async Task ConnectAsync(CancellationToken cancellationToken)
+	private void RequireCurrentPending(DmPendingOpen pending)
 	{
-		cancellationToken.ThrowIfCancellationRequested();
-		DmSession openingSession = null;
-		DmExecutionLease lease = null;
-		DmInvocation invocation = null;
-		bool connectingNotified = false;
-		DmDeadline connectDeadline = default;
-		try
+		pending.UserToken.ThrowIfCancellationRequested();
+		lock (settingsGate)
+		{
+			if (!ReferenceEquals(pendingOpen, pending) || openGeneration != pending.Generation ||
+				connectionState != ConnectionState.Connecting || m_AlreadyDisposed || pending.LifetimeToken.IsCancellationRequested)
+				throw new InvalidOperationException("Connection was closed during opening.");
+		}
+	}
+
+	private void PublishPending(DmPendingOpen pending)
+	{
+		void Publish()
 		{
 			lock (settingsGate)
 			{
-				if (openingInProgress)
-					throw new InvalidOperationException("Connection is opening.");
-				if (connectionState == ConnectionState.Open)
-					return;
-				EnsureConfigurationMutable();
-				CheckProperty();
-				openingSession = new DmSession(OnSessionBroken);
-				openingSession.BeginConnecting();
-				openingInProgress = true;
-				session = openingSession;
-				connectionState = ConnectionState.Connecting;
+				RequireCurrentPending(pending);
+				pending.PoolDeadline.ThrowIfExpired();
+				pending.PoolLease?.MarkLeased();
+				DmConnInstance instance = pending.Candidate.m_ConnInst ?? throw new InvalidOperationException("Handshake did not create a physical connection.");
+				instance.SetDmConnection(this);
+				m_ConnInst = instance;
+				ConnProperty = pending.Candidate.ConnProperty;
+				poolLease = pending.PoolLease;
+				PoolOwner = pending.Owner;
+				redactCredentials = true;
+				connectionState = ConnectionState.Open;
+				openingInProgress = false;
+				pendingOpen = null;
+				pending.Published = true;
+				// Logical ownership transfer only: disposing the context must not
+				// abort a session which has just been delivered to this connection.
+				pending.Candidate.m_ConnInst = null;
+				pending.Candidate.session = null;
+				pending.Candidate.connectionState = ConnectionState.Closed;
+				pending.Candidate.openingInProgress = false;
 			}
-			connectingNotified = true;
-			OnStateChange(new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting));
-			connectDeadline = DmDeadline.Start(settings.ConnectTimeout, OperationClock);
-			lease = openingSession.BeginExecution(DmOperationPurpose.Handshake, connectDeadline);
-			invocation = lease.BeginInvocation(cancellationToken);
-			handshakeInvocation = invocation;
-			await ConnProperty.EPGroup.connectAsync(this, cancellationToken).ConfigureAwait(false);
+		}
+		if (dataSourceOwner != null) dataSourceOwner.Publish(Publish); else Publish();
+	}
+
+	private async Task ConnectCoreAsync(bool asynchronous, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		DmPendingOpen pending = InstallPending(cancellationToken);
+		if (pending == null) return;
+		DmExecutionLease execution = null;
+		DmInvocation invocation = null;
+		DmDiagnosticStamp? connectDiagnostic = null;
+		DmDiagnosticResult connectResult = DmDiagnosticResult.Rejected;
+		bool connectFailed = false;
+		DmDetachedTransport failedTransport = null;
+		ConnectionState pendingFailurePrior = ConnectionState.Closed;
+		long pendingFailureGeneration = 0;
+		try
+		{
+			DmPendingOpenTestHooks.AfterInstalled?.Invoke(this);
+			StateChangeTicket connecting = Interlocked.Exchange(ref connectingTicket, null);
+			if (connecting != null) PublishStateChange(connecting);
+			RequireCurrentPending(pending);
+			if (pending.Settings.Pooling)
+			{
+				if (pending.Owner == null)
+				{
+					pending.OwnerReference = DmPoolRegistry.Shared.GetOrCreate(pending.Settings);
+					pending.Owner = pending.OwnerReference.Owner;
+				}
+				pending.PoolLease = asynchronous
+					? await pending.Owner.AcquireAsync(pending.PoolDeadline, pending.LifetimeToken).ConfigureAwait(false)
+					: pending.Owner.Acquire(pending.PoolDeadline, pending.LifetimeToken);
+			}
+			RequireCurrentPending(pending);
+			pending.PoolDeadline.ThrowIfExpired();
+			DmPendingOpenTestHooks.AfterCapacityAcquired?.Invoke(this);
+			RequireCurrentPending(pending);
+			connectDiagnostic = DmDiagnosticsCore.Start();
+			execution = pending.Session.BeginExecution(DmOperationPurpose.Handshake, pending.HandshakeDeadline(OperationClock));
+			// One logical connect owns auth, schema setup, cleanup and publication.
+			// Borrowed handshake children keep all coordination but delegate only
+			// their Connect diagnostics to this outer result.
+			execution.OuterOwnsConnectDiagnostic = true;
+			invocation = execution.BeginInvocation(pending.UserToken);
+			pending.Candidate.handshakeInvocation = invocation;
+			pending.HandshakeStarted = true;
+			var hook = DmPendingOpenTestHooks.Handshake;
+			if (hook != null)
+			{
+				if (asynchronous) await hook(pending.Candidate, true, pending.UserToken).ConfigureAwait(false);
+				else hook(pending.Candidate, false, pending.UserToken).GetAwaiter().GetResult();
+			}
+			else if (asynchronous)
+				await pending.Candidate.ConnProperty.EPGroup.connectAsync(pending.Candidate, pending.UserToken).ConfigureAwait(false);
+			else pending.Candidate.ConnProperty.EPGroup.connect(pending.Candidate);
+			pending.HandshakeSendAttempted = invocation.SendAttempted;
 			invocation.Dispose();
-			invocation = lease.BeginInvocation(cancellationToken);
+			invocation = execution.BeginInvocation(pending.UserToken);
 			invocation.ThrowIfTerminated();
-			if (!ReferenceEquals(Session, openingSession) || do_State != ConnectionState.Open)
-				throw new InvalidOperationException("Connection did not open.");
-			openingSession.CompleteHandshake();
+			pending.Session.CompleteHandshake();
+			pending.HandshakeAcknowledged = true;
 			invocation.Complete();
 			invocation.Dispose();
-			lease.Dispose();
+			invocation = null;
+			execution.Dispose();
+			execution = null;
+			pending.Candidate.handshakeInvocation = null;
+			DmPendingOpenTestHooks.BeforePublish?.Invoke(this);
+			PublishPending(pending);
+			// The Open transition and its queue slot reserve atomically under the
+			// gate; a concurrent close then queues behind it. Handlers run after the
+			// gate is released and may reenter or synchronously reopen, and there are
+			// no state writes after user callbacks.
+			StateChangeTicket opened = null;
 			lock (settingsGate)
 			{
-				if (!ReferenceEquals(session, openingSession) || connectionState != ConnectionState.Open)
-					throw new InvalidOperationException("Connection was closed during opening.");
-				handshakeInvocation = null;
+				if (openGeneration == pending.Generation && connectionState == ConnectionState.Open)
+					opened = QueueStateChange(ConnectionState.Open);
 			}
-			try { OnStateChange(new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open)); }
-			finally { lock (settingsGate) openingInProgress = false; }
+			if (opened != null) PublishStateChange(opened);
+			connectResult = DmDiagnosticResult.Success;
 		}
 		catch (Exception error)
 		{
+			// A raw canceled handshake may win its continuation before the
+			// invocation's cancellation callback. Preserve actual send evidence
+			// before translation or cleanup can retire the captured invocation.
+			pending.HandshakeSendAttempted |= invocation?.SendAttempted == true || execution?.SendAttempted == true;
+			if (error is OperationCanceledException rawCancellation && error is not DmOperationCanceledException &&
+				(rawCancellation.CancellationToken == pending.UserToken || pending.UserToken.IsCancellationRequested))
+				pending.ObserveUserCancellation();
 			Exception translated = invocation?.TranslateFailure(error) ?? error;
-			if (openingSession != null)
+			if (translated is DmOperationCanceledException canceled && canceled.CancellationToken == pending.LifetimeToken)
 			{
-				try { invocation?.Dispose(); } catch { }
-				try { lease?.Dispose(); } catch { }
-				DmDetachedTransport captured = null;
-				DmConnInstance orphan = null;
-				ConnectionState prior = ConnectionState.Closed;
+				translated = pending.UserCancellationWon
+					? new DmOperationCanceledException(canceled.FailureInfo, pending.UserToken, canceled)
+					: new InvalidOperationException("Connection was closed during opening.");
+			}
+			else if (translated is OperationCanceledException && translated is not DmOperationCanceledException)
+			{
+				if (pending.CloseCancellationWon)
+					translated = new InvalidOperationException("Connection was closed during opening.");
+				else if (pending.UserCancellationWon)
+					translated = new DmOperationCanceledException(new DmFailureInfo(DmErrorKind.Canceled,
+						pending.HandshakeStarted ? DmFailurePhase.Connect : DmFailurePhase.PoolWait,
+						pending.HandshakeStarted ? "WDM_CONNECT_CANCELED" : "WDM_POOL_WAIT_CANCELED",
+						pending.HandshakeAcknowledged ? DmOperationOutcome.ServerReported :
+						pending.HandshakeSendAttempted ? DmOperationOutcome.Unknown : DmOperationOutcome.NotSent,
+						null, false, DmCancelSource.User), pending.UserToken, error);
+			}
+			else if (error is TimeoutException && translated is not DmTimeoutException)
+				translated = new DmTimeoutException(new DmFailureInfo(DmErrorKind.Timeout,
+					pending.HandshakeStarted ? DmFailurePhase.Connect : DmFailurePhase.PoolWait,
+					pending.HandshakeStarted ? "WDM_CONNECT_TIMEOUT" : "WDM_POOL_WAIT_TIMEOUT",
+					pending.HandshakeAcknowledged ? DmOperationOutcome.ServerReported :
+					pending.HandshakeSendAttempted ? DmOperationOutcome.Unknown : DmOperationOutcome.NotSent,
+					null, false, DmCancelSource.TotalDeadline), error);
+			connectFailed = true;
+			connectResult = ClassifyConnectDiagnostic(translated);
+			try { invocation?.Dispose(); } catch { }
+			try { execution?.Dispose(); } catch { }
+			if (pending.Published)
+			{
+				try { CloseExpectedSession(pending.Session); } catch { }
+			}
+			else
+			{
+				failedTransport = pending.Session.Detach();
 				lock (settingsGate)
 				{
-					if (ReferenceEquals(session, openingSession))
+					if (ReferenceEquals(pendingOpen, pending))
 					{
-						captured = openingSession.Detach();
-						orphan = m_ConnInst;
-						m_ConnInst = null;
-						session = null;
-						prior = connectionState;
+						pendingOpen = null;
+						openingInProgress = false;
+						pendingFailurePrior = lastPublishedState;
+						pendingFailureGeneration = openGeneration;
 						connectionState = ConnectionState.Closed;
+						physicalClose = failedTransport;
+						session = null;
 					}
-					openingInProgress = false;
-					handshakeInvocation = null;
 				}
-				try { captured?.AbortTransport(); orphan?.AbortTransport(); } catch { }
-				openingSession.MarkClosed();
-				if (prior != ConnectionState.Closed && connectingNotified)
-					try { OnStateChange(new StateChangeEventArgs(prior, ConnectionState.Closed)); } catch { }
+				pending.PoolLease?.BeginClosing();
+				try { pending.Candidate.CloseExpectedSession(pending.Session); } catch { }
 			}
 			throw translated;
 		}
+		finally
+		{
+			try
+			{
+				Exception cleanupFailure = null;
+				try { pending.Dispose(); } catch (Exception error) { cleanupFailure = error; }
+				try { pending.Candidate.Dispose(); } catch (Exception error) { cleanupFailure ??= error; }
+				if (connectFailed && !pending.Published)
+				{
+					Action publicCloseNotification;
+					lock (settingsGate)
+					{
+						pendingCloseNotifications.Remove(pending, out publicCloseNotification);
+					}
+					void CompletePendingFailure()
+					{
+						pending.PoolLease?.CompleteAfterTransportClosed();
+						try
+						{
+							if (publicCloseNotification != null) publicCloseNotification();
+							else NotifyClosedIfCurrent(pendingFailurePrior, pendingFailureGeneration);
+						}
+						catch { /* Preserve the original opening failure after notification. */ }
+					}
+					if (failedTransport == null) CompletePendingFailure();
+					else failedTransport.RunAfterClosed(CompletePendingFailure);
+				}
+				// Preserve the original translated failure, while still attempting
+				// both releases. A standalone cleanup failure remains observable.
+				if (!connectFailed && cleanupFailure != null)
+				{
+					connectResult = ClassifyConnectDiagnostic(cleanupFailure);
+					ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
+				}
+			}
+			finally
+			{
+				if (connectDiagnostic.HasValue)
+					DmDiagnosticsCore.CompleteOperation(connectDiagnostic.Value, DmDiagnosticOperation.Connect, connectResult);
+			}
+		}
+	}
+
+	private static DmDiagnosticResult ClassifyConnectDiagnostic(Exception error) =>
+		error is IOException or SocketException ? DmDiagnosticResult.TransportError : DmDiagnosticsCore.Classify(error);
+
+	internal DmConnection(DmConnectionSettings frozen, DmDataSource source) : this()
+	{
+		settings = frozen;
+		hasExplicitSettings = true;
+		redactCredentials = true;
+		dataSourceOwner = source;
+		PoolOwner = source.Owner;
+		ConnProperty.BindSettings(frozen);
 	}
 
 	internal int getIndexOnDBGroup()
@@ -1222,11 +1535,19 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 
 	public bool getConnPooling()
 	{
-		return ConnProperty.ConnPooling;
+		return settings.Pooling;
 	}
 
-	public void ClearAllPools(bool pooled) =>
-		throw new NotSupportedException("Connection pooling is unsupported.");
+	public void ClearAllPools(bool pooled) => ClearAllPools();
+
+	public static void ClearAllPools() => DmPoolRegistry.Shared.ClearAll();
+
+	public static void ClearPool(DmConnection connection)
+	{
+		if (connection == null) throw new ArgumentNullException(nameof(connection));
+		if (connection.dataSourceOwner != null) connection.dataSourceOwner.ClearPool();
+		else DmPoolRegistry.Shared.Clear(connection.settings);
+	}
 
 	internal void ReleaseUnmanagedResource(bool pooled)
 	{
@@ -1306,7 +1627,7 @@ public sealed class DmConnection : DbConnection, ICloneable, IFilterInfo
 	public DmConnection Clone()
 	{
 		DmTrace.TraceMethodEnter(TraceLevel.Debug, ClassName, "Clone()");
-		var clone = hasExplicitSettings ?
+		var clone = dataSourceOwner != null ? dataSourceOwner.CreateConnection() : hasExplicitSettings ?
 			new DmConnection(settings.ToConnectionString(includeSecrets: true), forEFCore) :
 			new DmConnection(forEFCore);
 		clone.redactCredentials = redactCredentials;

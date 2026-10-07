@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/tools/R3ResourceProbe/source_identity.py",
+    "/Users/wanghongyi/Projects/W.DmProvider",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t18/validation-v2/tls-runs/20261002T191947Z-f875189eaf/public/consumer-source-manifest.json"
+  ],
+  "elapsed_seconds": 0.04801058303564787,
+  "exit_code": 0,
+  "stage": "consumer_source_identity"
+}

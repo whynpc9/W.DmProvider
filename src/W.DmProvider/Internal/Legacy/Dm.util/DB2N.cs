@@ -57,7 +57,7 @@ internal class DB2N
 		case 19:
 		{
 			DmClob dmClob = DmClob.newInstance(bytes, connection.m_ConnInst, column, fetchAll: true);
-			result = dmClob.getSubString(0L, (int)dmClob.do_length());
+			result = dmClob.MaterializeStringUnderOwner();
 			break;
 		}
 		case 14:
@@ -537,7 +537,7 @@ internal class DB2N
 		case 19:
 		{
 			DmClob dmClob = DmClob.newInstance(bytes2, connection.m_ConnInst, column, fetchAll: true);
-			bytes2 = dmClob.GetBytes(0L, (int)dmClob.do_length());
+			bytes2 = dmClob.MaterializeBytesUnderOwner();
 			break;
 		}
 		case 12:
@@ -679,7 +679,7 @@ internal class DB2N
 		case 19:
 		{
 			DmClob dmClob = DmClob.newInstance(bytes, connection.m_ConnInst, column, connection.lobFetchAll());
-			obj = ((!StringUtil.equalsIgnoreCase(column.GetTypeName(), "LONGVARCHAR")) ? ((object)dmClob) : ((object)dmClob.getSubString(0L, (int)dmClob.do_length())));
+			obj = ((!StringUtil.equalsIgnoreCase(column.GetTypeName(), "LONGVARCHAR")) ? ((object)dmClob) : ((object)dmClob.MaterializeStringUnderOwner()));
 			break;
 		}
 		case 20:
@@ -856,7 +856,7 @@ internal class DB2N
 		else if (column.GetCType() == 19)
 		{
 			DmClob dmClob = DmClob.newInstance(bytes, connection.m_ConnInst, column, fetchAll: true);
-			return dmClob.getSubString(0L, (int)dmClob.do_length());
+			return dmClob.MaterializeStringUnderOwner();
 		}
 		return ByteUtil.getString(bytes, 0, bytes.Length, connection.ConnProperty.ServerEncoding);
 	}

@@ -1,0 +1,399 @@
+using System.Data;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text;
+using W.Dm;
+using W.Dm.Config;
+
+internal static class Program
+{
+    private const string Owner = "WDM_PROVIDER_TEST", Build = "8.1.5.60";
+#if R1
+    private const string Flavor = "R1", Version = "0.1.0-r1.20260930064454";
+    private const string PackageSha = "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8";
+    private const string DllSha = "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed";
+    private const string Mvid = "205ef4d3-9b6e-42b8-8838-9a659074158c";
+#else
+    private const string Flavor = "current", Version = "0.1.0-r3.20261002223702";
+    private const string PackageSha = "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc";
+    private const string DllSha = "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c";
+    private const string Mvid = "0c33d48b-4d42-46e1-99db-b53fe2f170f1";
+#endif
+    private const string CurrentSourceSha = "c904079e7fa69fb656c57486f22c88d742e21e7e0f0e39fb0b5217da69d38b85";
+    private static string block = "";
+    private static readonly List<RowTiming> Rows = [];
+    private static readonly List<Owned> OwnedTables = [];
+    private static string phase = "arguments";
+    private sealed record Seed(int Id, int Group, int Ordinal, string? Value, int? NullableKey = null, int? SecondaryKey = null);
+    private sealed record RowTiming(string Mode, bool Warmup, int Sample, long ExecuteTicks, long DisposeTicks, int Affected);
+    private sealed class Owned(string mode, string name)
+    {
+        internal string Mode = mode, Name = name;
+        internal bool Attempted, Created, AbsentAfter;
+    }
+    private sealed class FixedFailure(string code) : InvalidOperationException { internal string Code = code; }
+    private static void Need(bool ok, string code) { if (!ok) throw new FixedFailure(code); }
+    private static long Now() => Stopwatch.GetTimestamp();
+    private static string Sha(string path) { using var f = File.OpenRead(path); return Convert.ToHexStringLower(SHA256.HashData(f)); }
+
+    internal static async Task<int> Main(string[] args)
+    {
+        string? output = null; string? connectionString = null; WireObservation? observation = null;
+        object? failure = null, cleanupFailure = null; int code = 1;
+        var modes = new List<object>(); bool wholeEmptyAfter = false;
+        long? createdStart = null, closedStart = null, createdDelta = null, closedDelta = null;
+        using var outer = new CancellationTokenSource(TimeSpan.FromSeconds(300));
+        using var work = CancellationTokenSource.CreateLinkedTokenSource(outer.Token);
+        work.CancelAfter(TimeSpan.FromSeconds(200));
+        try
+        {
+            Need(args.Length == 4, "FOUR_FIXED_ARGUMENTS_REQUIRED");
+            block = args[1];
+            Need((Flavor == "R1" && (block is "A1" or "A2")) || (Flavor == "current" && (block is "B1" or "B2")), "BLOCK_FLAVOR_MISMATCH");
+            Need(int.TryParse(args[2], out int workMillis) && workMillis > 0 && workMillis <= 200_000, "BOUNDED_REMAINING_WORK_REQUIRED");
+            Need(int.TryParse(args[3], out int outerMillis) && outerMillis > 0 && outerMillis <= 300_000, "BOUNDED_REMAINING_OUTER_REQUIRED");
+            work.CancelAfter(TimeSpan.FromMilliseconds(workMillis)); outer.CancelAfter(TimeSpan.FromMilliseconds(outerMillis));
+            output = Path.GetFullPath(args[0]);
+            Need(Directory.Exists(output) && new DirectoryInfo(output).LinkTarget == null && !Directory.EnumerateFileSystemEntries(output).Any(), "EMPTY_PRIVATE_DIRECTORY_REQUIRED");
+            if (!OperatingSystem.IsWindows()) Need(File.GetUnixFileMode(output) == (UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute), "PRIVATE_DIRECTORY_MODE_REQUIRED");
+            phase = "package_identity"; VerifyPackage();
+            createdStart = SocketCounter("CreatedTcpSockets"); closedStart = SocketCounter("DisposedTcpSockets");
+            phase = "test_configuration";
+            var builder = new DmConnectionStringBuilder(Environment.GetEnvironmentVariable("DAMENG_TEST_CONNECTION_STRING") ?? throw new FixedFailure("TEST_CONFIGURATION_REQUIRED"));
+            Need(builder.User == Owner, "TEST_USER_REQUIRED");
+            builder.Schema = Owner; builder.ConnPooling = false; builder.StmtPooling = false; builder.PreparePooling = false;
+            Need(!builder.ConnPooling, "COMMON_POOLING_FALSE_REQUIRED");
+            builder.LogLevel = LogLevel.OFF; builder.PersistSecurityInfo = false;
+            builder.TransportSecurity = DmTransportSecurity.PlaintextAllowed;
+            builder.ConnectTimeout = TimeSpan.FromSeconds(20); builder.CommandTimeout = 20;
+            connectionString = builder.ConnectionString;
+            phase = "fresh_before_empty";
+            await using (var before = new DmConnection(connectionString))
+            {
+                await before.OpenAsync(work.Token); await Identity(before, work.Token);
+                foreach (string catalog in new[] { "USER_TABLES", "USER_VIEWS", "USER_SEQUENCES" })
+                    Need(await Count(before, "SELECT COUNT(*) FROM " + catalog, work.Token) == 0, "BEFORE_INVENTORY_NOT_EMPTY");
+                foreach (string mode in new[] { block })
+                {
+                    var own = new Owned(mode, "EF10_AGF_" + Guid.NewGuid().ToString("N")[..12].ToUpperInvariant());
+                    Need(await ObjectCount(before, own.Name, work.Token) == 0, "EXACT_OBJECT_NOT_ABSENT");
+                    // Immutable private ledger is persisted before any CREATE; it is
+                    // the only place where exact owned names are serialized.
+                    WriteNew(Path.Combine(output, mode + ".owned.json"), new { schema_version = 1, diagnostic_only = true, accepted_final = false, owner = Owner, exact_object = own.Name, object_type = "TABLE", identity_verified = true, fresh_absence_count = 0, create_planned = true, version = Version, package_sha256 = PackageSha });
+                    OwnedTables.Add(own);
+                }
+            }
+            observation = new WireObservation();
+            foreach (Owned own in OwnedTables)
+            {
+                observation.Mode = own.Mode;
+                work.Token.ThrowIfCancellationRequested(); phase = own.Mode + "_open";
+                await using var conn = new DmConnection(connectionString);
+                conn.Open();
+                await Identity(conn, work.Token);
+                bool noDelay = ReadNoDelay(conn); // Deliberately never set socket options.
+                object profile = ReadProfile(conn);
+                phase = own.Mode + "_create";
+                var create = new DmCommand(CreateSql(own.Name), conn) { CommandTimeout = 20 };
+                try
+                {
+                    own.Attempted = true;
+                    create.ExecuteNonQuery();
+                    own.Created = true;
+                }
+                finally { create.Dispose(); }
+                phase = own.Mode + "_insert";
+                int sample = 0;
+                foreach ((int id, bool warmup) in new[] { (421, true), (422, true) }.Concat(Enumerable.Range(1, 23).Select(id => (id, false))).Append((223, false)))
+                {
+                    work.Token.ThrowIfCancellationRequested();
+                    await Insert(conn, own, SeedAt(id), warmup, ++sample, observation, work.Token);
+                }
+                modes.Add(new { mode = own.Mode, measured_rows = 24, warmup_rows = 2, socket_no_delay = noDelay, negotiated_profile = profile });
+            }
+            Need(Rows.Count == 26 && Rows.Count(r => !r.Warmup) == 24, "ROW_COUNT_MISMATCH");
+            Need(observation.Overflow == 0, "WIRE_OBSERVATION_CAPACITY_EXCEEDED");
+            code = 0;
+        }
+        catch (Exception error) { failure = new { phase, error = Safe(error) }; }
+        finally
+        {
+            // Work never retries. Cleanup gets its own bounded budget even if the
+            // work token expired; a failed cleanup remains a failed diagnostic.
+            try
+            {
+                if (connectionString != null && OwnedTables.Any(o => o.Attempted))
+                {
+                    using var cleanup = CancellationTokenSource.CreateLinkedTokenSource(outer.Token);
+                    cleanup.CancelAfter(TimeSpan.FromSeconds(80));
+                    phase = "fresh_owned_cleanup";
+                    if (observation != null) { observation.Mode = "cleanup"; observation.Row = 0; }
+                    await using var conn = new DmConnection(connectionString);
+                    await conn.OpenAsync(cleanup.Token); await Identity(conn, cleanup.Token);
+                    foreach (Owned own in OwnedTables.Where(o => o.Attempted))
+                    {
+                        long present = await ObjectCount(conn, own.Name, cleanup.Token);
+                        Need(present is 0 or 1, "EXACT_OBJECT_COUNT_INVALID");
+                        if (present == 1)
+                        {
+                            await using var drop = new DmCommand("DROP TABLE \"" + own.Name + "\"", conn) { CommandTimeout = 20 };
+                            await drop.ExecuteNonQueryAsync(cleanup.Token);
+                        }
+                    }
+                    await conn.CloseAsync();
+                    await using var verify = new DmConnection(connectionString);
+                    await verify.OpenAsync(cleanup.Token); await Identity(verify, cleanup.Token);
+                    foreach (Owned own in OwnedTables.Where(o => o.Attempted))
+                    { own.AbsentAfter = await ObjectCount(verify, own.Name, cleanup.Token) == 0; Need(own.AbsentAfter, "EXACT_CLEANUP_NOT_ABSENT"); }
+                    foreach (string catalog in new[] { "USER_TABLES", "USER_VIEWS", "USER_SEQUENCES" })
+                        Need(await Count(verify, "SELECT COUNT(*) FROM " + catalog, cleanup.Token) == 0, "AFTER_INVENTORY_NOT_EMPTY");
+                    wholeEmptyAfter = true;
+                }
+            }
+            catch (Exception error) { cleanupFailure = new { phase, error = Safe(error) }; code = 1; }
+            try { observation?.Dispose(); } catch (Exception error) { cleanupFailure ??= new { phase = "hook_restore", error = Safe(error) }; code = 1; }
+            if (createdStart.HasValue && closedStart.HasValue)
+            {
+                try
+                {
+                    createdDelta = SocketCounter("CreatedTcpSockets") - createdStart.Value;
+                    closedDelta = SocketCounter("DisposedTcpSockets") - closedStart.Value;
+                    Need(createdDelta >= 0 && closedDelta >= 0 && createdDelta == closedDelta, "OWN_PROCESS_TCP_DELTA_NOT_ZERO");
+                }
+                catch (Exception error) { cleanupFailure ??= new { phase = "final_tcp_delta", error = Safe(error) }; code = 1; }
+            }
+            if (code == 0)
+            {
+                try { Need(wholeEmptyAfter && observation != null && observation.Complete, "FINAL_CONTROL_OR_OBSERVATION_INCOMPLETE"); }
+                catch (Exception error) { cleanupFailure = new { phase = "final_numeric_observation", error = Safe(error) }; code = 1; }
+            }
+        }
+        try
+        {
+            Need(output != null, "OUTPUT_UNAVAILABLE");
+            WriteNew(Path.Combine(output!, "report.json"), new {
+                schema_version = 1, diagnostic_only = true, accepted_final = false, original_76_accepted = false,
+                original_1266_seed_accepted = false, exit_code = code, package_version = Version, package_sha256 = PackageSha,
+                driver_dll_sha256 = DllSha, driver_mvid = Mvid, current_source_manifest_sha256 = CurrentSourceSha,
+                consumer_flavor = Flavor, block, server_version = Build, timestamp_frequency = Stopwatch.Frequency, work_seconds = 200, cleanup_seconds = 80, outer_seconds = 300,
+                modes, rows = Rows, exchanges = observation?.Exchanges, missing = observation?.Missing,
+                row_exchange_counts = Rows.Select(r => new { r.Mode, r.Warmup, r.Sample,
+                    actual_exchange_count = observation?.Exchanges.Count(e => e.Mode == r.Mode && e.Row == r.Sample),
+                    expected_reference_count = 5 }),
+                unmatched = observation?.Unmatched, overflow = observation?.Overflow,
+
+                missing_send_hook = observation?.Exchanges.Count(e => e.SendCompleted == null),
+                missing_response_hook = observation?.Exchanges.Count(e => e.ResponseReady == null),
+                row_dispose_failure = observation?.LastCleanupFailure,
+                whole_empty_after = wholeEmptyAfter,
+                cleanup_verified = wholeEmptyAfter && OwnedTables.All(o => !o.Attempted || o.AbsentAfter),
+                runtime_zero_scope = "own_process_tcp_socket_delta", created_tcp_delta = createdDelta, disposed_tcp_delta = closedDelta,
+                runtime_zero = createdDelta.HasValue && closedDelta.HasValue && createdDelta == closedDelta,
+                owned_final_state = OwnedTables.Select(o => new { mode = o.Mode, create_attempted = o.Attempted, create_ack = o.Created, fresh_absent_after = o.AbsentAfter }), failure, cleanup_failure = cleanupFailure
+            });
+            Console.WriteLine(JsonSerializer.Serialize(new { diagnostic_only = true, accepted_final = false, exit_code = code, measured_rows_recorded = Rows.Count(r => !r.Warmup), whole_empty_after = wholeEmptyAfter, measured_rows_affected_one = Rows.Count(r => !r.Warmup && r.Affected == 1), cleanup_verified = wholeEmptyAfter && OwnedTables.All(o => !o.Attempted || o.AbsentAfter) }));
+        }
+        catch { Console.WriteLine("{\"diagnostic_only\":true,\"accepted_final\":false,\"exit_code\":1,\"code\":\"PRIVATE_REPORT_FAILED\"}"); return 1; }
+        return code;
+    }
+
+    private static Seed SeedAt(int id) => id switch
+    {
+        1 => new(1, 1, 0, "甲"), 2 => new(2, 1, 1, null), 3 => new(3, 1, 2, "乙"), 4 => new(4, 1, 3, ""),
+        5 => new(5, 2, 0, null), 6 => new(6, 2, 1, null),
+        7 => new(7, 3, 0, "甲"), 8 => new(8, 3, 1, "乙"), 9 => new(9, 3, 2, "甲"),
+        10 => new(10, 5, 0, ""), 11 => new(11, 5, 1, " "), 12 => new(12, 5, 2, null), 13 => new(13, 5, 3, "x"), 14 => new(14, 5, 4, "  "),
+        15 => new(15, 97, 1, "A", null, 20), 16 => new(16, 97, 2, "B", null, 10),
+        17 => new(17, 97, 3, "C", 1, 20), 18 => new(18, 97, 4, "D", 1, 10),
+        19 => new(19, 97, 5, "E", 2, 20), 20 => new(20, 97, 6, "F", 2, 10),
+        21 => new(21, 97, 7, "G", -1, 20), 22 => new(22, 97, 8, "H", -1, 10),
+        23 => new(23, 98, 0, "x"), 223 => new(223, 99, 0, new string('x', 200)),
+        421 => new(421, 99, 198, new string('x', 200)), 422 => new(422, 99, 199, new string('x', 200)),
+        _ => throw new FixedFailure("UNDECLARED_ORIGINAL_SEED_ROW")
+    };
+    private static string CreateSql(string table) =>
+        $"CREATE TABLE \"{table}\" (\"ID\" INT NOT NULL, \"GROUP_ID\" INT NOT NULL, " +
+        "\"ORDINAL\" INT NOT NULL, \"TEXT_VALUE\" NVARCHAR2(200), \"LOB_VALUE\" NCLOB, " +
+        "\"NULLABLE_SORT_KEY\" INT, \"SECONDARY_SORT_KEY\" INT, " +
+        $"CONSTRAINT \"PK_{table}\" NOT CLUSTER PRIMARY KEY (\"ID\"))";
+    private static async Task Insert(DmConnection connection, Owned own, Seed row, bool warmup, int sample, WireObservation observation, CancellationToken token)
+    {
+        var command = new DmCommand($"INSERT INTO \"{own.Name}\" (\"ID\", \"GROUP_ID\", \"ORDINAL\", \"TEXT_VALUE\", " +
+            "\"NULLABLE_SORT_KEY\", \"SECONDARY_SORT_KEY\") " +
+            "VALUES (:id, :group_id, :ordinal, :value, :nullable_sort_key, :secondary_sort_key)", connection) { CommandTimeout = 20 };
+        Add(command, "id", DbType.Int32, row.Id); Add(command, "group_id", DbType.Int32, row.Group);
+        Add(command, "ordinal", DbType.Int32, row.Ordinal); Add(command, "value", DbType.String, row.Value ?? (object)DBNull.Value);
+        Add(command, "nullable_sort_key", DbType.Int32, row.NullableKey ?? (object)DBNull.Value);
+        Add(command, "secondary_sort_key", DbType.Int32, row.SecondaryKey ?? (object)DBNull.Value);
+        int affected = -1; long start = Now(), executed = start, disposed = start;
+        Exception? primary = null;
+        observation.Mode = own.Mode; observation.Row = sample; observation.Warmup = warmup;
+        try
+        {
+            affected = command.ExecuteNonQuery();
+            executed = Now(); Need(affected == 1, "INSERT_AFFECTED_ROWS_NOT_ONE");
+        }
+        catch (Exception error) { executed = Now(); primary = error; throw; }
+        finally
+        {
+            try { command.Dispose(); }
+            catch (Exception error) when (primary != null) { observation.CleanupFailures++; observation.LastCleanupFailure = Safe(error); }
+            finally
+            {
+                disposed = Now(); Rows.Add(new(own.Mode, warmup, sample, executed - start, disposed - executed, affected));
+                observation.Row = 0;
+            }
+        }
+        Need(observation.CleanupFailures == 0, "ROW_DISPOSE_FAILURE");
+        Need(observation.Exchanges.Any(e => e.Mode == own.Mode && e.Row == sample), "ROW_EXCHANGE_NOT_OBSERVED");
+        token.ThrowIfCancellationRequested();
+    }
+    private static void Add(DmCommand command, string name, DbType type, object value)
+    {
+        var p = command.CreateParameter(); p.ParameterName = name; p.DbType = type; p.Value = value; command.Parameters.Add(p);
+    }
+    private static async Task Identity(DmConnection conn, CancellationToken token)
+    {
+        Need(conn.ServerVersion == Build, "ACTUAL_SERVER_BUILD_REQUIRED");
+        await using var c = new DmCommand("SELECT USER,SF_GET_SCHEMA_NAME_BY_ID(CURRENT_SCHID()) FROM DUAL", conn) { CommandTimeout = 20 };
+        await using var r = await c.ExecuteReaderAsync(token);
+        Need(await r.ReadAsync(token) && r.GetString(0) == Owner && r.GetString(1) == Owner && !await r.ReadAsync(token), "ACTUAL_TEST_SCHEMA_REQUIRED");
+    }
+    private static async Task<long> Count(DmConnection conn, string sql, CancellationToken token)
+    { await using var c = new DmCommand(sql, conn) { CommandTimeout = 20 }; return Convert.ToInt64(await c.ExecuteScalarAsync(token)); }
+    private static Task<long> ObjectCount(DmConnection conn, string table, CancellationToken token)
+    { Need(System.Text.RegularExpressions.Regex.IsMatch(table, @"\AEF10_AGF_[0-9A-F]{12}\z"), "OWNED_NAME_INVALID"); return Count(conn, "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME='" + table + "'", token); }
+    private static bool ReadNoDelay(DmConnection conn)
+    {
+        const BindingFlags f = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        var instance = ReadField(conn, "m_ConnInst", "SOCKET_PATH_INSTANCE_MISSING");
+        var wire = ReadField(instance, "m_Csi", "SOCKET_PATH_WIRE_MISSING");
+        Need(wire.GetType().FullName == "W.Dm.Internal.Legacy.A.B", "SOCKET_PATH_WIRE_TYPE_INVALID");
+        // B.A() returns this exact D field in the pinned source. D owns the
+        // DmTransport; B itself has no transport field.
+        var io = ReadField(wire, "__t02_field_04000AC1", "SOCKET_PATH_IO_MISSING");
+        Need(io.GetType().FullName == "W.Dm.Internal.Legacy.A.D", "SOCKET_PATH_IO_TYPE_INVALID");
+        var transport = ReadField(io, "transport", "SOCKET_PATH_TRANSPORT_MISSING");
+        var channel = ReadField(transport, "channel", "SOCKET_PATH_CHANNEL_MISSING");
+        var property = channel.GetType().GetProperty("Socket", f) ?? throw new FixedFailure("SOCKET_PATH_PROPERTY_MISSING");
+        var socket = property.GetValue(channel) as Socket ?? throw new FixedFailure("SOCKET_PATH_SOCKET_MISSING");
+        return socket.NoDelay;
+    }
+    private static object ReadProfile(DmConnection conn)
+    {
+        const BindingFlags f = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        var instance = ReadField(conn, "m_ConnInst", "PROFILE_INSTANCE_MISSING");
+        var property = instance.GetType().GetProperty("ConnProperty", f) ?? throw new FixedFailure("PROFILE_PROPERTIES_MISSING");
+        var properties = property.GetValue(instance) ?? throw new FixedFailure("PROFILE_PROPERTIES_MISSING");
+        var encodingProperty = properties.GetType().GetProperty("ServerEncoding", f) ?? throw new FixedFailure("PROFILE_ENCODING_MISSING");
+        string encoding = encodingProperty.GetValue(properties) as string ?? throw new FixedFailure("PROFILE_ENCODING_MISSING");
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var canonical = Encoding.GetEncoding(encoding);
+        Need(canonical.WebName is "utf-8" or "gb18030", "PROFILE_ENCODING_NOT_KNOWN");
+        object message = ReadField(properties, "msgVersion", "PROFILE_MESSAGE_VERSION_MISSING");
+        Need(message is int value && value > 0 && value <= ushort.MaxValue, "PROFILE_MESSAGE_VERSION_INVALID");
+        return new { server_version = conn.ServerVersion, canonical_encoding = canonical.WebName,
+            code_page = canonical.CodePage, message_version = (int)message };
+    }
+    private static object ReadField(object owner, string name, string missingCode)
+    {
+        var field = owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            ?? throw new FixedFailure(missingCode);
+        return field.GetValue(owner) ?? throw new FixedFailure(missingCode);
+    }
+    private static long SocketCounter(string name)
+    {
+        var type = typeof(DmConnection).Assembly.GetType("W.Dm.Internal.Transport.DmTransportTestHooks") ?? throw new FixedFailure("COMMON_TCP_COUNTER_TYPE_MISSING");
+        var property = type.GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic) ?? throw new FixedFailure("COMMON_TCP_COUNTER_MISSING");
+        return property.GetValue(null) is long number ? number : throw new FixedFailure("COMMON_TCP_COUNTER_TYPE_INVALID");
+    }
+    private static void VerifyPackage()
+    {
+        var driver = typeof(DmConnection).Assembly; var host = typeof(Program).Assembly;
+        Need(Sha(driver.Location) == DllSha && driver.ManifestModule.ModuleVersionId == Guid.Parse(Mvid) && driver.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] == Version, "FINAL_DLL_IDENTITY_REQUIRED");
+        string feed = host.GetCustomAttributes<AssemblyMetadataAttribute>().Single(m => m.Key == "BaselinePackageSource").Value ?? "";
+        Need(Sha(Path.Combine(feed, "W.DmProvider." + Version + ".nupkg")) == PackageSha, "FINAL_FEED_PACKAGE_REQUIRED");
+        string cache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") ?? throw new FixedFailure("ISOLATED_CACHE_REQUIRED");
+        Need(Sha(Path.Combine(cache, "w.dmprovider", Version, "w.dmprovider." + Version + ".nupkg")) == PackageSha, "EXACT_CACHE_PACKAGE_REQUIRED");
+        string directory = Path.GetDirectoryName(host.Location)!;
+        Need(Path.GetFullPath(driver.Location) == Path.GetFullPath(Path.Combine(directory, "W.DmProvider.dll")), "ACTUAL_LOCAL_PACKAGE_DLL_REQUIRED");
+        using var deps = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, host.GetName().Name + ".deps.json")));
+        Need(deps.RootElement.GetProperty("libraries").GetProperty("W.DmProvider/" + Version).GetProperty("type").GetString() == "package", "PACKAGE_REFERENCE_REQUIRED");
+    }
+    private static object Safe(Exception e) => new {
+        type = e switch { FixedFailure => "Guard", DmException => "DmException", OperationCanceledException => "Canceled", TimeoutException => "Timeout", IOException => "IO", SocketException => "Socket", InvalidOperationException => "InvalidOperation", _ => "Other" },
+        code = e is FixedFailure fixedFailure ? fixedFailure.Code : "UNAVAILABLE",
+        number = e is DmException dm ? (int?)dm.Number : null
+    };
+    private static void WriteNew(string path, object data)
+    {
+        using var f = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        JsonSerializer.Serialize(f, data); f.Flush(true);
+    }
+
+    private sealed class WireObservation : IDisposable
+    {
+        internal string Mode = "setup"; internal int Row; internal bool Warmup;
+        internal int Missing, Unmatched, Overflow, CleanupFailures; internal object? LastCleanupFailure;
+        internal List<Exchange> Exchanges = [];
+        internal bool Complete => Missing == 0 && Unmatched == 0 && Overflow == 0 && Exchanges.All(e =>
+            e.SendCompleted.HasValue && e.ResponseReady.HasValue && e.Entered <= e.SendCompleted.Value &&
+            e.SendCompleted.Value <= e.ResponseReady.Value);
+        private Exchange? current; private long seq;
+        private readonly List<(FieldInfo Field, object? Prior)> fields = [];
+        internal sealed class Exchange
+        {
+            public long Sequence { get; init; } public string Mode { get; init; } = ""; public int Row { get; init; } public bool Warmup { get; init; }
+            public long Entered { get; init; } public long? SendCompleted { get; set; } public long? ResponseReady { get; set; }
+            public long? EnterToSendTicks => SendCompleted - Entered;
+            public long? SendToResponseReadyTicks => ResponseReady - SendCompleted;
+            public long? EnterToResponseReadyTicks => ResponseReady - Entered;
+        }
+        internal WireObservation()
+        {
+            var t = typeof(DmConnection).Assembly.GetType("W.Dm.Internal.Legacy.A.DmWireTestHooks") ?? throw new FixedFailure("WIRE_HOOK_TYPE_REQUIRED");
+            foreach (string name in new[] { "AfterExchangeEntered", "AfterSendBeforeReceive", "BeforeDecode" })
+            {
+                var f = t.GetField(name, BindingFlags.Static | BindingFlags.NonPublic) ?? throw new FixedFailure("WIRE_HOOK_FIELD_REQUIRED");
+                Need(f.GetValue(null) == null, "ISOLATED_NULL_HOOK_REQUIRED"); fields.Add((f, null));
+            }
+            try
+            {
+                foreach (var pair in fields)
+                {
+                    string name = pair.Field.Name;
+                    pair.Field.SetValue(null, Bridge(pair.Field, args => OnHook(name, args)));
+                }
+            }
+            catch { Dispose(); throw; }
+        }
+        private void OnHook(string name, object[] args)
+        {
+            long time = Now();
+            if (name == "AfterExchangeEntered")
+            {
+                if (current != null && current.ResponseReady == null) Missing++;
+                if (Exchanges.Count >= 4096) { Overflow++; current = null; return; }
+                current = new() { Sequence = ++seq, Mode = Mode, Row = Row, Warmup = Warmup, Entered = time }; Exchanges.Add(current);
+            }
+            else if (current == null) Unmatched++;
+            else if (name == "AfterSendBeforeReceive") { if (current.SendCompleted != null) Unmatched++; current.SendCompleted = time; }
+            else { if (current.ResponseReady != null || current.SendCompleted == null) Unmatched++; current.ResponseReady = time; }
+        }
+        private static Delegate Bridge(FieldInfo field, Action<object[]> action)
+        {
+            var parameters = field.FieldType.GetMethod("Invoke")!.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
+            return Expression.Lambda(field.FieldType, Expression.Invoke(Expression.Constant(action), Expression.NewArrayInit(typeof(object), parameters.Select(p => Expression.Convert(p, typeof(object))))), parameters).Compile();
+        }
+        public void Dispose()
+        {
+            if (current != null && current.ResponseReady == null) { Missing++; current = null; }
+            foreach (var pair in fields) pair.Field.SetValue(null, pair.Prior);
+        }
+    }
+}

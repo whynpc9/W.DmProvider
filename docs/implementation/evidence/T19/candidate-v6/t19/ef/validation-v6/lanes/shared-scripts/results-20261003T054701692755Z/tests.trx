@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="66ddbd98-2b94-4b35-9da5-b22b8b21ecac" name="@wanghongyideMacBook-Pro 2026-10-03 13:47:45" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-03T13:47:45.3646140+08:00" queuing="2026-10-03T13:47:45.3646140+08:00" start="2026-10-03T13:47:03.7003320+08:00" finish="2026-10-03T13:49:23.7368890+08:00" />
+  <TestSettings name="default" id="288a658e-bf1e-4409-a9c4-2323ce2b929b">
+    <Deployment runDeploymentRoot="_wanghongyideMacBook-Pro_2026-10-03_13_47_45" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="a9e0d0c0-5a29-4521-abd1-6d1a5750fa1d" testId="e827bc36-754f-4b91-9863-f981ed36cb0e" testName="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.GeneratedCreateScriptAppliesSupportedCurrentSchemaModel" computerName="wanghongyideMacBook-Pro" duration="00:00:24.3018590" startTime="2026-10-03T13:48:59.3960950+08:00" endTime="2026-10-03T13:49:23.6972290+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a9e0d0c0-5a29-4521-abd1-6d1a5750fa1d">
+      <Output>
+        <StdOut>owned_objects=C_T12S_B4E3059DE4854D57,L_T12S_B4E3059DE4854D57,P_T12S_B4E3059DE4854D57,H_T12S_B4E3059DE4854D57,S_T12S_B4E3059DE4854D57,IX_T12S_B4E3059DE4854D57,PK_T12S_B4E3059DE4854D57,AK_T12S_B4E3059DE4854D57,CK_T12S_B4E3059DE4854D57,FK_T12S_B4E3059DE4854D57,CPK_T12S_B4E3059DE4854D57,LPK_T12S_B4E3059DE4854D57,PK_H_T12S_B4E3059DE4854D57
+final_database_state=owned_objects_absent; verified_on_fresh_connection=true</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="893a9330-7a3b-4365-8e67-927fc547d2a5" testId="11e585a5-d327-4946-3aa2-3424eba93436" testName="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.GeneratedMigrationRangesUpgradeAndDowngradeCurrentSchema" computerName="wanghongyideMacBook-Pro" duration="00:00:40.1804866" startTime="2026-10-03T13:48:19.2155690+08:00" endTime="2026-10-03T13:48:59.3948940+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="893a9330-7a3b-4365-8e67-927fc547d2a5">
+      <Output>
+        <StdOut>owned_objects=MC_T12S_0BEDF8FD9BD04FCD,MR_T12S_0BEDF8FD9BD04FCD,ML_T12S_0BEDF8FD9BD04FCD,MP_T12S_0BEDF8FD9BD04FCD,H_T12S_0BEDF8FD9BD04FCD,MS_T12S_0BEDF8FD9BD04FCD,IX_T12S_0BEDF8FD9BD04FCD,IY_T12S_0BEDF8FD9BD04FCD,PK_T12S_0BEDF8FD9BD04FCD,AK_T12S_0BEDF8FD9BD04FCD,CK_T12S_0BEDF8FD9BD04FCD,FK_T12S_0BEDF8FD9BD04FCD,CPK_T12S_0BEDF8FD9BD04FCD,LPK_T12S_0BEDF8FD9BD04FCD,PK_H_T12S_0BEDF8FD9BD04FCD
+final_database_state=owned_objects_absent; verified_on_fresh_connection=true</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e32b9bf8-1fc1-44c5-8a4a-d4f146ef0aea" testId="7a3d941c-8adb-4e55-d885-1bdf119b1985" testName="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.NonIdempotentGeneratedUpAndDownScriptsPreserveHistoryAndSeed" computerName="wanghongyideMacBook-Pro" duration="00:00:33.8739857" startTime="2026-10-03T13:47:45.3500780+08:00" endTime="2026-10-03T13:48:19.2136910+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e32b9bf8-1fc1-44c5-8a4a-d4f146ef0aea">
+      <Output>
+        <StdOut>owned_objects=MC_T12S_0FF48BD9FEBF441A,MR_T12S_0FF48BD9FEBF441A,ML_T12S_0FF48BD9FEBF441A,MP_T12S_0FF48BD9FEBF441A,H_T12S_0FF48BD9FEBF441A,MS_T12S_0FF48BD9FEBF441A,IX_T12S_0FF48BD9FEBF441A,IY_T12S_0FF48BD9FEBF441A,PK_T12S_0FF48BD9FEBF441A,AK_T12S_0FF48BD9FEBF441A,CK_T12S_0FF48BD9FEBF441A,FK_T12S_0FF48BD9FEBF441A,CPK_T12S_0FF48BD9FEBF441A,LPK_T12S_0FF48BD9FEBF441A,PK_H_T12S_0FF48BD9FEBF441A
+final_database_state=owned_objects_absent; verified_on_fresh_connection=true</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ebeed95c-26bc-4d90-80d2-eb5b6d7a3f35" testId="83bee13b-a8ab-47c6-35a3-550bab4fc8ea" testName="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.IdempotentGeneratedUpAndDownScriptsApplyExactlyOnce" computerName="wanghongyideMacBook-Pro" duration="00:00:40.3388421" startTime="2026-10-03T13:47:04.9916730+08:00" endTime="2026-10-03T13:47:45.3376970+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ebeed95c-26bc-4d90-80d2-eb5b6d7a3f35">
+      <Output>
+        <StdOut>owned_objects=MC_T12S_D13F68BA3EE847E1,MR_T12S_D13F68BA3EE847E1,ML_T12S_D13F68BA3EE847E1,MP_T12S_D13F68BA3EE847E1,H_T12S_D13F68BA3EE847E1,MS_T12S_D13F68BA3EE847E1,IX_T12S_D13F68BA3EE847E1,IY_T12S_D13F68BA3EE847E1,PK_T12S_D13F68BA3EE847E1,AK_T12S_D13F68BA3EE847E1,CK_T12S_D13F68BA3EE847E1,FK_T12S_D13F68BA3EE847E1,CPK_T12S_D13F68BA3EE847E1,LPK_T12S_D13F68BA3EE847E1,PK_H_T12S_D13F68BA3EE847E1
+final_database_state=owned_objects_absent; verified_on_fresh_connection=true</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.GeneratedMigrationRangesUpgradeAndDowngradeCurrentSchema" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/w/test/w.entityframeworkcore.dameng.functionaltests/bin/debug/net10.0/w.entityframeworkcore.dameng.functionaltests.dll" id="11e585a5-d327-4946-3aa2-3424eba93436">
+      <Execution id="893a9330-7a3b-4365-8e67-927fc547d2a5" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests" name="GeneratedMigrationRangesUpgradeAndDowngradeCurrentSchema" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.GeneratedCreateScriptAppliesSupportedCurrentSchemaModel" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/w/test/w.entityframeworkcore.dameng.functionaltests/bin/debug/net10.0/w.entityframeworkcore.dameng.functionaltests.dll" id="e827bc36-754f-4b91-9863-f981ed36cb0e">
+      <Execution id="a9e0d0c0-5a29-4521-abd1-6d1a5750fa1d" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests" name="GeneratedCreateScriptAppliesSupportedCurrentSchemaModel" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.IdempotentGeneratedUpAndDownScriptsApplyExactlyOnce" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/w/test/w.entityframeworkcore.dameng.functionaltests/bin/debug/net10.0/w.entityframeworkcore.dameng.functionaltests.dll" id="83bee13b-a8ab-47c6-35a3-550bab4fc8ea">
+      <Execution id="ebeed95c-26bc-4d90-80d2-eb5b6d7a3f35" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests" name="IdempotentGeneratedUpAndDownScriptsApplyExactlyOnce" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests.NonIdempotentGeneratedUpAndDownScriptsPreserveHistoryAndSeed" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/w/test/w.entityframeworkcore.dameng.functionaltests/bin/debug/net10.0/w.entityframeworkcore.dameng.functionaltests.dll" id="7a3d941c-8adb-4e55-d885-1bdf119b1985">
+      <Execution id="e32b9bf8-1fc1-44c5-8a4a-d4f146ef0aea" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-scripts/W/test/W.EntityFrameworkCore.Dameng.FunctionalTests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.FunctionalTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.FunctionalTests.DamengCurrentSchemaScriptFunctionalTests" name="NonIdempotentGeneratedUpAndDownScriptsPreserveHistoryAndSeed" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e827bc36-754f-4b91-9863-f981ed36cb0e" executionId="a9e0d0c0-5a29-4521-abd1-6d1a5750fa1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11e585a5-d327-4946-3aa2-3424eba93436" executionId="893a9330-7a3b-4365-8e67-927fc547d2a5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7a3d941c-8adb-4e55-d885-1bdf119b1985" executionId="e32b9bf8-1fc1-44c5-8a4a-d4f146ef0aea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="83bee13b-a8ab-47c6-35a3-550bab4fc8ea" executionId="ebeed95c-26bc-4d90-80d2-eb5b6d7a3f35" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="4" executed="4" passed="4" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.04]   Discovering: W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:00:00.08]   Discovered:  W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:00:00.09]   Starting:    W.EntityFrameworkCore.Dameng.FunctionalTests
+[xUnit.net 00:02:19.86]   Finished:    W.EntityFrameworkCore.Dameng.FunctionalTests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

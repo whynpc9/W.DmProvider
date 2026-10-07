@@ -1,6 +1,6 @@
 # W.DmProvider
 
-面向达梦数据库的自有 ADO.NET Provider 调查与开发仓库。已基于 **DM.DmProvider 8.3.1.47463** 完成 **R1（T01–T12）** 的限定开发验收：来源、独立包、配置、会话、传输、TLS、命令/Reader、参数类型、本地事务与隔离级别，以及固定 EF Core 10.0.12 下游的实际候选包验证。R2（T13–T14）已独立验收：异步调用链、执行范围取消、期限及未知结果闭环均通过，详见 [T13](docs/implementation/reports/T13.md)、[T14](docs/implementation/reports/T14.md)。当前仍是开发候选；支持范围与门禁见 [R2 兼容矩阵](docs/compatibility/R2.md)、[任务进度](docs/implementation/progress.json)；R1 历史范围见 [R1 矩阵](docs/compatibility/R1.md)。池化及完整流式能力属于后续任务。
+面向达梦数据库的自有 ADO.NET Provider 调查与开发仓库。已基于 **DM.DmProvider 8.3.1.47463** 完成 **R1（T01–T12）** 的限定开发验收：来源、独立包、配置、会话、传输、TLS、命令/Reader、参数类型、本地事务与隔离级别，以及固定 EF Core 10.0.12 下游的实际候选包验证。R2（T13–T14）已独立验收：异步调用链、执行范围取消、期限及未知结果闭环均通过，详见 [T13](docs/implementation/reports/T13.md)、[T14](docs/implementation/reports/T14.md)。当前仍是开发候选；支持范围与门禁见 [R2 兼容矩阵](docs/compatibility/R2.md)、[任务进度](docs/implementation/progress.json)；R1 历史范围见 [R1 矩阵](docs/compatibility/R1.md)。R3（T15/T16/T17/T18/T25/T19）的容量与DataSource、流式LOB、诊断和最终包下游矩阵已独立验收；详见[R3范围](docs/compatibility/R3.md)、[T19最终报告](docs/implementation/reports/T19.md)。本轮仍是开发候选，PR review与merge待完成，未公开发行。
 
 ## 从哪里开始
 

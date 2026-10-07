@@ -1,0 +1,831 @@
+{
+  "accepted_final": false,
+  "blocks": [
+    {
+      "actual_exchanges": 177,
+      "block": "A1",
+      "cleanup_verified": true,
+      "consumer_flavor": "R1",
+      "created_tcp_delta": 4,
+      "disposed_tcp_delta": 4,
+      "measured_rows": 24,
+      "outer_remaining_milliseconds": 299990,
+      "process": {
+        "ignored_stdout_records": 0,
+        "process_exit_code": 0,
+        "process_id": 89852,
+        "safe_stdout": {
+          "accepted_final": false,
+          "cleanup_verified": true,
+          "diagnostic_only": true,
+          "exit_code": 0,
+          "measured_rows_affected_one": 24,
+          "measured_rows_recorded": 24,
+          "whole_empty_after": true
+        },
+        "safe_stdout_records": 1,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 171,
+        "stdout_sha256": "f1912a373bb7155244cf2537d206bc0727ad6537072cb3f669784579efb48d7f",
+        "timed_out": false
+      },
+      "process_exit_code": 0,
+      "report_sha256": "93d7570b0e9c92ed5fbb9fecf1c5a94ac577ffdfa8c6db5768d2a9a51ac3bbf2",
+      "row_exchange_counts": [
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 1,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 2,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 3,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 4,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 5,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 6,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 7,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 8,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 9,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 10,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 11,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 12,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 13,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 14,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 15,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 16,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 17,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 18,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 19,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 20,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 21,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 22,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 23,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 24,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 25,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A1",
+          "sample": 26,
+          "warmup": false
+        }
+      ],
+      "runtime_zero": true,
+      "status": "diagnostic_block_completed",
+      "warmup_rows": 2,
+      "whole_empty_after": true,
+      "work_remaining_milliseconds": 199990
+    },
+    {
+      "actual_exchanges": 179,
+      "block": "B1",
+      "cleanup_verified": true,
+      "consumer_flavor": "current",
+      "created_tcp_delta": 4,
+      "disposed_tcp_delta": 4,
+      "measured_rows": 24,
+      "outer_remaining_milliseconds": 284295,
+      "process": {
+        "ignored_stdout_records": 0,
+        "process_exit_code": 0,
+        "process_id": 89900,
+        "safe_stdout": {
+          "accepted_final": false,
+          "cleanup_verified": true,
+          "diagnostic_only": true,
+          "exit_code": 0,
+          "measured_rows_affected_one": 24,
+          "measured_rows_recorded": 24,
+          "whole_empty_after": true
+        },
+        "safe_stdout_records": 1,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 171,
+        "stdout_sha256": "f1912a373bb7155244cf2537d206bc0727ad6537072cb3f669784579efb48d7f",
+        "timed_out": false
+      },
+      "process_exit_code": 0,
+      "report_sha256": "87acf3d07f254d3fcad36c01681329d80e542c01daf56b9ee31c9e27ffbd8375",
+      "row_exchange_counts": [
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 1,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 2,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 3,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 4,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 5,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 6,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 7,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 8,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 9,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 10,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 11,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 12,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 13,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 14,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 15,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 16,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 17,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 18,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 19,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 20,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 21,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 22,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 23,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 24,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 25,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B1",
+          "sample": 26,
+          "warmup": false
+        }
+      ],
+      "runtime_zero": true,
+      "status": "diagnostic_block_completed",
+      "warmup_rows": 2,
+      "whole_empty_after": true,
+      "work_remaining_milliseconds": 184295
+    },
+    {
+      "actual_exchanges": 179,
+      "block": "B2",
+      "cleanup_verified": true,
+      "consumer_flavor": "current",
+      "created_tcp_delta": 4,
+      "disposed_tcp_delta": 4,
+      "measured_rows": 24,
+      "outer_remaining_milliseconds": 267906,
+      "process": {
+        "ignored_stdout_records": 0,
+        "process_exit_code": 0,
+        "process_id": 89939,
+        "safe_stdout": {
+          "accepted_final": false,
+          "cleanup_verified": true,
+          "diagnostic_only": true,
+          "exit_code": 0,
+          "measured_rows_affected_one": 24,
+          "measured_rows_recorded": 24,
+          "whole_empty_after": true
+        },
+        "safe_stdout_records": 1,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 171,
+        "stdout_sha256": "f1912a373bb7155244cf2537d206bc0727ad6537072cb3f669784579efb48d7f",
+        "timed_out": false
+      },
+      "process_exit_code": 0,
+      "report_sha256": "89c2c1075c2c80b2f8789381d50f83fa546016ca7e5a985d7845e4b0ae05093a",
+      "row_exchange_counts": [
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 1,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 2,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 3,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 4,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 5,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 6,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 7,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 8,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 9,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 10,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 11,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 12,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 13,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 14,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 15,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 16,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 17,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 18,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 19,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 20,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 21,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 22,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 23,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 24,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 25,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "B2",
+          "sample": 26,
+          "warmup": false
+        }
+      ],
+      "runtime_zero": true,
+      "status": "diagnostic_block_completed",
+      "warmup_rows": 2,
+      "whole_empty_after": true,
+      "work_remaining_milliseconds": 167906
+    },
+    {
+      "actual_exchanges": 177,
+      "block": "A2",
+      "cleanup_verified": true,
+      "consumer_flavor": "R1",
+      "created_tcp_delta": 4,
+      "disposed_tcp_delta": 4,
+      "measured_rows": 24,
+      "outer_remaining_milliseconds": 251890,
+      "process": {
+        "ignored_stdout_records": 0,
+        "process_exit_code": 0,
+        "process_id": 89975,
+        "safe_stdout": {
+          "accepted_final": false,
+          "cleanup_verified": true,
+          "diagnostic_only": true,
+          "exit_code": 0,
+          "measured_rows_affected_one": 24,
+          "measured_rows_recorded": 24,
+          "whole_empty_after": true
+        },
+        "safe_stdout_records": 1,
+        "stderr_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 171,
+        "stdout_sha256": "f1912a373bb7155244cf2537d206bc0727ad6537072cb3f669784579efb48d7f",
+        "timed_out": false
+      },
+      "process_exit_code": 0,
+      "report_sha256": "6f7774abb112fd222de1b545d6d390503572655defce7818a8bd27cf253bbe9d",
+      "row_exchange_counts": [
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 1,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 2,
+          "warmup": true
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 3,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 4,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 5,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 6,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 7,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 8,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 9,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 10,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 11,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 12,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 13,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 14,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 15,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 16,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 17,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 18,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 19,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 20,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 21,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 22,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 23,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 24,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 25,
+          "warmup": false
+        },
+        {
+          "actual_exchange_count": 5,
+          "mode": "A2",
+          "sample": 26,
+          "warmup": false
+        }
+      ],
+      "runtime_zero": true,
+      "status": "diagnostic_block_completed",
+      "warmup_rows": 2,
+      "whole_empty_after": true,
+      "work_remaining_milliseconds": 151890
+    }
+  ],
+  "budgets_milliseconds": {
+    "cleanup_reserve": 80000,
+    "cumulative_work": 200000,
+    "whole": 300000
+  },
+  "candidate_tuples": {
+    "R1": {
+      "driver_dll_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+      "driver_mvid": "205ef4d3-9b6e-42b8-8838-9a659074158c",
+      "package_sha256": "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8",
+      "version": "0.1.0-r1.20260930064454"
+    },
+    "current": {
+      "driver_dll_sha256": "9970339dd70cc8bdf5e752f9a0bf0b74ccac4ded00ba6fa14e94e22ee22cdd0c",
+      "driver_mvid": "0c33d48b-4d42-46e1-99db-b53fe2f170f1",
+      "package_sha256": "92f154162af3e34f4f67248e07ef657a1433efb7f7f6b5a054a7e20fb726e3fc",
+      "version": "0.1.0-r3.20261002223702"
+    }
+  },
+  "completed_blocks": 4,
+  "consumer_dll_sha256": {
+    "R1": "2af72638d4b7d29627e6185fb7a44d02367376dc711fe1007eb5d23263e0e460",
+    "current": "0e2215b55f6b610a649811a1211983911f712605045265023160dfef595f4898"
+  },
+  "consumer_source_guards_verified": {
+    "R1": true,
+    "current": true
+  },
+  "consumers_manifest_sha256": "d8a2d6d10301e98505ecfbb92d373cd5d09eb576c3f8e304ad4f16432522b2b7",
+  "current_source_manifest_sha256": "c904079e7fa69fb656c57486f22c88d742e21e7e0f0e39fb0b5217da69d38b85",
+  "diagnostic_only": true,
+  "elapsed_milliseconds": 63841,
+  "error_code": null,
+  "exit_code": 0,
+  "order": [
+    "A1",
+    "B1",
+    "B2",
+    "A2"
+  ],
+  "original_1266_seed_accepted": false,
+  "original_76_accepted": false,
+  "original_functional_76_status": "failed_pending",
+  "runner_sha256": "748a68e7961ea637bc95ab7f91a3818a372438ed99e389b99421572001c6740a",
+  "schema_version": 1,
+  "sdk": "10.0.203"
+}

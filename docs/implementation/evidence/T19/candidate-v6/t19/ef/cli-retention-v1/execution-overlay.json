@@ -1,0 +1,146 @@
+{
+  "allowlist": [
+    "tools/DownstreamAcceptance/T19/README.md",
+    "tools/DownstreamAcceptance/T19/candidate_guard.cs",
+    "tools/DownstreamAcceptance/T19/execution_overlay.py",
+    "tools/DownstreamAcceptance/T19/prepare.py",
+    "tools/DownstreamAcceptance/T19/run.py",
+    "tools/DownstreamAcceptance/T19/test_execution_overlay.py",
+    "tools/DownstreamAcceptance/T19/test_loaded_asset_contract.py",
+    "tools/DownstreamAcceptance/T19/validate.py"
+  ],
+  "candidate": {
+    "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+    "driver_mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+    "package_sha256": "8fb616decd1053cff6a81a7f3533b22891fab7074bd76bd632d535c55b4c4594",
+    "source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+    "version": "0.1.0-r3.20261003023000"
+  },
+  "changes": [
+    {
+      "action": "modify",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/README.md",
+        "sha256": "5a6b8d99f15680a1514179248adf3452ef256b55b0e5dd83265d104008cfbe1f",
+        "size": 7852
+      },
+      "old": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/README.md",
+        "sha256": "3d0c600dad945004a801d2e42a2516e8280aebc8af975c728f0e076507ed9b79",
+        "size": 5642
+      },
+      "path": "tools/DownstreamAcceptance/T19/README.md"
+    },
+    {
+      "action": "modify",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/candidate_guard.cs",
+        "sha256": "dcf33193e5a16d475d38dd0d06015071b61ae6ada33131ad1df312af3173602c",
+        "size": 7189
+      },
+      "old": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/candidate_guard.cs",
+        "sha256": "9362c24b02008dfbab7e80ca560c74951d3b830c8073302183c927144a4427bb",
+        "size": 3657
+      },
+      "path": "tools/DownstreamAcceptance/T19/candidate_guard.cs"
+    },
+    {
+      "action": "add",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/execution_overlay.py",
+        "sha256": "62026c0a2a55181db4b9747607d5bc996d5311a13f85e573f548b16760c84b48",
+        "size": 15061
+      },
+      "old": null,
+      "path": "tools/DownstreamAcceptance/T19/execution_overlay.py"
+    },
+    {
+      "action": "modify",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/prepare.py",
+        "sha256": "14dae9238dcfc17794f57d98f1aeb9779a12761a71ae0bffc80f586be94bde69",
+        "size": 18001
+      },
+      "old": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/prepare.py",
+        "sha256": "b5aabd2f87e85f6bc2681653751a739fae7697700d970316d4173c4d32f64b52",
+        "size": 15231
+      },
+      "path": "tools/DownstreamAcceptance/T19/prepare.py"
+    },
+    {
+      "action": "modify",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/run.py",
+        "sha256": "396a6839210a1a4c22744d2cb86c6102badb417deb3a2961caacc9d964703540",
+        "size": 26334
+      },
+      "old": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/run.py",
+        "sha256": "9f6b52e7a0e3c15c88031758a98e9262a1c02ca8aa06815f1d309c008c03a745",
+        "size": 21505
+      },
+      "path": "tools/DownstreamAcceptance/T19/run.py"
+    },
+    {
+      "action": "add",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/test_execution_overlay.py",
+        "sha256": "380474a7c6d8b0c0f48048e458a91bade9159517bb8c34876d6f13fe019e85e2",
+        "size": 11145
+      },
+      "old": null,
+      "path": "tools/DownstreamAcceptance/T19/test_execution_overlay.py"
+    },
+    {
+      "action": "add",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/test_loaded_asset_contract.py",
+        "sha256": "e53bbdf323bea7995b2441abcee3126a3130bb8a7919dca20d641265f2566dce",
+        "size": 9778
+      },
+      "old": null,
+      "path": "tools/DownstreamAcceptance/T19/test_loaded_asset_contract.py"
+    },
+    {
+      "action": "modify",
+      "new": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/validate.py",
+        "sha256": "48be4162064de57a352562afca6ae5c51408ee5a61d302d123d6da8570741131",
+        "size": 14197
+      },
+      "old": {
+        "mode": 420,
+        "path": "tools/DownstreamAcceptance/T19/validate.py",
+        "sha256": "a252b9a3330f67b4a6fac5f460d4fec72c8d631ea4827b79235055d89a91178b",
+        "size": 7365
+      },
+      "path": "tools/DownstreamAcceptance/T19/validate.py"
+    }
+  ],
+  "execution_source_archive": "execution-source.tar.gz",
+  "execution_source_archive_sha256": "2fdbcf6dcc280e4c47f88583b8be06bc8cd6896243e547a6f97c1791edce5981",
+  "execution_source_manifest": "execution-source-manifest.json",
+  "execution_source_manifest_sha256": "15591a8ffe0f73e6eadd9972cace8a350c04541bae998f4c1d989b5149d7f5ab",
+  "execution_tree_sha256": "ed706d96c2b0e4394dd7f409b5ce0753d97cb8446cd42bcef245d3be9caf90ec",
+  "producer_source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+  "producer_tree_sha256": "60520036c64424e88901b6f64c27d537b73a9e888605df434bb7dfea9709799d",
+  "production_release_accepted": false,
+  "revision": "t19-cli-retention-v1",
+  "schema_version": 1,
+  "scope": "explicit_tooling_only;product_tests_build_inputs_unchanged",
+  "task": "T19_EXECUTION_OVERLAY"
+}

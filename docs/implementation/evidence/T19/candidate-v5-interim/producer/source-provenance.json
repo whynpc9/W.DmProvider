@@ -1,0 +1,8 @@
+{
+  "LICENSE_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "THIRD_PARTY_NOTICES_sha256": "d3ed55a028c36ab2f68c6ceee6da9696a073eccc471e689b739f22897ae7b826",
+  "ancestor": "DM.DmProvider/8.3.1.47463",
+  "source_ancestor_not_runtime_dependency": true,
+  "source_map_path": "docs/compatibility/t03-source-map.json",
+  "source_map_sha256": "408fc6464d6b2afe9cf60a471de093914795614b96363246cd7265b2e87edfda"
+}

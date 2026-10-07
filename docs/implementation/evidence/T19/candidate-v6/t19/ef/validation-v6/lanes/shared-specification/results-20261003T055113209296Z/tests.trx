@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="024a4c88-dc14-4254-a33e-16908509e96b" name="@wanghongyideMacBook-Pro 2026-10-03 13:51:19" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-03T13:51:19.4752120+08:00" queuing="2026-10-03T13:51:19.4752120+08:00" start="2026-10-03T13:51:15.2169260+08:00" finish="2026-10-03T13:51:30.6715680+08:00" />
+  <TestSettings name="default" id="e0ff846f-1aa2-41a6-ac20-e1ba6c43c669">
+    <Deployment runDeploymentRoot="_wanghongyideMacBook-Pro_2026-10-03_13_51_19" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e291e539-3035-47f2-82ff-094f3e34779a" testId="5caec450-d7d0-e3bc-9cf6-bee51be13e16" testName="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.TrackedUpdateAndDeleteReportExpectedRows" computerName="wanghongyideMacBook-Pro" duration="00:00:06.8591363" startTime="2026-10-03T13:51:23.7833370+08:00" endTime="2026-10-03T13:51:30.6426780+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e291e539-3035-47f2-82ff-094f3e34779a" />
+    <UnitTestResult executionId="7cec5756-7744-4a78-9b5b-101ec33e899a" testId="9c70e1a7-cce1-3372-92da-39fccb1e3a0e" testName="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.EfRelationalSpecificationPackageAndProviderServicesAreWired" computerName="wanghongyideMacBook-Pro" duration="00:00:00.0010950" startTime="2026-10-03T13:51:23.7826910+08:00" endTime="2026-10-03T13:51:23.7832530+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7cec5756-7744-4a78-9b5b-101ec33e899a" />
+    <UnitTestResult executionId="f60a6ffc-085a-4ce1-80cb-f46725de8342" testId="25f1e7a2-e401-ec16-ed66-c9c16e8a502f" testName="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.BasicScalarTypesRoundTrip" computerName="wanghongyideMacBook-Pro" duration="00:00:04.0187750" startTime="2026-10-03T13:51:15.4276080+08:00" endTime="2026-10-03T13:51:19.4524570+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f60a6ffc-085a-4ce1-80cb-f46725de8342" />
+    <UnitTestResult executionId="5299dcd8-a255-4eb0-b067-1da4249bb097" testId="8dafc514-a085-e1b8-5868-4ebd177a5b12" testName="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.ParameterizedFilterOrderAndProjectionExecute" computerName="wanghongyideMacBook-Pro" duration="00:00:04.3281290" startTime="2026-10-03T13:51:19.4636050+08:00" endTime="2026-10-03T13:51:23.7820700+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5299dcd8-a255-4eb0-b067-1da4249bb097" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.EfRelationalSpecificationPackageAndProviderServicesAreWired" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/w/test/w.entityframeworkcore.dameng.specification.tests/bin/debug/net10.0/w.entityframeworkcore.dameng.specification.tests.dll" id="9c70e1a7-cce1-3372-92da-39fccb1e3a0e">
+      <Execution id="7cec5756-7744-4a78-9b5b-101ec33e899a" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/W/test/W.EntityFrameworkCore.Dameng.Specification.Tests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.Specification.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests" name="EfRelationalSpecificationPackageAndProviderServicesAreWired" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.ParameterizedFilterOrderAndProjectionExecute" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/w/test/w.entityframeworkcore.dameng.specification.tests/bin/debug/net10.0/w.entityframeworkcore.dameng.specification.tests.dll" id="8dafc514-a085-e1b8-5868-4ebd177a5b12">
+      <Execution id="5299dcd8-a255-4eb0-b067-1da4249bb097" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/W/test/W.EntityFrameworkCore.Dameng.Specification.Tests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.Specification.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests" name="ParameterizedFilterOrderAndProjectionExecute" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.BasicScalarTypesRoundTrip" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/w/test/w.entityframeworkcore.dameng.specification.tests/bin/debug/net10.0/w.entityframeworkcore.dameng.specification.tests.dll" id="25f1e7a2-e401-ec16-ed66-c9c16e8a502f">
+      <Execution id="f60a6ffc-085a-4ce1-80cb-f46725de8342" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/W/test/W.EntityFrameworkCore.Dameng.Specification.Tests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.Specification.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests" name="BasicScalarTypesRoundTrip" />
+    </UnitTest>
+    <UnitTest name="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests.TrackedUpdateAndDeleteReportExpectedRows" storage="/users/wanghongyi/projects/w.dmprovider/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/w/test/w.entityframeworkcore.dameng.specification.tests/bin/debug/net10.0/w.entityframeworkcore.dameng.specification.tests.dll" id="5caec450-d7d0-e3bc-9cf6-bee51be13e16">
+      <Execution id="e291e539-3035-47f2-82ff-094f3e34779a" />
+      <TestMethod codeBase="[repo]/.local/verification/r3/t19/ef/validation-v6/lanes/shared-specification/W/test/W.EntityFrameworkCore.Dameng.Specification.Tests/bin/Debug/net10.0/W.EntityFrameworkCore.Dameng.Specification.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W.EntityFrameworkCore.Dameng.Specification.Tests.DamengRelationalSpecificationTests" name="TrackedUpdateAndDeleteReportExpectedRows" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5caec450-d7d0-e3bc-9cf6-bee51be13e16" executionId="e291e539-3035-47f2-82ff-094f3e34779a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c70e1a7-cce1-3372-92da-39fccb1e3a0e" executionId="7cec5756-7744-4a78-9b5b-101ec33e899a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25f1e7a2-e401-ec16-ed66-c9c16e8a502f" executionId="f60a6ffc-085a-4ce1-80cb-f46725de8342" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8dafc514-a085-e1b8-5868-4ebd177a5b12" executionId="5299dcd8-a255-4eb0-b067-1da4249bb097" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="4" executed="4" passed="4" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.03]   Discovering: W.EntityFrameworkCore.Dameng.Specification.Tests
+[xUnit.net 00:00:00.05]   Discovered:  W.EntityFrameworkCore.Dameng.Specification.Tests
+[xUnit.net 00:00:00.06]   Starting:    W.EntityFrameworkCore.Dameng.Specification.Tests
+[xUnit.net 00:00:15.29]   Finished:    W.EntityFrameworkCore.Dameng.Specification.Tests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

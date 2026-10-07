@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/share/dotnet/dotnet",
+    "restore",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002223702/private/source/tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj",
+    "/p:Configuration=Release",
+    "/p:Version=0.1.0-r3.20261002223702",
+    "-m:1",
+    "/nodeReuse:false",
+    "/p:UseSharedCompilation=false",
+    "--disable-build-servers"
+  ],
+  "elapsed_seconds": 4.462797832908109,
+  "exit_code": 0,
+  "stage": "Configuration_restore"
+}

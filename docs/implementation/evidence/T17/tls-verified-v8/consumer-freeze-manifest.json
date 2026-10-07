@@ -1,0 +1,2507 @@
+{
+  "schema_version": 1,
+  "task": "t17",
+  "revision": "full-v8",
+  "created_utc": "2026-10-02T17:19:53.076029+00:00",
+  "head": "ed0c8a19d2a3d275eb469960ae56778e6280b5b0",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "123488fdf5c410f7e76c58a45a55c911931aa83d3af0b2569ba1bd9ec79367bf"
+    },
+    {
+      "path": "THIRD-PARTY-NOTICES.md",
+      "sha256": "6864d962e91211dc22e71c11a6b4eb52a5beb5dcc700e80ea348090fef1da847"
+    },
+    {
+      "path": "eng/T01.md",
+      "sha256": "d1c974363a9cc5a443542c5bc1c74063cae99a6695dfadf3b7bc51ac2a837d00"
+    },
+    {
+      "path": "eng/T02.md",
+      "sha256": "53c48e442401d5a0f57c9d4c0e9f41f5c2e68178235f47a6f3a3e4e5862ab5d9"
+    },
+    {
+      "path": "eng/T03.md",
+      "sha256": "8e239064d86cac2e1d41ec99d4772084428ec9b968f5fc80d0fdf5e6d7b8dce4"
+    },
+    {
+      "path": "eng/T04.md",
+      "sha256": "ed1152614eef817981813f0f7ab41999a61fb75f0335bc039d06df2e8c3d4d93"
+    },
+    {
+      "path": "eng/T05.md",
+      "sha256": "5235c36720e561856a18c9f23cd4471894e640511e97fe5da2a89cb4b8dcdc86"
+    },
+    {
+      "path": "eng/T06.md",
+      "sha256": "39444f3c5d99bcac2c5b0db9ef42c6de5b412e03ca4ca2c367e170b51f4beaae"
+    },
+    {
+      "path": "eng/T07.md",
+      "sha256": "34fca4b2e104f09b03144a3759990e4add76bf00eb6599d725c203685b70d64e"
+    },
+    {
+      "path": "eng/T08.md",
+      "sha256": "82d2c28e8c7f98985f9ac7b2a4f266a5965cffbaac255414dc4c8dd27bc9c9b4"
+    },
+    {
+      "path": "eng/T09.md",
+      "sha256": "fed9ea68b7819d9178b45f0dd0bb38a2a5b78cf959ad52ad357236cbca55692f"
+    },
+    {
+      "path": "eng/T10.md",
+      "sha256": "1ba86aaa4d6117b27679cdc304d1212565e3710f3a4d9ecc464bd146d5ad2012"
+    },
+    {
+      "path": "eng/T11.md",
+      "sha256": "1d5ae8a979e5634d9e3394b2bcb78ba2651c36f9fc7a0a3f85a43210a628cc9d"
+    },
+    {
+      "path": "eng/T12.md",
+      "sha256": "d381298877e00f95ba966701cc831258173bf1a3b73f1232f275c9870b6913bf"
+    },
+    {
+      "path": "eng/T13.md",
+      "sha256": "6f7de7c8800491de768d76c90d3a641deb862f759fa258e00fece126f14bb733"
+    },
+    {
+      "path": "eng/T14.md",
+      "sha256": "a33282df17d2939bc781c97dd026bb37845cb4767a393014595f79b3618fde69"
+    },
+    {
+      "path": "eng/T15.md",
+      "sha256": "bf7a47753d071de3ce802b27135b5f96e66b52615f1c621c57a1a1838e6d6df3"
+    },
+    {
+      "path": "eng/T16.md",
+      "sha256": "c827d89797ed07300f0b392e62b37cd6586bba712fb3279e6e0d0429ca84eb16"
+    },
+    {
+      "path": "eng/T17-profile.md",
+      "sha256": "9f32c16d2871c9a95c2f6d2500f85fa3921a11e9cab01ac7648ca823bdfa734f"
+    },
+    {
+      "path": "eng/T17-upload-profile.md",
+      "sha256": "62de5ac15c7f8e47cd7e6acbe52888ab93efca14d28fddf4bd1191a217e2876d"
+    },
+    {
+      "path": "eng/T17.md",
+      "sha256": "db46452982f416407c5e7b89953e02454bbc1b966e133b54d6c6ce3ac66483e8"
+    },
+    {
+      "path": "eng/probe-scenarios.json",
+      "sha256": "376d808585c55ea78271ed0d416f0822975509779621a94b1a0da17019fd7e9e"
+    },
+    {
+      "path": "eng/t01.sh",
+      "sha256": "2fbdff2b1a4294063e39b0850fd00eebbabfb0a3c5d3b2c072c5387ae441b303"
+    },
+    {
+      "path": "eng/t02.sh",
+      "sha256": "17061a9a0c9849556bff152bfd84ba87576e3d4a5143c68ae9dcf1c2d25312ec"
+    },
+    {
+      "path": "eng/t03.sh",
+      "sha256": "83629f825735f4879d78a2498cda07db07c04c0f68b529f36cca2591495c8168"
+    },
+    {
+      "path": "eng/t04.sh",
+      "sha256": "0b83e47724ecb8787b62f304064af2a969833757cd64dbf111611517adee534e"
+    },
+    {
+      "path": "eng/t05.sh",
+      "sha256": "9cf6a1c506a72f0f56533150918103e72a5be40a6f68e5f0e1cedbb3bdba2676"
+    },
+    {
+      "path": "eng/t06.sh",
+      "sha256": "90a06a06923bbd518b0e47658ce0982c44fefddfb72c56095e4bcdd40e3f7308"
+    },
+    {
+      "path": "eng/t07.sh",
+      "sha256": "b513ec5db44da1582bca7416c17d89324334ab5d168a0c6e7474ec2865e12ab6"
+    },
+    {
+      "path": "eng/t08.sh",
+      "sha256": "e0d62be99416b2d98c51d5c329293e1163975d1a3ef52b8e0fe703c6b5577360"
+    },
+    {
+      "path": "eng/t09.sh",
+      "sha256": "3f91a1b7aeb68236242cced07543738a8387a38804dea32a137abbb7b121236e"
+    },
+    {
+      "path": "eng/t10.sh",
+      "sha256": "22aaebdd3c1bd9b73654b8913a8adb46c0987630079030eae93ffefe953d0bc4"
+    },
+    {
+      "path": "eng/t11.sh",
+      "sha256": "f1c80ad876ea8abc776668d89a32ffd5b38522bb124774d403bec1fc5c52c958"
+    },
+    {
+      "path": "eng/t12-offline.sh",
+      "sha256": "73952d99c9ff9d83ed7652699ab4ccec9a81dcdfefc1561e212f12e4cec73517"
+    },
+    {
+      "path": "eng/t13.sh",
+      "sha256": "1ca5596b96b21fd63ad615293724c37e51baa1039d73ff283ff0934251085415"
+    },
+    {
+      "path": "eng/t14-diagnostics.sh",
+      "sha256": "f1f88ace4cc562ef5b4f77beaba92bfe3db4cbec9b7405691b046fa0b51d66e7"
+    },
+    {
+      "path": "eng/t14.sh",
+      "sha256": "2f9be61788795d4ba3a62fc8d63290135e3312561089a3644493568e2b3886b4"
+    },
+    {
+      "path": "eng/t15.sh",
+      "sha256": "51b643dcf58b7635e0da162721861930b5d3874d22d85cca0fab1d270033e46d"
+    },
+    {
+      "path": "eng/t16.sh",
+      "sha256": "d8ed2bf5024214ffa6b9ba858d7190880dc51bf915c4328491c82ea750eb268b"
+    },
+    {
+      "path": "eng/t17-profile.sh",
+      "sha256": "e184ba8bd986abece8ca235db4e1867d322fc01e68ee6d777556ef039cc67e9d"
+    },
+    {
+      "path": "eng/t17-upload-profile.sh",
+      "sha256": "5a52066033023dcd743d71444fe754bbc9a91cce2a43dc36d7ed6325ab4fdbbb"
+    },
+    {
+      "path": "eng/t17.sh",
+      "sha256": "e6d6e4dc693045057c08952c7daaf00f12f397b28d2ed7316a51b0b0de745280"
+    },
+    {
+      "path": "global.json",
+      "sha256": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d"
+    },
+    {
+      "path": "scripts/with-dameng-test.sh",
+      "sha256": "b2af867921b567045fdeeccb3da490662661976b182e5884d029a738d41e00d8"
+    },
+    {
+      "path": "scripts/with-dameng-tls-test.sh",
+      "sha256": "872d722808a7f53415505e2536438d1b644793822b2abeac3cb5b662ac94d706"
+    },
+    {
+      "path": "src/W.DmProvider/.local/t05/dotnet-cli-home/.nuget/NuGet/NuGet.Config",
+      "sha256": "a93e5528f06204b5e5afecd3fb2db8de0d48cc5e2b5f812728a6ad3f0c7bffc2"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Configuration/DmConnectionSettings.cs",
+      "sha256": "caa4612df4f51145cfdf834eceed7df9624e26bd170bcc0b4fc16510ea94b67e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Configuration/DmConnectionStringParser.cs",
+      "sha256": "d3d4d57dd10f8e5a68b180070d6e36acb94abd692330f248237e8cbcbf5025b5"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Configuration/DmSchemaValidator.cs",
+      "sha256": "f8e152e6574f13347752d191ea684e8e233609fe5ae3866733b4f351ba1b88ed"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Execution/DmCommandPlan.cs",
+      "sha256": "01a03f72bc829c386ad5c45259df6d9ddfc7aed9eb70bafa7a7b40cd042784e0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Execution/DmResultCursor.cs",
+      "sha256": "ab1a62b11ad7a21f8704e609fd5c0b420658c1660db9cb42e1f3b75b8a5551c0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/--y__InlineArray5.cs",
+      "sha256": "a79034e943fe5370d85124f9c674c690b139170d0171203318986cf25a2e5146"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/A.Async.cs",
+      "sha256": "5c063253dbcfe9a0acf7d198b55ac355c74c5d8a6d609072e725070a549cb620"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/B.Async.cs",
+      "sha256": "8069510b44ec97ebb710723324f1d64ecf8b870856f8ba115be9a80bf9ed32d8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/D.Async.cs",
+      "sha256": "266f2a482353d118a73c20116a12392f1a8c80e762dd257296b59084190225be"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/DmHandshakeSecurityGuard.cs",
+      "sha256": "cc7a7fa3f27b42342ed0a8b1b24d5cad858cae9868b08a904f95e8490bc0dd83"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/DmWireTestHooks.cs",
+      "sha256": "58ba6173c41c5b0dfcc145857aa67bcdcdae1b69354400a137de43d41f1a37cd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/RequestCodec.Async.cs",
+      "sha256": "c2c55b2b79f07d8a2a5284e91d4ee09cc17af847c648a7179aba771bc43f0498"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/ResponseCodec.Async.cs",
+      "sha256": "214b717d01210c31e009b828897577690a086da341349348611f3c2b659d5c0c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000064.cs",
+      "sha256": "502873537e1b62e70c6cfcaa348499f639bfca1e37db5c82a64015705a124c27"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_0200008F.cs",
+      "sha256": "10cf7bd23fdef020fe6e282ea419fe428a9494c9deed66f983e3ea587233d5cf"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000090.cs",
+      "sha256": "a5a7ed40c6d7f546b17428b40766e28ec526fbdd6430e635c80af491a5a5cbf8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000091.cs",
+      "sha256": "93bcaa86f281afd7bbf6a826c45977190222389f3b4634ec5382114415b274e6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000092.cs",
+      "sha256": "e0962521f4cff14d4e56758355a9eb6d1694ec4bdf7cc1c68a45652a8316eaa6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000093.cs",
+      "sha256": "c6aace6a94cd71f4703dd75fb97e74c1762e81f495bed7dedbfc4fec869526ac"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/A/T02_02000094.cs",
+      "sha256": "4637e5cd01a521ef72de98bef5c511b651a1b57fac68e7af907af1b112ef42ab"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/AbstractLob.cs",
+      "sha256": "0a91a1b4891bbe8142b08063202339957828b69c16c28e635488bb2ae7271793"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/BaseFlusher.cs",
+      "sha256": "08039a0470edd3453ff1349e139206222bae7966079ea916a067343369a6cabe"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/BaseThread.cs",
+      "sha256": "16421a3d39308be24eb6dd111cad70cea202455fdbda9b3a5066f7e96775a15f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/BatchedCommand.cs",
+      "sha256": "7be0443a33289310d7851ed6a00f608aabff66e28d07a96297a62f2ed477eaf7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/COMMIT.cs",
+      "sha256": "e311f4492e5dd446bec7dee79255a67f3c6dbd2fecdad7342467007069a0613f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/Cipher.cs",
+      "sha256": "da03009b6475936596a9784996aed22cf3dac34a9873eb2bf6db6089bf6f9a23"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ColumnData.cs",
+      "sha256": "3f53cf4e344cceaae75fc21b4083159c152234a5151aabb8d950ba97a7e91e47"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ColumnInfo.cs",
+      "sha256": "8b31ed5024b88695ec271d22aebae0186c6e4f4c9dc3d9adb11321c28cbcbc77"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ComplexTypeData.cs",
+      "sha256": "8cdf80b95375588467e02fa1d54f65ad34d26a327ed8b73524999d1e5efa01ac"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ComplexTypeDesc.cs",
+      "sha256": "89febc40ded80679fbdb114809024daa340ea4bda1674b13085dfd1fc62d2fe4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DBAliveCheckThread.cs",
+      "sha256": "46edf893150c6b483aac00f37138e7443f4101a9530968dc015c29a32fee1079"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DHGroup.cs",
+      "sha256": "b3bcaba462cd26bf47f5f2cc9e24ebab0aa6b8550e74e3ac8a8e7fea1de6f474"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DHKey.cs",
+      "sha256": "c58857e001eac8f115e8b9a8c5825f0fa59a1c73228f4f8ec25da8879745d75b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DM_CHARSET.cs",
+      "sha256": "7323b70a9d024a74a315b590d022deef04f5867884a8e0368f03051c9a051543"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/Data.cs",
+      "sha256": "e6efd0fcde52e592f922e9bd92c422e736ba3bdc93edb1b0c86eba2c8271e6cf"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmArray.cs",
+      "sha256": "c88242f5ef45aa58bec22ac8bf17511154dabfa415ff88c4dab05227e0960706"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBLobStream.cs",
+      "sha256": "b61c0a51034178502e93b1f5241d1cca7c59c3fdd5f1b097da631e73a61015b8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBcpLoaderParameter.cs",
+      "sha256": "da60597ac11c4d63e1a925595685784d8f33c2af26a13763715906fd69af8a15"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBcpLoaderParameterCollection.cs",
+      "sha256": "a90983a57e2c7ed01031b623ffdb932adeaab0564d315f9b7fb7c1eb65e46c1d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBlob.cs",
+      "sha256": "b1017f4e056d948ec046c909d6a4230c8197963ff800a7049e9c9ec385443858"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopy.cs",
+      "sha256": "540b5c5c4c60677b3c9dfb7b4dc032bd93cada344d9c711abf14631e06a91318"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopy2.cs",
+      "sha256": "6f5fa2426e1b8063f585ec2ca417479c7c7d3092f1c8d95eff0bb44f68e0a860"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyColumnMapping.cs",
+      "sha256": "12b8efa13e13d812372920fdabb944bcd41645eb820cd9677608ae2fd5070fbc"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyColumnMappingCollection.cs",
+      "sha256": "a72b1e0ba0c19a85bb8d63c0febcea081de399e6426d6a6e070aa2aec653a06e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyOptions.cs",
+      "sha256": "ed9b84e6ae89a083c77f766aaf03015cc42f31c2e1bd332072a04b99c9f421f9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmBulkCopyTypeLen.cs",
+      "sha256": "a625a1bb078edcdcbd381291c6cf9bdf4cdc2d0de8a962b2e5bf485e8fc69f82"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmClientPermission.cs",
+      "sha256": "71e84220818e4037bf2a4bb3f91cb6edb71594e7082f5d94cca7c435e7328de3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmClob.cs",
+      "sha256": "e12ab9dd67f55be049e05c9441ede9974b103bae83fca1c13bb80c86f791cae5"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmColumn.cs",
+      "sha256": "a802ec10556c587a6d27cce6ba5b120857685d25dbc7b1d1ae79dfa6ec317e2e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmCommandBuilder.cs",
+      "sha256": "8a16484f2c281f5adb81b02b7ce394b822ae2778d6b49a200ea10653097cae36"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmCommandSet.cs",
+      "sha256": "d0171739befc94c8e1ed20bda0e433fc946836540caada812ea359027310a454"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmConnInstancePool.cs",
+      "sha256": "aa1462335fcbb14cc1e60ede42d84e5b3838c83841091d9834741b901258d795"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmConnProperty.cs",
+      "sha256": "731882874b799469cd140d0147ce9939d9c2fd285af351394423e52bfda66409"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmConst.cs",
+      "sha256": "de94391b4772a024c5c8703c1a70e06b96aaf4b63e51658ad2de0d4dbedc8ac3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmConvertion.cs",
+      "sha256": "60c82a0e07d0a1154c7ec693352fe461bc069bc56fadc976c1190fcff945f0b3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmDataAdapter.cs",
+      "sha256": "1ff144609344eb1ca3c0dd28eed3a2a55e1130119a1fdba5e76b72d59e9e4a94"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmDataTypeMetaData.cs",
+      "sha256": "de10dcfb9af88ccfb12af585e69915bce88020a535f3bb32f0f9c7d13b7b0cf9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmDateTime.cs",
+      "sha256": "49175eda4ae088aa595f2e1bee27daabcf8e005ca913e7ed685299d1f5077dfa"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmDocBase.cs",
+      "sha256": "e9cce8e108f84d3d364b39271fe86bf092f9564dcbe7db2c3925bb95effba321"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmError.cs",
+      "sha256": "9c4b8e15d3eccd089913d48562f6a7c60149d337f798c77410cee2919b2828c8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmErrorCollection.cs",
+      "sha256": "62efbb0651f8d5403e93540b7470469b62a3ff28b6a4a20e7663b4950fe83199"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmErrorDefinition.cs",
+      "sha256": "b0820f1c9a75d7eeb7ca26de0b43ecc87c593583f0d830ec89f63bc1cc9b1bce"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmField.cs",
+      "sha256": "bf15fb6e0d542ed0a8178598cfc2759f0251251df8249d21ee394acf88903d31"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmFldrDllCall.cs",
+      "sha256": "f0f955253942ed2f321fa22c71c2549a2f721923abfe6a05a02e631030d9e7d0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmFldrExport.cs",
+      "sha256": "5f16e77ffa46833867c91014a00df1202df653e0172a352b482a8de0e83e56ee"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmGetValue.cs",
+      "sha256": "5749b73500b98f056aff3a7798cdc8677ea8434b10cf715c31d1fde4be600868"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmInfo.cs",
+      "sha256": "6adb9a48e8b047944138ae0e9fd687a011e3f18e51b732d2b3284d8a627fd927"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmIntervalDT.cs",
+      "sha256": "28dbb03c371087d37c8e5e720d7ada202d8312e61a35cb31a50bc44d2eaa1e1c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmIntervalYM.cs",
+      "sha256": "c9bc095a8e0a09da0fb96c746845dc20c688d4864a0f96a82238ce10e98147d9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmMppType.cs",
+      "sha256": "6e97bc3c0c4bdd6bde7297cb4eca1046e8d53c2ac16ba48d7daf9459782c24af"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmNotificationTransaction.cs",
+      "sha256": "503386eb540397407bbabfd88d5afa650c68fba51aee7bbe5b17527b163c877d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmOutLine.cs",
+      "sha256": "f4808a23cab788a68ce7b11ad4fd97661b34f4b5c6ee719bc9c81113960cf465"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmParamValue.cs",
+      "sha256": "a8c082d87859f9135051a2e9fe010d26053053e397ff10db2b54508bab1c6d2b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmParameterInternal.cs",
+      "sha256": "78006b21669068076037c18ae81f86457ce7ba328905de8991421f145977a2ef"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmPromotableTransaction.cs",
+      "sha256": "c4889f68fb04c7405c8d04d2e5545b48fa86be3467e13d4356b6ce5b670d89bd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmPromotableTransactionTransactionManager.cs",
+      "sha256": "e36cf8401e635e43814d914d79721012cdee672a4a00e963253c2afae19d20f8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmResultSetCache.cs",
+      "sha256": "dbda075f901f490176915b691fc7e7009f56578f615546928a250d07cf8d33e1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowId.cs",
+      "sha256": "1e520be6f3f55d22b7941c10f773d8a3734a3baf7b3f51edbfa372d689eb213d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowUpdatedEventHandler.cs",
+      "sha256": "ed4dc0acce697ae26a09a93717040feb4b313ed400de98b81b0a17bbde74723f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowUpdatingEventHandler.cs",
+      "sha256": "dbda3f58ddfa9bc823a3c3c025b47c88ba0c61aba06f17a7f13ad38e0bf483dd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowsCopiedEventArgs.cs",
+      "sha256": "601a1f138b210044d28d177fe4349dec72726f912875855a8203bd60765e5dcd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmRowsCopiedEventHandler.cs",
+      "sha256": "884785f2b6b99b69010e1f1e81112c147e1d7e6acbf58ebcabec623975aff882"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSavePoint.cs",
+      "sha256": "32cb7b9598f583070c5338f15470af079ce31240e8f6848b40f03bde9c0e79d3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSchema.cs",
+      "sha256": "8d4a2834e52318dd5877f915741bf7c354f9be23d0464aa9c08d31ba6d0a9cfb"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSetValue.cs",
+      "sha256": "818a7e75ad431bc96c96369d947b170dc04b3685d7f85c929ee9f3f8e6196dd2"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSqlType.cs",
+      "sha256": "2ac30ef4439ef8f9a3bfbe6ffa27f133d5092cb609388ed2e47b27ce023ea0dc"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSqlTypeInfo.cs",
+      "sha256": "55e25644fa99f0508b9f60f8c7ac13c80a8e87b2e65f807b7b2b5957199a665e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmStringUtil.cs",
+      "sha256": "ea3903c95a7b7c73aa2afeefd6b0a47986162249de05935212b633fe6a000fdc"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmStruct.cs",
+      "sha256": "9557c155b4788a46e9cd200cbdbc7dbec3e15bb5536731fcaff4df9d6a609d4d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmSysTypeConvertion.cs",
+      "sha256": "d48b7da408e1815aeff0b0c92d024d12d6da78b56de5b0c32301bbaef7e4351d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmTime.cs",
+      "sha256": "1234fb76f27d21ed0002e54ef406f440c9173219c230b4407140c20c451e7c15"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmTrace.cs",
+      "sha256": "7c2ff3053b089d01587bc785d32077bc42d32f71966019ecfa05d81c9b56cc53"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmTransactionScope.cs",
+      "sha256": "95eadcb534d62d31068dc184f483d6ab402c8e71c8354a3a6541fcfd68526458"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmdbNumeric.cs",
+      "sha256": "d27a308f04a0716482cacd5df8e0ab54253072382b02153d8dcd5441602f1d03"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DmdbResultSetMetaData.cs",
+      "sha256": "8f11ae63c799f4f56b8b25541e73a50610bd98241b3d192f60452577919627b8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/Dmxdec.cs",
+      "sha256": "f676b8597e451812e3dfea83b021ce3ee730c82b5065a55296a06f13a1433089"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DocClass.cs",
+      "sha256": "89263fba94b9b2c5248bb6786fae0ac5231e5c5d008f84ea22ba074edc2821b6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DocDelegate.cs",
+      "sha256": "63ce4c343a4788855cbad566aee6a623fc75998e8ada6255e73cb65b3e61c32d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DocEntry.cs",
+      "sha256": "8284ec1fed50ce47cb80b76ee3ae74038f6f47e09d742431a78c26fe638692b4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DocEnum.cs",
+      "sha256": "11c8edd9e50b574328abda11cba80a2e4c86760626039831ace6e64b3dc15db1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/DocMethod.cs",
+      "sha256": "bca2dffaea7fa02c8a667a8a74a6a007179f69017221707d33cc30797c81aba5"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/EP.cs",
+      "sha256": "163b6b91c6f326573f0752b7ba9ec9a48f40cfe5cd8ead83f65892c8e20965c7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/EPGroup.cs",
+      "sha256": "381cfd54f1705158aee749d2a4aa9198e9c359147604b4f7738c8c5f011a6636"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/EPSelector.cs",
+      "sha256": "4dfeba6d867c5203257977813ce3804d239535e4ebdb1a5f335f123cf93a1c38"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/Fldr.cs",
+      "sha256": "3eb5ab298ac67b6e2e7907b276d2351d3f0133a114bb27c83b41e2f1cf89acdf"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrBuffer.cs",
+      "sha256": "65fc7e3df384b040218c14f3e2a302920e6024ea9ce57744bcb745c85ec59d0f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrClusterInfo.cs",
+      "sha256": "627cc3352166dfd195024097b695ba7cbeb987d5cb0d4bcfd19b8332d4f40109"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrConfig.cs",
+      "sha256": "4465a28f695557ac287bf273731d655d1fb9f3162bb2371cc2483ef776d3eca7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrErrorWriter.cs",
+      "sha256": "0831ea5c8cf828292200f93ddca4b7c5dbd9ef9dbfd969ab9ecf44b38272b8d0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrHashCode.cs",
+      "sha256": "29ea283c833774be29cea15716b634d87a07c67180028a62a299d50202c07c3f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrIndexInfo.cs",
+      "sha256": "a386ea8d8709141563b5548e0d0325017ca0c2e9c847da0f24cd27e2552eefc9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrStatement.cs",
+      "sha256": "4e5c61e8b0c2cf983c0750e0e4295a9d7c48265d988a6068c690f85b813a786a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/FldrUtil.cs",
+      "sha256": "3c49f0e82dd599d7af090230ae7792c13186c9fb05f2f2291a6c892d460d7adf"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/HeadFirstSelector.cs",
+      "sha256": "9ecb005d49009725b8b2b35b48aff3427d624a2339ae6a2c91c6b5f406c275d2"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/HorizontalTableInfo.cs",
+      "sha256": "6671db0df2c2febbf4f2a4583f57b4240c2f7b1aa3d29b6ef68307876f534e59"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/IntervalColumnInfo.cs",
+      "sha256": "481b4f9be79157a8ea977321544b37c85b2ae436c07b9213f54e187559802c4f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/LobData.cs",
+      "sha256": "9d176c34f37f359f1ae3c7db17db286b8b97e14ba06b4c02ef195124279d0932"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/MsgSecurity.cs",
+      "sha256": "ba320c3528f8cc6fafdb533d1df52e1ecbe8162b50b9f97185d91254c17a8260"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/NlsDateLang.cs",
+      "sha256": "55c9789edde0e6ce34101f8ffe2d69b61b8c41fe7062e2c616f6d3f9984ce316"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/RsKey.cs",
+      "sha256": "2be346a3e22df5bc88fe4b657357bc9d800c9d321c7c16b58aaef0a492734bb1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/RsLRUCache.cs",
+      "sha256": "204580ecad161667cfa03e6071bc263d33f08e59369a6eb48721eb48fbe88a0a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SQLName.cs",
+      "sha256": "5de7e8f40de25f4df6e693cc8340d203526709b6ed5a7513ee12011532b1b018"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SQLStateMapping.cs",
+      "sha256": "0813de632822e8eb86110f2b241fe8cab4cf7f3b0288c78eded4c666d5de1e9a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SQLStateRange.cs",
+      "sha256": "f64b5db6781b82dfb2fe01cb59c02d4bc764d038a51103191b548d4579edc28e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SequenceNumInfo.cs",
+      "sha256": "8fd2a505723e44c84a73cb7b99076125a28b467d832cdeb474d5ba70e74423d4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SetEnvInfo.cs",
+      "sha256": "1906cff0df95b654a659eafd76f00652923470270c2ededff7f911a7bfaab0ee"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ShowClassAttribute.cs",
+      "sha256": "cbac8ce5870a4f4f1ba4145faf773e20e81eb5a1a91ed779c94d82d92bbf2c10"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ShowDelegateAttribute.cs",
+      "sha256": "36ffdeb400cb6e58176a7f36b01d6488946c4f1358c22dea65f07251ddc5e125"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ShowEnumAttribute.cs",
+      "sha256": "2d8cb50ab5e0c99fb6d701082995bad8915744716d1595336b872f51e6002c67"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ShowMethodAttribute.cs",
+      "sha256": "b2127c49abca5742e3ab2ec3989309e643d067fdc1ea0847e0fb58ecd5cbf513"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipher.cs",
+      "sha256": "ab1863b16c10923c6f7c96eeac71911b28badc113fb28b281dbe706753d1da37"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipher2.cs",
+      "sha256": "d8ac238cbec6d58aa10e051b301d8212aae06850200b36535940fa7f26b0ff4a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/SymmCipherDesc.cs",
+      "sha256": "124ccf9e05e8ba127567518aa121f42d2f0e87d258b4b89da18ad8dcfc59fb02"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200002E.cs",
+      "sha256": "293362ed9d4c925ee0482746c7803b02f97cb9b3a52f4cbb66d483c55fa8bc83"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000079.cs",
+      "sha256": "f4525b87b7616e02762da659b2e17b02de3c2bf0f4ffb3e4344630857461b467"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007B.cs",
+      "sha256": "db101fe95b8c16c26e00a815165845b6f722bf6c653a3f203bb7de176ce4a3c7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007D.cs",
+      "sha256": "9cfed644922bfaa94fc54bf33e9d812b557660fc1a7c4dd88d5086b66d90f428"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007E.cs",
+      "sha256": "07323f4916a5ec94a58496886768515c97b847920e461fba128481fadc098180"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200007F.cs",
+      "sha256": "fd9b77d1a75663e78d90d2e15d820d0dd837ec186c03f118c448b333c947c827"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000080.cs",
+      "sha256": "09b8403013af4a22b8a1755ba30b04497a0ce103e7394e331a513be7a232d007"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000081.cs",
+      "sha256": "887374b1eddd648917cf59470dd4876a7a41303b28c97406844a638841106fe6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000082.cs",
+      "sha256": "03ad59f3a8201b4f276ea32bd2392eae06ffe7a1ede9c08faf060d150b80becf"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000088.cs",
+      "sha256": "9aad10c16f221312503f889631b436c24ae5737bc9f64064279740e1c7af4d19"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_02000089.cs",
+      "sha256": "61df8f26e1947cefc21aa817b2aba12d657d365ebe833a7e618e3326b3065df9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008A.cs",
+      "sha256": "776120e354142fb8dcedddaae090651784d78c9a64648706c90e5f8d61b9fc3c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008B.cs",
+      "sha256": "8ec59b3e25dd1c7cf6a58b60b1b1ab7dde7ae39ce13b92bfdfb5372c832a8c32"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008C.cs",
+      "sha256": "34140dc754bbba040472e33c70cb398dca201e1d0c745d4d7ca3d45c64762509"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008D.cs",
+      "sha256": "8c2cf7953f57de542fd3e98c4f08a413d90fa7cc28af4b95fe35db451211aa6f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/T02_0200008E.cs",
+      "sha256": "2d30c909b4c0fe259e43290d66449b3ebb42ea0a9b3ca0058ab7b3905360331c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/TableInfo.cs",
+      "sha256": "2dc36cb6fb073692123f112179f01836efaa9e4cd8acdeeb474010d8339e3e72"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ThirdPartCipher.cs",
+      "sha256": "80948f8daf4791ad84ac702c730efdb3a1e3b6504d49b5036e58346e62dfd1cb"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/ThirdPartCipherDLL.cs",
+      "sha256": "39527328773ba14eb9c88f61f057cc9e07eb4b771affa8fe15fd1cd3c5330c12"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/TraceLevel.cs",
+      "sha256": "4ce89a1cab4e86c5048c12e97e363586172ceac788d5478990a79b7dced3871e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/TypeDesc.cs",
+      "sha256": "c91f9bca1b6f3a844033f1fac8653c2f54124b246e3ff9e13e0f40bb7bf9651e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/Types.cs",
+      "sha256": "1dfe8d88fa199022ea6158650c1be780b03fa877f282c814debc0c42b538b079"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm/WellDistributeSelector.cs",
+      "sha256": "a0de809b6d811ed5ee2dbbd7ca435de804d0ff630e1ead7c62686d2c220b87fe"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/CLUSTER.cs",
+      "sha256": "e1d4164adc17bc93b366ee324754a6114657b3f4e0c32e697759dcaff5b988e0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/ColumnNameCase.cs",
+      "sha256": "c0c211951c6842f6f1994f3b645c1ca4b0b416f5f7d7455deaade4a7280719dd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/CompatibleMode.cs",
+      "sha256": "72f21cf366a4912102afb712b49a9c8480146fd01af5ea17ab4cdf56d9f50aa0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmOption.cs",
+      "sha256": "7c4c7d1c4815517759279c22c47552cdd86c2b48c6992f15cbed8595469b9144"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmOptionHelper.cs",
+      "sha256": "44671b9d4934f315d198e8eb436eaae65d8ff3f08cd8f0d292e7750973bb0bfc"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DmSvcConfig.cs",
+      "sha256": "3610643485c4ea6f7e80a8cca669067248ea8048187fa11b196531231dfa0ef8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/DoSwitch.cs",
+      "sha256": "f228a526f73256f9162c300c3d367bf39d1c0d37baa272b2f070d4cc39c82db9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/EpSelector.cs",
+      "sha256": "39b5baaeffc252af7b4a9e4f6b36b8311494feb2c9d995ff31b69bf748bc4832"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/IntervalMode.cs",
+      "sha256": "933426edc2da6906a75631c3778b575816e0d38a8301be72a32da67e38483be6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LogLevel.cs",
+      "sha256": "2297f306736a287944870eb1de8d4f5a0ecb9534d595b826646e3e3fa88ed334"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LoginModeFlag.cs",
+      "sha256": "2085c8a100a449c34ecc6d2dc65d629b8edbf0171a5ac390d33f3f89efe78b8e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/LoginStatus.cs",
+      "sha256": "e07268b007d49556ed0d4cba09268a0fee2a31e9997bbb8780357ed6cf88d0fb"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/SupportedLanguage.cs",
+      "sha256": "27e61c9bfc9f3fe1c7834887385eed8406313f44d06534d2e80014b62809e29f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.Config/TraceFlag.cs",
+      "sha256": "84095d2b90f8612c49988cc7ebbf3febb10719716aa9a78ed102abd76c1e4e2a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/BaseFilter.cs",
+      "sha256": "0e318b8be4556820f1980a6fad366d21ed8a93da29de50a41acf637299d39096"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/ConnPoolFilter.cs",
+      "sha256": "bc779af81353baf334de87137d19df4d06da4e1c0c87a34e5d1b7ac94be75136"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/IFilter.cs",
+      "sha256": "63a791558e5ce198db7623d5f855920024d041ea52800f3eb76da26254e16363"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/IFilterInfo.cs",
+      "sha256": "8a14e7ae07af4395cb6a01f3ff9d7a9cae21ab1cbed7e745e749540e21c22ba3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/LogInfo.cs",
+      "sha256": "ce907a410774d1cb7f559a8431b106b02ef4c4454a9091801bf35c689404a73b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/RWInfo.cs",
+      "sha256": "9836d44d00f31a2e512bf0d234ac593d9169a0094d9feacdc6fff9590203d205"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter/RecoverInfo.cs",
+      "sha256": "e9564e65f44d4abf47630ea20287d25d9d2a9fcae79aecbb8c119a329fefd3b4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.fldr/FldrTask.cs",
+      "sha256": "ab8b982899c810a434ca037606a0b480a419dbc991b3b9b03beb75ee4b57bc1e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/ILogger.cs",
+      "sha256": "91394f808ed4ae644ee3a41c547333b171763d15d2009b7849985d2fc6e9a9e6"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogFactory.cs",
+      "sha256": "fe0834f015b7a7e12a9d75be537fb458826acb4f27c0a641b211f92edb0abbe1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogFilter.cs",
+      "sha256": "def404cdb4432105eba24709f70820f7a0cd897a814aa1617e0df6675e7c609f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogRecord.cs",
+      "sha256": "0c0a88a6aab85a08aa0c418cbcc979bf7a62d0e446a43d01dbc09f1b1141c782"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/LogWriter.cs",
+      "sha256": "239b48c6598a86d640db69a6495d70ddbef5353f615e52d632e1ac78135bf7a5"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.log/Logger.cs",
+      "sha256": "db997d4c18f897db8b9196cc7d7ef4faef8b26a5e396148d15cd3a2d380ceafd"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.reconnect/ReconnectFilter.cs",
+      "sha256": "61aa7981fd11c0ad2525654e625f575524c1a6d172f0313c2b9cf68711246f89"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWCounter.cs",
+      "sha256": "89d67377b7c89c4f23b4ba804e83a68e8bb41df7b8367eee2b1e8e9f2061a424"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWFilter2.cs",
+      "sha256": "9e3b8b3e3bb1a14599facd6eeb9d067b84c2869b46de16d48733fe440853a90b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWSite.cs",
+      "sha256": "f81f0d93462b508ae5b5cd94f1c248d1ec94bae4720c03a59655e4864e4d00ea"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/RWUtil2.cs",
+      "sha256": "52493e81af9a42f5c61e153af8187cd730859f5db4f3249d034fec6919edfb7a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/closeDmDataReader.cs",
+      "sha256": "6f032a1f452c8120524faa48d00cf4aa3203b31e0a30114a79f30b5c88f58498"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/execute.cs",
+      "sha256": "99a13c35b0fc6915530513e0eb1bf7d729a1561356bff0297d63b460fadb81ca"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.filter.rw/executeByOther.cs",
+      "sha256": "bb4d99dccfbdf90feaab79eb543bf33432d89bef2b9bcc247d42add17930f662"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/Arrays.cs",
+      "sha256": "94e0ef91dacb7131efa000dab4a81f0697abc1e6aabd34c42e109b13f5e49625"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/Buffer.cs",
+      "sha256": "2b93d8a610af16f60189f5c21beded2e0eb6a9aac6291e6c310a869c05e07dbe"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.net.buffer/ByteArrayBuffer.cs",
+      "sha256": "e1d2f637f27b8e8972c239399a6a045e1cc9c114607e65ff8a9828d3df2ae48c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.parser/LVal.cs",
+      "sha256": "4f9a47edd1cea4ce8dcb76f8ba9f5aed5ba00131487c26da82b238775d8ec91f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.parser/Lexer.cs",
+      "sha256": "bd48ba03a2c1dff5abe890ac49c5a959e860164f0daa94ae778dbe2cb42c7316"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.parser/SQLProcessor.cs",
+      "sha256": "d578f9ec4656ef29f753dd765f006ed9a9a62d0d8cf35bb600ba883c58a2a5e4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ArrayUtil.cs",
+      "sha256": "36c26137d357a41da24b99dcb12fa671e83c5f07287c31870e5c3df9fd10f454"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/BEByteUtil.cs",
+      "sha256": "0fbd49435a3bcf8614db06c897cb3f7075ec8335deeddbfaf18e4c623f78c468"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueue.cs",
+      "sha256": "f3ccbfac71cf95895d452c1e46c903e7f2df9d9ea4ab0229244e56746ef37562"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueue2.cs",
+      "sha256": "a2c43d69752c92084bfaed0c39069d113f4bd2fd8b52ad61b93214844f6b79a0"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/BlockingQueueIterator.cs",
+      "sha256": "fddd9fb5f4e7f5c9ec726d2d2827cfbe5c583cf580cab059047276b8a2b80f0b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteArray.cs",
+      "sha256": "29ffe1c0f1b5b0948f9b5219e819d17bad4583dd329f3e36c4b9e55fc8637c28"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteArrayQueue.cs",
+      "sha256": "02a011b3270d9293402790699208c83771edca4f9b7ac58bf33cb32a8aeef7a7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ByteUtil.cs",
+      "sha256": "213252d7ef41827dc2bb3665bbf9ec57a385ff1164740f5d38dcdcd8bf4c0431"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/CacheQueue.cs",
+      "sha256": "0887854ee31c3b6e76fbe761e675e48ee168666a08bf6979e1e13a261a2c2317"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/CharUtil.cs",
+      "sha256": "b2d6977287d3dd20e94c6961d5556c6bed98b4e833e2a31edfa9f5b672b77f90"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ConnPoolCache.cs",
+      "sha256": "70d4666d74b308955f0aac6e3c779a2ec2b1f03ff5ef0d4ee3fda27ba5c5660d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ConvertUtil.cs",
+      "sha256": "5e42f8a1381caa632c99c18d61db313b1dae21d24a895467f0c4c22579ee5dab"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/CopyOnWriteArrayList.cs",
+      "sha256": "67a4c25e2767dc8162e92ce0b20f9412f4dc3ec787eb0bde80f5806b5d9fb15c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/DB2N.cs",
+      "sha256": "8db2a2048891379de8a11c448d55ba622c3daa29cb45b0be409586299d0baeef"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/DateUtil.cs",
+      "sha256": "182284c6216c7cc71645ab8d0062d6307beb0753001348aa54973ef197f9295c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/Dictionary2.cs",
+      "sha256": "18646a6801489d6f9322b1c90ca65dbf1a785a0fd999c5811f482aeaff8e757e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/DmDecimal.cs",
+      "sha256": "d80e0b1001354e78c306161b6656637df2fa35f8347bbf147d8b7b7d7d6584d9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/DriverUtil.cs",
+      "sha256": "2385dd02b67f9232d4136d271ea2c81e76d1b3eafdc9df934c1e6b41930cc4c8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ExtensionUtil.cs",
+      "sha256": "b8c10fa147a741602064ac4dfe4701ce8e1d8ba8efd95d55dc3836e0d6cf40d3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/LRUCache.cs",
+      "sha256": "6ac4d89345ad2d08b24f04d334f913be6e5f6a02a152ccbd91415e229ad0f5a9"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/ListUtil.cs",
+      "sha256": "da342a7164750d3c21f9f8e4aaa0f50bc47d4f5b96d000d8a992a001195078fe"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/MathUtil.cs",
+      "sha256": "49583b5cb85bfd14eab27082548c54920b94b933e956333241020b325ffa39a1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/N2DB.cs",
+      "sha256": "729efb4a1ec08053c4241d67d06e2b48691eef7973b4e1effea0e6f5bbf7b81c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/OracleDateFormat.cs",
+      "sha256": "468b4b479cb5322fc079bf47a0744e6e6a1254884ee5d65a4a6e22f437b5406b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/StreamUtil.cs",
+      "sha256": "ee1b98e58c2cb8fa507b0701403ea12ce036f5f7fa54c24d6e45379e91d0cb57"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util/StringUtil.cs",
+      "sha256": "ff58c4c3d9317f3d0721d0f8d94feab40c7f97d083a5e8b6a115cc0f5b2d1f52"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.Atomic/AtomicBoolean.cs",
+      "sha256": "e0bc9a01aa335345ad9b34bf42e212d5b12b6417ca5efd9f2faa3231a5cf262a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.Atomic/AtomicInteger.cs",
+      "sha256": "106ab90a321b30ec3ffaf913b3cc30366c931b00c02fdd4091a04dec500c8662"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.buffer/BufferNode.cs",
+      "sha256": "35f1a74aec74d1bbae8baee6d8c9cf3b1e2f9c3f7d7d430413bbd59043cfd54f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/ByteReader.cs",
+      "sha256": "2a9b84235d8104d493019b45d07d28cd7d49ca54dc28686bfcaf1efe76c9425b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/ByteWriter.cs",
+      "sha256": "a228a18afac32ed8e033840417f1f5cc86a6b3504803590cd64396160d6f546b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/DmGeo2Util.cs",
+      "sha256": "69a640bc376153e741839359efb614204f770ec0e4be5f95b74f0bedcd0ecca4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/NtsBinaryParser.cs",
+      "sha256": "68ac31cfc5946c0c5d1fd73944dd306b4270f485fb4c610137bf116a0adcdf04"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/Dm.util.geoUtil/Point4d.cs",
+      "sha256": "f80eb9a1e0c11fc145ffeb102a0313139ddaab0b7fec388787f942b60cdb565a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Buffer.cs",
+      "sha256": "2fa9f05caf2022c40580128406b318c1647469ebf9685d9b09381b69f11d448f"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Errors.cs",
+      "sha256": "46f5f13125a9665de378f731f2c47b6d0d27eb2c60adb8d945c4557eaa1b39f3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/FatalError.cs",
+      "sha256": "fcb420896023591ffc7271f53d5c184c6458a046433de4d2f8726c12d3167d3b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Obj.cs",
+      "sha256": "fb085df6ac5e2009d1a5cd3b8b475e2edf732a9c5b0d17853a69d492e2078c11"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Parser.cs",
+      "sha256": "fd5521d43536635813aa135f406de9a1a8128f7421f9ec403295a851616d3d2a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Scanner.cs",
+      "sha256": "acd887bd90a495ebe5a22dcf58dac4134ad8a23be495682e669459283304b59e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/SymbolTable.cs",
+      "sha256": "f47f752eebbec51fe671aa8fcf06ba8dd9a6dba90e990a5759a26018a5495e1c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/Token.cs",
+      "sha256": "29d47cc127029d4c1661ae1dd77b9e247b7918cb127c3598fe16170cf85fc3a7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Legacy/NetTaste/UTF8Buffer.cs",
+      "sha256": "f987d2cb8fae6fc446502beef7929b8d73a3b2db253acc788ff3588952a5bc16"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Lobs/DmLobInput.cs",
+      "sha256": "1c998af4cf6266aa72ac4c8ce00b280624a60da0cf283b3771b7897382fe847c"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Lobs/DmLobReadCursor.cs",
+      "sha256": "0258975286dafc14d3939cefc24aea90f70418c81144f21dee3ce795d7057ee8"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Lobs/DmLobReadStream.cs",
+      "sha256": "cecf970689344d0a7e3073ff7c6fd86afe8f05c1377bc5f14195d6610bd7b0df"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Lobs/DmLobTextReader.cs",
+      "sha256": "b3e53fa4dab86c71e374b98b5c2c55cf6b5f9ae197e8cf698def2ea4b1305d57"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Lobs/ParameterUpload.Streaming.cs",
+      "sha256": "14b0a9fe24cc2beb5f277321ac78cfbe31907d4bb6b03d92a27a8462dcc6c55e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Native/DmNativeLibrary.cs",
+      "sha256": "f09edcf31eeddbc5f9d64883e7e80121287ac46de0c5dda00dd658e1bf6fb74a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Pooling/DmPoolKey.cs",
+      "sha256": "9194e0c42ab435e94887d9238a7cda990686242f1983f91fa21139303edc2545"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Pooling/DmPoolOwner.cs",
+      "sha256": "0dac73de831019e7dfd9e3f982576737ced55a730c9938d13fc6b5a5ed5312b2"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Pooling/DmPoolRegistry.cs",
+      "sha256": "bbc71cd5ba6ec390c68f07038f6ed057ede10266fe316679f588ddb281b155e3"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Protocol/DmFrameReader.cs",
+      "sha256": "4cbd1e3dc5fd2fd65ae4ed9eba910d1670123f3f72af98eaa8edbd15acacbe36"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Protocol/DmFrameWriter.cs",
+      "sha256": "934e7c9e07214a26c22acc6aa62a1c9a9dbef50c4e194efa3c042b9874e984b1"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Sessions/DmExecutionLease.cs",
+      "sha256": "e52e26752a91fc5b052e26eb93fc9c3826ba6ada5cdb58858eebecd6239c6f8b"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Sessions/DmInvocation.cs",
+      "sha256": "80462e1b75d923e961eca0f7255a8b1c29d6d2542187ee5fa56799763259ee8a"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Sessions/DmPendingOpen.cs",
+      "sha256": "f5ba52bc9379e588a1624d24061f51506e39c0eeaa3c0bd653b771744e44e15e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Sessions/DmSession.cs",
+      "sha256": "6b89d7120d53e803b218f672390f81fa1324eefb820c1fe21b65f2a5403303d4"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Sessions/OperationIdentity.cs",
+      "sha256": "68b9eea534943b04dbea8fa8a2adf61a24f2a1b0ead574a85fcd038f8302a465"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Transport/DmDeadline.cs",
+      "sha256": "e72730f0c728432a6dea44745bebac14ccae3723be3399819e04b9376574259d"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Transport/DmTlsOptions.cs",
+      "sha256": "f2ef1571a984873d3b1844ada57a5432818446726ee14ac424c5cd12ab5f74ce"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Transport/DmTransport.cs",
+      "sha256": "7e7dbad1d8735557906e6957cdeff7792e80b27bea283026e993ba84c4e91578"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmLobMaterialization.cs",
+      "sha256": "e78f781e4d0b6073dd3192a9a46508d554767aa710a9a8cc0ffda5ae66fa2dc7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmNumericCodec.cs",
+      "sha256": "196d5e7802df34d9d8329e92123df440a6b50fb800f2aa8e8d31ade06679d323"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmNumericInput.cs",
+      "sha256": "c5476e68454415de4bab8815248c5101240a03791bfcf76f15ce5a48ece6ef39"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmParameterBinding.cs",
+      "sha256": "4798d48835fe783364226f7c81f89c2b88cf6a108b9c53cadee2500defc75c51"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmParameterTypeSource.cs",
+      "sha256": "e3b2f4546a6137fa7c953aec605ca51eaf8c6b6d7146252e8461946d82c23a2e"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmTemporalCodec.cs",
+      "sha256": "94b19b8f4887378cd3d6cc7f632a02f294c58583de51f3cb8570b8016e68b8b7"
+    },
+    {
+      "path": "src/W.DmProvider/Internal/Types/DmTextCodec.cs",
+      "sha256": "907cb4b45469fabc889e24de13c15368ca381238833f0bdf86360b1398170a1c"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmClientFactory.cs",
+      "sha256": "c6b8decb19aeda2f5c45d01a4e32bc494fd7a994b5a982d045a72ede2c31000b"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmCommand.cs",
+      "sha256": "8204d2050d0867c0da4f4fd6f2fa418d5e6ca5c64956e2d6fefff1579ae7b48d"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmCommitOutcomeUnknownException.cs",
+      "sha256": "3e11a220950ddd8a14f6f799af211170a63b5beb8fbea23e84fda866b7cc0dbf"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmConnection.cs",
+      "sha256": "dcd4c796c560de4c8f3dbace0652ccb28d4848b68e96a03b417dd9189185f990"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmConnectionStringBuilder.cs",
+      "sha256": "425b4c8772d533d501caa8afbe64d449eaf5e3df5203d11f510f03b34822ac92"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmDataReader.cs",
+      "sha256": "ed1be4993e9d8a5903b439c5fe64618a6bc8d04991b9813228f3e45381fe1dac"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmDataSource.cs",
+      "sha256": "e1ada965d57b551175302ab875e24b5ad5c16315292aaa99795d06dc4d5c23eb"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmDataSourceCommand.cs",
+      "sha256": "5c1914ec14c79574e22f780678e4e1e6aa23d4dc5db46cd355138a4d12e17550"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmDbType.cs",
+      "sha256": "c6643e37f715fc5d4fdbdf53de4440f3c2cda9d0f6d0303e38c57f99e8dca38e"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmDecimal.cs",
+      "sha256": "43c759899aa3c4281d55aa982517dbe3fe0beb38803f92d2e823adc7974b175c"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmException.cs",
+      "sha256": "2c135d634a01e39657a3b167c34747e0fc48030c0f4fa8ccc701b7a8352fb4c8"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmFailureInfo.cs",
+      "sha256": "dd2214eac9bea584192a9679e54ad012245f7fb3a74d58ec8fcba8aa0591e86a"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmParameter.cs",
+      "sha256": "30c202a09f324c5c26a7cd4576a7fe0fd155b5f2a31b15723fc22bb8b562c38e"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmParameterCollection.cs",
+      "sha256": "1bba4afe8e208911b1d3713642041a7b97701c2a31ccc8694b42c205eb4ec3d0"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmSqlRowUpdatedEventArgs.cs",
+      "sha256": "ba01d7ad1bec5333b8e86730a780ff49299347b0bde4a6584feb7a80f28ec8df"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmSqlRowUpdatingEventArgs.cs",
+      "sha256": "733efebb29d0bb52db484215af0e638ac4e17ee5a3de87f93a6f63a9ebaa14bb"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmTlsRevocationMode.cs",
+      "sha256": "aa1ae887f467bfe1328c323d8a3e78879999a8e79a6dc11b405fdacbd6464e26"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmTransaction.cs",
+      "sha256": "d654434f6b7811450bffd089866da7f27ed1f2cdaee6751d457bef8ecc5333bf"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmTransactionOutcome.cs",
+      "sha256": "ef5c8b96217bfb8f00234b51115c034f90e05795f56c371f111772dea5274717"
+    },
+    {
+      "path": "src/W.DmProvider/PublicApi/DmTransportSecurity.cs",
+      "sha256": "7b82b9cff5b376a55a450c39538a3874d6a55f36de1b95451f1919719010d7e3"
+    },
+    {
+      "path": "src/W.DmProvider/README.md",
+      "sha256": "dbe736b4615283485754ea6fcaf72697c15e6d6db33bf75c8c990a6fa80565bb"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/Dm.DmErrorDefinition.resx",
+      "sha256": "df6c9b5cd6bc3e45a733eb861ab9de11d5b09ccbab5bf4ed4848969a1aea0d9a"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/Dm.ReservedWords.txt",
+      "sha256": "585803af5f6a831b391c553b4fc3316d8d9ccb260184d61a594704785fba563c"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/en/Dm.DmErrorDefinition.resx",
+      "sha256": "cbc2a842355ffa32edb0bd0cd1febe8c78609df56ea1ce3990afce52d921be43"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/zh-CN/Dm.DmErrorDefinition.resx",
+      "sha256": "c0b8ca8cbf4c190ff900d5f25a2eb6e7e7f6578bb6ad76b4209c86a00253e064"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/zh-HK/Dm.DmErrorDefinition.resx",
+      "sha256": "18c8a970b6544e3ac5466672b0a421ffbc37fcc31338d2b9ad5165b4ccc91f43"
+    },
+    {
+      "path": "src/W.DmProvider/Resources/zh-TW/Dm.DmErrorDefinition.resx",
+      "sha256": "18c8a970b6544e3ac5466672b0a421ffbc37fcc31338d2b9ad5165b4ccc91f43"
+    },
+    {
+      "path": "src/W.DmProvider/W.DmProvider.csproj",
+      "sha256": "3e61de77f10268a3a06ea98b76c24b42c91496ece80f04498d90c0e98aaa4d7f"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/AssemblyInfo.cs",
+      "sha256": "d75c1598b1fc9292f754e5c3737645ac86257452180d7c49e4ea31b1718b1af7"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/CommandCancellationTests.cs",
+      "sha256": "9827710c5f1866fd520e0722166fbd9f4fb04267b220a49feccf606677bf0fc8"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/CommandDeadlineTests.cs",
+      "sha256": "551778c5aaca9dbd5624ef281d942b7ccbb6daea055e133458c6595ccde4f26c"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/CommandReaderAsyncTests.cs",
+      "sha256": "16e8eb1bdaac62e0cfbbae8ea06565e0a03117f2bca1ad3d2ebb55f3d3de4424"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/ConnectionAsyncTests.cs",
+      "sha256": "4be183724a7cee1d199abf8b02ab4c9bc6a5ed66960d67c14417bf8f87519fbf"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/ConnectionCancellationTests.cs",
+      "sha256": "58b9c8408a3e0ce020108f9324b6c26ba66981914d71844d7a0fdfcbd2ab89a0"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/LobMaterializationAsyncTests.cs",
+      "sha256": "e61fb6b5b0c9fb03e76c35562b916016b7d1862c29aa8bb1c74119124e823eb3"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/ProtocolCancellationTests.cs",
+      "sha256": "ac576a3a185bac05dc96058f73030c98e2ea940e7ecad7079a3d95a41b2df58f"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/R2ReviewBeginTests.cs",
+      "sha256": "02cc313f2aaa98444b3e149f6a00aa0f82db625e2167a082de37f7169ecfe440"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/R2ReviewFailureInfoTests.cs",
+      "sha256": "5c003318ccf1cb15e2925be0a9a58805aaf84c3fc12ec0acec13f538ce35ef81"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/R2ReviewReaderLifecycleTests.cs",
+      "sha256": "496282f864f90dfd5516511e1e5f1bab0f787dd0597dfc6e4764487b07db297f"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/ReaderCancellationTests.cs",
+      "sha256": "cbe1afd8a788cae3d94b5257ddd15952c31c64d3953e04e7c30055e28d6ae9b2"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/TransactionAsyncTests.cs",
+      "sha256": "66ca6649b4f2b5af9e615ca6d32a751cef41b9e624714d94fd71b3d0c9078560"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/TransactionCancellationTests.cs",
+      "sha256": "31a74b9fbabb3de494b3c9b18815c60bf98f5ee585ae5e18494cdcfb15ec1d4d"
+    },
+    {
+      "path": "tests/W.DmProvider.AsyncTests/W.DmProvider.AsyncTests.csproj",
+      "sha256": "c3b7e2bf1b7602787f40ecf886204c6bddf98b4d1dc6cb125e7f5fdd1fbe2c2b"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/AssemblyInfo.cs",
+      "sha256": "3f7edd72eac91614fcf49f709dd4e560c74ebef8da68a53a02947e5611cd1869"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/CleanupDeadlineTests.cs",
+      "sha256": "06fd5263415c95b324273137254608c6ebb96c37446bf15ec720332c39eb6781"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/CommandPlanTests.cs",
+      "sha256": "540637b9d00b98a47e565ec2d8cc66a3c103b7f83799087b484a2ad76c7277eb"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/ConnectionDetachReviewTests.cs",
+      "sha256": "ebba239dcd3f3765476e78c5ee80105971134b60d45354d31b009db2272a83b9"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/ResultCursorTests.cs",
+      "sha256": "d8e37a1c21082870fa897817508938cdd0db62f96acedbcf88910e1c3bd97dd2"
+    },
+    {
+      "path": "tests/W.DmProvider.CommandTests/W.DmProvider.CommandTests.csproj",
+      "sha256": "f0c037b134915ab0b14adca9d29a12f6d638ecfc0098f29ad1714ef0357f2efa"
+    },
+    {
+      "path": "tests/W.DmProvider.ConfigurationTests/ConfigurationTests.cs",
+      "sha256": "ec581517f80a7862ef02828cc54a912fdb9601dd30d2ec378a6aec3af2df2a83"
+    },
+    {
+      "path": "tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj",
+      "sha256": "885b7e0719f9bad54d92982385db95bf02fda70cc50f2105fd5a80739b9a866b"
+    },
+    {
+      "path": "tests/W.DmProvider.IsolationTests/IsolationReceiptTests.cs",
+      "sha256": "ba6dc8a75ef03491e66dbf4587703aeeac93d92a96d823fd77dc23c855b3692c"
+    },
+    {
+      "path": "tests/W.DmProvider.IsolationTests/PublicIsolationGateTests.cs",
+      "sha256": "960c94029a7879951e55b202023eda584f4a2478699e9b68ac5dc97635a21c4a"
+    },
+    {
+      "path": "tests/W.DmProvider.IsolationTests/RollbackToSqlTests.cs",
+      "sha256": "4458fe0d4d4633105fdfb79822edc6f95cdbffc588977ca429e4c098cbe969f2"
+    },
+    {
+      "path": "tests/W.DmProvider.IsolationTests/StatementOwnershipTests.cs",
+      "sha256": "98d689a48ca394afa3178c3fd87c91a707f0ab078336917bb3a4fad647620a54"
+    },
+    {
+      "path": "tests/W.DmProvider.IsolationTests/W.DmProvider.IsolationTests.csproj",
+      "sha256": "8fe94d7c0758c277d3e53768d557ef7647cb224baacc72590a917be7545ddeb9"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/EncodingBoundaryTests.cs",
+      "sha256": "a0c980569a547256be38175b3b95a27f1c6e3c446510ef985401b240ec572f59"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/InputOwnershipTests.cs",
+      "sha256": "eb4284b68b4394e280e2957dccd1babc6c7b31382116dd9c9bc539d54f82faf9"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/InputStreamTests.cs",
+      "sha256": "885f6ba86fcb9b04d6a2c3c8898f9b3eb2f0b03976103c458f94ba64e878c088"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/LobLifecycleTests.cs",
+      "sha256": "13b470f91175f1d9fb77e6a1b7db0d2f812facd78c73fc40336d28960201bcc7"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/ReadStreamTests.cs",
+      "sha256": "28272f95a7d1ae1c2a59d3470d3e0b8a5850f245238659d9aecff7df5c020fd7"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/ReaderOffsetTests.cs",
+      "sha256": "8c62341d3d1882f4532a92071c1b00571ea81401ebc6a39428da1027c04fa86b"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/StreamingInputFailureTests.cs",
+      "sha256": "91e573d8e27939fe055a2be47a7b23ed673a7600a58e6648ae254996bf12ff5c"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/TextReaderTests.cs",
+      "sha256": "ed8b8b8501c2b765fb8c5603e0742c9e5bd3ddb9db02a3dd1abffd8a08005146"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/UploadProtocolTests.cs",
+      "sha256": "0eb0e94159fe3edb74f921045a9578d67cc1765a269ee24bbad0bcaa63a566c5"
+    },
+    {
+      "path": "tests/W.DmProvider.LobTests/W.DmProvider.LobTests.csproj",
+      "sha256": "a9d454faec5f4cc88504e7ac24f623f915a0003097c7997db58684d393284dc1"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/ConnectionPoolTests.cs",
+      "sha256": "a5a196b879d48907850e53d49f0b594f30346150ec7d506e1ccdfd8bb9802667"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/DataSourceTests.cs",
+      "sha256": "c980c036540c035feb71c90f416290d79cd4e23060365a1880670f976af0b9ff"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/DmPoolIdentityTests.cs",
+      "sha256": "1348ddac2264b2616ab116593c8c7fb09457ddadb347ea49798e11369d4e60f0"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/DmPoolRegistryTests.cs",
+      "sha256": "37b2be98576e0832c1244862b2658a24859eded6e6099c0cf05351820f1bbef6"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/DmPoolSchedulerTests.cs",
+      "sha256": "d43b50d001ac7a53243a7c5009696369b9d50dc5b42a467ddc7ab4943b614057"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/PoolConfigurationTests.cs",
+      "sha256": "c0f94792baf22ffc18548d0df774942323ca171b25f54034fde179281ba829d6"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/ServerErrorClassificationTests.cs",
+      "sha256": "048685b6dccab32ae4ae7e87b9f62a171a5c410c502ba4db9fc92e42b0ce86a2"
+    },
+    {
+      "path": "tests/W.DmProvider.PoolTests/W.DmProvider.PoolTests.csproj",
+      "sha256": "abd2ed60ff9a21793a39fd7253f693259c6e682c5e8cff8b6c8c89793122273c"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/AssemblyInfo.cs",
+      "sha256": "3f7edd72eac91614fcf49f709dd4e560c74ebef8da68a53a02947e5611cd1869"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/AsyncTlsValidationTests.cs",
+      "sha256": "19b6704d0dba30765f1772789f1569510dee90a292df1a92e7ae576b54444d93"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/CertificateMaterial.cs",
+      "sha256": "dbdfb7abe7ca8a1e60675679e3df8395ba1753be0e40a33feff883820b496c77"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/FixtureVectorTests.cs",
+      "sha256": "2ff89f05ab625e3d1627499b53ff8b44d39d0d2850d8010c9ed7ded8cb84bf46"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/NativeLibraryTests.cs",
+      "sha256": "182098a17c86fc68b2180f481dc63ef5123eadff8f5afc9e4d33d1ddbdaa6edb"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/NegotiationPolicyTests.cs",
+      "sha256": "3dfa92eff9a233b33248a054bca350ba95094563b72c5c599ec389358b5d3cdf"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/TlsLifecycleTests.cs",
+      "sha256": "e1ab885b00c3bc89a362951aaa35e33b4878910373c951b4b0866fb4496dc26f"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/TlsLoopbackHarness.cs",
+      "sha256": "79d625cc9b6e68b1e97275aded48af5730ba15ff24ed9aea1ab9227403f3e5fc"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/TlsOptionsTests.cs",
+      "sha256": "32304861c50460884dc4864a21a98dca087631487c09e23f26f8a0d6fcae6f81"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/TlsTransportTests.cs",
+      "sha256": "c1b8acd47709303bb825552b1cbed6a93c2597208e6766b4f7a57be1417bacc2"
+    },
+    {
+      "path": "tests/W.DmProvider.SecurityTests/W.DmProvider.SecurityTests.csproj",
+      "sha256": "b0faa11a3fe1eaa02b46f557ac142eb6a5a6dca70d4a063b245f6e8a4fc0cf37"
+    },
+    {
+      "path": "tests/W.DmProvider.SessionTests/SessionOwnershipTests.cs",
+      "sha256": "02184f708ac2e6c3d7fd46f843892e063cb81af36dbc4bb30a10a68ed594514a"
+    },
+    {
+      "path": "tests/W.DmProvider.SessionTests/W.DmProvider.SessionTests.csproj",
+      "sha256": "e4324a201e1fe29425d1ed495a17c43db3f21e282bf5c98ef448fef0512ecab1"
+    },
+    {
+      "path": "tests/W.DmProvider.SessionTests/WireOwnershipTests.cs",
+      "sha256": "576adc046f8c22b4a2d8686163e06ea7add27fe42f362d9185770b2697e31e35"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/AssemblyInfo.cs",
+      "sha256": "3f7edd72eac91614fcf49f709dd4e560c74ebef8da68a53a02947e5611cd1869"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/SavepointReviewTests.cs",
+      "sha256": "6374716674c9fd52079ccbb9e39cc3dff095997224eb57115a74744ad75f2ed8"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/TransactionControlBoundaryTests.cs",
+      "sha256": "cb709a0651ae4d609690469d3880d5931dd6cab2a854b4943b469ba0135496e4"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/TransactionErrorBodyTests.cs",
+      "sha256": "0132f4bdce55df872345334549db8e53a92405403f55822522f8d4e95c5c06a9"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/TransactionFixtureTests.cs",
+      "sha256": "445be3eb5a5a3c355874a98a797df06e68669c88d8f7f917d717620646b2de3d"
+    },
+    {
+      "path": "tests/W.DmProvider.TransactionTests/W.DmProvider.TransactionTests.csproj",
+      "sha256": "2ff28d43bac873d82d0ad29f293c3be302cc2e7212147f506db217a25d70f52d"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/AssemblyInfo.cs",
+      "sha256": "3f7edd72eac91614fcf49f709dd4e560c74ebef8da68a53a02947e5611cd1869"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/AsyncTransportTests.cs",
+      "sha256": "f82cc72681d8876c1d01cc6590312b0d9e66ffe93b24500173ef5d2787e8e2f0"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/CancellationCoreTests.cs",
+      "sha256": "3ba2e0b43bc515016a7f75f452bdcf964bb9d844ae139a4dbd8ad00ccca47278"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/CancellationDeadlineTests.cs",
+      "sha256": "a0610a9d518c13278d3d38ed2f584ae0477e05cdf1028f8281cb57768956ae7b"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/ConnectLifecycleTests.cs",
+      "sha256": "b707c9c95a84a65bd1e70e04809e5a1d49c6583d004acd4252017a766052682d"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/DeadlineTests.cs",
+      "sha256": "e267cdabc2292a5add674ef0a6a5d84372890721ae3f873f57fcf75ec09eddc6"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/FixtureVectorTests.cs",
+      "sha256": "6ccc1ad04667a1f16db44fd38b9ad643afd8a2499e78ead306a9e120defe6dac"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/FrameBoundaryTests.cs",
+      "sha256": "940df3545d9c17af21b9ceb859c4d0df0e14be8508f752c675d0083478eded3d"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/R2ReviewSendDeadlineTests.cs",
+      "sha256": "5a3bdcc4b8b06e7a86af090b39b7807c79bf082344c6a0fb24d062e67dc208b2"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/TransportIoTests.cs",
+      "sha256": "4bfd6e425695205c2ac58de152bcfb598412070e6265e3857164b254888f6f8a"
+    },
+    {
+      "path": "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj",
+      "sha256": "bb9cc7007efe2b0be0da67e4ad18f485ae912bbb4df27d65338365485ef03d16"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/ExtendedTemporalPrecisionTests.cs",
+      "sha256": "bf23dd52c04615d05bb2384591f15ed51873a7ee556b3906df513c827a9d61b4"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/FixedTemporalBindingTests.cs",
+      "sha256": "b71bd5205697653dd7c0feb37d9a262721c6402fe0b0f7aa2dc0555c84e8c2e6"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/FixtureInventoryTests.cs",
+      "sha256": "05cccda895c84a7f5f0452c94a82a0b01b57bf0b55c50f6539ef23e5334ad347"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs",
+      "sha256": "3d503a989392dd216985532ac8f127b33626d0e1ea023afb4756bf1ef475a0b8"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/NumericCodecTests.cs",
+      "sha256": "328f95b0ad88bbad18bfa9cd9b4087b2daacf5ed9846faf8de4d21a1e775f549"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/ParameterContractTests.cs",
+      "sha256": "29ee77163aa4898461679a06c0fea66f83be7adaafd032d9a4656eea73606b5b"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/ReaderReviewTests.cs",
+      "sha256": "bbdb1325a0664d451e8c5e0832a97214a00dac990f383ba237c136c90d920019"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/ResolvedWriterTests.cs",
+      "sha256": "d9cb667dfb7636486cfca14803372bd809ae82483d934247ad2e9627e47e529e"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/SqlCommentReviewTests.cs",
+      "sha256": "1c22c12739edb0439d16e439fe8bc23131f4652afb61ccda4f9e182b30aeab3c"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/TextTemporalContractTests.cs",
+      "sha256": "e05ea19d5a2df35a8f6a551dbdd0d23ad9a92c12cf47622a4540a2c969448095"
+    },
+    {
+      "path": "tests/W.DmProvider.TypeTests/W.DmProvider.TypeTests.csproj",
+      "sha256": "264a4eb01d4fd6df2a11c21b4f4a8bf11223071be9d316f7872307f1d9d78990"
+    },
+    {
+      "path": "tests/fixtures/async-cancellation/README.md",
+      "sha256": "1d7a5bb84fe5f78f252caf72fb9b9311e6e80571c9a5605bec0d91f0b3a71177"
+    },
+    {
+      "path": "tests/fixtures/async-cancellation/scenarios.json",
+      "sha256": "e3516b8f39f0d70ada676746ae0237f074f8e421548bcafe07a4e1236f42756a"
+    },
+    {
+      "path": "tests/fixtures/async-r2/README.md",
+      "sha256": "65c2eb41bc99b50d54ea68305e0c245020e7533c043cf1bd7592522c30eb7a22"
+    },
+    {
+      "path": "tests/fixtures/async-r2/scenarios.json",
+      "sha256": "fc2f8aeb8e23d88d73d277ac24384f9d0358375e91ddd0ea4600890ccccabfbd"
+    },
+    {
+      "path": "tests/fixtures/baseline/README.md",
+      "sha256": "8fdedca5037c57230784808012df5902f3549758217e33ddf09e2dfd7cd81e89"
+    },
+    {
+      "path": "tests/fixtures/baseline/parameter-cases.json",
+      "sha256": "7a4d3c3b07e37ebdd9ae1d8213622ff923514add5dcf4a2bbdcccf50c867418e"
+    },
+    {
+      "path": "tests/fixtures/command-results/README.md",
+      "sha256": "3afa400015d8a98d63e2a1d57b1b68db9f1dd32a5d0cbd5efa1eb1f992c8c669"
+    },
+    {
+      "path": "tests/fixtures/command-results/scenarios.json",
+      "sha256": "42d37e141a7aba4769aa6f1c1b70a86505a8ffdec7c7c2d12563962d7746bf55"
+    },
+    {
+      "path": "tests/fixtures/configuration/README.md",
+      "sha256": "567b799052480950988d8d320c34788b4edfda10e64616ce30cd8ef5f654583c"
+    },
+    {
+      "path": "tests/fixtures/configuration/cases.json",
+      "sha256": "47d5ce8eaefc84a6da39b31b334a66c159c397726ac259e613070fde4c95bccc"
+    },
+    {
+      "path": "tests/fixtures/parameters-types/README.md",
+      "sha256": "4bb7e443d426e67d4475f0444ca5caadee8f8591e504b09d3c37adb2c4d21183"
+    },
+    {
+      "path": "tests/fixtures/parameters-types/scenarios.json",
+      "sha256": "1530a249650724841663a54d0cf4f118635195da94fbfe5a1d60069f3045c2da"
+    },
+    {
+      "path": "tests/fixtures/pooling/README.md",
+      "sha256": "02ad2218750650cca783f4463e1dcaf0a7912aa75ca92eb159620695fd36093e"
+    },
+    {
+      "path": "tests/fixtures/pooling/scenarios.json",
+      "sha256": "512918098237cf7e576b32b2adf9542e7d67ea1c8c89bdfcabbb2875da1563cc"
+    },
+    {
+      "path": "tests/fixtures/product-identity/README.md",
+      "sha256": "a0ea77598425882f0e0c670ef29ee8a96cdd24f455b3f6ce5c9b1619bcd35471"
+    },
+    {
+      "path": "tests/fixtures/product-identity/contract.json",
+      "sha256": "13136bc3bfad7144af32b6ff92a007b8cd89250a09e3f3d9c2647e8c3184774d"
+    },
+    {
+      "path": "tests/fixtures/product-identity/smoke-cases.json",
+      "sha256": "287b177d55aa88f3bdb0fb5922922f2db8787a32b43adeed463d802659e4a5c4"
+    },
+    {
+      "path": "tests/fixtures/r1-review/README.md",
+      "sha256": "b54b8ce8b770653208b1b22d70a527899947ee45caaf1cd5be04489dba8b1ee8"
+    },
+    {
+      "path": "tests/fixtures/r1-review/cases.json",
+      "sha256": "bc72365bd2f4ad5427049c1ef8d19243862828034e0fb500b0aa602dcd83fb0b"
+    },
+    {
+      "path": "tests/fixtures/r3-lob/README.md",
+      "sha256": "9c7359199f157a70cf2cd685b608b5df60ee774ef844c7354ffd7878db435885"
+    },
+    {
+      "path": "tests/fixtures/r3-lob/generate_vectors.py",
+      "sha256": "d7ccb3f5863c92b435bf7c4740be9215ada32908aa509a7117338bc898698308"
+    },
+    {
+      "path": "tests/fixtures/r3-lob/schedules.json",
+      "sha256": "3c277018d4f5cc9dd88781d51857f752d09bb96507edb6482d5aff2711bad19d"
+    },
+    {
+      "path": "tests/fixtures/r3-lob/vectors.json",
+      "sha256": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8"
+    },
+    {
+      "path": "tests/fixtures/restoration/README.md",
+      "sha256": "c28af04156df8c050a10eb063c9aba3b1424359abd083b9dcb877eb5dd1f90ac"
+    },
+    {
+      "path": "tests/fixtures/restoration/bcd-cases.json",
+      "sha256": "915abbfd7bd3742499ae5117dcc7eead63ae8dffc0b6ac22b5aef1ea1b7f1a80"
+    },
+    {
+      "path": "tests/fixtures/restoration/scenarios.json",
+      "sha256": "588fb59089dc3fb1258de508d5d91b760e5ee125319ce86126b85cdd2fc38aaa"
+    },
+    {
+      "path": "tests/fixtures/security/README.md",
+      "sha256": "556935d1d1c94112e1d99ff90e529c3aa1bf447a3c7ecbe8366dbb223c5b5e14"
+    },
+    {
+      "path": "tests/fixtures/security/scenarios.json",
+      "sha256": "ad8cd42994884bbdf55b93f9482a1a34e6bf9b95a04c86f6bce732a717f58c44"
+    },
+    {
+      "path": "tests/fixtures/session-ownership/README.md",
+      "sha256": "4f579df742e6c6226ba09a61aae8ba432a27e02997737d5998cfa8247d52c8d1"
+    },
+    {
+      "path": "tests/fixtures/session-ownership/scenarios.json",
+      "sha256": "1cdb10d480fac35db4eb829e65922593a7ed5fd50af35554ddef45a07dc2f4ce"
+    },
+    {
+      "path": "tests/fixtures/streaming-lob/README.md",
+      "sha256": "8d43b3623cfcc3cb3ef2bcce04d61cd300120f4fb2066be50d60a3bbd5ed8703"
+    },
+    {
+      "path": "tests/fixtures/streaming-lob/scenarios.json",
+      "sha256": "c25b89f15dfea934605a9591c69c59bcb76f8511101fb784bcc71fd473900102"
+    },
+    {
+      "path": "tests/fixtures/transactions/README.md",
+      "sha256": "6ea118591f89890ea0f53243a2d1a5f53910f69ba597e561520799c9abfb5fa5"
+    },
+    {
+      "path": "tests/fixtures/transactions/scenarios.json",
+      "sha256": "a04b2cc6eea54b9e0b1698420a164dbb26a25ca3e143c3f30ebfaf99976042fc"
+    },
+    {
+      "path": "tests/fixtures/transport/README.md",
+      "sha256": "f83dc5cbcc2ec61359067f493863678b8f04e9861579f4941614f95143424b69"
+    },
+    {
+      "path": "tests/fixtures/transport/scenarios.json",
+      "sha256": "1d1e21b63505b519931a30096c8b364c5b0ddb9d400fe40ff185817e0ff7d11b"
+    },
+    {
+      "path": "tools/BaselineComparison/Official/Official.csproj",
+      "sha256": "0cb4b426960adf5eb3357c4286a2b0f327d53df639818e662d47a920ef7e9287"
+    },
+    {
+      "path": "tools/BaselineComparison/Restored/Restored.csproj",
+      "sha256": "ee5e4fc09d37a3c4cb2604940001a6c765fd2c7ad39f04a2bf951d3047b0bdb7"
+    },
+    {
+      "path": "tools/BaselineComparison/Shared/Program.cs",
+      "sha256": "a4ee75616965f6fa0b99f07064d98b57dee893a0cc80d1d8dd7857bdf2936e31"
+    },
+    {
+      "path": "tools/BaselineComparison/compare.py",
+      "sha256": "420afdc290cac0372b1a8275da1344a60aa18366bc2d6c9e761b6cfb7b4f9b91"
+    },
+    {
+      "path": "tools/CommandProbe/Candidate.csproj",
+      "sha256": "02a4f37b196dd645d79bd978c98af4af5576ec660c2a59cd966c5162f3ec6c46"
+    },
+    {
+      "path": "tools/CommandProbe/Directory.Build.props",
+      "sha256": "a78f29659989ebf32c44ccbb89ac246a5bebc979276d7cc6668888a3033d7ec5"
+    },
+    {
+      "path": "tools/CommandProbe/Official.csproj",
+      "sha256": "3f0fe3a6077717a99b949471558f9601f196db760a94957971a1609455608887"
+    },
+    {
+      "path": "tools/CommandProbe/OldW.csproj",
+      "sha256": "c880ca7c8730a7da043fe1d81fc0056c550d118e40195d8692da26fd8ab88082"
+    },
+    {
+      "path": "tools/CommandProbe/Package.csproj",
+      "sha256": "1576b57b2a2c1b35f2e81c9cd150ca171e5184a8c30751d68336530c59898f63"
+    },
+    {
+      "path": "tools/CommandProbe/Program.cs",
+      "sha256": "283e735bfa1056847f40707bfcdf713725cd4652e6ae196c02eb182bbdc6aa14"
+    },
+    {
+      "path": "tools/ConfigurationProbe/ConfigurationProbe.csproj",
+      "sha256": "61ce444dfa8ae65a755223d148f9cd243b7c4d0be70b0a589d274b988c0b3b41"
+    },
+    {
+      "path": "tools/ConfigurationProbe/Program.cs",
+      "sha256": "b54b188f453471d2f84f63caa53f0f9d3a9168d7d70da96deee91717fb919638"
+    },
+    {
+      "path": "tools/DmProbe/DmProbe.csproj",
+      "sha256": "77b75eb95043390d19a074b5a7aeeb2f859e9f5916661d3253b83d944d403319"
+    },
+    {
+      "path": "tools/DmProbe/Program.cs",
+      "sha256": "f28ec1633d71042f33fa8be670ce911339e9aae5e98bc784a4dfe38471436aa3"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/Program.cs",
+      "sha256": "18e1310d65bf6add295d970bfe618da7af6c680fcc707994d045dc32af5e3b65"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/README.md",
+      "sha256": "fa18469f96b606abc7b4d7447f5a9f52cbd0e9dee4d1b65dd526b84e335454c3"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T11Consumer.csproj.template",
+      "sha256": "1ce9dd7aba207857234ba297f1082515dca3b024d159c2111dd3efe3e8002a86"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/README.md",
+      "sha256": "94575400c345a19f2f878c80ba252d9bf4dc94492f4b7f658fb53b6dcfc0f623"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/bridge.patch",
+      "sha256": "791e8cab59ce1348017214f169415f4eda1756460d77a684f4200dcb1df5f6d1"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/cli-safety.patch",
+      "sha256": "f2baa32522dff40317018149049b6865bb25e0c47fc0dc6b81d0276de76c5bf0"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/combined.patch",
+      "sha256": "947e415a987f818cc22db17bc42580dc26d077e8d907e8d9a74dee12990a9fe2"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/current-schema-scripts.patch",
+      "sha256": "6603ae6481c9683e50b7cf5db648206da35107fff8ed8afae31269bd3aca9398"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/handoff/R1/manifest.json",
+      "sha256": "75b12c8e17335caaa027dfab883837d6bddeff141b6fad1760ac80b8c4180d9a"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/patches/cli-safety.json",
+      "sha256": "2d42753e7ced50d93c168d8760130de33554706010685e88e34b5ae5ab7cf362"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/patches/cli-safety.md",
+      "sha256": "ee3038c297fb15547cfbeb2166d7cf0783c10120c01ed17ef6cbf8847fc6f28b"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/patches/cli-safety.patch",
+      "sha256": "f2baa32522dff40317018149049b6865bb25e0c47fc0dc6b81d0276de76c5bf0"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/patches/current-schema-scripts.md",
+      "sha256": "3836f3e02173be28ca13a3db8fb2bdb78e1772785d2025f694c7c2eea0b36f03"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/T12/patches/current-schema-scripts.patch",
+      "sha256": "6603ae6481c9683e50b7cf5db648206da35107fff8ed8afae31269bd3aca9398"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/prepare.py",
+      "sha256": "6847b3ef1ba6a1ff5e9da55f39d2e67bdc2b625299505fd544302e1ec47cd2d2"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/run.py",
+      "sha256": "6884759d8b9caa4efa42fb6d003376cc5f4c8a1fe4e09c63f80fdd6f064f26e3"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12-bridge.patch",
+      "sha256": "5402923a6c19fd98c6a09d6c6128a24ac606bf2764b10aa472f55488b87e5de9"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12_audit.cs",
+      "sha256": "1fc6e39ee11ce57e4276c33bd5ca87aa1c4a301ce6e4d6192572fde358e8d292"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12_prepare.py",
+      "sha256": "feaec52d74062e497682eacd4bd6b34640d33d9b807ed9d511703cb52c78cada"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12_retry_tests.cs",
+      "sha256": "4b05108d6cb764a5eeb7596b500aadb524d1e44573ba70ae374239698377a02e"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12_run.py",
+      "sha256": "cbd89bfc0ee8d44f24acb0259035a6d8389c5752c69235d7cf85d7c9a296112f"
+    },
+    {
+      "path": "tools/DownstreamAcceptance/t12_test_guard.cs",
+      "sha256": "00679736704e12e77ee4551d7dd01c4a777b8bd5f63af3641e5d3a4dec480f4e"
+    },
+    {
+      "path": "tools/ImportRestoredSource/ImportRestoredSource.csproj",
+      "sha256": "e2aabc66597c16831aab99f0cc9000e43841398f387dbec696f198a2ca515687"
+    },
+    {
+      "path": "tools/ImportRestoredSource/Program.cs",
+      "sha256": "f3ad28f3af73fc62b3591b158b5ef66d5cb66ce7ade5c46feb3867c079f7ee0a"
+    },
+    {
+      "path": "tools/ImportRestoredSource/README.md",
+      "sha256": "02a3dcb53e813f784aa358bac9f61de360ae605d6a6b48acf0ed190fdce68026"
+    },
+    {
+      "path": "tools/ImportRestoredSource/generate_api_map.py",
+      "sha256": "841b384a8fd4c53ea2fb593827b95bb710f7206af32321a5ac535be62c2cb9f8"
+    },
+    {
+      "path": "tools/IsolationProbe/Candidate.csproj",
+      "sha256": "e63926aa67725367d1903f60ae6ae051a3027f66955948dadc31b9f2ecc2a432"
+    },
+    {
+      "path": "tools/IsolationProbe/Directory.Build.props",
+      "sha256": "f22fdd115deb249cac7a1a016708d4f2f7a5d98e448255d66a45524a6ecf93b6"
+    },
+    {
+      "path": "tools/IsolationProbe/Frozen.csproj",
+      "sha256": "39a8b6f0cb4d4d8415d1a6626050097ca43c45b3aa90c2d785b3c5690afd0cd4"
+    },
+    {
+      "path": "tools/IsolationProbe/Litmus.cs",
+      "sha256": "7853fce7d0bd85048ebed512b81d8b6911b93d9a76080d2d5d20dbe38c47d1e8"
+    },
+    {
+      "path": "tools/IsolationProbe/Official.csproj",
+      "sha256": "ba24d98743bd098d65862f38276007aa62a750dbb53639ad92ea69b994a85a6d"
+    },
+    {
+      "path": "tools/IsolationProbe/ProbeSafety.cs",
+      "sha256": "4205e6549a0c4352f486bfae1336075fbf80db6c27e6a5a5877d804c22be6af7"
+    },
+    {
+      "path": "tools/IsolationProbe/Program.cs",
+      "sha256": "d71ac7da4693eba356ca2f0cef10791f625d4704da9ca8197821ffaf083e6804"
+    },
+    {
+      "path": "tools/IsolationProbe/Restored.csproj",
+      "sha256": "2cdfe2ffa6c95434b4cf316723412758b1986454059999f556b814a61bf620ee"
+    },
+    {
+      "path": "tools/IsolationProbe/validate-candidate.py",
+      "sha256": "afb0fcd1f9a4b0fd7ebadc8c47993e4a2c45955e72721bbaa05403bd0df26af4"
+    },
+    {
+      "path": "tools/IsolationProbe/validate.py",
+      "sha256": "e0f53e4caddc663d1694038f5ba828a3766e327582f1cc941f4376e84377ec65"
+    },
+    {
+      "path": "tools/LocalTestPermissions/LocalTestPermissions.csproj",
+      "sha256": "72d81b661a5cd8ce954d5579e1e0737af924bc98cbe47b46e229a418aee59550"
+    },
+    {
+      "path": "tools/LocalTestPermissions/Program.cs",
+      "sha256": "ae2c2d012c44497b4b66225ca877b396ecc1d4eb04fc1c20d8fdcb7adaebf8b2"
+    },
+    {
+      "path": "tools/LocalTestPermissions/README.md",
+      "sha256": "afdc8a7bbd63220cb24e34f2b472486be7b2a2baa0ba795a51a5202afdb644d5"
+    },
+    {
+      "path": "tools/LocalTestPermissions/run.py",
+      "sha256": "12df4b58dcd5cedd6462abf3bbb7c142b30e0edfae2313f2b07464a57997efd5"
+    },
+    {
+      "path": "tools/LocalTlsEnvironment/mode_matrix.py",
+      "sha256": "b0d20ab8acff8568f426cd3cfea87863ae564c39e0e86e3a7eb204c7bbbeb77e"
+    },
+    {
+      "path": "tools/LocalTlsEnvironment/provision.py",
+      "sha256": "69c90deee282c5e187930ab66a0a16bacec755fab6d46072d4c1f4e10b71fcb1"
+    },
+    {
+      "path": "tools/LocalTlsEnvironment/test_provision.py",
+      "sha256": "b1148f5d42ff65fe9f97c5088c344cea88300a67a0ac4627757fd4b318e78905"
+    },
+    {
+      "path": "tools/ProductPackageProbe/ProductPackageProbe.csproj",
+      "sha256": "d447ace343474d8b5cd2f74331f216c4cb2107e87c51cdc2cf105b551363951c"
+    },
+    {
+      "path": "tools/ProductPackageProbe/Program.cs",
+      "sha256": "83f8527ec74a04c14f930f0b677d3540cea58c0937f5ddf232a846ec29bd3ef8"
+    },
+    {
+      "path": "tools/ProductPackageProbe/inspect.py",
+      "sha256": "58163db603b55c2fcfeabc87e49157df40a317c9b54beacdf62b4206f3db4474"
+    },
+    {
+      "path": "tools/R1ReleaseAudit/Program.cs",
+      "sha256": "afc22158ae91f127caa808fd037e6a90616b938d96335e4870ec769321de0ecb"
+    },
+    {
+      "path": "tools/R1ReleaseAudit/R1ReleaseAudit.csproj",
+      "sha256": "3c70bf2878303b3c63cccc3c3f1090f7ea72c7b7277319688505cf9eb16386a7"
+    },
+    {
+      "path": "tools/R1ReleaseAudit/audit.py",
+      "sha256": "86a8a60183cf5fc63b046f59ec3b01be49c23e6aa9d4b922d4d31d0d3bd8ac42"
+    },
+    {
+      "path": "tools/R1ReleaseAudit/test_audit.py",
+      "sha256": "dfc3fcaf9e4107e140e1aac58f98521602473fa840a62c4775333508bb31b7e0"
+    },
+    {
+      "path": "tools/R1ReviewProbe/Program.cs",
+      "sha256": "f287c53e6fe516af740fd5326301d909f604f63e712543aca9f3c60aef4a32bc"
+    },
+    {
+      "path": "tools/R1ReviewProbe/R1ReviewProbe.csproj",
+      "sha256": "fe5a66ffd3d39594c21c0168cdf7f941b16301e6315d93113392534991d7eebd"
+    },
+    {
+      "path": "tools/R1ReviewProbe/README.md",
+      "sha256": "9ec85edaf028715b6c15c1e3cf0f1d6870a50de9416e7aa48439abcea587e6d4"
+    },
+    {
+      "path": "tools/R2AsyncProbe/Program.cs",
+      "sha256": "f80e459ca582e5f7f23842a7b8aebf6cdf448e03765d4c4380b09a31d8a1f31b"
+    },
+    {
+      "path": "tools/R2AsyncProbe/R2AsyncProbe.csproj",
+      "sha256": "ce2b0dffad2a0eda8b7d9c8218108921423e7110ce8029a85e2d14c3ee3035cf"
+    },
+    {
+      "path": "tools/R2AsyncProbe/README.md",
+      "sha256": "0471eb2c360330d3c4539427e97626fa1f01416d8f3d9d18396febe14bc19571"
+    },
+    {
+      "path": "tools/R2AsyncProbe/Security.cs",
+      "sha256": "8d0345e64c078664b307aacfd68b3d4b04decbf2def52180edf06c0fc044d491"
+    },
+    {
+      "path": "tools/R2AsyncProbe/package_manifest.py",
+      "sha256": "db0897609b8da7d9b06debd55c36f31c77aa46055ad5b628705f6a186dcd3c18"
+    },
+    {
+      "path": "tools/R2AsyncProbe/validate.py",
+      "sha256": "213fb8626cb3cbe139a7cb5af8d414bb39687d0886ba9f208fa0c50c8281ff03"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/Diagnostics.csproj",
+      "sha256": "4200f4c3cfa8d4c9cdd65d925a0e98286405e321dbe38d61ce642d693ce23c61"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/Gate.cs",
+      "sha256": "26cdac94a94931913e668598f9fc81708ab5081c267bd5fc7f4601725b14b5a6"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/Hooks.cs",
+      "sha256": "c6b3a76a848756b9aba207738bd8b54398415f167c4b326914f7fa841aad9676"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/Program.cs",
+      "sha256": "e3afb71775f8873a1fa43919a33110f94b98de19474ad2d0dd8b35090e24846c"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/README.md",
+      "sha256": "2e4c43d76cc8f7d3f4c5351347132075c454f282964e9e44943bf7bd99e37f5b"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/package_manifest.py",
+      "sha256": "db0897609b8da7d9b06debd55c36f31c77aa46055ad5b628705f6a186dcd3c18"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/run_probe.py",
+      "sha256": "d35a8fac0359fcc629b0dd36da90ddebb7d0c7f9504ecbef7c9c03a69e47bc68"
+    },
+    {
+      "path": "tools/R2CancellationDiagnostics/validate.py",
+      "sha256": "a22ab073d3bd166b705de6c97c4be87a2d5bb721e42bf0b85a69254538b66e8f"
+    },
+    {
+      "path": "tools/R2CancellationProbe/Cases.cs",
+      "sha256": "a5cb2785027671656b899721437e3bb293b1db13529793e078ba32f8377a9a14"
+    },
+    {
+      "path": "tools/R2CancellationProbe/Hooks.cs",
+      "sha256": "79e173d1c77fa52e38bac1785a02418c2f1eca71d2711fc56f7673fb152362e7"
+    },
+    {
+      "path": "tools/R2CancellationProbe/Performance.cs",
+      "sha256": "7bd9188f69dd62a07ca1a093788eee286aef1b01b9e8d630d1cf27f11398aa49"
+    },
+    {
+      "path": "tools/R2CancellationProbe/Program.cs",
+      "sha256": "8cdc829973f3cd81c4efe4b5aafd343ce9cc19237118db2e064fdc17f57c1139"
+    },
+    {
+      "path": "tools/R2CancellationProbe/R2CancellationProbe.csproj",
+      "sha256": "ce2b0dffad2a0eda8b7d9c8218108921423e7110ce8029a85e2d14c3ee3035cf"
+    },
+    {
+      "path": "tools/R2CancellationProbe/README.md",
+      "sha256": "2ce091c6ff091ec953e4bd1701de9ef34312bc17d04dfcf19f639c8af1e78c93"
+    },
+    {
+      "path": "tools/R2CancellationProbe/package_manifest.py",
+      "sha256": "db0897609b8da7d9b06debd55c36f31c77aa46055ad5b628705f6a186dcd3c18"
+    },
+    {
+      "path": "tools/R2CancellationProbe/run_probe.py",
+      "sha256": "b00f21a29295da32df3a450a0f71e710a0b0baa7c541f21c68f6c89a7fcb93cb"
+    },
+    {
+      "path": "tools/R2CancellationProbe/validate.py",
+      "sha256": "0282f50edc57d7deb93ddbc63a84d59a8db0db5b727bcd02493b559f27139b5f"
+    },
+    {
+      "path": "tools/R3LobProbe/Program.cs",
+      "sha256": "b72dc6a6ba979b7ec0a4aa0a24dfeb70160cd712873561fd27beb01fda993cb0"
+    },
+    {
+      "path": "tools/R3LobProbe/R3LobProbe.csproj",
+      "sha256": "b6c5e6d7b49a8b22b1b10ffc504eea0bbda8b529aec97e382cbf8e10f1e8dc5e"
+    },
+    {
+      "path": "tools/R3LobProbe/README.md",
+      "sha256": "050b10b39c42cb9ef2b191d0c5c2a64aac96fb5c2b3bcd845004867834a825a0"
+    },
+    {
+      "path": "tools/R3LobProbe/run_probe.py",
+      "sha256": "a94df7fb416e88adeac4adbb500dc8ea475ddd8bb412c26433aa9a3bfe1bd256"
+    },
+    {
+      "path": "tools/R3LobProbe/source_identity.py",
+      "sha256": "cc003635bbd8b75a8d793fee8ae6b3bf1e4ac6f87b4a9b7f07fc804f3fbca16d"
+    },
+    {
+      "path": "tools/R3LobProbe/validate.py",
+      "sha256": "c11f6b6625d786c25c404547f5d7294e5ede997611144ebfb6a74da2c22b42c3"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/Program.cs",
+      "sha256": "6cf523debd98e986e76d2f7291cea19e4d3f613c312909fcbbfbe9a4ba0bcbda"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/R3LobProfileProbe.csproj",
+      "sha256": "5f4f600b5eeb8df4555e8f9630998c9bf103d03a6b9e8f751dbc8848eaf9dd2e"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/README.md",
+      "sha256": "38d2246062efb657c6668bb370cd8719c4553651bab81077f5be90b1118bdf36"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/run_probe.py",
+      "sha256": "504894d53416c55a7c418ea6d09cdf097ae118c023d816d9fe854c4225667fa7"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/source_identity.py",
+      "sha256": "cb53ee0e2de45d8883a43229a7809a7e6ff7d3f10c5d8b04db677e0274398ae5"
+    },
+    {
+      "path": "tools/R3LobProfileProbe/validate.py",
+      "sha256": "b53c64cebe6a1793f8e43b5cee916cb801cbc692c3c7f9a5665991bf7962baca"
+    },
+    {
+      "path": "tools/R3PoolProbe/Program.cs",
+      "sha256": "f9c4613d7029adb699f6152246750df2311d4c641435e3386d21fb060c4599f4"
+    },
+    {
+      "path": "tools/R3PoolProbe/R3PoolProbe.csproj",
+      "sha256": "b6c5e6d7b49a8b22b1b10ffc504eea0bbda8b529aec97e382cbf8e10f1e8dc5e"
+    },
+    {
+      "path": "tools/R3PoolProbe/README.md",
+      "sha256": "34caf29c8adf50610344664c4e583d3d7784aee0da8bcd6ba90c3a34f55aea9f"
+    },
+    {
+      "path": "tools/R3PoolProbe/run_probe.py",
+      "sha256": "04b49553505c36271f7d9578a23b0b8ec504600b31c46fb74c0ee79bf8f6c0ed"
+    },
+    {
+      "path": "tools/R3PoolProbe/source_identity.py",
+      "sha256": "78420cbd89110d12eb5503e19e753255221d2e3f4db2e63a16aa5185a8389e64"
+    },
+    {
+      "path": "tools/R3PoolProbe/validate.py",
+      "sha256": "c7077710a55841a58c5632318bcfc8e7858af9d440b0b9fb8d82b60b961662a0"
+    },
+    {
+      "path": "tools/R3ResetProbe/Program.cs",
+      "sha256": "ae95a986333a4b27ace90d66c77509789a8e0272f129b483d33477be121fcef0"
+    },
+    {
+      "path": "tools/R3ResetProbe/R3ResetProbe.csproj",
+      "sha256": "b6c5e6d7b49a8b22b1b10ffc504eea0bbda8b529aec97e382cbf8e10f1e8dc5e"
+    },
+    {
+      "path": "tools/R3ResetProbe/README.md",
+      "sha256": "a43f136d86dd36a978fc5f199de886855ffc65e74f30df217466b18d661bad1b"
+    },
+    {
+      "path": "tools/R3ResetProbe/run_probe.py",
+      "sha256": "333fa9fef1eb004b2c31d97aa5eba24801faa32ecdcd71e710b14fbdb62b4809"
+    },
+    {
+      "path": "tools/R3ResetProbe/validate.py",
+      "sha256": "3010676d23d2232eb77915308c3d0cce6c31518092b749ee745f45de9a765a0d"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/Program.cs",
+      "sha256": "db4380219e0b9c03688a86702c75d765e7788396f7c69a580b8b180255f69ea1"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/R3UploadProfileProbe.csproj",
+      "sha256": "5f4f600b5eeb8df4555e8f9630998c9bf103d03a6b9e8f751dbc8848eaf9dd2e"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/README.md",
+      "sha256": "dd95518877f5718d79a8dece417449df943c9246046599d86965b6f36893aa0d"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/run_probe.py",
+      "sha256": "1474f33d4e1c24f9b434f52dc94d5785092f48a83d9e58532e1063ae7e466c2f"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/source_identity.py",
+      "sha256": "c06583d0ac9d9d896217fdad97a3a0f38078542cfb301724444213de8f30d15c"
+    },
+    {
+      "path": "tools/R3UploadProfileProbe/validate.py",
+      "sha256": "e848ebd8bd3351a017004f1251761c9d673f67ec3c9d19b2d26f616ad29929da"
+    },
+    {
+      "path": "tools/RestoreBaseline/.config/dotnet-tools.json",
+      "sha256": "e1bd51b345bc9d3b3a8222b6eb41b0570973e6a719c4f691ff2f6ff8393f4f18"
+    },
+    {
+      "path": "tools/RestoreBaseline/Program.cs",
+      "sha256": "83f2c52c7f3a0bf14d0883196b452386bf390ef7185029a890acf30be8dfee7a"
+    },
+    {
+      "path": "tools/RestoreBaseline/README.md",
+      "sha256": "1dc1af38b273ad3ec42085484962d896bc12f888ee08fd9cdd3a8ac52b0dce8d"
+    },
+    {
+      "path": "tools/RestoreBaseline/RestoreBaseline.csproj",
+      "sha256": "c018c3aa5ce3b7772f5d24814a027b49b4908b6e133cc6bb0b4588a595de2362"
+    },
+    {
+      "path": "tools/SecurityProbe/Program.cs",
+      "sha256": "be682b37462ef43c1dc1d56e621cf64bc38b6dabb61c54c297f853ee96ec6052"
+    },
+    {
+      "path": "tools/SecurityProbe/SecurityProbe.csproj",
+      "sha256": "d4de99fd68954e254e2acc62833255d852057097130a0efbe4d45f0330793b94"
+    },
+    {
+      "path": "tools/SessionProbe/.local/t05/dotnet-cli-home/.nuget/NuGet/NuGet.Config",
+      "sha256": "a93e5528f06204b5e5afecd3fb2db8de0d48cc5e2b5f812728a6ad3f0c7bffc2"
+    },
+    {
+      "path": "tools/SessionProbe/BlobOfficial.csproj",
+      "sha256": "fdd89d1b0cc7b64e2121d8586d5c8ea5a0f2b130ba5e8b6117cc9102a742d110"
+    },
+    {
+      "path": "tools/SessionProbe/BlobRepro.cs",
+      "sha256": "7f5f73f38ec320e26159962d27a55b1f588055ea0d11c6e95601c6feffe395d8"
+    },
+    {
+      "path": "tools/SessionProbe/BlobRestored.csproj",
+      "sha256": "017768f8defaf8511b24c1a7c00649634aa677249ed4b42a0ce646161d77ba34"
+    },
+    {
+      "path": "tools/SessionProbe/BlobW.csproj",
+      "sha256": "dea51876b6ed3a4eeae204d1c8090b385ae69b72f9980269162179c6e85f67dc"
+    },
+    {
+      "path": "tools/SessionProbe/Program.cs",
+      "sha256": "159f13cc97e77596f342b29e8774de8a705c7117221aced27b7fd9f8600fefb0"
+    },
+    {
+      "path": "tools/SessionProbe/SessionProbe.csproj",
+      "sha256": "6a3455574d3fb1282ccbc35e6b491b133c5d6b45fa7b0aea7c5e600e8108d09e"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Candidate.csproj",
+      "sha256": "070575f22ba9021d5a7d4a0a274df482046abefac2848999002881e23f577b9e"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Candidate.packages.lock.json",
+      "sha256": "b8073b67e7d52f948bb843ea4f8e91f20601e0b2205b00385048df1c4642bb3a"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Directory.Build.props",
+      "sha256": "3c7b778d27781a9e96557122f314d03b057f0e3739ac8c976b8f013d4a92a0af"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Official.csproj",
+      "sha256": "c3807aa4fb9348061b110ea0128d0293a027fdd1347506f62f7b9d0f4d79fe44"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Official.packages.lock.json",
+      "sha256": "43f637b6c0e9fa2e030821be77d8d70777fc8e726a60185c44f136b2a7634840"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/Program.cs",
+      "sha256": "9cf724be55401567eaf1d70e3b7a48ca94aa1d9f818a7f81cb8a001493fd1f7a"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/README.md",
+      "sha256": "f76b321af248d948ea2e0653193a0218e8e49e5966863cedd60d45fac092eaf7"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/expected-identities.json",
+      "sha256": "fa3aa00618c4dd72cb64b8e1d02218c71b52364219cadbba1793129b56ba9a12"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/global.json",
+      "sha256": "6863ab1b69640d64946ef783866504ca8dfda9ea05d0c33d013610b64996c7df"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/validate-handoff.py",
+      "sha256": "d48fd35d1d2e83dca8f4cb73c34041149482e2730b82c1d0bffcef86ac31544e"
+    },
+    {
+      "path": "tools/TemporalPrecisionProbe/validate.py",
+      "sha256": "478eeae3c348403df1667d35a2d0f447598f86ce741c2b480f589d5c4fcb885b"
+    },
+    {
+      "path": "tools/TransactionProbe/Candidate.csproj",
+      "sha256": "be8bacc20a453cd7f9dbdc6e75357dfe73d82f90d010b5d2fb16f4951465f655"
+    },
+    {
+      "path": "tools/TransactionProbe/CandidateCases.cs",
+      "sha256": "7ba0842ea235e1ddcab8f7126b033754ce3aae1cb954d3213b51dd352f67436d"
+    },
+    {
+      "path": "tools/TransactionProbe/Directory.Build.props",
+      "sha256": "a78f29659989ebf32c44ccbb89ac246a5bebc979276d7cc6668888a3033d7ec5"
+    },
+    {
+      "path": "tools/TransactionProbe/Official.csproj",
+      "sha256": "76f76c624cd43314fbc2febbce3411b20641481dd0d9362341cc136073a060c6"
+    },
+    {
+      "path": "tools/TransactionProbe/OldW.csproj",
+      "sha256": "097956dd0adff683e0b00031ec3c74de7aa7d7170ce974f17d33c97f0f99c5ec"
+    },
+    {
+      "path": "tools/TransactionProbe/Program.cs",
+      "sha256": "ec3d13c0ccea7a829eeb34c3b7792d6b2964b1087b72cb41a6967445272d9eb7"
+    },
+    {
+      "path": "tools/TransportProbe/Program.cs",
+      "sha256": "295bc49160923aa059a8c4b52044e6d3390649b63af36e73108bff01e90b72d9"
+    },
+    {
+      "path": "tools/TransportProbe/TransportProbe.csproj",
+      "sha256": "f703c4aec77c344710f9caf93f6766fb73c0cb131594b6ac3c046157959daf77"
+    },
+    {
+      "path": "tools/TypeProbe/Candidate.csproj",
+      "sha256": "3428ccbe88a5f0af5761e9e52e747a2d4e2d689bf5341a8c29cf5db3fa0ded05"
+    },
+    {
+      "path": "tools/TypeProbe/Frozen.csproj",
+      "sha256": "7bd4a968957c4fd3abc6ab9b49c2517fcdafb2ec4598b76488f7fcce0a92a281"
+    },
+    {
+      "path": "tools/TypeProbe/Official.csproj",
+      "sha256": "453fa3d6c83ba4003d45230ad3014b535cd02b33f85d5f539c68d5d9b7bbe21c"
+    },
+    {
+      "path": "tools/TypeProbe/Program.cs",
+      "sha256": "5ac0262d84d5cb933da59e65e9b8afc8d761a9fe01af32cf6a8678cb5c807fc9"
+    },
+    {
+      "path": "tools/TypeProbe/diagnose.py",
+      "sha256": "7f1a9d8455999289d1aece258e9cafccad906b6817fdcdc3e2ed1a51908489a1"
+    },
+    {
+      "path": "tools/TypeProbe/validate.py",
+      "sha256": "2db61897022aba4b8da42f544b716c0482694881d83d511125bf01f2722b9991"
+    },
+    {
+      "path": "tools/UpstreamSnapshot/Program.cs",
+      "sha256": "3922ab3cf43641136207bae4361a6fe6da99bc4bc5695bfd47395d9d1494c999"
+    },
+    {
+      "path": "tools/UpstreamSnapshot/UpstreamSnapshot.csproj",
+      "sha256": "60a2d299f17be25da2f16f3d734963f26238c756a1a17ad4b48678ade0ea2321"
+    }
+  ],
+  "historical_count": 157,
+  "historical_unchanged": true
+}

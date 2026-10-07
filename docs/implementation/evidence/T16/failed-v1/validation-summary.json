@@ -1,0 +1,66 @@
+{
+  "task": "T16",
+  "status": "rejected_tls_probe",
+  "window": "released",
+  "source_count": 580,
+  "source_manifest_sha256": "7d226df0f957e040bee60db36bddf8e0e1c968b5d7b47b285c67a6294483cf2e",
+  "source_before_after_unchanged": true,
+  "history_count": 102,
+  "history_before_after_unchanged": true,
+  "sdk": "10.0.203",
+  "candidate": {
+    "version": "0.1.0-r3.t16.20261002132648",
+    "offline_total": 685,
+    "baseline_nine_total": 603,
+    "pool_total": 82
+  },
+  "package_sha256": "f2a961992660a6fd326fd44e7f511241fc2192e00126620163c1fea5abc72eef",
+  "dll_sha256": "719ce19997f12b49709f069343613c2d9d88895ee9f40e9b9dbf8d7d72211157",
+  "mvid": "429fb4a4-6691-49f4-ae24-2649c04b7ac7",
+  "offline_total": 685,
+  "offline_zero_nonpass": true,
+  "pack_exit_code": 0,
+  "offline_probe_exit_code": 0,
+  "tls_probe_exit_code": 1,
+  "tls_failed_run": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t16/runs/20261002T132732Z-30540-28557",
+  "tls_original_work_failed_stage": "shortcut_command_ownership",
+  "tls_original_work_error": {
+    "type": "Program+ProbeFailure",
+    "classification": "shortcut_failure_not_server_reported",
+    "failure_phase": null,
+    "failure_kind": null,
+    "server_number": null
+  },
+  "tls_final_error": {
+    "type": "Program+ProbeFailure",
+    "classification": "physical_socket_or_authentication_accounting_failed",
+    "failure_phase": null,
+    "failure_kind": null,
+    "server_number": null
+  },
+  "tls_cleanup_verified": true,
+  "tls_final_database_state": "unique_owned_objects_absent",
+  "tls_server_profile": "8.1.4.6",
+  "tls_network_io_counts": {
+    "async_connect": 7,
+    "sync_connect": 0,
+    "async_tls": 7,
+    "sync_tls": 0,
+    "async_send": 83,
+    "sync_send": 0,
+    "async_receive": 164,
+    "sync_receive": 0
+  },
+  "tls_final_owners": [
+    {
+      "creating": 0,
+      "leased": 0,
+      "closing": 0,
+      "waiting": 0,
+      "idle": 0,
+      "resetting": 0
+    }
+  ],
+  "shared": "not_executed_after_mandatory_failure",
+  "production_release_accepted": false
+}

@@ -20,6 +20,8 @@ internal class DmConnInstance
 	private DmTransaction m_Tran;
 
 	private B m_Csi;
+	private readonly D physicalTransport;
+	private D syntheticPhysicalTransport;
 
 	internal DmSession Session { get; }
 
@@ -134,6 +136,7 @@ internal class DmConnInstance
 				pstmtCache = new LRUCache<string, global::W.Dm.Internal.Legacy.A.A>(m_ConnPro.PreparePoolSize);
 			}
 			m_Csi = new B(m_SendMsg, m_RecvMsg, this);
+			physicalTransport = m_Csi.A();
 			Session.AttachTransport(this);
 			// Legacy process-wide alive checks are disabled in T04.
 		}
@@ -235,11 +238,26 @@ internal class DmConnInstance
 
 	// No protocol cleanup is safe after an interrupted exchange. Close only the captured
 	// physical transport; never invoke transaction Dispose or statement close here.
+	internal void RunAfterPhysicalClosed(Action completion)
+	{
+		ArgumentNullException.ThrowIfNull(completion);
+		// Keep the actual adapter even after AbortTransport takes m_Csi. The
+		// fallback supports synthetic instances whose constructor was bypassed.
+		D captured = physicalTransport ?? Volatile.Read(ref syntheticPhysicalTransport) ?? Volatile.Read(ref m_Csi)?.A();
+		if (captured == null) completion();
+		else captured.RunAfterPhysicalClosed(completion);
+	}
+
 	internal void AbortTransport()
 	{
+		if (physicalTransport == null)
+		{
+			D synthetic = Volatile.Read(ref m_Csi)?.A();
+			if (synthetic != null) Interlocked.CompareExchange(ref syntheticPhysicalTransport, synthetic, null);
+		}
 		B captured = Interlocked.Exchange(ref m_Csi, null);
 		if (captured == null) return;
-		try { captured.E(); }
+		try { captured.E(forcePhysicalAbort: true); }
 		finally
 		{
 			AliveCheck = false;

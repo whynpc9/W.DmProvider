@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.ExceptionServices;
+using W.Dm.Internal.Diagnostics;
 using System.Threading;
 using W.Dm.Internal.Legacy.A;
 using W.Dm.Internal.Transport;
@@ -20,12 +22,14 @@ internal sealed class DmSession
     private OperationIdentity activeReaderIdentity;
     private DmConnInstance transport;
     private D pendingTransport;
+    private DmDetachedTransport detachedTransport;
     private DmPhysicalSessionState state = DmPhysicalSessionState.New;
     private DmLocalTransactionState transactionState;
     private DmTransaction activeTransaction;
     private TransactionControlOperation transactionControl;
     private int? lastBusinessTransactionStatus;
     private bool handshakeComplete;
+    private int diagnosticDiscarded;
     private readonly Action<DmSession> onBroken;
 
     internal long SessionId { get; }
@@ -77,6 +81,7 @@ internal sealed class DmSession
                 throw new InvalidOperationException("Transaction control has no active owner.");
             transactionControl = new TransactionControlOperation(transaction, identity, kind);
             activeInvocation.Phase = kind == DmTransactionControlKind.Commit ? DmFailurePhase.Commit : DmFailurePhase.Rollback;
+            activeInvocation.DiagnosticOperation = kind == DmTransactionControlKind.Commit ? DmDiagnosticOperation.Commit : DmDiagnosticOperation.Rollback;
             transactionState = kind == DmTransactionControlKind.Commit
                 ? DmLocalTransactionState.Committing : DmLocalTransactionState.RollingBack;
             transaction.SetOutcomeFromSession(kind == DmTransactionControlKind.Commit
@@ -421,11 +426,75 @@ internal sealed class DmSession
         AdvanceInvocation(invocation, send: false);
     }
 
+    internal void AcceptServerError(DmInvocation invocation, DmWireExchange exchange, DmException error, bool preserveSession)
+    {
+        ArgumentNullException.ThrowIfNull(invocation);
+        ArgumentNullException.ThrowIfNull(exchange);
+        ArgumentNullException.ThrowIfNull(error);
+        // AdvanceInvocation arbitrates the original deadline/cancellation and
+        // this receipt under one gate. Its action performs no external calls.
+        AdvanceInvocation(invocation, send: false, onComplete: () =>
+        {
+            if (invocation.Completed || !ReferenceEquals(activeWire, exchange) ||
+                !exchange.Owns(this, invocation) || !ReferenceEquals(DmWireExchange.Current, exchange) ||
+                !ReferenceEquals(DmInvocation.Current, invocation))
+                throw new InvalidOperationException("Server error receipt has no current wire owner.");
+            bool canPreserve = preserveSession && error.Number == -2106 &&
+                string.Equals(transport?.ConnProperty.ServerVersion, "8.1.5.60", StringComparison.Ordinal) &&
+                invocation.Lease.Purpose is DmOperationPurpose.Query or DmOperationPurpose.Reader &&
+                transactionState == DmLocalTransactionState.Active &&
+                ReferenceEquals(activeTransaction, transport?.Transaction) &&
+                activeTransaction?.Outcome == DmTransactionOutcome.Active;
+            error.MarkVerifiedServerResponse(invocation.Identity, canPreserve);
+            invocation.ServerErrorAccepted = true;
+            if (canPreserve) exchange.MarkPreservedServerErrorComplete();
+        });
+    }
+
     internal bool IsRecoverableUnsentFailure(DmInvocation invocation)
     {
         lock (gate) return invocation != null && !invocation.SendAttempted &&
             (invocation.TerminalCause != DmCancelSource.None || IsRecoverableUnsentTransactionControl(invocation));
     }
+
+    internal bool TryAcceptLocalInputFailure(DmInvocation invocation, DmWireExchange exchange, Exception error)
+    {
+        if (invocation == null || exchange == null || error == null ||
+            error is OperationCanceledException or TimeoutException or DmTimeoutException) return false;
+        lock (gate)
+        {
+            if (!HasCurrentInputFailureOwnerUnderLock(invocation) || !ReferenceEquals(activeWire, exchange) ||
+                !ReferenceEquals(DmWireExchange.Current, exchange) || !exchange.Owns(this, invocation) || exchange.SendAttempted)
+                return false;
+            if (invocation.LocalInputFailureException != null)
+                return ReferenceEquals(invocation.LocalInputFailureException, error) && ReferenceEquals(invocation.LocalInputFailureWire, exchange);
+            invocation.LocalInputFailureException = error;
+            invocation.LocalInputFailureWire = exchange;
+            return true;
+        }
+    }
+
+    internal bool IsRecoverableLocalInputFailure(DmInvocation invocation, Exception error = null, DmWireExchange exchange = null)
+    {
+        lock (gate)
+        {
+            if (invocation == null || invocation.LocalInputFailureException == null || invocation.LocalInputFailureWire == null ||
+                !HasCurrentInputFailureOwnerUnderLock(invocation) || invocation.LocalInputFailureWire.SendAttempted ||
+                error != null && !ReferenceEquals(invocation.LocalInputFailureException, error)) return false;
+            // During wire disposal its disposed flag is already set. Match the
+            // receipt's exact owner rather than accepting another wire's failure.
+            if (exchange != null) return ReferenceEquals(invocation.LocalInputFailureWire, exchange) && ReferenceEquals(activeWire, exchange);
+            return activeWire == null || ReferenceEquals(activeWire, invocation.LocalInputFailureWire);
+        }
+    }
+
+    private bool HasCurrentInputFailureOwnerUnderLock(DmInvocation invocation) =>
+        ReferenceEquals(activeInvocation, invocation) && ReferenceEquals(activeLease, invocation.Lease) &&
+        ReferenceEquals(DmInvocation.Current, invocation) && invocation.Identity.SessionId == SessionId &&
+        invocation.Identity.LeaseGeneration == leaseGeneration && !invocation.IsDisposed && !invocation.Completed &&
+        invocation.TerminalCause == DmCancelSource.None && !invocation.UserCancellationToken.IsCancellationRequested &&
+        (invocation.Deadline.IsInfinite || invocation.Deadline.RemainingTime != TimeSpan.Zero) &&
+        state is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed);
 
     internal void CancelExecution(DmExecutionLease lease)
     {
@@ -437,6 +506,7 @@ internal sealed class DmSession
             invocation = activeInvocation;
             if (invocation?.Completed == true)
             {
+                if (invocation.ServerErrorAccepted) return;
                 if (lease.Purpose != DmOperationPurpose.Reader) return;
                 invocation = null; // A successful reader call has become idle.
             }
@@ -536,6 +606,7 @@ internal sealed class DmSession
                     // bytes after this point cannot prove an unsent request.
                     invocation.SendAttempted = true;
                     invocation.Lease.SendAttempted = true;
+                    if (activeWire != null) activeWire.SendAttempted = true;
                     invocation.Phase = DmFailurePhase.Send;
                     MarkTransactionSendAttempt(invocation);
                 }
@@ -578,7 +649,8 @@ internal sealed class DmSession
         lock (gate)
         {
             DmCancelSource cause = invocation.TerminalCause;
-            bool server = error is DmException dm && dm.HasVerifiedServerResponse && dm.VerifiedResponseIdentity == invocation.Identity;
+            bool server = cause == DmCancelSource.None && error is DmException dm && dm.HasVerifiedServerResponse &&
+                dm.VerifiedResponseIdentity == invocation.Identity;
             DmErrorKind kind = server ? DmErrorKind.Server : cause is DmCancelSource.TotalDeadline or DmCancelSource.IdleTimeout ? DmErrorKind.Timeout :
                 cause is DmCancelSource.User or DmCancelSource.Command ? DmErrorKind.Canceled : DmErrorKind.Transport;
             DmTransactionOutcome? outcome = GetTransactionOutcomeUnderLock();
@@ -612,6 +684,8 @@ internal sealed class DmSession
             if (!ReferenceEquals(activeInvocation, invocation) || !ReferenceEquals(activeLease, invocation.Lease) ||
                 state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed)
                 throw new InvalidOperationException("Wire owner became stale.");
+            invocation.LocalInputFailureException = null;
+            invocation.LocalInputFailureWire = null;
             activeWire = new DmWireExchange(this, invocation);
             return activeWire;
         }
@@ -636,14 +710,38 @@ internal sealed class DmSession
         DmDetachedTransport toAbort = null;
         lock (gate)
         {
-            if (!ReferenceEquals(activeInvocation, invocation)) return;
+            invocation.DiagnosticLocalInputFailure = false;
+            if (!ReferenceEquals(activeInvocation, invocation))
+            {
+                // A detached broken/closed physical session cannot be reassigned
+                // to a later invocation; copy its final control outcome only.
+                if ((invocation.DiagnosticOperation is DmDiagnosticOperation.Commit or DmDiagnosticOperation.Rollback) &&
+                    invocation.Identity.SessionId == SessionId && invocation.Identity.LeaseGeneration == leaseGeneration &&
+                    state is DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed)
+                    invocation.DiagnosticTransactionOutcome = GetTransactionOutcomeUnderLock();
+                return;
+            }
             if (activeWire != null)
             {
                 activeWire = null;
                 activeLease = null;
                 toAbort = BreakAndCaptureUnderLock();
             }
+            // Disposal has already restored the ambient owner and set IsDisposed.
+            // This end-time diagnostic snapshot never relaxes the live recovery
+            // predicate. Only the receipt registered by the current unsent wire
+            // survives, after outstanding-wire cleanup fixed the session state.
+            invocation.DiagnosticLocalInputFailure = activeWire == null &&
+                invocation.LocalInputFailureException != null && invocation.LocalInputFailureWire != null &&
+                !invocation.LocalInputFailureWire.SendAttempted && invocation.LocalInputFailureWire.BelongsTo(this) &&
+                ReferenceEquals(activeLease, invocation.Lease) && invocation.Identity.SessionId == SessionId &&
+                invocation.Identity.LeaseGeneration == leaseGeneration && !invocation.Completed &&
+                invocation.TerminalCause == DmCancelSource.None && !invocation.UserCancellationToken.IsCancellationRequested &&
+                (invocation.Deadline.IsInfinite || invocation.Deadline.RemainingTime != TimeSpan.Zero) &&
+                state is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed);
             activeInvocation = null;
+            if (invocation.DiagnosticOperation is DmDiagnosticOperation.Commit or DmDiagnosticOperation.Rollback)
+                invocation.DiagnosticTransactionOutcome = GetTransactionOutcomeUnderLock();
         }
         toAbort?.AbortTransport();
         if (toAbort != null) onBroken?.Invoke(this);
@@ -690,10 +788,20 @@ internal sealed class DmSession
 
     internal bool IsCurrent(OperationIdentity identity) => IsCurrent(identity.SessionId, identity.LeaseGeneration);
 
+    internal bool IsCurrentExecution(OperationIdentity identity)
+    {
+        lock (gate) return identity.SessionId == SessionId && identity.LeaseGeneration == leaseGeneration &&
+            activeLease?.Identity.SessionId == identity.SessionId &&
+            activeLease.Identity.LeaseGeneration == identity.LeaseGeneration &&
+            activeLease.Identity.ExecutionId == identity.ExecutionId &&
+            state is not (DmPhysicalSessionState.Broken or DmPhysicalSessionState.Closed);
+    }
+
     // Atomic identity check, state change and transport detachment. Caller closes the captured instance outside the gate.
     private DmDetachedTransport CaptureTransportUnderLock()
     {
-        var captured = new DmDetachedTransport(transport, pendingTransport);
+        if (detachedTransport != null) return detachedTransport;
+        var captured = detachedTransport = new DmDetachedTransport(transport, pendingTransport);
         transport = null;
         pendingTransport = null;
         return captured;
@@ -714,20 +822,27 @@ internal sealed class DmSession
     internal DmDetachedTransport Detach(OperationIdentity? expected = null)
     {
         DmDetachedTransport captured;
+        DmDiagnosticReason diagnosticReason;
         lock (gate)
         {
+            diagnosticReason = state == DmPhysicalSessionState.Broken || expected != null ? DmDiagnosticReason.Broken : DmDiagnosticReason.ResetNotVerified;
             if (expected is { } id &&
                 (id.SessionId != SessionId || id.LeaseGeneration != leaseGeneration ||
                  activeLease?.Identity.ExecutionId != id.ExecutionId ||
                  (id.InvocationId != 0 && activeInvocation?.Identity.InvocationId != id.InvocationId))) return null;
-            if (state == DmPhysicalSessionState.Closed) return null;
+            if (state == DmPhysicalSessionState.Closed) return expected == null ? CaptureTransportUnderLock() : null;
             activeInvocation = null;
             activeLease = null;
             activeWire = null;
             activeReader = null;
             activeReaderIdentity = default;
-            captured = BreakAndCaptureUnderLock();
+            // Identity-bound cleanup claims only a new abort. A connection close
+            // also needs the retained handle of an already broken session to
+            // observe physical completion without claiming another abort.
+            captured = state == DmPhysicalSessionState.Broken && expected == null
+                ? CaptureTransportUnderLock() : BreakAndCaptureUnderLock();
         }
+        if (Interlocked.Exchange(ref diagnosticDiscarded, 1) == 0) DmDiagnosticsCore.Discard(diagnosticReason);
         if (expected != null)
         {
             try { onBroken?.Invoke(this); }
@@ -763,15 +878,58 @@ internal sealed class DmSession
 
 internal sealed class DmDetachedTransport
 {
+    private readonly object gate = new();
     private DmConnInstance instance;
     private D pending;
+    private bool abortStarted;
+    private readonly DmPhysicalCloseCompletion physicalClose = new();
     internal DmDetachedTransport(DmConnInstance instance, D pending) { this.instance = instance; this.pending = pending; }
+
+    internal void RunAfterClosed(Action completion) => physicalClose.RunAfterClosed(completion);
+
     internal void AbortTransport()
     {
+        lock (gate)
+        {
+            // A reentrant close must not wait for the owner executing callbacks
+            // inside channel disposal. Resource capture alone is not completion.
+            if (abortStarted) return;
+            abortStarted = true;
+        }
         DmConnInstance capturedInstance = Interlocked.Exchange(ref instance, null);
         D capturedPending = Interlocked.Exchange(ref pending, null);
-        try { capturedInstance?.AbortTransport(); }
-        finally { capturedPending?.C(); }
+        ExceptionDispatchInfo failure = null;
+        try
+        {
+            try { capturedInstance?.AbortTransport(); }
+            finally { capturedPending?.C(); }
+        }
+        catch (Exception error) { failure = ExceptionDispatchInfo.Capture(error); }
+
+        // Another Close may already own disposal. Its logical closed flag and
+        // these high-level abort returns cannot establish physical completion.
+        // Keep a sentinel until every registration has been attempted so inline
+        // completions cannot publish before the other resource is registered.
+        int pendingClosures = 1;
+        void PartClosed()
+        {
+            if (Interlocked.Decrement(ref pendingClosures) == 0) physicalClose.Complete();
+        }
+        if (capturedInstance != null)
+        {
+            Interlocked.Increment(ref pendingClosures);
+            try { capturedInstance.RunAfterPhysicalClosed(PartClosed); }
+            catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        }
+        if (capturedPending != null)
+        {
+            Interlocked.Increment(ref pendingClosures);
+            try { capturedPending.RunAfterPhysicalClosed(PartClosed); }
+            catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        }
+        try { PartClosed(); }
+        catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        failure?.Throw();
     }
 }
 

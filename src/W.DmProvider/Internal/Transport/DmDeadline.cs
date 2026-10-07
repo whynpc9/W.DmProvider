@@ -47,6 +47,20 @@ internal readonly struct DmDeadline
 
     internal DmDeadline RenewBudget(TimeSpan timeout) => Start(timeout, Clock);
 
+    /// <summary>Retains the original start/clock of the earlier absolute deadline.</summary>
+    internal DmDeadline EarlierOf(DmDeadline other)
+    {
+        if (IsInfinite) return other;
+        if (other.IsInfinite) return this;
+        if (!ReferenceEquals(Clock, other.Clock))
+            throw new ArgumentException("Absolute deadlines must use the same clock.", nameof(other));
+        // Compare endpoints from this origin; returning an existing value avoids
+        // renewing the outer budget in the gap between queue grant and connect.
+        TimeSpan startDelta = Clock.GetElapsedTime(startedAt, other.startedAt);
+        decimal otherEndpointTicks = (decimal)startDelta.Ticks + other.budget.Ticks;
+        return otherEndpointTicks < budget.Ticks ? other : this;
+    }
+
     /// <summary>Milliseconds left, rounded up to avoid converting a live budget to zero.</summary>
     internal int RemainingMilliseconds
     {

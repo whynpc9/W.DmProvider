@@ -15,11 +15,13 @@ public class DmException : DbException
 	public string DriverErrorCode => FailureInfo?.ErrorCode;
 	internal void SetFailureInfo(DmFailureInfo info) => FailureInfo = info;
 	internal bool HasVerifiedServerResponse { get; private set; }
+	internal bool CanPreserveSessionAfterServerError { get; private set; }
 	internal OperationIdentity VerifiedResponseIdentity { get; private set; }
 
-	internal void MarkVerifiedServerResponse(OperationIdentity identity)
+	internal void MarkVerifiedServerResponse(OperationIdentity identity, bool preserveSession)
 	{
 		VerifiedResponseIdentity = identity;
+		CanPreserveSessionAfterServerError = preserveSession;
 		HasVerifiedServerResponse = true;
 	}
 

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "reviewer": "Astra High",
+  "scope": "eight tools versus immutable v6 producer",
+  "execution_overlay_sha256": "3667013853ac25775e13b3429255ade0bbe49681be19ca30c565c9d9bed7d708",
+  "status": "code_and_lineage_review_passed",
+  "blocking_findings": 0,
+  "checks": [
+    "fixed_candidate_producer_allowlist_tree_bytes_modes",
+    "same_opened_loaded_DLL_handle_retention_hash_and_persisted_hash",
+    "new_schema2_specific_actual_asset_independent_PE_MVID",
+    "old_schema1_original_tools_no_fabricated_assets",
+    "raw_lane_TRX_case_host_audit_binary_and_budget_readback",
+    "original_SQL_cleanup_cases_and_budgets_unchanged",
+    "shared_CLI_only_execution_new_aggregate_preserves_old_failures"
+  ],
+  "runtime_acceptance": "requires_independent_Low_and_root_readback",
+  "mutations_build_DB": false
+}

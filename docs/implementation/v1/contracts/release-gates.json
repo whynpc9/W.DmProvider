@@ -103,7 +103,9 @@
         "independent boundary review",
         "final package downstream evidence"
       ],
-      "status": "not_started"
+      "status": "in_progress",
+      "scope": "local development candidate; per-stage independent validation; no production release",
+      "progress": "../../progress.json"
     },
     {
       "id": "R4.Arrays",

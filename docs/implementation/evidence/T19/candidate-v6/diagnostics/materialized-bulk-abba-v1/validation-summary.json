@@ -1,0 +1,1611 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "comparison_eligible": true,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "measurements": {
+    "A1": {
+      "flavor": "R1",
+      "execute_ms": 21512.848041,
+      "dispose_ms": 0.01375,
+      "put_response": {
+        "n": 13,
+        "median_ms": 1409.539,
+        "mean_ms": 1443.5795191538461,
+        "p95_ms": 2136.5665,
+        "max_ms": 2779.69375
+      },
+      "actual_put_sent_bytes": 385209,
+      "shape": {
+        "put_request_count": 13,
+        "put_frame_bytes": [
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          93
+        ],
+        "request_opcode_sequence": [
+          3,
+          5,
+          90,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          13,
+          44,
+          4
+        ],
+        "response_shapes": [
+          {
+            "request": 3,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 28
+          },
+          {
+            "request": 5,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 90,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 13,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 12
+          },
+          {
+            "request": 44,
+            "reply": 0,
+            "status": 111,
+            "body_bytes": 43
+          },
+          {
+            "request": 4,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 28
+          }
+        ],
+        "row_count": 1,
+        "affected_rows": 1
+      },
+      "cleanup_verified": true,
+      "whole_empty_after": true,
+      "NoDelay_readonly": false
+    },
+    "B1": {
+      "flavor": "current",
+      "execute_ms": 20373.075958,
+      "dispose_ms": 0.009667,
+      "put_response": {
+        "n": 13,
+        "median_ms": 1459.288,
+        "mean_ms": 1395.1533014615384,
+        "p95_ms": 2157.378209,
+        "max_ms": 2242.381959
+      },
+      "actual_put_sent_bytes": 385209,
+      "shape": {
+        "put_request_count": 13,
+        "put_frame_bytes": [
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          93
+        ],
+        "request_opcode_sequence": [
+          3,
+          5,
+          90,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          13,
+          44,
+          4
+        ],
+        "response_shapes": [
+          {
+            "request": 3,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 28
+          },
+          {
+            "request": 5,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 90,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 13,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 12
+          },
+          {
+            "request": 44,
+            "reply": 0,
+            "status": 111,
+            "body_bytes": 43
+          },
+          {
+            "request": 4,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 28
+          }
+        ],
+        "row_count": 1,
+        "affected_rows": 1
+      },
+      "cleanup_verified": true,
+      "whole_empty_after": true,
+      "NoDelay_readonly": false
+    },
+    "B2": {
+      "flavor": "current",
+      "execute_ms": 17054.915209,
+      "dispose_ms": 0.009875,
+      "put_response": {
+        "n": 13,
+        "median_ms": 1146.544917,
+        "mean_ms": 1135.0095032307693,
+        "p95_ms": 1563.509042,
+        "max_ms": 1582.6482079999998
+      },
+      "actual_put_sent_bytes": 385209,
+      "shape": {
+        "put_request_count": 13,
+        "put_frame_bytes": [
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          93
+        ],
+        "request_opcode_sequence": [
+          3,
+          5,
+          90,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          13,
+          44,
+          4
+        ],
+        "response_shapes": [
+          {
+            "request": 3,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 28
+          },
+          {
+            "request": 5,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 90,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 13,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 12
+          },
+          {
+            "request": 44,
+            "reply": 0,
+            "status": 111,
+            "body_bytes": 43
+          },
+          {
+            "request": 4,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 28
+          }
+        ],
+        "row_count": 1,
+        "affected_rows": 1
+      },
+      "cleanup_verified": true,
+      "whole_empty_after": true,
+      "NoDelay_readonly": false
+    },
+    "A2": {
+      "flavor": "R1",
+      "execute_ms": 16801.204625000002,
+      "dispose_ms": 0.011625,
+      "put_response": {
+        "n": 13,
+        "median_ms": 1114.076333,
+        "mean_ms": 1101.209141076923,
+        "p95_ms": 1443.93825,
+        "max_ms": 1532.4665420000001
+      },
+      "actual_put_sent_bytes": 385209,
+      "shape": {
+        "put_request_count": 13,
+        "put_frame_bytes": [
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          32093,
+          93
+        ],
+        "request_opcode_sequence": [
+          3,
+          5,
+          90,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          13,
+          44,
+          4
+        ],
+        "response_shapes": [
+          {
+            "request": 3,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 28
+          },
+          {
+            "request": 5,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 90,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 79
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 26,
+            "reply": 261,
+            "status": 0,
+            "body_bytes": 21
+          },
+          {
+            "request": 13,
+            "reply": 187,
+            "status": 0,
+            "body_bytes": 12
+          },
+          {
+            "request": 44,
+            "reply": 0,
+            "status": 111,
+            "body_bytes": 43
+          },
+          {
+            "request": 4,
+            "reply": 0,
+            "status": 0,
+            "body_bytes": 28
+          }
+        ],
+        "row_count": 1,
+        "affected_rows": 1
+      },
+      "cleanup_verified": true,
+      "whole_empty_after": true,
+      "NoDelay_readonly": false
+    }
+  },
+  "coordinator": {
+    "accepted_final": false,
+    "blocks": [
+      {
+        "block": "A1",
+        "cleanup_attempts": 1,
+        "cleanup_process": {
+          "cleanup_verified": true,
+          "cutoff_code": null,
+          "elapsed_seconds": 14.406459250021726,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "ledger_sha256": "bef9783ac80ecf60189e11cdc217bb0d9940c1d0f1aef3f265450b4127a2e738",
+          "process_id": 15660,
+          "report_sha256": "c8b7eb1f6fe79b78d0288c4b9b6f4104a010fe06a55813737b5d0a4e3ea9faea",
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": -1,
+            "cleanup_verified": true,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "cleanup",
+            "whole_empty_after": true,
+            "work_returned": false
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 170,
+          "stdout_sha256": "63ec547a26a5245a4d0489d218d1833477473e18121761fa85bb68934eac8a64",
+          "timed_out": false
+        },
+        "cleanup_requested": true,
+        "cleanup_verified": true,
+        "comparison_shape": {
+          "affected_rows": 1,
+          "put_frame_bytes": [
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            93
+          ],
+          "put_request_count": 13,
+          "request_opcode_sequence": [
+            3,
+            5,
+            90,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            13,
+            44,
+            4
+          ],
+          "response_shapes": [
+            {
+              "body_bytes": 28,
+              "reply": 187,
+              "request": 3,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 5,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 90,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 12,
+              "reply": 187,
+              "request": 13,
+              "status": 0
+            },
+            {
+              "body_bytes": 43,
+              "reply": 0,
+              "request": 44,
+              "status": 111
+            },
+            {
+              "body_bytes": 28,
+              "reply": 0,
+              "request": 4,
+              "status": 0
+            }
+          ],
+          "row_count": 1
+        },
+        "consumer_flavor": "R1",
+        "report_sha256": "6cd29bd3e29e38f08d12a894928046252398619898745477dddf3b482f339f89",
+        "status": "diagnostic_block_completed",
+        "work_process": {
+          "cutoff_code": null,
+          "elapsed_seconds": 31.391465457854792,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "process_id": 15543,
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": 1,
+            "cleanup_verified": false,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "work",
+            "whole_empty_after": false,
+            "work_returned": true
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 167,
+          "stdout_sha256": "7efe5d1c979715b8b3e78041b243408844b7a24ee7050888a387bfe374b48ec5",
+          "timed_out": false
+        }
+      },
+      {
+        "block": "B1",
+        "cleanup_attempts": 1,
+        "cleanup_process": {
+          "cleanup_verified": true,
+          "cutoff_code": null,
+          "elapsed_seconds": 19.31606874987483,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "ledger_sha256": "e9d8945f27b1cac66a3113e1d6101e95084bf66f5c535a305fab700fbe57528c",
+          "process_id": 15838,
+          "report_sha256": "55793ff288de92dbf74805b0a170e8a83bb3f1daf778587860f96d8e7590bf32",
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": -1,
+            "cleanup_verified": true,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "cleanup",
+            "whole_empty_after": true,
+            "work_returned": false
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 170,
+          "stdout_sha256": "63ec547a26a5245a4d0489d218d1833477473e18121761fa85bb68934eac8a64",
+          "timed_out": false
+        },
+        "cleanup_requested": true,
+        "cleanup_verified": true,
+        "comparison_shape": {
+          "affected_rows": 1,
+          "put_frame_bytes": [
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            93
+          ],
+          "put_request_count": 13,
+          "request_opcode_sequence": [
+            3,
+            5,
+            90,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            13,
+            44,
+            4
+          ],
+          "response_shapes": [
+            {
+              "body_bytes": 28,
+              "reply": 187,
+              "request": 3,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 5,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 90,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 12,
+              "reply": 187,
+              "request": 13,
+              "status": 0
+            },
+            {
+              "body_bytes": 43,
+              "reply": 0,
+              "request": 44,
+              "status": 111
+            },
+            {
+              "body_bytes": 28,
+              "reply": 0,
+              "request": 4,
+              "status": 0
+            }
+          ],
+          "row_count": 1
+        },
+        "consumer_flavor": "current",
+        "report_sha256": "8f7afbc42f7874c5642ef5738409f79e0ced38f78fb0973715cd2569062362bc",
+        "status": "diagnostic_block_completed",
+        "work_process": {
+          "cutoff_code": null,
+          "elapsed_seconds": 30.13612408307381,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "process_id": 15728,
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": 1,
+            "cleanup_verified": false,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "work",
+            "whole_empty_after": false,
+            "work_returned": true
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 167,
+          "stdout_sha256": "7efe5d1c979715b8b3e78041b243408844b7a24ee7050888a387bfe374b48ec5",
+          "timed_out": false
+        }
+      },
+      {
+        "block": "B2",
+        "cleanup_attempts": 1,
+        "cleanup_process": {
+          "cleanup_verified": true,
+          "cutoff_code": null,
+          "elapsed_seconds": 16.693954000016674,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "ledger_sha256": "5a568de31f342cf38b326c8591320259919c9e52248c7a905523ac7887c93e7f",
+          "process_id": 16127,
+          "report_sha256": "0b79ce1e64024f121a4dc279f25be963f816e37750c3fcd15708476f77fa3dce",
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": -1,
+            "cleanup_verified": true,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "cleanup",
+            "whole_empty_after": true,
+            "work_returned": false
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 170,
+          "stdout_sha256": "63ec547a26a5245a4d0489d218d1833477473e18121761fa85bb68934eac8a64",
+          "timed_out": false
+        },
+        "cleanup_requested": true,
+        "cleanup_verified": true,
+        "comparison_shape": {
+          "affected_rows": 1,
+          "put_frame_bytes": [
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            93
+          ],
+          "put_request_count": 13,
+          "request_opcode_sequence": [
+            3,
+            5,
+            90,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            13,
+            44,
+            4
+          ],
+          "response_shapes": [
+            {
+              "body_bytes": 28,
+              "reply": 187,
+              "request": 3,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 5,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 90,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 12,
+              "reply": 187,
+              "request": 13,
+              "status": 0
+            },
+            {
+              "body_bytes": 43,
+              "reply": 0,
+              "request": 44,
+              "status": 111
+            },
+            {
+              "body_bytes": 28,
+              "reply": 0,
+              "request": 4,
+              "status": 0
+            }
+          ],
+          "row_count": 1
+        },
+        "consumer_flavor": "current",
+        "report_sha256": "a5394b102e08b877ebf294250de6ec08c6b3b19b6e88ac70766dafbf39357317",
+        "status": "diagnostic_block_completed",
+        "work_process": {
+          "cutoff_code": null,
+          "elapsed_seconds": 27.217357791028917,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "process_id": 15857,
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": 1,
+            "cleanup_verified": false,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "work",
+            "whole_empty_after": false,
+            "work_returned": true
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 167,
+          "stdout_sha256": "7efe5d1c979715b8b3e78041b243408844b7a24ee7050888a387bfe374b48ec5",
+          "timed_out": false
+        }
+      },
+      {
+        "block": "A2",
+        "cleanup_attempts": 1,
+        "cleanup_process": {
+          "cleanup_verified": true,
+          "cutoff_code": null,
+          "elapsed_seconds": 15.474451583111659,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "ledger_sha256": "ecfd5cfa2c4e943103156b4b22986483514e04ba03f0b5fb3eac6be4f9498af9",
+          "process_id": 16231,
+          "report_sha256": "c334902825bd8f4c65b3a142d5feedc154d5badbc86882e0d0f4750d63b8f1d3",
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": -1,
+            "cleanup_verified": true,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "cleanup",
+            "whole_empty_after": true,
+            "work_returned": false
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 170,
+          "stdout_sha256": "63ec547a26a5245a4d0489d218d1833477473e18121761fa85bb68934eac8a64",
+          "timed_out": false
+        },
+        "cleanup_requested": true,
+        "cleanup_verified": true,
+        "comparison_shape": {
+          "affected_rows": 1,
+          "put_frame_bytes": [
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            32093,
+            93
+          ],
+          "put_request_count": 13,
+          "request_opcode_sequence": [
+            3,
+            5,
+            90,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            26,
+            13,
+            44,
+            4
+          ],
+          "response_shapes": [
+            {
+              "body_bytes": 28,
+              "reply": 187,
+              "request": 3,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 5,
+              "status": 0
+            },
+            {
+              "body_bytes": 79,
+              "reply": 0,
+              "request": 90,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 21,
+              "reply": 261,
+              "request": 26,
+              "status": 0
+            },
+            {
+              "body_bytes": 12,
+              "reply": 187,
+              "request": 13,
+              "status": 0
+            },
+            {
+              "body_bytes": 43,
+              "reply": 0,
+              "request": 44,
+              "status": 111
+            },
+            {
+              "body_bytes": 28,
+              "reply": 0,
+              "request": 4,
+              "status": 0
+            }
+          ],
+          "row_count": 1
+        },
+        "consumer_flavor": "R1",
+        "report_sha256": "a0d8b789b15303eb3e2949490f0d0efc1617f7f3f26a14482b7b4eb8b2e7b352",
+        "status": "diagnostic_block_completed",
+        "work_process": {
+          "cutoff_code": null,
+          "elapsed_seconds": 27.23447333299555,
+          "host_exit_code": 0,
+          "ignored_stdout_records": 0,
+          "process_id": 16163,
+          "safe_stdout": {
+            "accepted_final": false,
+            "affected_rows": 1,
+            "cleanup_verified": false,
+            "diagnostic_only": true,
+            "exit_code": 0,
+            "stage": "work",
+            "whole_empty_after": false,
+            "work_returned": true
+          },
+          "safe_stdout_records": 1,
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_bytes": 167,
+          "stdout_sha256": "7efe5d1c979715b8b3e78041b243408844b7a24ee7050888a387bfe374b48ec5",
+          "timed_out": false
+        }
+      }
+    ],
+    "business_elapsed_seconds": 115.97942066495307,
+    "business_seconds": 200,
+    "cleanup_elapsed_seconds": 65.89093358302489,
+    "cleanup_seconds": 80,
+    "comparison_eligible": true,
+    "completed_blocks": 4,
+    "consumer_tuples": {
+      "R1": {
+        "driver_dll_sha256": "d3eda7c4c0156f89495b9c6540c39188d44ca4e2c4cae572345da7a1398692ed",
+        "driver_mvid": "205ef4d3-9b6e-42b8-8838-9a659074158c",
+        "feed": "[repo]/.local/t12/ef/20260930-r1-cli-final-v6/candidate-feed",
+        "package_sha256": "a5528d682283c343511a5343275c1420e6ff1b2867afe9e5384fbb8f0f8136c8",
+        "version": "0.1.0-r1.20260930064454"
+      },
+      "current": {
+        "driver_dll_sha256": "c0dfcfbc0ab39ba8029c741b3f4a264e3945b354febcab12a4a09fa8cc42b2c7",
+        "driver_mvid": "854dc1b7-7a1a-4ed9-9b26-9efeca7acedf",
+        "feed": "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed",
+        "package_sha256": "8fb616decd1053cff6a81a7f3533b22891fab7074bd76bd632d535c55b4c4594",
+        "source_manifest_sha256": "ba66f5485c5473fc51aa74354e6f00b4e85cbaa70e294fc25f6e3190385b919f",
+        "version": "0.1.0-r3.20261003023000"
+      }
+    },
+    "consumers_manifest_sha256": "28b9d1ca4d00df849a1b9557fdc0b48873a7720f17ae84153b11177a60b14927",
+    "diagnostic_only": true,
+    "error_code": null,
+    "exit_code": 0,
+    "identities_sha256": "74a949e4962e1581824822f06dd2efa8974824b5def765e11d36ea8bda024529",
+    "order": [
+      "A1",
+      "B1",
+      "B2",
+      "A2"
+    ],
+    "original_76_accepted": false,
+    "parent_elapsed_seconds": 181.88306995783933,
+    "parent_seconds": 300,
+    "runner_sha256": "5e295f02cdbe1ba1fcc4bc442f440f361c818fa1ea8a3ee961232ef57f80665f",
+    "schema_version": 1,
+    "status": "shape_matched_diagnostic",
+    "streaming_baseline": false
+  },
+  "not_stream_or_64MiB_acceptance": true
+}

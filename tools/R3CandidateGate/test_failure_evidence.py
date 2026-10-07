@@ -1,0 +1,316 @@
+"""Failure evidence contracts; no builds, credentials or database calls."""
+import json
+import base64
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import gate
+
+
+class AuditFailureEvidenceTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.run = Path(self.temp.name)
+        (self.run / 'public').mkdir()
+        self.audit = self.run / 'private/audit/unique/public'
+        self.audit.mkdir(parents=True)
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def summary(self, reason='Configuration_test_failed'):
+        gate.write(self.audit / 'summary.json', {'status': 'rejected', 'reason': reason, 'production_release_accepted': False})
+
+    def command(self, stage='Configuration_test', code=1):
+        gate.write(self.audit / (stage + '-command.json'), {'stage': stage, 'argv': ['dotnet', 'test', 'frozen.csproj'],
+            'exit_code': code, 'elapsed_seconds': 2.0})
+
+    def success_batch(self):
+        for stage in gate.AUDIT_STAGE_ORDER: self.command(stage, 0)
+        for name in gate.AUDIT_SUITES:
+            (self.audit / (name + '.trx')).write_text('<TestRun><Results><UnitTestResult outcome="Passed"/></Results></TestRun>')
+            gate.write(self.audit / (name + '-dependencies.json'), {'project': 'frozen.csproj', 'libraries': []})
+        for name in gate.AUDIT_JSON_LISTS: gate.write(self.audit / name, [])
+        gate.write(self.audit / 'SDK.json', {'sdk': '10.0.203', 'os': 'Linux', 'architecture': 'x64'})
+        gate.write(self.audit / 'offline-manifest.json', {'schema_version': 1, 'task': 'T18', 'phase': 'offline',
+            'exact_sdk': '10.0.203', 'suites': [], 'no_skip_or_abort': True, 'classification_policy': 'fixed', 'upstream_pending': []})
+        for name in ('package-manifest.json', 'package-manifest-final.json'):
+            gate.write(self.audit / name, {'schema_version': 1, 'version': '0.1.0-r3.20261003000000', 'package_sha256': 'a' * 64, 'assets': []})
+        gate.write(self.audit / 'consumer-source-manifest.json', {'schema_version': 1, 'task': 'T18', 'files': {}})
+        for name in ('probe.json', 'probe-stdout.json', *(('probe.json.' + point + '.json') for point in gate.AUDIT_CHILD_POINTS)):
+            gate.write(self.audit / name, {'schema_version': 1, 'task': 'T18', 'accepted': True, 'status': 'offline_verified'})
+        gate.write(self.audit / 'summary.json', {'status': 'offline_verified', 'production_release_accepted': False,
+            'candidate_version': '0.1.0-r3.20261003000000', 'suites': []})
+
+    def run_failed(self, code=1):
+        with patch.object(gate, 'run_command', side_effect=gate.Reject('full_twelve_suites_no_build_pack_seven_children_failed', code)):
+            return gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
+
+    def test_nonzero_keeps_exact_safe_inner_reason_and_stays_failed(self):
+        self.summary('Configuration_restore_failed'); self.command('Configuration_restore', 17)
+        with self.assertRaises(gate.Reject) as caught:
+            self.run_failed(17)
+        self.assertEqual(17, caught.exception.code)
+        self.assertEqual('inner_audit_Configuration_restore_failed', caught.exception.reason)
+        self.assertEqual('Configuration_restore_failed', caught.exception.details['reject_reason'])
+        self.assertEqual([{'stage': 'Configuration_restore', 'exit_code': 17}], caught.exception.details['failed_commands'])
+        self.assertTrue((self.run / 'public/offline-summary.json').is_file())
+        self.assertTrue((self.run / 'public/offline-Configuration_restore-command.json').is_file())
+
+    def test_safe_trx_retained_but_private_logs_and_unselected_controls_never_copied(self):
+        self.summary(); self.command()
+        (self.audit / 'Session.trx').write_text('<TestRun><Results><UnitTestResult outcome="Passed"/></Results></TestRun>')
+        (self.audit / 'raw-output.log').write_text('not for publishing')
+        (self.audit.parent / '.private').mkdir()
+        (self.audit.parent / '.private/auth.log').write_text('never for publishing')
+        (self.audit / 'arbitrary-source.json').write_text(json.dumps({'control': gate.MARKERS[0]}))
+        with self.assertRaises(gate.Reject): self.run_failed()
+        self.assertEqual({'offline-summary.json', 'offline-Configuration_test-command.json', 'offline-Session.trx'},
+                         {path.name for path in (self.run / 'public').iterdir()})
+
+    def test_synthetic_marker_batch_is_rejected_before_any_publication(self):
+        self.summary(); self.command()
+        (self.audit / 'Transport.trx').write_text('<TestRun><Results>' + gate.MARKERS[0] + '</Results></TestRun>')
+        with self.assertRaisesRegex(gate.Reject, 'inner_audit_public_evidence_rejected'):
+            self.run_failed()
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_escaped_marker_and_unsanitized_trx_output_rejected(self):
+        self.summary(); self.command()
+        path = self.audit / 'Session.trx'
+        for xml in ['<TestRun><Results>SYN&#84;HETIC_USER_SECRET</Results></TestRun>',
+                    '<TestRun><Output><StdOut>arbitrary failure output</StdOut></Output></TestRun>']:
+            path.write_text(xml)
+            with self.subTest(xml=xml), self.assertRaisesRegex(gate.Reject, 'inner_audit_public_evidence_rejected'):
+                self.run_failed()
+            self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_no_inner_report_is_stable_safe_fallback_and_not_success(self):
+        self.audit.rmdir()
+        with self.assertRaises(gate.Reject) as caught: self.run_failed(124)
+        self.assertEqual('inner_audit_report_missing', caught.exception.reason)
+        self.assertEqual(124, caught.exception.code)
+        self.assertEqual('report_missing', caught.exception.details['evidence_status'])
+
+    def test_missing_summary_preserves_known_failed_command_stage(self):
+        self.command('exact_package_pack', 1)
+        with self.assertRaises(gate.Reject) as caught: self.run_failed()
+        self.assertEqual('inner_audit_exact_package_pack_failed', caught.exception.reason)
+        self.assertEqual('summary_missing', caught.exception.details['evidence_status'])
+
+    def test_generic_inner_failure_keeps_actual_last_recorded_suite_without_guessing_cause(self):
+        self.summary('strict_gate_failed'); self.command('Configuration_test', 0); self.command('Pool_test', 0)
+        with self.assertRaises(gate.Reject) as caught: self.run_failed()
+        self.assertEqual('inner_audit_strict_gate_failed', caught.exception.reason)
+        self.assertEqual('Pool_test', caught.exception.details['last_recorded_stage'])
+        self.assertEqual([], caught.exception.details['failed_commands'])
+
+    def test_unknown_reason_credentials_and_symlink_are_not_exported(self):
+        self.summary('arbitrary_untrusted_reason')
+        with self.assertRaisesRegex(gate.Reject, 'inner_audit_public_evidence_rejected'): self.run_failed()
+        self.summary(); self.command()
+        command = self.audit / 'Configuration_test-command.json'
+        value = json.loads(command.read_text()); value['argv'].append('/p:ConnectionString=Password=untrusted')
+        command.write_text(json.dumps(value))
+        with self.assertRaisesRegex(gate.Reject, 'inner_audit_public_evidence_rejected'): self.run_failed()
+        self.assertFalse(list((self.run / 'public').iterdir()))
+        command.unlink(); command.symlink_to(self.audit / 'summary.json')
+        with self.assertRaisesRegex(gate.Reject, 'inner_audit_public_evidence_rejected'): self.run_failed()
+
+    def test_false_inner_success_cannot_override_nonzero_host(self):
+        gate.write(self.audit / 'summary.json', {'status': 'offline_verified', 'production_release_accepted': False})
+        self.command('runtime_offline', 1)
+        with self.assertRaises(gate.Reject) as caught: self.run_failed()
+        self.assertEqual('inner_audit_runtime_offline_failed', caught.exception.reason)
+
+    def test_summary_copy_is_exact_and_verified_success_keeps_parent_success_route(self):
+        self.success_batch()
+        with patch.object(gate, 'run_command', return_value=self.run / 'private/log'):
+            result = gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
+        self.assertEqual('safe_published', result['evidence_status'])
+        self.assertEqual((self.audit / 'summary.json').read_bytes(), (self.run / 'public/offline-summary.json').read_bytes())
+
+    def test_known_success_retains_every_mandatory_proof_and_no_unknown_attachment_or_private_cache(self):
+        self.success_batch()
+        (self.audit / 'unexpected-stdout.json').write_text('{"opaque":"unknown attachment"}')
+        (self.audit / 'auth.log').write_text('not public evidence')
+        cache = self.audit.parent / '.private/cache'; cache.mkdir(parents=True)
+        (cache / 'opaque.bin').write_bytes(b'not exported')
+        value = gate.retain_audit_evidence(self.run, success=True)
+        self.assertEqual(gate.AUDIT_SUCCESS_FILES, set(value['retained_files']))
+        self.assertEqual({'offline-' + name for name in gate.AUDIT_SUCCESS_FILES}, {p.name for p in (self.run / 'public').iterdir()})
+
+    def test_success_known_symlink_or_oversize_file_rejects_entire_batch(self):
+        self.success_batch(); path = self.audit / 'source-after.json'; original = path.read_bytes()
+        other = self.audit / 'outside.json'; other.write_bytes(original); path.unlink(); path.symlink_to(other)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+        path.unlink()
+        with path.open('wb') as stream: stream.truncate(8 * 1024 * 1024 + 1)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_late_escaped_marker_and_decoded_credential_reject_without_partial_batch(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for payload in ['SYNTHETIC_USER_SECRET', 'Password=untrusted', '-----BEGIN PRIVATE KEY-----']:
+            value = [{'suite': 'Diagnostics', 'counts': {'fixture': payload}, 'product_sha256': 'a' * 64, 'status': 'passed'}]
+            raw = json.dumps(value).replace('SYNTHETIC', 'SYN\\u0054HETIC').replace('=', '\\u003d').replace('BEGIN', 'BEG\\u0049N')
+            path.write_text(raw)
+            with self.subTest(payload=payload), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+            self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_missing_required_child_and_raw_stdout_under_known_name_rejected(self):
+        self.success_batch(); path = self.audit / 'probe.json.measurement.json'; original = path.read_bytes(); path.unlink()
+        with self.assertRaisesRegex(gate.Reject, 'success_evidence_missing'): gate.retain_audit_evidence(self.run, success=True)
+        path.write_bytes(original); gate.write(self.audit / 'probe-stdout.json', {'raw_stdout': 'unstructured opaque data'})
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_valid_large_cursor_and_base64_sha512_suffix_are_not_credentials(self):
+        self.success_batch()
+        actual_sha512_data = 'A' * 70 + 'connectionstring=='
+        self.assertEqual(64, len(base64.b64decode(actual_sha512_data, validate=True)))
+        self.assertEqual(actual_sha512_data, base64.b64encode(base64.b64decode(actual_sha512_data)).decode())
+        gate.write(self.audit / 'Diagnostics-dependencies.json', {'project': 'frozen.csproj',
+            'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': actual_sha512_data}]})
+        gate.write(self.audit / 'probe.json', {'schema_version': 1, 'task': 'T18', 'accepted': True,
+            'resource_budget': {'numeric_cursor': 4172199544}})
+        gate.retain_audit_evidence(self.run, success=True)
+        self.assertTrue((self.run / 'public/offline-probe.json').is_file())
+
+    def test_success_nested_duplicate_overwriting_escaped_marker_is_rejected_without_publication(self):
+        self.success_batch()
+        (self.audit / 'suites.json').write_text('[{"suite":"Diagnostics","counts":{"item":"SYN\\u0054HETIC_USER_SECRET","item":"safe"},"product_sha256":"a","status":"passed"}]')
+        with self.assertRaisesRegex(gate.Reject, 'json_duplicate_key'):
+            gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_failure_duplicate_overwriting_escaped_marker_is_rejected_without_publication(self):
+        self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYN\\u0054HETIC_USER_SECRET","reason":"Configuration_test_failed","production_release_accepted":false}')
+        with self.assertRaisesRegex(gate.Reject, 'json_duplicate_key'):
+            self.run_failed()
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_prefixed_and_plus_credentials_rejected_in_fields_strings_and_argv(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for text in ['mypassword=untrusted', '+password=untrusted', 'mypwd=untrusted', '+pwd=untrusted',
+                     'myuser_id=untrusted', '+userid=untrusted', 'myconnectionstring=untrusted', '+connection_string=untrusted']:
+            gate.write(path, [{'suite': 'Diagnostics', 'counts': {'fixture': text}, 'product_sha256': 'a', 'status': 'passed'}])
+            with self.subTest(text=text), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+            self.assertFalse(list((self.run / 'public').iterdir()))
+        gate.write(path, [{'suite': 'Diagnostics', 'counts': {'myPassword': 'value'}, 'product_sha256': 'a', 'status': 'passed'}])
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        gate.write(path, [])
+        value = json.loads((self.audit / 'SDK-command.json').read_text()); value['argv'].append('+password=untrusted')
+        gate.write(self.audit / 'SDK-command.json', value)
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+
+    def test_sha512_exemption_is_only_real_canonical_package_hash_in_exact_field(self):
+        self.success_batch(); path = self.audit / 'Diagnostics-dependencies.json'
+        for value in ['ABCDEFpwd=', 'mypassword=untrusted', '+pwd=untrusted']:
+            gate.write(path, {'project': 'frozen.csproj', 'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': value}]})
+            with self.subTest(value=value), self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                gate.retain_audit_evidence(self.run, success=True)
+        real = 'A' * 70 + 'connectionstring=='
+        gate.write(path, {'project': 'frozen.csproj', 'libraries': [{'identity': 'pkg/1', 'type': 'package', 'sha512': real, 'password': 'value'}]})
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        gate.write(path, {'project': 'frozen.csproj', 'libraries': []})
+        gate.write(self.audit / 'suites.json', [{'suite': 'Diagnostics', 'counts': {'sha512': real}, 'product_sha256': 'a', 'status': 'passed'}])
+        with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): gate.retain_audit_evidence(self.run, success=True)
+        self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_success_decoded_credential_whitespace_and_unicode_escape_in_fixture_rejected(self):
+        self.success_batch(); path = self.audit / 'suites.json'
+        for text, unicode_tab in [('mypassword\t=untrusted', False), ('+user\tid=untrusted', False),
+                                  ('mypwd\n=untrusted', False), ('+connection\nstring=untrusted', False),
+                                  ('mypassword\t=untrusted', True), ('+user\tid=untrusted', True)]:
+            with self.subTest(text=text, unicode_tab=unicode_tab):
+                raw = json.dumps([{'suite': 'Diagnostics', 'counts': {'fixture': text}, 'product_sha256': 'a', 'status': 'passed'}])
+                if unicode_tab: raw = raw.replace('\\t', '\\u0009')
+                path.write_text(raw)
+                with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'):
+                    gate.retain_audit_evidence(self.run, success=True)
+                self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_failure_decoded_credential_whitespace_and_unicode_escape_in_argv_rejected(self):
+        self.summary(); self.command(); path = self.audit / 'Configuration_test-command.json'
+        command = json.loads(path.read_text())
+        for text, unicode_tab in [('mypassword\t=untrusted', False), ('+user\tid=untrusted', False),
+                                  ('mypwd\n=untrusted', False), ('+connection\nstring=untrusted', False),
+                                  ('mypassword\t=untrusted', True), ('+user\tid=untrusted', True)]:
+            with self.subTest(text=text, unicode_tab=unicode_tab):
+                raw = json.dumps({**command, 'argv': [*command['argv'], text]})
+                if unicode_tab: raw = raw.replace('\\t', '\\u0009')
+                path.write_text(raw)
+                with self.assertRaisesRegex(gate.Reject, 'public_evidence_rejected'): self.run_failed()
+                self.assertFalse(list((self.run / 'public').iterdir()))
+
+    def test_unsafe_retention_keeps_original_timeout_or_other_process_code_separate(self):
+        for code, timeout, attack in [(124, True, 'unsafe'), (17, False, 'symlink'), (124, False, 'duplicate')]:
+            with self.subTest(code=code, attack=attack):
+                self.summary(); self.command()
+                summary = self.audit / 'summary.json'
+                if summary.is_symlink(): summary.unlink(); self.summary()
+                if attack == 'unsafe': summary.write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+                elif attack == 'symlink': summary.unlink(); summary.symlink_to(self.audit / 'Configuration_test-command.json')
+                else: summary.write_text('{"status":"rejected","reason":"strict_gate_failed","reason":"strict_gate_failed","production_release_accepted":false}')
+                outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+                gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': code, 'timed_out': timeout})
+                with self.assertRaises(gate.Reject) as caught: self.run_failed(code)
+                self.assertEqual({'exit_code': code, 'timed_out': timeout, 'command_record_available': True}, caught.exception.details['inner_process_outcome'])
+                self.assertEqual(1, caught.exception.details['evidence_rejection']['exit_code'])
+                self.assertEqual('rejected', caught.exception.details['evidence_status'])
+                self.assertEqual([], caught.exception.details['retained_files'])
+                self.assertEqual({outer.name}, {p.name for p in (self.run / 'public').iterdir()})
+
+    def test_success_host_with_bad_evidence_is_still_failed_and_records_both_layers(self):
+        self.success_batch()
+        (self.audit / 'suites.json').write_text('[{"item":1,"item":2}]')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': 0, 'timed_out': False})
+        with patch.object(gate, 'run_command', return_value=self.run / 'private/log'), self.assertRaises(gate.Reject) as caught:
+            gate.run_audit_with_evidence(['offline'], self.run, {}, self.run)
+        self.assertEqual(0, caught.exception.details['inner_process_outcome']['exit_code'])
+        self.assertEqual(1, caught.exception.details['evidence_rejection']['exit_code'])
+        self.assertEqual('inner_audit_json_duplicate_key', caught.exception.reason)
+
+    def test_missing_nonobject_and_corrupt_parent_outcome_keep_explicit_fallback(self):
+        self.summary(); self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        for raw in (None, '[]', 'null', '"safe"', '124', '{', '{"stage":"safe","stage":"safe"}'):
+            with self.subTest(raw=raw):
+                if outer.exists(): outer.unlink()
+                if raw is not None: outer.write_text(raw)
+                with self.assertRaises(gate.Reject) as caught: self.run_failed(124)
+                self.assertEqual({'exit_code': 124, 'timed_out': None, 'command_record_available': False},
+                                 caught.exception.details['inner_process_outcome'])
+                self.assertEqual('rejected', caught.exception.details['evidence_status'])
+                self.assertEqual([], caught.exception.details['retained_files'])
+                self.assertFalse(list((self.run / 'public').glob('offline-*')))
+
+    def test_parent_outcome_read_error_keeps_explicit_fallback(self):
+        self.summary(); self.command()
+        (self.audit / 'summary.json').write_text('{"status":"rejected","reason":"SYNTHETIC_USER_SECRET","production_release_accepted":false}')
+        outer = self.run / 'public/full_twelve_suites_no_build_pack_seven_children-command.json'
+        gate.write(outer, {'stage': 'full_twelve_suites_no_build_pack_seven_children', 'exit_code': 124, 'timed_out': True})
+        original_read_bytes = Path.read_bytes
+        def read_bytes(path):
+            if path == outer: raise OSError('synthetic read failure')
+            return original_read_bytes(path)
+        with patch.object(Path, 'read_bytes', read_bytes), self.assertRaises(gate.Reject) as caught:
+            self.run_failed(17)
+        self.assertEqual({'exit_code': 17, 'timed_out': None, 'command_record_available': False},
+                         caught.exception.details['inner_process_outcome'])
+        self.assertEqual('rejected', caught.exception.details['evidence_status'])
+        self.assertEqual([], caught.exception.details['retained_files'])
+        self.assertFalse(list((self.run / 'public').glob('offline-*')))
+
+
+if __name__ == '__main__':
+    unittest.main()

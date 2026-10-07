@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/source/tools/R3ResourceProbe/source_identity.py",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/source",
+    "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002215249/private/audit/20261002T215250Z-ce7d665958/public/consumer-source-manifest.json"
+  ],
+  "elapsed_seconds": 0.04469629190862179,
+  "exit_code": 0,
+  "stage": "consumer_source_identity"
+}

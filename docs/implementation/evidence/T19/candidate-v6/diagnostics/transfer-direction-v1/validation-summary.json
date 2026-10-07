@@ -1,0 +1,75 @@
+{
+  "diagnostic_only": true,
+  "accepted_final": false,
+  "window": "released",
+  "runtime_exit": 0,
+  "noDDL": true,
+  "source_count": 671,
+  "history_count": 903,
+  "hashes_unchanged": true,
+  "measurements": {
+    "S": {
+      "n": 6,
+      "execute_ms": [
+        226.62791700000002,
+        231.50995899999998,
+        221.580667,
+        222.753083,
+        221.72245900000001,
+        226.8375
+      ],
+      "execute_median_ms": 224.69050000000001,
+      "execute_mean_ms": 225.17193083333333,
+      "frame_wait_median_ms": 74.080271,
+      "max_request_bytes": 83,
+      "max_response_body": 64,
+      "request_opcodes": {
+        "3": 6,
+        "5": 6,
+        "4": 6
+      },
+      "verified": true
+    },
+    "Q": {
+      "n": 3,
+      "execute_ms": [
+        301.473875,
+        226.132792,
+        233.83683299999998
+      ],
+      "execute_median_ms": 233.83683299999998,
+      "execute_mean_ms": 253.8145,
+      "frame_wait_median_ms": 74.880459,
+      "max_request_bytes": 32065,
+      "max_response_body": 64,
+      "request_opcodes": {
+        "3": 3,
+        "5": 3,
+        "4": 3
+      },
+      "verified": true
+    },
+    "R": {
+      "n": 3,
+      "execute_ms": [
+        158.094208,
+        156.667167,
+        160.540834
+      ],
+      "execute_median_ms": 158.094208,
+      "execute_mean_ms": 158.43406966666666,
+      "frame_wait_median_ms": 74.43016700000001,
+      "max_request_bytes": 689,
+      "max_response_body": 34798,
+      "request_opcodes": {
+        "3": 3,
+        "5": 3,
+        "4": 3
+      },
+      "verified": true
+    }
+  },
+  "before_whole_empty": true,
+  "after_whole_empty": true,
+  "NoDelay_readonly": false
+}

@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "[runner-temp]/r3-candidate/0.1.0-r3.20261003075844/private/source/tools/R3ResourceProbe/source_identity.py",
+    "[runner-temp]/r3-candidate/0.1.0-r3.20261003075844/private/source",
+    "[runner-temp]/r3-candidate/0.1.0-r3.20261003075844/private/audit/20261003T075848Z-83ce00fc9c/public/consumer-source-manifest.json"
+  ],
+  "elapsed_seconds": 0.0640456570000083,
+  "exit_code": 0,
+  "stage": "consumer_source_identity"
+}

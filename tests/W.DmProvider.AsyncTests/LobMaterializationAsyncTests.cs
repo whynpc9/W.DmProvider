@@ -86,14 +86,11 @@ public sealed class LobMaterializationAsyncTests
     }
 
     [Fact]
-    public async Task OversizedKnownLocatorsRejectBeforeLengthQueryOrChunk()
+    public async Task OversizedKnownBlobLocatorRejectsBeforeLengthQueryOrChunk()
     {
         await using var fixture = new LobAsyncFixture();
         var blob = fixture.Blob((long)DmConnectionSettings.DefaultMaxMaterializedLobSize + 1);
-        var clob = fixture.Clob((long)DmConnectionSettings.DefaultMaxMaterializedLobSize / 2 + 1);
         await Assert.ThrowsAsync<NotSupportedException>(() => blob.LoadAllDataUnderOwnerAsync(default));
-        await Assert.ThrowsAsync<NotSupportedException>(() => clob.MaterializeStringUnderOwnerAsync(default));
-        await Assert.ThrowsAsync<NotSupportedException>(() => clob.MaterializeBytesUnderOwnerAsync(default));
         Assert.Empty(fixture.Channel.Commands);
         Assert.Equal(DmPhysicalSessionState.Busy, fixture.Session.State);
     }

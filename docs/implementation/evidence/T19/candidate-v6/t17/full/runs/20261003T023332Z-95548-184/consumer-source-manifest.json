@@ -1,0 +1,22 @@
+{
+  "consumer_source_sha256": "07eebb9a1d462c211a11b355212f34bbdd7ef309dac33a2835adee198c420eeb",
+  "files": {
+    "eng/T17.md": "db46452982f416407c5e7b89953e02454bbc1b966e133b54d6c6ce3ac66483e8",
+    "eng/t17.sh": "e6d6e4dc693045057c08952c7daaf00f12f397b28d2ed7316a51b0b0de745280",
+    "global.json": "b09c5749197bbdec7187444c49ecacd819bac1649390a47c65dcbb3c4aa7dc2d",
+    "tests/fixtures/r3-lob/generate_vectors.py": "d7ccb3f5863c92b435bf7c4740be9215ada32908aa509a7117338bc898698308",
+    "tests/fixtures/r3-lob/vectors.json": "6b29def139a9477b5253a1b1fee880b3cf67d66fd69146647b8d7dda2a391bd8",
+    "tools/R3LobProbe/Program.cs": "5a922f3d45336060e2bfc322acef87678b5bcc6eb35cebbbb8bc7a4f5c84e0a1",
+    "tools/R3LobProbe/R3LobProbe.csproj": "b6c5e6d7b49a8b22b1b10ffc504eea0bbda8b529aec97e382cbf8e10f1e8dc5e",
+    "tools/R3LobProbe/README.md": "050b10b39c42cb9ef2b191d0c5c2a64aac96fb5c2b3bcd845004867834a825a0",
+    "tools/R3LobProbe/run_probe.py": "a94df7fb416e88adeac4adbb500dc8ea475ddd8bb412c26433aa9a3bfe1bd256",
+    "tools/R3LobProbe/source_identity.py": "cc003635bbd8b75a8d793fee8ae6b3bf1e4ac6f87b4a9b7f07fc804f3fbca16d",
+    "tools/R3LobProbe/validate.py": "c11f6b6625d786c25c404547f5d7294e5ede997611144ebfb6a74da2c22b42c3"
+  },
+  "identity_scope": "consumer_source_only",
+  "observed_git_head": "ed0c8a19d2a3d275eb469960ae56778e6280b5b0",
+  "product_source_mapping": "root_frozen_candidate_manifest_required",
+  "schema_version": 1,
+  "sourcelink_claimed": false,
+  "task": "T17"
+}

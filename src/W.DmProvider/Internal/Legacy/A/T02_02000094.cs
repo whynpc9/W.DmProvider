@@ -4,6 +4,7 @@ using W.Dm;
 using W.Dm.Config;
 using W.Dm.Internal.Protocol;
 using W.Dm.Internal.Sessions;
+using W.Dm.Internal.Types;
 using W.Dm.util;
 
 namespace W.Dm.Internal.Legacy.A;
@@ -426,8 +427,7 @@ internal partial class c
 	{
 		if (P_0.L() < 0)
 		{
-			string text = A(P_1);
-			A(P_0, P_1.G().ConnProperty.ServerEncoding, P_1.G().ConnProperty.RWStandby, text);
+            ThrowOwnedStatementServerError(P_0, P_1, P_1.G().ConnProperty, 0, allowPreservation: false);
 		}
 		DmInfo dmInfo = new DmInfo(P_1.G());
 		int num = P_0.j();
@@ -659,28 +659,7 @@ internal partial class c
 		int num = P_0.L();
 		if (num < 0)
 		{
-			string text = A(P_1);
-			DmInvocation invocation = DmInvocation.Current;
-			DmSession session = P_1.G().Session;
-			bool recoverableStatementError = num == -2106 &&
-				string.Equals(P_2.ServerVersion, "8.1.5.60", StringComparison.Ordinal) &&
-				invocation != null && ReferenceEquals(invocation.Lease.Session, session) &&
-				invocation.Lease.Purpose is DmOperationPurpose.Query or DmOperationPurpose.Reader &&
-				ReferenceEquals(session.ActiveTransaction, P_1.G().Transaction) &&
-				session.ActiveTransaction?.Outcome == DmTransactionOutcome.Active;
-			if (recoverableStatementError)
-			{
-				DmTransactionProtocolTrace.RecordDiagnosticBody(requestOpcode, P_0);
-				A(P_0, P_2.ServerEncoding, P_2.RWStandby, text, error =>
-				{
-					DmException verified = new DmException(error);
-					(DmWireExchange.Current ?? throw new InvalidOperationException("Server error has no wire owner."))
-						.CompleteValidatedServerError(invocation.Identity);
-					verified.MarkVerifiedServerResponse(invocation.Identity);
-					return verified;
-				});
-			}
-			else A(P_0, P_2.ServerEncoding, P_2.RWStandby, text);
+            ThrowOwnedStatementServerError(P_0, P_1, P_2, requestOpcode, allowPreservation: true);
 		}
 		DmInfo dmInfo = new DmInfo(P_1.G());
 		dmInfo.SetParaNum(P_1.F().GetParameterCount());
@@ -1142,6 +1121,31 @@ internal partial class c
 		DmError.ThrowDmException(dmError);
 	}
 
+    internal static void ThrowOwnedStatementServerError(b response, A statement, DmConnProperty settings,
+        short requestOpcode, bool allowPreservation)
+    {
+        if (response.L() >= 0) throw new System.IO.InvalidDataException("Statement error response has no negative server code.");
+        DmInvocation invocation = DmInvocation.Current ?? throw new InvalidOperationException("Server error has no invocation.");
+        DmWireExchange exchange = DmWireExchange.Current ?? throw new InvalidOperationException("Server error has no wire owner.");
+        DmSession owner = statement.G().Session;
+        if (!ReferenceEquals(invocation.Lease.Session, owner) || !exchange.Owns(owner, invocation))
+            throw new InvalidOperationException("Server error belongs to another session.");
+        // Strict receipt validation is independent of the narrow session recovery
+        // profile. Never retry with the permissive legacy error parser.
+        DmError diagnostic = ReadCompleteErrorBody(response, settings.ServerEncoding);
+        diagnostic.Message += A(statement);
+        if (settings.RWStandby) diagnostic.Message = "[S]" + diagnostic.Message;
+        var error = new DmException(diagnostic);
+        bool preserve = allowPreservation && diagnostic.State == -2106 &&
+            string.Equals(settings.ServerVersion, "8.1.5.60", StringComparison.Ordinal) &&
+            invocation.Lease.Purpose is DmOperationPurpose.Query or DmOperationPurpose.Reader &&
+            ReferenceEquals(owner.ActiveTransaction, statement.G().Transaction) &&
+            owner.ActiveTransaction?.Outcome == DmTransactionOutcome.Active;
+        if (preserve) DmTransactionProtocolTrace.RecordDiagnosticBody(requestOpcode, response);
+        owner.AcceptServerError(invocation, exchange, error, preserve);
+        throw error;
+    }
+
 	internal static DmError ReadCompleteErrorBody(b response, string serverEncoding)
 	{
 		if (response.a() != DmFrameReader.HeaderSize || response.a(false) != response.k())
@@ -1158,10 +1162,16 @@ internal partial class c
 
 	private static string ReadErrorString(b response, string serverEncoding)
 	{
+        if (response.a(false) < sizeof(int))
+            throw new System.IO.InvalidDataException("Server error diagnostic length is truncated.");
 		int length = response.d();
 		if (length < 0 || length > response.a(false))
 			throw new System.IO.InvalidDataException("Server error diagnostic length is invalid.");
-		return length == 0 ? string.Empty : response.A(length, serverEncoding);
+        if (length == 0) return string.Empty;
+        int start = response.a();
+        string text = DmTextCodec.DecodeStrict(response.A(), start, length, serverEncoding);
+        response.G(checked(start + length));
+        return text;
 	}
 
 	private static string A(A P_0)

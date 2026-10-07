@@ -1,0 +1,41 @@
+{
+  "task": "T19",
+  "status": "offline_candidate_verified_EF_prepare_failed",
+  "window": "released",
+  "source_count": 669,
+  "history_count": 377,
+  "source_history_before_after_unchanged": true,
+  "source_manifest_sha256": "e1e51a899d159ae3ef5f90b4c2cd5bd4b22f1844410b9a33a3f5e486c82ce673",
+  "offline": {
+    "schema_version": 1,
+    "task": "T19",
+    "status": "offline_candidate_verified",
+    "candidate": {
+      "version": "0.1.0-r3.20261002213425",
+      "package_sha256": "f1a563a4657f5ba933a21253ce55eab8bf8a106d9d0c911e97e42fd7c50b728d",
+      "driver_dll_sha256": "580d6ce5f87759400019f47d8139a9b506f0370a015c44341aecc023c75945e0",
+      "driver_mvid": "3700f099-cb22-4677-bf6d-ab0176633e87",
+      "source_manifest_sha256": "e297dad09acd4449d4b7d54144a52b30475d157465f57c1115f69e0a29ce3cbb"
+    },
+    "run_dir": "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t19/runs/0.1.0-r3.20261002213425",
+    "source_link": false,
+    "sdk": "10.0.203",
+    "runtime": ".NET 10.0.7",
+    "os": "macOS 26.6.2",
+    "rid": "osx-arm64",
+    "total_passed": 875,
+    "integration": "final_matrix_pending",
+    "production_release_accepted": false
+  },
+  "EF_prepare_exit_code": 1,
+  "EF_prepare_safe_failure": {
+    "schema_version": 1,
+    "task": "T19",
+    "status": "rejected",
+    "reason": "anchor_cli_unique_proof"
+  },
+  "EF_build_run": "not_executed_after_failure",
+  "TLS_matrix": "not_executed_after_failure",
+  "shared_admin": "not_authorized_not_executed",
+  "production_release_accepted": false
+}

@@ -4,16 +4,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using W.Dm.util;
 using W.Dm.Internal.Types;
+using W.Dm.Internal.Lobs;
 
 namespace W.Dm;
 
 public class DmBlob : AbstractLob
 {
 	private byte[] data;
+	private AbstractLob readTemplate;
+
+	private void RebaseReadTemplate(bool knownLength)
+	{
+		if (!knownLength) m_length = -1;
+		bytesLength = knownLength ? m_length : -1;
+		readTemplate = SnapshotForRead();
+		readTemplate.curFileId = readTemplate.fileId;
+		readTemplate.curPageNo = readTemplate.pageNo;
+		readTemplate.totalOffset = 0;
+		readTemplate.curOffset = 0;
+		readTemplate.readOver = false;
+	}
 
 	internal DmBlob(byte[] value, DmConnInstance connInstance, DmField column, bool fetchAll, bool hexPayload = false)
 		: base(value, 0, connInstance, column)
 	{
+		readTemplate = SnapshotForRead();
 		m_length = bytesLength;
 		if (hexPayload && m_length != -1) DmLobMaterialization.HexInput(m_length);
 		if (storageType == 1)
@@ -51,7 +66,9 @@ public class DmBlob : AbstractLob
 	public byte[] GetBytes(long pos, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return do_getBytes(pos + 1, len);
+		byte[] result = do_getBytes(pos + 1, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal byte[] do_getBytes(long pos, int len)
@@ -72,9 +89,28 @@ public class DmBlob : AbstractLob
 		{
 			byte[] array = new byte[len];
 			ByteUtil.setBytes(array, 0, data, checked((int)pos), array.Length);
+			invocation?.CompleteIfSent();
 			return array;
 		}
-		return ConnInstance.GetCsi().A(this, pos, len);
+		if (len == 0)
+		{
+			// A validated empty range returns without transferring the prefix.
+			invocation?.CompleteIfSent();
+			return Array.Empty<byte>();
+		}
+		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
+		cursor.SetKnownWireLength(do_length());
+		if (pos > 0) cursor.SeekBinaryTo(pos);
+		byte[] result = new byte[len];
+		int copied = 0;
+		while (copied < len)
+		{
+			int count = cursor.ReadBytes(result.AsSpan(copied));
+			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
+			copied += count;
+		}
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal async Task<byte[]> do_getBytesAsync(long pos, int len, CancellationToken cancellationToken)
@@ -91,25 +127,46 @@ public class DmBlob : AbstractLob
 		{
 			byte[] result = new byte[len];
 			ByteUtil.setBytes(result, 0, data, checked((int)pos), result.Length);
+			invocation?.CompleteIfSent();
 			return result;
 		}
-		return await ConnInstance.GetCsi().ReadLobAsync(this, pos, len, cancellationToken).ConfigureAwait(false);
+		if (len == 0)
+		{
+			// A validated empty range returns without transferring the prefix.
+			invocation?.CompleteIfSent();
+			return Array.Empty<byte>();
+		}
+		using var cursor = DmLobReadCursor.Create(readTemplate, default, false, ReadLease, ValidateReadOwner, false, null);
+		cursor.SetKnownWireLength(await do_lengthAsync(cancellationToken).ConfigureAwait(false));
+		if (pos > 0) cursor.SeekBinaryTo(pos);
+		byte[] remoteResult = new byte[len];
+		int copied = 0;
+		while (copied < len)
+		{
+			int count = await cursor.ReadBytesAsync(remoteResult.AsMemory(copied), cancellationToken).ConfigureAwait(false);
+			if (count == 0) throw new InvalidDataException("Binary LOB ended before its declared length.");
+			copied += count;
+		}
+		invocation?.CompleteIfSent();
+		return remoteResult;
 	}
 
 	public int SetBytes(long pos, byte[] bytes)
 	{
 		using var invocation = BeginPublicOperation();
-		if (bytes == null)
-		{
-			return do_setBytes(pos + 1, new byte[0], 0, 0);
-		}
-		return do_setBytes(pos + 1, bytes, 0, bytes.Length);
+		int result = bytes == null
+			? do_setBytes(pos + 1, new byte[0], 0, 0)
+			: do_setBytes(pos + 1, bytes, 0, bytes.Length);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	public int SetBytes(long pos, ref byte[] bytes, int offset, int len)
 	{
 		using var invocation = BeginPublicOperation();
-		return do_setBytes(pos + 1, bytes, offset, len);
+		int result = do_setBytes(pos + 1, bytes, offset, len);
+		invocation?.CompleteIfSent();
+		return result;
 	}
 
 	internal int do_setBytes(long pos, byte[] bytes, int offset, int len)
@@ -133,13 +190,16 @@ public class DmBlob : AbstractLob
 				DmError.ThrowDmException(DmErrorDefinition.ECNET_INVALID_LENGTH_OR_OFFSET);
 			}
 			setLocalData((int)pos, bytes, offset, len);
+			invocation?.CompleteIfSent();
 			return len;
 		}
 		int num2 = ConnInstance.GetCsi().A(this, pos, bytes, offset, len);
+		if (storageType != STORAGE_IN_ROW) RebaseReadTemplate(knownLength: false);
 		if (storageType == 1)
 		{
 			setLocalData((int)pos, bytes, offset, num2);
 		}
+		invocation?.CompleteIfSent();
 		return num2;
 	}
 
@@ -147,12 +207,14 @@ public class DmBlob : AbstractLob
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	public void do_truncate(long len)
 	{
 		using var invocation = BeginPublicOperation();
 		TruncateOwned(len);
+		invocation?.CompleteIfSent();
 	}
 
 	private void TruncateOwned(long len)
@@ -179,6 +241,7 @@ public class DmBlob : AbstractLob
 		else
 		{
 			m_length = ConnInstance.GetCsi().A(this, (int)len);
+			RebaseReadTemplate(knownLength: true);
 			if (storageType == 1)
 			{
 				byte[] array2 = new byte[(int)do_length()];
@@ -186,12 +249,14 @@ public class DmBlob : AbstractLob
 				data = array2;
 			}
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	public void loadAllData()
 	{
 		using var invocation = BeginPublicOperation();
 		LoadAllDataOwned();
+		invocation?.CompleteIfSent();
 	}
 
 	private void LoadAllDataOwned()
@@ -202,6 +267,7 @@ public class DmBlob : AbstractLob
 			data = do_getBytes(1L, DmLobMaterialization.Bytes(do_length()));
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	internal async Task LoadAllDataUnderOwnerAsync(CancellationToken cancellationToken)
@@ -215,6 +281,7 @@ public class DmBlob : AbstractLob
 			data = await do_getBytesAsync(1L, length, cancellationToken).ConfigureAwait(false);
 			fetchAll = true;
 		}
+		invocation?.CompleteIfSent();
 	}
 
 	private void setLocalData(int pos, byte[] bytes, int offset, int len)
@@ -241,6 +308,8 @@ public class DmBlob : AbstractLob
 	public long Length()
 	{
 		using var invocation = BeginPublicOperation();
-		return do_length();
+		long result = do_length();
+		invocation?.CompleteIfSent();
+		return result;
 	}
 }

@@ -1,0 +1,61 @@
+[
+  {
+    "stage": "package_inspection",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "[repo]/tools/R2AsyncProbe/package_manifest.py",
+      "[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed/W.DmProvider.0.1.0-r3.20261003023000.nupkg",
+      "0.1.0-r3.20261003023000",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/package-manifest.json"
+    ]
+  },
+  {
+    "stage": "consumer_source_identity",
+    "exit_code": 0,
+    "argv": [
+      "python3",
+      "[repo]/tools/R3LobProbe/source_identity.py",
+      "[repo]",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/consumer-source-manifest.json"
+    ]
+  },
+  {
+    "stage": "consumer_build",
+    "exit_code": 0,
+    "argv": [
+      "/usr/local/share/dotnet/dotnet",
+      "build",
+      "tools/R3LobProbe/R3LobProbe.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/app",
+      "/p:R3PackageVersion=0.1.0-r3.20261003023000",
+      "/p:R3PackageSource=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed",
+      "/p:RestoreSources=[repo]/.local/verification/r3/t19/runs/0.1.0-r3.20261003023000/private/feed",
+      "/p:BaseIntermediateOutputPath=[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/obj/",
+      "/p:MSBuildProjectExtensionsPath=[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/obj/",
+      "-m:1",
+      "/nodeReuse:false",
+      "/p:UseSharedCompilation=false",
+      "--disable-build-servers"
+    ]
+  },
+  {
+    "stage": "runtime_probe",
+    "exit_code": 1,
+    "argv": [
+      "scripts/with-dameng-test.sh",
+      "python3",
+      "[repo]/tools/R3LobProbe/run_probe.py",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/probe-stdout.json",
+      "/usr/local/share/dotnet/dotnet",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/app/R3LobProbe.dll",
+      "shared",
+      "[repo]",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/package-manifest.json",
+      "[repo]/.local/verification/r3/t17/full/runs/20261003T024745Z-98829-10510/probe.json"
+    ]
+  }
+]

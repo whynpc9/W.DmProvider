@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><NuGetAudit>false</NuGetAudit>
+    <NoDelayCandidateVersion Condition="'$(NoDelayCandidateVersion)' == ''">0.1.0-r3.20261002223702</NoDelayCandidateVersion>
+    <RestoreAdditionalProjectSources>$(NoDelayPackageSource)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="W.DmProvider" Version="[$(NoDelayCandidateVersion)]" />
+    <AssemblyMetadata Include="NoDelayPackageSource" Value="$(NoDelayPackageSource)" />
+  </ItemGroup>
+  <Target Name="RequireFinalCandidate" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error Condition="'$(NoDelayPackageSource)' == ''" Text="A frozen final package feed is required." />
+    <Error Condition="'$(NoDelayCandidateVersion)' != '0.1.0-r3.20261002223702'" Text="Only the exact final v5 candidate is supported." />
+  </Target>
+</Project>

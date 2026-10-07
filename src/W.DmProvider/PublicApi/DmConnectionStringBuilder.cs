@@ -225,6 +225,15 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		}
 	}
 
+	/// <summary>Owned capacity scheduling; all physical sessions are discarded on return. Defaults to false.</summary>
+	public bool Pooling { get => ConnPooling; set => ConnPooling = value; }
+	public int MaxPoolSize { get => ConnPoolSize; set => ConnPoolSize = value; }
+	public int MaxPoolWaiters
+	{
+		get => Convert.ToInt32(do_getThis("max_pool_waiters"));
+		set => do_setThis("max_pool_waiters", value);
+	}
+
 	public int ConnPoolSize
 	{
 		get
@@ -1451,6 +1460,11 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		if (keyword.Equals("tlsrevocationmode", StringComparison.OrdinalIgnoreCase)) return TlsRevocationModeKey;
 		if (keyword.Equals("persistsecurityinfo", StringComparison.OrdinalIgnoreCase)) return "persist_security_info";
 		if (keyword.Equals("poolacquiretimeout", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_CONN_POOL_TIMEOUT;
+		if (keyword.Equals("pooling", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_CONN_POOLING;
+		if (keyword.Equals("connpooling", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_CONN_POOLING;
+		if (keyword.Equals("maxpoolsize", StringComparison.OrdinalIgnoreCase) || keyword.Equals("max_pool_size", StringComparison.OrdinalIgnoreCase) ||
+			keyword.Equals("connpoolsize", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_CONN_POOL_SIZE;
+		if (keyword.Equals("maxpoolwaiters", StringComparison.OrdinalIgnoreCase) || keyword.Equals("max_pool_waiters", StringComparison.OrdinalIgnoreCase)) return "max_pool_waiters";
 		if (keyword.Equals("readidletimeout", StringComparison.OrdinalIgnoreCase)) return DmConst.PROP_KEY_SOCKET_TIMEOUT;
 		if (keyword.Equals("cleanuptimeout", StringComparison.OrdinalIgnoreCase)) return "cleanup_timeout";
 		if (keyword.Equals("maxmessagesize", StringComparison.OrdinalIgnoreCase)) return "max_message_size";
@@ -1551,6 +1565,8 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		key.Equals(DmConst.PROP_KEY_CONNECTION_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
 		key.Equals(DmConst.PROP_KEY_COMMAND_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
 		key.Equals(DmConst.PROP_KEY_CONN_POOL_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_CONN_POOLING, StringComparison.OrdinalIgnoreCase) ||
+		key.Equals(DmConst.PROP_KEY_CONN_POOL_SIZE, StringComparison.OrdinalIgnoreCase) || key == "max_pool_waiters" ||
 		key.Equals(DmConst.PROP_KEY_SOCKET_TIMEOUT, StringComparison.OrdinalIgnoreCase) ||
 		IsNewSetting(key);
 
@@ -1566,6 +1582,9 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		if (key is TlsCaCertificatePathKey or TlsClientCertificatePathKey or TlsClientPrivateKeyPathKey) return ParseTlsPath(value);
 		if (key == TlsClientCertificatePasswordKey) return Convert.ToString(value) ?? string.Empty;
 		if (key == "persist_security_info") return ParseBoolean(value, key);
+		if (key.Equals(DmConst.PROP_KEY_CONN_POOLING, StringComparison.OrdinalIgnoreCase)) return ParseBoolean(value, key);
+		if (key.Equals(DmConst.PROP_KEY_CONN_POOL_SIZE, StringComparison.OrdinalIgnoreCase)) return ParseInt(value, key, 1, int.MaxValue);
+		if (key == "max_pool_waiters") return ParseInt(value, key, 0, int.MaxValue);
 		if (key == "max_message_size") return ParseInt(value, key, DmConnectionSettings.DefaultMaxMessageSize, DmConnectionSettings.DefaultMaxMessageSize);
 		if (key == "max_materialized_lob_size") return ParseInt(value, key, DmConnectionSettings.DefaultMaxMaterializedLobSize, DmConnectionSettings.DefaultMaxMaterializedLobSize);
 		if (key == "lob_chunk_size") return ParseInt(value, key, DmConnectionSettings.DefaultLobChunkSize, DmConnectionSettings.DefaultLobChunkSize);
@@ -1668,6 +1687,9 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		property[DmConst.PROP_KEY_CONNECTION_TIMEOUT] = 5000;
 		property[DmConst.PROP_KEY_COMMAND_TIMEOUT] = 30;
 		property[DmConst.PROP_KEY_CONN_POOL_TIMEOUT] = 5000;
+		property[DmConst.PROP_KEY_CONN_POOLING] = false;
+		property[DmConst.PROP_KEY_CONN_POOL_SIZE] = 100;
+		property["max_pool_waiters"] = 1024;
 		property[DmConst.PROP_KEY_SOCKET_TIMEOUT] = 0;
 		property["cleanup_timeout"] = 5000;
 		property["transport_security"] = DmTransportSecurity.RequireTls;
@@ -1700,6 +1722,9 @@ public class DmConnectionStringBuilder : DbConnectionStringBuilder, IFilterInfo
 		if (key is TlsCaCertificatePathKey or TlsClientCertificatePathKey or TlsClientPrivateKeyPathKey or TlsClientCertificatePasswordKey) property[key] = string.Empty;
 		if (key == TlsRevocationModeKey) property[key] = DmTlsRevocationMode.Online;
 		if (key == "persist_security_info") property[key] = false;
+		if (key.Equals(DmConst.PROP_KEY_CONN_POOLING, StringComparison.OrdinalIgnoreCase)) property[key] = false;
+		if (key.Equals(DmConst.PROP_KEY_CONN_POOL_SIZE, StringComparison.OrdinalIgnoreCase)) property[key] = 100;
+		if (key == "max_pool_waiters") property[key] = 1024;
 		if (key == "cleanup_timeout") property[key] = 5000;
 		if (key == "max_message_size") property[key] = DmConnectionSettings.DefaultMaxMessageSize;
 		if (key == "max_materialized_lob_size") property[key] = DmConnectionSettings.DefaultMaxMaterializedLobSize;

@@ -1,0 +1,415 @@
+{
+  "task": "T17",
+  "status": "full_regression_failed_Type",
+  "window": "released",
+  "source_count": 624,
+  "history_count": 157,
+  "source_manifest_sha256": "cbc6e9d987b5415b520c0acbae06cda641112a7521016591bdce3854d338a6ea",
+  "source_history_before_after_unchanged": true,
+  "sdk": "10.0.203",
+  "targeted_lob": {
+    "total": 95,
+    "passed": 95,
+    "counted_separately": true
+  },
+  "full_executed_suites": [
+    {
+      "suite": "Configuration",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.ConfigurationTests/W.DmProvider.ConfigurationTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Configuration.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.083,
+      "counters": {
+        "total": 11,
+        "executed": 11,
+        "passed": 11,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    },
+    {
+      "suite": "Session",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.SessionTests/W.DmProvider.SessionTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Session.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.04,
+      "counters": {
+        "total": 12,
+        "executed": 12,
+        "passed": 12,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    },
+    {
+      "suite": "Transport",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.TransportTests/W.DmProvider.TransportTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Transport.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.083,
+      "counters": {
+        "total": 93,
+        "executed": 93,
+        "passed": 93,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    },
+    {
+      "suite": "Security",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.SecurityTests/W.DmProvider.SecurityTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Security.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.791,
+      "counters": {
+        "total": 39,
+        "executed": 39,
+        "passed": 39,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    },
+    {
+      "suite": "Command",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.CommandTests/W.DmProvider.CommandTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Command.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.061,
+      "counters": {
+        "total": 16,
+        "executed": 16,
+        "passed": 16,
+        "failed": 0,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    },
+    {
+      "suite": "Type",
+      "argv": [
+        "/usr/local/share/dotnet/dotnet",
+        "test",
+        "tests/W.DmProvider.TypeTests/W.DmProvider.TypeTests.csproj",
+        "-c",
+        "Release",
+        "--logger",
+        "trx;LogFileName=Type.trx",
+        "--results-directory",
+        "/Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/full-validation-v4/results",
+        "-m:1",
+        "/nodeReuse:false",
+        "/p:UseSharedCompilation=false",
+        "--disable-build-servers"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 2.066,
+      "counters": {
+        "total": 142,
+        "executed": 142,
+        "passed": 109,
+        "failed": 33,
+        "error": 0,
+        "timeout": 0,
+        "aborted": 0,
+        "inconclusive": 0,
+        "passedButRunAborted": 0,
+        "notRunnable": 0,
+        "notExecuted": 0,
+        "disconnected": 0,
+        "warning": 0,
+        "completed": 0,
+        "inProgress": 0,
+        "pending": 0
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.TypedNullsUse6081WhileObjectAndDbNullPreserveSqlNull",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.TypedNullsUse6081WhileObjectAndDbNullPreserveSqlNull() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 153\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(length: 9223372036854775807)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 47\n   at InvokeStub_LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(length: 67108865)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 47\n   at InvokeStub_LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.InlineClobRejectsInvalidEncodedLengthBeforeDecode",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.InlineClobRejectsInvalidEncodedLengthBeforeDecode() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 89\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericDmDecimalReadsExactValueAndFollowingColumn",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericDmDecimalReadsExactValueAndFollowingColumn() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 126\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericIntegerNullRaises6081AndAllowsTheNextColumn",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericIntegerNullRaises6081AndAllowsTheNextColumn() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 99\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.HexRejectsAtItsSmallerInputBoundaryBeforeReading",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.HexRejectsAtItsSmallerInputBoundaryBeforeReading() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 59\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericFallbackReadsStringThenFollowingInteger",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericFallbackReadsStringThenFollowingInteger() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 108\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.LongRowFixtureDecodesIts64BitLengthBeforeMaterialization(length: 9223372036854775807)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.LongRowFixtureDecodesIts64BitLengthBeforeMaterialization(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 35\n   at InvokeStub_LobMaterializationReviewTests.LongRowFixtureDecodesIts64BitLengthBeforeMaterialization(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericIntegerReadsEachColumnOnceAndRejectsBackwardAccess",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericIntegerReadsEachColumnOnceAndRejectsBackwardAccess() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 90\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialClobForwardGapAdvancesToTheCopiedEnd",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialClobForwardGapAdvancesToTheCopiedEnd() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 74\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(text: \"A\u4e2de\u0301\u6587\")",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(String text) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 40\n   at InvokeStub_ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ClobCopiesPartialCharactersAndAcceptsZeroLengthAtBufferEnd",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ClobCopiesPartialCharactersAndAcceptsZeroLengthAtBufferEnd() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 48\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.LargeLocalClobAllowsBoundedSliceButRejectsFullLengthProbe",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.LargeLocalClobAllowsBoundedSliceButRejectsFullLengthProbe() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 117\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineBlobReturnsPayloadRatherThanLocatorHex",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineBlobReturnsPayloadRatherThanLocatorHex() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 144\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(length: 2147483648)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 69\n   at InvokeStub_LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.FetchAllRejectsKnownLengthsBeforeReading",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.FetchAllRejectsKnownLengthsBeforeReading() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 108\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericFallbackNullRaises6081AndAllowsTheNextColumn",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericFallbackNullRaises6081AndAllowsTheNextColumn() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 117\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.LongRowFixtureDecodesIts64BitLengthBeforeMaterialization(length: 2147483648)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.LongRowFixtureDecodesIts64BitLengthBeforeMaterialization(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 35\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(length: 33554433)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 69\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(text: \"\u6c49\u5b57\u00e9\\ud83d\\ude42tail\")",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(String text) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 40\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(text: \"\")",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(String text) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 40\n   at InvokeStub_ReaderReviewTests.ClobNullBufferReturnsFullUtf16LengthRegardlessOfRequestedSlice(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(length: 2147483648)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.BlobFullGettersRejectSyntheticHugeLocatorBeforeReadOrAllocation(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 47\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ClobLengthProbeRejectsAnUnmaterializableLengthWithoutReturningAPrefix",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ClobLengthProbeRejectsAnUnmaterializableLengthWithoutReturningAPrefix() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 83\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(length: 9223372036854775807)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 69\n   at InvokeStub_LobMaterializationReviewTests.ClobFullGettersRejectHugeKnownLocatorBeforeLengthQuery(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialClobLengthProbePreservesTheCharacterPosition",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialClobLengthProbePreservesTheCharacterPosition() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 61\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.NullClobCharAndBytesGettersUse6081",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.NullClobCharAndBytesGettersUse6081() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 97\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.ARealIntegerZeroIsStillZero",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.ARealIntegerZeroIsStillZero() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 28\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.InlineMetadataRejectsBeforeTryingToDecodeMissingPayload(type: 12, length: 67108865)",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.InlineMetadataRejectsBeforeTryingToDecodeMissingPayload(Int32 type, Int64 length) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 81\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineClobPreservesUnicodeAndEncodedBytes(text: \"\")",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineClobPreservesUnicodeAndEncodedBytes(String text) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 130\n   at InvokeStub_LobMaterializationReviewTests.SmallInlineClobPreservesUnicodeAndEncodedBytes(Object, Span`1)\n   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.Int32NullUsesTheSameNullErrorAsOtherIntegerGetters",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.Int32NullUsesTheSameNullErrorAsOtherIntegerGetters() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 17\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineClobPreservesUnicodeAndEncodedBytes(text: \"A\u4e2de\u0301\\ud83d\\ude42\")",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.LobMaterializationReviewTests.SmallInlineClobPreservesUnicodeAndEncodedBytes(String text) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/LobMaterializationReviewTests.cs:line 130\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)"
+    },
+    {
+      "name": "W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericDmDecimalNullRaises6081AndAllowsTheNextColumn",
+      "message": "System.NullReferenceException : Object reference not set to an instance of an object.",
+      "stack": "   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.SetField(Object target, String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 198\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture.Set(String name, Object value) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 197\n   at W.DmProvider.TypeTests.ReaderReviewTests.ReaderFixture..ctor(Int32 cType, Byte[] value, String clobText, Boolean sequential, Nullable`1 clobLength) in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 185\n   at W.DmProvider.TypeTests.ReaderReviewTests.SequentialGenericDmDecimalNullRaises6081AndAllowsTheNextColumn() in /Users/wanghongyi/Projects/W.DmProvider/.local/verification/r3/t17/frozen-source-full-v4/source/tests/W.DmProvider.TypeTests/ReaderReviewTests.cs:line 135\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)"
+    }
+  ],
+  "package": "not_built",
+  "integration": "not_executed",
+  "production_release_accepted": false
+}

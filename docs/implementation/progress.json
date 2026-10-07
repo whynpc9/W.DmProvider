@@ -93,33 +93,83 @@
     },
     {
       "id": "T15",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T15.md",
+      "evidence": "evidence/T15/validation-summary.json",
+      "candidate_version": "0.1.0-r3.t15.20261002125216",
+      "reuse_policy": "discard",
+      "session_reset_verified": false,
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "upstream_pending": []
     },
     {
       "id": "T16",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T16.md",
+      "evidence": "evidence/T16/accepted-v3/validation-summary.json",
+      "offline_tests_passed": 739,
+      "tls_status": "integration_verified",
+      "shared_status": "integration_verified",
+      "candidate_version": "0.1.0-r3.t16.20261002143244",
+      "reuse_policy": "discard",
+      "session_reset_verified": false,
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "upstream_pending": []
     },
     {
       "id": "T17",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T17.md",
+      "implementation_completed": true,
+      "offline_tests_passed": 843,
+      "tls_status": "integration_verified",
+      "shared_status": "integration_verified",
+      "shared_cleanup": "fresh_exact_objects_absent",
+      "candidate_version": "0.1.0-r3.t17.20261002171716",
+      "remaining": [],
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "upstream_pending": [],
+      "historical_scoped_dependency": "implementation_and_offline_TLS_accepted",
+      "validation_scope": "full_defined_R3_matrix",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T18",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T18.md",
+      "upstream_pending": [],
+      "implementation_completed": true,
+      "evidence": "evidence/T18/verified-v2/validation-summary.json",
+      "offline_tests_passed": 865,
+      "tls_status": "integration_verified",
+      "resource_measurement_seconds": 600,
+      "resource_measurement_cycles": 13103,
+      "candidate_version": "0.1.0-r3.t18.20261002191803",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "historical_activation_scope": "implementation_offline_TLS_only",
+      "validation_scope": "full_defined_R3_matrix",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T19",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T19.md",
+      "implementation_completed": true,
+      "upstream_pending": [],
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "candidate_version": "0.1.0-r3.20261003023000",
+      "execution_revision": "t19-cli-retention-v1",
+      "historical_status": "integration_verified"
     },
     {
       "id": "T20",
@@ -153,9 +203,21 @@
     },
     {
       "id": "T25",
-      "status": "not_started",
-      "completed": false,
-      "report": null
+      "status": "integration_verified",
+      "completed": true,
+      "report": "reports/T25.md",
+      "upstream_pending": [],
+      "implementation_completed": true,
+      "offline_tests_passed": 875,
+      "candidate_version": "0.1.0-r3.t25.20261002205432",
+      "evidence": "evidence/T25/verified-v5/validation-summary.json",
+      "source_manifest": "evidence/T25/verified-v5/accepted-source-manifest.json",
+      "tls_status": "integration_verified",
+      "final_candidate_version": "0.1.0-r3.20261007143838",
+      "final_evidence": "evidence/T19/v23/root-final-readback.json",
+      "historical_activation_scope": "accepted_T18_offline_TLS_scope_only",
+      "validation_scope": "full_defined_R3_matrix",
+      "historical_status": "integration_verified"
     }
   ],
   "r1_review_followup": {
@@ -182,8 +244,8 @@
     "production_release_accepted": false
   },
   "r2_review_followup": {
-    "status": "offline_verified",
-    "completed": false,
+    "status": "integration_verified_in_R3_final_candidate",
+    "completed": true,
     "baseline_candidate_version": "0.1.0-r2.20261001164429",
     "report": "reports/R2-review.md",
     "source_state": "working_tree",
@@ -191,11 +253,85 @@
     "implementation_completed": true,
     "offline_tests_passed": 603,
     "tls_status": "integration_verified",
-    "shared_status": "integration_pending",
+    "shared_status": "integration_verified",
     "candidate_version": "0.1.0-r2.review.20261002092837",
     "shared_blocker": "Current shared profile fails the same cross-page fetch workload with both review and accepted baseline packages; precise owned-object recovery verified.",
     "root_review": "scoped_code_fixes_accepted",
     "evidence": "evidence/R2-review/validation-summary.json",
-    "source_manifest": "evidence/R2-review/accepted-source-manifest.json"
+    "source_manifest": "evidence/R2-review/accepted-source-manifest.json",
+    "historical_shared_status": "integration_pending",
+    "final_candidate_version": "0.1.0-r3.20261003023000",
+    "shared_blocker_resolved_by": "evidence/T19/candidate-v6/t19/root-final-readback.json"
+  },
+  "r3": {
+    "status": "integration_verified",
+    "completed": true,
+    "tasks": [
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T25",
+      "T19"
+    ],
+    "baseline_commit": "ed0c8a19d2a3d275eb469960ae56778e6280b5b0",
+    "design": "R3-design.md",
+    "production_release_accepted": false,
+    "historical_evidence_manifest": ".local/verification/r3/historical-baseline/manifest.json",
+    "current_task": null,
+    "upstream_pending": [
+      "PR_current_head_review_and_checks",
+      "PR_merge"
+    ],
+    "t19_latest_checkpoint": {
+      "status": "v23_full_defined_R3_matrix_accepted",
+      "candidate_version": "0.1.0-r3.20261007143838",
+      "offline_passed": 1224,
+      "target_cases": 48,
+      "python_cases": 120,
+      "first_init_cases": 7,
+      "tls_matrix": "6_gates_accepted",
+      "shared_driver_matrix": "5_gates_accepted",
+      "t17_shared": "full_original_gate_accepted",
+      "EF": "9_lanes_two_validators_accepted",
+      "EF_strict_trx_passed": 710,
+      "external_11_gates": "missing=[]",
+      "TEST_cleanup": "all_profiles_exact_owned_absence",
+      "full_R3_complete": true,
+      "R4_started": false,
+      "evidence": "evidence/T19/v23/root-final-readback.json"
+    },
+    "candidate_version": "0.1.0-r3.20261007143838",
+    "evidence": "evidence/T19/v23/root-final-readback.json",
+    "source_provenance": "v23_immutable_source_archive_and_exact_package_with_same_candidate_EF_continuation",
+    "delivery": {
+      "PR": "https://github.com/whynpc9/W.DmProvider/pull/2",
+      "merge_completed": false,
+      "R4_started": false
+    },
+    "review_findings": [
+      "PRRT_kwDOUvoqbs6pn3Zc",
+      "PRRT_kwDOUvoqbs6pvENO"
+    ],
+    "resolved_tool_review": "4172199544_verified_23b2cc3",
+    "historical_v20_checkpoint": {
+      "status": "v20_full_defined_R3_matrix_accepted",
+      "candidate_version": "0.1.0-r3.20261007012403",
+      "offline_passed": 1204,
+      "target_cases": 230,
+      "python_cases": 120,
+      "first_init_cases": 7,
+      "tls_matrix": "6_gates_accepted",
+      "shared_driver_matrix": "5_gates_accepted",
+      "t17_shared": "first_acceptance_in_R3_history",
+      "EF": "9_lanes_two_validators_accepted",
+      "external_11_gates": "missing=[]",
+      "shared_functional_seconds": 962.8,
+      "host_budget_seconds": 1500,
+      "TEST_cleanup": "all_profiles_exact_owned_absence",
+      "full_R3_complete": true,
+      "R4_started": false,
+      "evidence": "evidence/T19/v20/root-final-readback.json"
+    }
   }
 }

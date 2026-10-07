@@ -1,0 +1,28 @@
+{
+  "classification": "precise_recovery_not_original_acceptance",
+  "owned_table": "T17S_FB8A8DD02418483DAF1A",
+  "final_database_state": "exact_owned_object_present",
+  "loaded_dll_sha256": "f70627e5d957f3de86ec33070474ab1543c162c5f6321f93312ad87c4535290f",
+  "mvid": "654b6ddd-b0ff-4408-8e1b-b93bd075c1da",
+  "stage": "fresh_absence",
+  "verified_identity": "WDM_PROVIDER_TEST",
+  "verified_schema": "WDM_PROVIDER_TEST",
+  "before_count": 1,
+  "read_only_observation": false,
+  "primary_error": [
+    {
+      "type": "W.Dm.DmException",
+      "hresult": -2147467259,
+      "number": -6407,
+      "server_number": -6407,
+      "failure_kind": "Server",
+      "failure_phase": "Receive",
+      "operation_outcome": "ServerReported",
+      "driver_error_code": "WDM_SERVER"
+    }
+  ],
+  "primary_failed_stage": "exact_drop",
+  "fresh_count": 1,
+  "cleanup_verified": false,
+  "exit_code": 1
+}

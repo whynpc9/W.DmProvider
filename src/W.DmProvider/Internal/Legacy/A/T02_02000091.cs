@@ -127,7 +127,7 @@ internal partial class B
 				throw new InvalidOperationException("Nested wire operation has no protocol continuation owner.");
 			B priorNestedDecodeOwner = decodeOwner;
 			try { return operation(); }
-			catch { BreakNestedExchange(session); throw; }
+			catch (Exception error) { if (DmInvocation.Current?.ShouldAbortAfterFailure(error) != false) BreakNestedExchange(session); throw; }
 			finally { decodeOwner = priorNestedDecodeOwner; }
 		}
 		B priorDecodeOwner = decodeOwner;
@@ -152,7 +152,7 @@ internal partial class B
 				throw new InvalidOperationException("Nested wire operation has no protocol continuation owner.");
 			B priorNestedDecodeOwner = decodeOwner;
 			try { operation(); }
-			catch { BreakNestedExchange(session); throw; }
+			catch (Exception error) { if (DmInvocation.Current?.ShouldAbortAfterFailure(error) != false) BreakNestedExchange(session); throw; }
 			finally { decodeOwner = priorNestedDecodeOwner; }
 			return;
 		}
@@ -319,7 +319,7 @@ internal partial class B
 		DmFrameReader.Read(this.A().ReceiveExactly, P_0.access.__t02_field_04000AB9,
 			(frame, total) => DmFrameReader.ValidateChecksum(frame, total, a().crcBody),
 			DmInvocation.Current?.Deadline ?? DmDeadline.FromMilliseconds(a().ConnectionTimeout),
-			header => (a().crcBody && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header));
+			header => (a().crcBody && DmFrameReader.Command(header) != 200) || DmFrameReader.ValidateHeaderChecksum(header), P_0.MaxResponseBodyLength);
 	}
 
 	protected void C<A>(MSG<A> P_0)
@@ -336,7 +336,7 @@ internal partial class B
 		}
 	}
 
-	private b A(b P_0, b P_1, int P_2)
+	private b A(b P_0, b P_1, int P_2, int maxResponseBodyLength = -1)
 	{
 		try
 		{
@@ -347,7 +347,7 @@ internal partial class B
 			DmWireTestHooks.HandshakeFrameEncoded(P_0.I());
 			A().A(P_0, P_2, a().crcBody, a().encryptMsg);
 			DmWireTestHooks.Sent();
-			A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg);
+			A().__t02_method_06000A4D(P_1, P_2, a().crcBody, a().encryptMsg, maxResponseBodyLength);
 			DmResultProtocolTrace.RecordFrame(P_0.I(), P_1);
 			DmWireTestHooks.ResponseReady();
 			decodeOwner = this;
@@ -934,9 +934,9 @@ internal partial class B
 		}
 	}
 
-	public void E()
+	public void E(bool forcePhysicalAbort = false)
 	{
-		if (__t02_field_04000ABD)
+		if (__t02_field_04000ABD && !forcePhysicalAbort)
 		{
 			return;
 		}
