@@ -311,3 +311,7 @@ v18 所有编码者已停止，root/Astra整体静态接受，相对v17仅8项�
 v18 新诊断首门正式32执行/26passed/6failed，自然exit1/no timeout/skip/abort，source688/history16412/supp265不变，无pkg/DB、窗口released。独立triage确认：公开不支持的statement pooling导致fixture两例失败；三个Rollback回复须为opcode0/sql0而非9；同步保留型verified servererror裸抛未附FailureInfo是产品缺口，异步已翻译。v19历史17605保留v18失败输入/TRX/日志与99binary。Root/Astra定点仅授权Command共享同步ExecuteReaderOwned verified分支补原翻译，以及新DiagTests：合法Prepare→Close→重复Dispose无新wire/span、正确controlACK、六种NonQuery/Scalar/Reader同步异步结构元数据对照。原error/ACK/Complete/Txn/cleanup守卫不变，其他owner停写，Low待新冻结。
 
 v19 两文件已停写并正式静态接受，只有Command verified分支一行补原Translate再裸重抛，以及新DiagTests合法fixture/六API对照。异常同对象/原stack、ACK保留条件、事务与独立清理路径不改。新诊断36case，完整预期1184、Python120，仅实际TRX/日志为准。Low新冻结首诊断36和健康38/旧v17拒绝负对照，再旧185targets、全部新包离线/EF/TLSshared600资源与external门，运行仍pending，PR #2未收口。
+
+## 2026-10-07：v20 完整验收收口
+
+用户「做一轮完整的验收」。HEAD `4ec7853` 经 v20 完整矩阵独立验收通过：唯一候选 `0.1.0-r3.20261007012403`，离线 1204/first-init 7/targets 230/Python 120、同包 T16/T17 离线、EF 三初始 lane、TLS 六门（含 703.6 秒资源门 10099=10099）、**shared 五门首次全部通过（T17 shared 大值门 R3 历史首次 accepted）**、EF 九 lane 与双 validator、external 11 门 `missing=[]`；全部实库门 `WDM_PROVIDER_TEST` 身份与精确 owned 清理，2879 项冻结输入首尾一致。进度与 T19 报告已更新，根 readback 归档 `evidence/T19/v20/root-final-readback.json`。`production_release_accepted=false`；PR #2 merge 待用户决定，R4 未启动。v13–v20 各轮失败与诊断证据保持只读。
